@@ -1,0 +1,40 @@
+// Placeholder question pool, extracted verbatim from reference/starter-board.html.
+// Each `gen` returns { instr, q, a, w, fig? } — not the SPEC.md generator shape.
+// These stand in for real generators until the migration in MIGRATION.md happens.
+import { R, pick, sg, gcd } from './random.js';
+
+export const TOPICS = [
+  { id: 'neg', strand: 'Number', name: 'Negative numbers', gen: (d) => { const a = R(3, 9 * d), b = R(3, 9 * d); return { instr: 'Work out', q: `−${a} − (−${b})`, a: `${b - a}`, w: `subtracting a negative adds: −${a} + ${b}` }; } },
+  { id: 'round', strand: 'Number', name: 'Rounding to s.f.', gen: (d) => {
+    const s = d === 1 ? 2 : 3;
+    let n, v;
+    do {
+      n = (R(1000, 9999) / (d === 1 ? 1 : 100)).toFixed(d === 1 ? 0 : 2);
+      v = Number(n).toPrecision(s);
+    } while (Number(v) === Number(n));
+    return { instr: `Round to ${s} significant figures`, q: `${n}`, a: v, w: `${s} s.f. — count from the first non-zero digit` };
+  } },
+  { id: 'hcflcm', strand: 'Number', name: 'HCF and LCM', gen: (d) => { const a = R(6, 12 * d), b = R(6, 12 * d); const h = gcd(a, b); return { instr: 'Find the HCF and LCM of', q: `${a} and ${b}`, a: `HCF ${h}, LCM ${(a * b) / h}`, w: `HCF × LCM = ${a} × ${b}` }; } },
+  { id: 'frac', strand: 'Number', name: 'Adding fractions', gen: (d) => { const b = R(3, 4 + d), e = R(3, 5 + d); const a = R(1, b - 1), c = R(1, e - 1); const num = a * e + c * b, den = b * e, g = gcd(num, den); const N = num / g, D = den / g; return { instr: 'Work out, giving your answer in its simplest form', q: `~f{${a}}{${b}}  +  ~f{${c}}{${e}}`, a: D === 1 ? `${N}` : `~f{${N}}{${D}}`, w: `common denominator ${den}` }; } },
+  { id: 'pct', strand: 'Number', name: 'Percentage of an amount', gen: (d) => { const p = pick(d === 1 ? [10, 20, 25, 50] : [12, 15, 35, 65, 84]); const n = R(2, 9) * (d === 1 ? 20 : 40); return { instr: 'Work out', q: `${p}% of ${n}`, a: `${(p * n) / 100}`, w: `${n} ÷ 100 × ${p}` }; } },
+  { id: 'pctchg', strand: 'Number', name: 'Percentage change', gen: (d) => { const n = R(2, 9) * 40, p = pick([5, 8, 12, 15, 20]); const up = Math.random() < 0.5; return { instr: up ? 'Increase by' : 'Decrease by', q: `${n}  ${up ? '↑' : '↓'} ${p}%`, a: `${up ? n * (1 + p / 100) : n * (1 - p / 100)}`, w: `multiplier ${up ? (1 + p / 100).toFixed(2) : (1 - p / 100).toFixed(2)}` }; } },
+  { id: 'stdform', strand: 'Number', name: 'Standard form', gen: (d) => { const m = (R(11, 99) / 10).toFixed(1), e = R(3, 6); return { instr: 'Write as an ordinary number', q: `${m} × 10^{−${e}}`, a: `0.${'0'.repeat(e - 1)}${String(m).replace('.', '')}`, w: `move the point ${e} places left` }; } },
+  { id: 'ratio', strand: 'Ratio', name: 'Sharing in a ratio', gen: (d) => { const a = R(1, 4); let b = R(1, 5); if (b === a) b = a + 1; const t = (a + b) * R(3, 9); return { instr: `Share ${t} in the ratio`, q: `${a} : ${b}`, a: `${(t / (a + b)) * a} and ${(t / (a + b)) * b}`, w: `${a + b} parts, one part = ${t / (a + b)}` }; } },
+  { id: 'expand', strand: 'Algebra', name: 'Expanding double brackets', gen: (d) => { const a = R(-9, 9) || 3, b = R(-9, 9) || -4; return { instr: 'Expand and simplify', q: `(x ${sg(a)})(x ${sg(b)})`, a: `x^2 ${sg(a + b)}x ${sg(a * b)}`, w: `${a} × ${b} = ${a * b} · ${a} + ${b} = ${a + b}` }; } },
+  { id: 'factsimp', strand: 'Algebra', name: 'Factorising (common factor)', gen: (d) => { const k = R(2, 3 + d), a = R(2, 5), b = R(2, 9); return { instr: 'Factorise fully', q: `${k * a}x^2 + ${k * b}x`, a: `${k}x(${a}x + ${b})`, w: `HCF of ${k * a} and ${k * b} is ${k}, both terms carry an x` }; } },
+  { id: 'factquad', strand: 'Algebra', name: 'Factorising quadratics', gen: (d) => { const a = R(-7, 7) || 2, b = R(-7, 7) || -5; return { instr: 'Factorise', q: `x^2 ${sg(a + b)}x ${sg(a * b)}`, a: `(x ${sg(a)})(x ${sg(b)})`, w: `pair multiplying to ${a * b}, adding to ${a + b}` }; } },
+  { id: 'solve', strand: 'Algebra', name: 'Solving equations', gen: (d) => { const a = R(2, 3 + d), x = R(2, 9), b = R(1, 12); return { instr: 'Solve', q: d > 1 ? `${a}x ${sg(b)} = ${a * x + b + 0}` : `${a}x = ${a * x}`, a: `x = ${x}`, w: d > 1 ? `subtract ${b}, then divide by ${a}` : `divide both sides by ${a}` }; } },
+  { id: 'indices', strand: 'Algebra', name: 'Laws of indices', gen: (d) => { const a = R(2, 6), b = R(2, 6), c = R(2, 4); return { instr: 'Simplify', q: d > 1 ? `(x^${a}y^${c})^2` : `x^${a} × x^${b}`, a: d > 1 ? `x^{${a * 2}}y^{${c * 2}}` : `x^{${a + b}}`, w: d > 1 ? 'raise each index by the power' : 'add the indices' }; } },
+  { id: 'sub', strand: 'Algebra', name: 'Substitution', gen: (d) => { const a = R(2, 6), b = R(2, 9), x = R(2, 6); return { instr: `Work out the value when x = ${x}`, q: `${a}x^2 ${sg(b)}`, a: `${a * x * x + b}`, w: `${a} × ${x}² = ${a * x * x}, then ${sg(b)}` }; } },
+  { id: 'nth', strand: 'Algebra', name: 'nth term of a sequence', gen: (d) => { const a = R(2, 9), b = R(-6, 8); const seq = [1, 2, 3, 4].map((n) => a * n + b).join(',  '); return { instr: 'Find the nth term of', q: seq, a: `${a}n ${sg(b)}`, w: `common difference ${a}, then adjust by ${b}` }; } },
+  { id: 'grad', strand: 'Algebra', name: 'Gradient between points', gen: (d) => { const x1 = R(-4, 2), y1 = R(-4, 4), x2 = x1 + R(1, 4), y2 = y1 + R(-6, 6); const g = (y2 - y1) / (x2 - x1); return { instr: 'Find the gradient of the line through', q: `(${x1}, ${y1})  and  (${x2}, ${y2})`, a: `${Number(g.toFixed(2))}`, w: `(${y2} − ${y1}) ÷ (${x2} − ${x1})` }; } },
+  { id: 'pyth', strand: 'Geometry', name: 'Pythagoras', gen: (d) => { const t = pick([[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25]]); const k = d > 2 ? 2 : 1; const [a, b, c] = t.map((n) => n * k); return Math.random() < 0.5
+    ? { instr: 'Find the length of the hypotenuse', q: '', fig: { kind: 'right-triangle', big: 1, a: a + ' cm', b: b + ' cm', c: 'x' }, a: `x = ${c} cm`, w: `${a}^2 + ${b}^2 = ${c * c}, ~r{${c * c}} = ${c}` }
+    : { instr: 'Find the missing side', q: '', fig: { kind: 'right-triangle', big: 1, a: a + ' cm', b: 'x', c: c + ' cm' }, a: `x = ${b} cm`, w: `${c}^2 − ${a}^2 = ${b * b}, ~r{${b * b}} = ${b}` }; } },
+  { id: 'circle', strand: 'Geometry', name: 'Area of a circle', gen: (d) => { const r = R(3, 9 + d); return { instr: 'Find the area of the circle, to 1 d.p.', q: '', fig: { kind: 'circle', big: 1, r: r + ' cm' }, a: `${(Math.PI * r * r).toFixed(1)} cm^2`, w: `π × ${r}^2 = π × ${r * r}` }; } },
+  { id: 'angles', strand: 'Geometry', name: 'Angles in polygons', gen: (d) => { const n = pick([5, 6, 8, 9, 10, 12]); return { instr: 'Find one interior angle of this regular polygon', q: `${n} sides`, fig: { kind: 'polygon', n }, a: `${(180 * (n - 2)) / n}°`, w: `(${n} − 2) × 180 ÷ ${n}` }; } },
+  { id: 'area', strand: 'Geometry', name: 'Area of a trapezium', gen: (d) => { const a = R(3, 9), b = a + R(2, 8), h = R(3, 10); return { instr: 'Find the area of the trapezium', q: '', fig: { kind: 'trapezium', big: 1, a: a + ' cm', b: b + ' cm', h: h + ' cm' }, a: `${((a + b) / 2) * h} cm^2`, w: `~f{1}{2}(${a} + ${b}) × ${h}` }; } },
+  { id: 'mean', strand: 'Statistics', name: 'Mean and range', gen: (d) => { const xs = Array.from({ length: 5 }, () => R(2, 9 * d)); const s = xs.reduce((p, c) => p + c, 0); return { instr: 'Find the mean and the range of', q: xs.join(',  '), a: `mean ${Number((s / 5).toFixed(2))}, range ${Math.max(...xs) - Math.min(...xs)}`, w: `total ${s} ÷ 5` }; } },
+  { id: 'prob', strand: 'Statistics', name: 'Probability', gen: (d) => { const r = R(2, 6), bl = R(2, 7), g2 = R(1, 5); const t = r + bl + g2; return { instr: `A bag has ${r} red, ${bl} blue and ${g2} green counters. One is taken at random.`, q: 'P(not blue)', a: `~f{${t - bl}}{${t}}`, w: `${r + g2} of the ${t} counters are not blue` }; } },
+  { id: 'puzzle', strand: 'Reasoning', name: 'Symbol puzzle', gen: (d) => { const dia = R(2, 6), cir = R(3, 9), tri = R(1, cir - 1); return { instr: 'Find ▲', q: `◆ + ◆ + ◆ = ${dia * 3}\n◆ + ● = ${dia + cir}\n● − ▲ = ${cir - tri}`, a: `▲ = ${tri}`, w: `◆ = ${dia} · ● = ${cir}` }; } },
+];

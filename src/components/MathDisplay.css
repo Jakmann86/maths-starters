@@ -1,0 +1,40 @@
+.mfrac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 0.16em;
+  font-size: 0.82em;
+  line-height: 1.08;
+  transform: translateY(-0.08em);
+}
+
+.mfrac-part {
+  padding: 0 0.22em;
+}
+
+.mfrac-bar {
+  align-self: stretch;
+  height: 0.1em;
+  background: currentColor;
+  margin: 0.08em 0;
+}
+
+.msqrt {
+  white-space: nowrap;
+}
+
+.msqrt-bar {
+  border-top: 0.08em solid currentColor;
+  padding: 0 0.12em;
+}
+
+.msup {
+  font-size: 0.58em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.mline {
+  padding: 0.06em 0;
+}

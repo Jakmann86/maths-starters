@@ -26,6 +26,47 @@ add Diagnostic, Learn, Examples or Challenge sections. Do not add PDF worksheet
 generation, JSXGraph, user accounts, or a backend. If a feature request would
 pull any of those back in, say so rather than building it.
 
+## Commands
+
+```bash
+npm install     # Node 20+
+npm run dev      # Vite dev server
+npm run build    # production build
+npm run preview  # preview the production build
+npm run lint     # oxlint (react/rules-of-hooks, react/only-export-components)
+```
+
+There is no test runner configured yet. `SPEC.md` §4 and §10 call for
+`resolveSlots` to be unit tested once it exists — check `package.json` before
+assuming a framework is or isn't wired up, as this may change.
+
+## Current state vs. planned structure
+
+This repo is at the Vite scaffold stage (`git log`: "Scaffold Vite + React"
+then "Add spec, design and migration documents"). `src/App.jsx` is still the
+unmodified Vite template. Only `src/curriculum/schemes/haese-igcse.json`
+exists of the structure the docs describe. Before assuming a file exists
+(`src/generators/`, `src/lib/resolveSlots.js`, `src/curriculum/skills.js`,
+`src/components/`), check — the README and SPEC describe the target layout,
+not the current one. `MIGRATION.md` §"Build order" in `SPEC.md` §10 gives the
+intended sequence: board extraction → question shape + one live generator →
+skill catalogue → `resolveSlots` with tests → classes/ticks/localStorage →
+scheme screen → shuffle → bulk generator migration.
+
+## Key documents
+
+Read the relevant one before structural changes — they're written not to
+disagree, so treat a conflict between them as a bug to flag rather than a
+choice to make silently.
+
+| File | Covers |
+|------|--------|
+| `SPEC.md` | Data model (skill catalogue, scheme, class/ticks), the `resolveSlots` slot-resolution algorithm and its fallback chain, question shape, shuffle mode, the three screens (`/`, `/scheme`, `/classes`), persistence |
+| `DESIGN.md` | Visual system, tokens, layout rules |
+| `MIGRATION.md` | Which generators/components port from `maths-teaching-app`, what's deliberately left behind, known bugs in the source to fix on arrival rather than reproduce |
+| `README.md` | User-facing overview, repository layout, status/backlog convention in the scheme JSON |
+| `reference/starter-board.html` | Design export. Read-only — nothing builds from it |
+
 ## Non-negotiable conventions
 
 ### 1. Generators are pure functions returning data

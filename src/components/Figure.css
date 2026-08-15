@@ -1,0 +1,11 @@
+.fig-svg {
+  height: auto;
+  flex: 0 0 auto;
+  display: block;
+  overflow: visible;
+  margin-right: clamp(16px, 3cqi, 34px);
+}
+
+.fig-label {
+  font: 700 20px 'Archivo', system-ui, sans-serif;
+}
