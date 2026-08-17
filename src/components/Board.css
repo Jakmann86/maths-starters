@@ -1,10 +1,10 @@
 .board {
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--ground);
   color: var(--ink);
-  overflow: auto;
+  overflow: hidden;
 }
 
 /* — header — */
@@ -90,8 +90,8 @@
 }
 
 .diff-btn {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border: 2px solid var(--ink);
   background: transparent;
   color: var(--ink);
@@ -154,8 +154,8 @@
 }
 
 .timer-step-btn {
-  width: 28px;
-  height: 22px;
+  width: 34px;
+  height: 34px;
   border: 2px solid var(--hairline);
   background: transparent;
   color: var(--muted);
@@ -265,7 +265,7 @@
 
 .slot-bar {
   height: 10px;
-  margin: 0 -34px 18px;
+  margin: 0 calc(-1 * clamp(18px, 2.2vw, 34px)) 18px;
   background: var(--c);
 }
 

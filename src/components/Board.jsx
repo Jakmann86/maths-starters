@@ -18,8 +18,10 @@ function pool(selected) {
 function build(selected, diff, i, avoid, used) {
   const p = pool(selected);
   const taken = (used || []).concat(avoid ? [avoid] : []).filter(Boolean);
-  const choices = p.filter((t) => !taken.includes(t.id));
-  const t = pick(choices.length ? choices : p.filter((x) => x.id !== avoid).concat(p).slice(0, p.length));
+  const unused = p.filter((t) => !taken.includes(t.id));
+  const notAvoided = p.filter((t) => t.id !== avoid);
+  const choices = unused.length ? unused : notAvoided.length ? notAvoided : p;
+  const t = pick(choices);
   return { slot: SLOTS[i], topicId: t.id, topic: t.name, ...t.gen(diff + 1) };
 }
 

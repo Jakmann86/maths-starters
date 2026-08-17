@@ -35,6 +35,29 @@
   vertical-align: super;
 }
 
+.msub {
+  font-size: 0.58em;
+  line-height: 0;
+  vertical-align: sub;
+}
+
+.mtext {
+  white-space: pre;
+}
+
 .mline {
   padding: 0.06em 0;
+}
+
+.mkatex-pending {
+  opacity: 0.55;
+}
+
+.mkatex-error {
+  color: #b3261e;
+  border-bottom: 2px dotted #b3261e;
+}
+
+.mkatex .katex {
+  font-size: 1em;
 }

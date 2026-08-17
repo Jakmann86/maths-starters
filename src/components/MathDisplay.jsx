@@ -1,75 +1,66 @@
+import { useEffect, useState } from 'react';
 import './MathDisplay.css';
+import { parseArchivoLine } from '../lib/archivoMath.jsx';
 
-// Custom Archivo-native maths renderer — see DESIGN.md §"Maths rendering".
-// Handles `~f{num}{den}` fractions, `~r{x}` roots, `^{n}` / `^n` powers,
-// and `\n` line breaks. Hyphens before a digit/letter become U+2212.
-// KaTeX fallback for anything wider (LaTeX subset, nested fractions) is a
-// planned addition, not built yet — see SPEC.md §6.
+// Hybrid maths renderer — see DESIGN.md §"Maths rendering" and SPEC.md §6.
+// The Archivo parser (src/lib/archivoMath.js) handles the common cases and
+// keeps everything in the display typeface. When it returns null for a
+// line — an unknown \command, a \frac nested two or more levels deep, or an
+// indexed root — that line falls back to KaTeX, dynamically imported so it
+// costs nothing on boards that never hit a fallback.
 
-function brace(s, i) {
-  let d = 0, j = i;
-  for (; j < s.length; j++) {
-    if (s[j] === '{') d++;
-    else if (s[j] === '}') { d--; if (!d) break; }
+let katexPromise = null;
+function loadKatex() {
+  if (!katexPromise) {
+    katexPromise = Promise.all([
+      import('katex'),
+      import('katex/dist/katex.min.css'),
+    ]).then(([mod]) => mod.default ?? mod);
   }
-  return [s.slice(i + 1, j), j + 1];
+  return katexPromise;
 }
 
-function maths(str, kb) {
-  const out = [];
-  let i = 0, buf = '', k = 0;
-  const flush = () => { if (buf) { out.push(buf); buf = ''; } };
-  const s = String(str == null ? '' : str).replace(/-(?=[\d.(a-zA-Z])/g, '−');
-  while (i < s.length) {
-    if (s.startsWith('~f{', i)) {
-      const [num, j] = brace(s, i + 2);
-      const [den, j2] = brace(s, j);
-      flush();
-      out.push(
-        <span key={kb + k++} className="mfrac">
-          <span className="mfrac-part">{maths(num, kb + 'n' + k)}</span>
-          <span className="mfrac-bar" />
-          <span className="mfrac-part">{maths(den, kb + 'd' + k)}</span>
-        </span>,
-      );
-      i = j2;
-      continue;
-    }
-    if (s.startsWith('~r{', i)) {
-      const [v, j] = brace(s, i + 2);
-      flush();
-      out.push(
-        <span key={kb + k++} className="msqrt">
-          {'√'}
-          <span className="msqrt-bar">{maths(v, kb + 'r' + k)}</span>
-        </span>,
-      );
-      i = j;
-      continue;
-    }
-    if (s[i] === '^') {
-      let v, j;
-      if (s[i + 1] === '{') {
-        const r = brace(s, i + 1);
-        v = r[0]; j = r[1];
-      } else {
-        v = s[i + 1]; j = i + 2;
-      }
-      flush();
-      out.push(<sup key={kb + k++} className="msup">{v}</sup>);
-      i = j;
-      continue;
-    }
-    buf += s[i++];
-  }
-  flush();
-  return out;
+function KatexFallback({ tex }) {
+  const [html, setHtml] = useState(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setHtml(null);
+    setFailed(false);
+    loadKatex()
+      .then((katex) => {
+        if (cancelled) return;
+        try {
+          setHtml(katex.renderToString(tex, { throwOnError: false, displayMode: false }));
+        } catch {
+          setFailed(true);
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setFailed(true);
+      });
+    return () => { cancelled = true; };
+  }, [tex]);
+
+  if (failed) return <span className="mkatex-error" title="KaTeX failed to load">⚠ {tex}</span>;
+  if (html == null) return <span className="mkatex-pending">{tex}</span>;
+  // eslint-disable-next-line react/no-danger -- KaTeX's own escaped output, not user input
+  return <span className="mkatex" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+function renderLine(text, keyBase) {
+  const nodes = parseArchivoLine(text, keyBase);
+  if (nodes === null) return <KatexFallback key={keyBase} tex={text} />;
+  return nodes;
 }
 
 export default function MathDisplay({ math }) {
-  const lines = String(math == null ? '' : math).split('\n');
-  if (lines.length === 1) return maths(lines[0], 'm');
+  const raw = String(math == null ? '' : math);
+  const lines = raw.split('\n');
+  if (lines.length === 1) return renderLine(lines[0], 'm');
   return lines.map((l, i) => (
-    <div key={'L' + i} className="mline">{maths(l, 'm' + i)}</div>
+    <div key={'L' + i} className="mline">{renderLine(l, 'm' + i)}</div>
   ));
 }
