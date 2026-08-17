@@ -5,21 +5,57 @@ Nothing is bulk-moved.
 
 ## What comes across
 
+### Source location
+
+The old project is the `hexagon-maths` repo, but the app sits in a subfolder:
+
+```
+hexagon-maths/maths-teaching-app/src/
+```
+
+All paths below are relative to that `src/`. Clone it alongside this repo and
+copy files across by hand — do not add it as a remote, and keep Claude Code's
+working directory as `maths-starters` only.
+
 ### Generators — `src/generators/`
 
-| Source file | Skills it should yield | Notes |
+26 files across six categories. Not all are wanted; the table marks what to
+take.
+
+| File | Take | Notes |
 |---|---|---|
-| `algebra/expressionsGenerator.js` | expanding single / double / triple brackets | Already close to standard shape |
-| `algebra/equationGenerators.js` | linear equations, x both sides, think-of-a-number | |
-| `algebra/indicesGenerator.js` | negative & fractional indices, numeric and algebraic | Has a working `difficulty` param |
-| `algebra/factorisingQuadraticsGenerator.js` | simple quadratics, difference of two squares | Best existing example of the standard shape — use as the reference |
-| `algebra/recurringDecimalsGenerator.js` | 1/2/3-digit recurring | Emits full `metadata` already |
-| `geometry/pythagorasGenerators.js` | hypotenuse, missing side, isosceles area/height | |
-| `geometry/pythagoras3DGenerators.js` | 3D diagonals | Needs `Cuboid3D`; migrate late |
-| `geometry/sohcahtoaGenerators.js` | find side, find angle, trig calculator | **See known issues** |
-| `puzzles/symbolPuzzleGenerators.js` | emoji symbol puzzles | Retrieval pool |
-| `puzzles/magicSquareGenerators.js` | magic squares with negatives | Retrieval pool |
-| `core/baseGenerators.js` | — | Utilities; port `difficultyConfig` and the random helpers |
+| `algebra/expressionsGenerator.js` | yes | expanding single / double / triple brackets |
+| `algebra/equationGenerators.js` | yes | linear, x both sides, think-of-a-number |
+| `algebra/factorisingQuadraticsGenerator.js` | yes | **migrate first** — reference implementation |
+| `algebra/indicesGenerator.js` | yes | has a working difficulty param |
+| `algebra/recurringDecimalsGenerator.js` | check | duplicate of `number/recurringDecimalGenerator.js` — compare, keep one |
+| `algebra/simultaneousEquationsGenerator.js` | yes | Haese 7E |
+| `algebra/quadraticSimultaneousGenerator.js` | later | extension material |
+| `algebra/quadraticGenerator.js` | yes | Haese 21A–C |
+| `algebra/inequalitiesGenerator.js` | yes | Haese 3F–G |
+| `algebra/rearrangingFormulaeGenerator.js` | check | duplicate of `formulaRearrangementGenerator.js` |
+| `algebra/formulaRearrangementGenerator.js` | check | as above — compare, keep one |
+| `algebra/indicesExamplesGenerator.js` | no | stepped solutions are an Examples concern |
+| `geometry/pythagorasGenerators.js` | yes | hypotenuse, missing side, isosceles |
+| `geometry/pythagoras3DGenerators.js` | later | needs Cuboid3D; most complex figure |
+| `geometry/sohcahtoaGenerators.js` | yes | **has the missing-angle bug — see below** |
+| `geometry/angleFactsGenerator.js` | yes | Haese 4A |
+| `geometry/triangleGenerators.js` | yes | Haese 4B–C |
+| `geometry/squareGenerators.js` | check | may overlap area/mensuration |
+| `geometry/stackedTriangleGenerators.js` | later | unclear scope; inspect before porting |
+| `number/lcmGenerator.js` | yes | Haese assumed knowledge |
+| `number/recurringDecimalGenerator.js` | check | see algebra duplicate above |
+| `puzzles/symbolPuzzleGenerators.js` | yes | retrieval pool |
+| `puzzles/symbolThemes.js` | yes | supports the above |
+| `puzzles/magicSquareGenerators.js` | yes | retrieval pool |
+| `puzzles/magicSquareGenerator.js` | check | singular duplicate — likely dead |
+| `puzzles/numberPuzzles.js` | yes | retrieval pool |
+| `statistics/averageGenerators.js` | yes | Haese 13C |
+| `core/baseGenerators.js` | partial | port `difficultyConfig` and the random helpers only |
+
+Four `check` rows are duplicate pairs. Diff each pair before porting; at least
+one of each is probably dead or broken. Resolve by keeping the better
+implementation and deleting the other — do not port both.
 
 ### Components — `src/components/`
 
@@ -101,18 +137,23 @@ For each generator moved, in order:
 
 ## Suggested migration order
 
-Start with Week 1–5 content, since that's what a class needs first and it
-exercises the widest variety of visualisation types:
+Migrate what the first half-term needs, and what fills the retrieval pool.
+Everything else can wait.
 
-1. `factorisingQuadraticsGenerator` — reference implementation, no visuals
-2. `expressionsGenerator` — no visuals, high volume
-3. `equationGenerators` — no visuals
-4. `pythagorasGenerators` — introduces `RightTriangle` config mapping
+1. `factorisingQuadraticsGenerator` — reference implementation, no figure
+2. `expressionsGenerator` — no figure, high volume
+3. `equationGenerators` — no figure
+4. `pythagorasGenerators` — first figure config mapping
 5. `sohcahtoaGenerators` — fix the missing-angle bug here
-6. `symbolPuzzleGenerators` + `magicSquareGenerators` — fills the Last Year
-   pool, which the fallback chain depends on
+6. `symbolPuzzleGenerators` + `symbolThemes` + `magicSquareGenerators` +
+   `numberPuzzles` — fills the Last year pool, which the fallback chain in
+   `SPEC.md` §4.2 depends on. Do not leave this until late.
 7. `indicesGenerator`
-8. `recurringDecimalsGenerator`
-9. `pythagoras3DGenerators` — last, most complex visualisation
+8. `angleFactsGenerator`, `triangleGenerators`
+9. `recurringDecimal*` (after resolving the duplicate)
+10. `simultaneousEquationsGenerator`, `inequalitiesGenerator`
+11. `averageGenerators`, `lcmGenerator`
+12. `quadraticGenerator`
+13. `pythagoras3DGenerators` — last, most complex figure
 
-After step 6 the app is usable for a real lesson.
+After step 6 the app works for a real lesson. Steps 7 onward widen coverage.
