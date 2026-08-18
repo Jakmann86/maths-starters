@@ -83,7 +83,7 @@ export const generateFindHypotenuse = (options = {}) => {
     questionMath: 'a = 3,\\ b = 4',
     answer: 'c = 5',
     answerUnits: 'cm',
-    workingOut: 'c^2 = 3^2 + 4^2 = 25 \\\\ c = 5',
+    workingOut: 'c^2 = 3^2 + 4^2 = 25 \\n c = 5',
     visualization: { type: 'right-triangle', base: 3, height: 4, /* ... */ },
     metadata: { topic: 'pythagoras', difficulty, tags: ['geometry'] }
   };

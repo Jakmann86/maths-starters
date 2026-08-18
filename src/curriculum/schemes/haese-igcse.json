@@ -225,6 +225,6 @@
     { "id": "32C", "ch": 32, "unit": "Inequalities", "lesson": "Integer points in regions", "page": 644, "skills": [], "status": "todo" },
     { "id": "32D", "ch": 32, "unit": "Inequalities", "lesson": "Problem solving (extension)", "page": 645, "skills": [], "status": "skip" },
 
-    { "id": "PZ", "ch": null, "unit": "Puzzles", "lesson": "Retrieval puzzles", "page": null, "skills": ["symbol-puzzle", "magic-square"], "status": "todo" }
+    { "id": "PZ", "ch": null, "unit": "Puzzles", "lesson": "Retrieval puzzles", "page": null, "skills": ["symbol-puzzle", "magic-square"], "status": "ready" }
   ]
 }

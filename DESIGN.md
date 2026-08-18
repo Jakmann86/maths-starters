@@ -104,6 +104,10 @@ labels in Archivo 700 at 20px. The unknown side is labelled in the slot hue;
 everything else in ink. Currently: right triangle, circle, trapezium, regular
 polygon.
 
+`magic-square` is a grid, not a shape, and does not shrink on answer reveal
+(unlike the other figures) — the grid is what has to be read after the
+reveal.
+
 New figures follow the same construction — a `figNode` branch returning
 `svg([...], w, h, key, big, shown)`. Never introduce a charting or geometry
 library for these.
