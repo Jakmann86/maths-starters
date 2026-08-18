@@ -72,7 +72,7 @@ branches that this repo doesn't need.
 
 ### Data
 
-- The IGCSE scheme of work document becomes `schemes/igcse-higher.json`.
+- The IGCSE scheme of work document becomes `schemes/haese-igcse.json`.
 
 ## What does not come across
 
