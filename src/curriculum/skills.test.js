@@ -1,134 +1,77 @@
-// src/generators/puzzles/puzzleGenerators.test.js
+// src/curriculum/skills.js
 //
-// The load-bearing tests here are solvability and uniqueness. A magic square
-// with badly chosen blanks can be unsolvable by hand, or admit more than one
-// completion — neither is visible by looking at it. A symbol puzzle built on a
-// singular coefficient matrix has infinitely many solutions and looks fine.
+// This is the wiring test for the catalogue itself, not the generators it
+// points at (those have their own suites under src/generators/). What matters
+// here: every entry's `generate` actually resolves and returns the documented
+// question shape (SPEC.md §3) at every band it declares, unknown ids and
+// unavailable bands degrade instead of throwing, and nearestBand's fallback
+// chain (SPEC.md §4.3) steps down before it steps up.
 
 import { describe, expect, it } from 'vitest';
-import { generateMagicSquare, __test as ms } from './magicSquareGenerators';
-import { generateSymbolPuzzle, __test as sp } from './symbolPuzzleGenerators';
+import { BANDS, generateForSkill, getSkill, nearestBand, skillIds, skills } from './skills';
 
-const BANDS = ['foundation', 'core', 'stretch'];
-const SAMPLES = 300;
-
-describe('magic square', () => {
-  it.each(BANDS)('always produces a puzzle at %s', (difficulty) => {
-    for (let i = 0; i < SAMPLES; i += 1) {
-      expect(generateMagicSquare({ difficulty })).not.toBeNull();
-    }
+describe('the catalogue itself', () => {
+  it('declares only real bands, in order, with a working generate function', () => {
+    skillIds.forEach((id) => {
+      const skill = skills[id];
+      expect(skill.label).toBeTruthy();
+      expect(typeof skill.generate).toBe('function');
+      expect(skill.difficulties.length).toBeGreaterThan(0);
+      skill.difficulties.forEach((b) => expect(BANDS).toContain(b));
+    });
   });
 
-  it.each(BANDS)('is genuinely magic at %s', (difficulty) => {
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const { visualization } = generateMagicSquare({ difficulty });
-      expect(ms.isMagic(visualization.solution)).toBe(true);
-    }
-  });
-
-  it.each(BANDS)('is solvable by hand and has one completion at %s', (difficulty) => {
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const { visualization: v } = generateMagicSquare({ difficulty });
-      // Resolving by elimination proves both: every blank is reachable, and no
-      // other set of values could have filled them.
-      const check = ms.solveByElimination(v.cells, v.magicSum, v.showMagicSum);
-      expect(check.solved).toBe(true);
-    }
-  });
-
-  it.each(BANDS)('states the answer in reading order at %s', (difficulty) => {
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const q = generateMagicSquare({ difficulty });
-      const missing = [];
-      q.visualization.cells.forEach((row, r) =>
-        row.forEach((cell, c) => {
-          if (cell === null) missing.push(q.visualization.solution[r][c]);
-        })
-      );
-      expect(q.answer).toBe(missing.join(',\\ '));
-    }
-  });
-
-  it('keeps foundation positive and puts negatives on the harder grids', () => {
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const f = generateMagicSquare({ difficulty: 'foundation' });
-      expect(Math.min(...f.visualization.solution.flat())).toBeGreaterThan(0);
-      const c = generateMagicSquare({ difficulty: 'core' });
-      expect(Math.min(...c.visualization.solution.flat())).toBeLessThan(0);
-    }
-  });
-
-  it('escalates 3x3 to 4x4, and hides the total at stretch', () => {
-    for (let i = 0; i < 50; i += 1) {
-      expect(generateMagicSquare({ difficulty: 'foundation' }).visualization.size).toBe(3);
-      expect(generateMagicSquare({ difficulty: 'core' }).visualization.size).toBe(3);
-      const s = generateMagicSquare({ difficulty: 'stretch' });
-      expect(s.visualization.size).toBe(4);
-      expect(s.visualization.showMagicSum).toBe(false);
-    }
-  });
-
-  it('returns a figure config, never JSX', () => {
-    const q = generateMagicSquare({ difficulty: 'core' });
-    expect(q.visualization.type).toBe('magic-square');
-    expect(typeof q.visualization).toBe('object');
-    expect(q.visualization.$$typeof).toBeUndefined();
+  it('getSkill and skillIds agree with the skills map', () => {
+    skillIds.forEach((id) => expect(getSkill(id)).toBe(skills[id]));
+    expect(getSkill('not-a-real-skill')).toBeUndefined();
   });
 });
 
-describe('symbol puzzle', () => {
-  it('has no singular coefficient pattern', () => {
-    // A zero determinant means infinitely many solutions and a broken puzzle.
-    sp.CORE_PATTERNS.forEach((m) => expect(sp.det2(m)).not.toBe(0));
-    sp.STRETCH_PATTERNS.forEach((m) => expect(sp.det3(m)).not.toBe(0));
+describe('generateForSkill', () => {
+  it.each(skillIds)('returns the documented question shape for %s at every declared band', (id) => {
+    skills[id].difficulties.forEach((band) => {
+      const q = generateForSkill(id, band);
+      expect(q).not.toBeNull();
+      expect(q.instruction).toBeTruthy();
+      expect(q.questionMath || q.questionText).toBeTruthy();
+      expect(q.answer).toBeTruthy();
+      expect(q.workingOut).toBeTruthy();
+      expect(q.metadata.difficulty).toBe(band);
+    });
   });
 
-  it.each(BANDS)('states totals that match the stated values at %s', (difficulty) => {
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const q = generateSymbolPuzzle({ difficulty });
-      const values = {};
-      q.answer.split(',\\ ').forEach((part) => {
-        const [glyph, value] = part.split(' = ');
-        values[glyph] = Number(value);
+  it('returns null for an unknown id rather than throwing', () => {
+    expect(() => generateForSkill('not-a-real-skill', 'core')).not.toThrow();
+    expect(generateForSkill('not-a-real-skill', 'core')).toBeNull();
+  });
+
+  it('defaults to core and tolerates an unknown band', () => {
+    const id = skillIds[0];
+    expect(generateForSkill(id).metadata.difficulty).toBeTruthy();
+    expect(generateForSkill(id, 'medium').metadata.difficulty).toBeTruthy();
+  });
+});
+
+describe('nearestBand', () => {
+  it('returns the requested band when the skill declares it', () => {
+    skillIds.forEach((id) => {
+      skills[id].difficulties.forEach((band) => {
+        expect(nearestBand(id, band)).toBe(band);
       });
-      q.questionMath.split('\\n').forEach((line) => {
-        const [left, right] = line.split(' = ');
-        const total = left.split(' + ').reduce((s, g) => s + values[g], 0);
-        expect(total).toBe(Number(right));
-      });
-    }
+    });
   });
 
-  it.each(BANDS)('never writes more than four glyphs on a line at %s', (difficulty) => {
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const q = generateSymbolPuzzle({ difficulty });
-      q.questionMath.split('\\n').forEach((line) => {
-        expect(line.split(' = ')[0].split(' + ').length).toBeLessThanOrEqual(4);
-      });
-    }
+  it('steps down before it steps up, so stretch never serves easier than core', () => {
+    // expand-double-brackets declares foundation/core only.
+    expect(nearestBand('expand-double-brackets', 'stretch')).toBe('core');
   });
 
-  it('escalates two symbols to three at stretch', () => {
-    for (let i = 0; i < 100; i += 1) {
-      const two = generateSymbolPuzzle({ difficulty: 'core' });
-      expect(two.answer.split(',\\ ').length).toBe(2);
-      const three = generateSymbolPuzzle({ difficulty: 'stretch' });
-      expect(three.answer.split(',\\ ').length).toBe(3);
-      expect(three.questionMath.split('\\n').length).toBe(3);
-    }
+  it('steps up when nothing lower is declared', () => {
+    // difference-of-two-squares-numeric declares core/stretch only.
+    expect(nearestBand('difference-of-two-squares-numeric', 'foundation')).toBe('core');
   });
 
-  it('gives away one symbol outright at foundation', () => {
-    for (let i = 0; i < 100; i += 1) {
-      const q = generateSymbolPuzzle({ difficulty: 'foundation' });
-      const first = q.questionMath.split('\\n')[0].split(' = ')[0];
-      expect(new Set(first.split(' + ')).size).toBe(1);
-    }
-  });
-
-  it('is a question, not a figure', () => {
-    const q = generateSymbolPuzzle({ difficulty: 'core' });
-    expect(q.visualization).toBeUndefined();
-    expect(q.questionMath).toContain('\\n');
+  it('returns null for an unknown id', () => {
+    expect(nearestBand('not-a-real-skill', 'core')).toBeNull();
   });
 });
