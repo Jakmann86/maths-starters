@@ -14,6 +14,7 @@ import {
   generateExpandDoubleBrackets,
   generateDifferenceOfTwoSquares,
   generateDifferenceOfTwoSquaresNumeric,
+  generateExpandPerfectSquare,
 } from './expressionsGenerators';
 
 const BANDS = ['foundation', 'core', 'stretch'];
@@ -53,6 +54,7 @@ const identity = (q) => {
 const generators = {
   'expand-single-brackets': generateExpandSingleBrackets,
   'expand-double-brackets': generateExpandDoubleBrackets,
+  'expand-perfect-square': generateExpandPerfectSquare,
   'difference-of-two-squares': generateDifferenceOfTwoSquares,
   'difference-of-two-squares-numeric': generateDifferenceOfTwoSquaresNumeric,
 };
@@ -69,6 +71,8 @@ describe.each(Object.entries(generators))('%s', (topic, generate) => {
     expect(q.answer).toBeTruthy();
     expect(q.workingOut).toBeTruthy();
     expect(q.metadata.topic).toBe(topic);
+    // The band reported is the one the generator actually served, which may be
+    // lower than the one asked for when a skill declares fewer bands.
     expect(BANDS).toContain(q.metadata.difficulty);
     // Nothing here should reach for KaTeX: SPEC §6 says the Archivo parser
     // takes \times, \text{} and ^{}, and falls back on anything else.
@@ -89,17 +93,24 @@ describe.each(Object.entries(generators))('%s', (topic, generate) => {
 });
 
 describe('band-specific shapes', () => {
-  it('keeps foundation single brackets free of negative multipliers', () => {
+  it('keeps foundation single brackets to one bracket of two terms', () => {
     for (let i = 0; i < 200; i += 1) {
       const q = generateExpandSingleBrackets({ difficulty: 'foundation' });
-      expect(q.questionMath).not.toMatch(/^-/);
+      expect((q.questionMath.match(/\(/g) || []).length).toBe(1);
+      // Ex 1A Q1 c-d are -(x + 2) and -(3 - x), so a bare minus is in band, but
+      // a negative integer multiplier is not.
+      expect(q.questionMath).not.toMatch(/^-\d/);
     }
   });
 
-  it('escalates single brackets to two brackets at stretch', () => {
+  it('always leaves something to collect at stretch', () => {
+    // Every Ex 1A Q3 shape has two parts, so the working is a real uncollected
+    // expansion rather than a text hint, and it never equals the answer.
+    // Not every shape has two brackets: Q3 j is x^2 + x(x - 1).
     for (let i = 0; i < 200; i += 1) {
       const q = generateExpandSingleBrackets({ difficulty: 'stretch' });
-      expect((q.questionMath.match(/\(/g) || []).length).toBe(2);
+      expect(q.workingOut).not.toMatch(/\\text/);
+      expect(q.workingOut).not.toBe(q.answer);
     }
   });
 
@@ -107,6 +118,21 @@ describe('band-specific shapes', () => {
     for (let i = 0; i < 200; i += 1) {
       const q = generateExpandDoubleBrackets({ difficulty: 'foundation' });
       expect(q.answer).toMatch(/^[a-z]\^\{2\}/);
+    }
+  });
+
+  it('serves core when stretch is asked of the two-band double brackets', () => {
+    for (let i = 0; i < 50; i += 1) {
+      const q = generateExpandDoubleBrackets({ difficulty: 'stretch' });
+      expect(q.metadata.difficulty).toBe('core');
+    }
+  });
+
+  it('writes perfect squares as a square, not a repeated bracket', () => {
+    for (let i = 0; i < 200; i += 1) {
+      const q = generateExpandPerfectSquare({ difficulty: 'core' });
+      expect(q.questionMath).toMatch(/\)\^\{2\}$/);
+      expect(q.answer.split(/ [+-] /).length).toBe(3);
     }
   });
 

@@ -7,15 +7,15 @@
   "entries": [
     { "id": "1A", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "The distributive law", "page": 32, "skills": ["expand-single-brackets"], "status": "ready" },
     { "id": "1B", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "The product (a+b)(c+d)", "page": 33, "skills": ["expand-double-brackets"], "status": "ready" },
-    { "id": "1C", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Difference of two squares", "page": 35, "skills": [], "status": "todo" },
-    { "id": "1D", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Perfect squares expansion", "page": 37, "skills": [], "status": "todo" },
-    { "id": "1E", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Further expansion", "page": 39, "skills": ["expand-triple-brackets"], "status": "ready" },
+    { "id": "1C", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Difference of two squares", "page": 35, "skills": ["difference-of-two-squares", "difference-of-two-squares-numeric"], "status": "ready" },
+    { "id": "1D", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Perfect squares expansion", "page": 37, "skills": ["expand-perfect-square"], "status": "ready" },
+    { "id": "1E", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Further expansion", "page": 39, "skills": ["expand-triple-brackets"], "status": "todo" },
     { "id": "1F", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Algebraic common factors", "page": 40, "skills": [], "status": "todo" },
     { "id": "1G", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Factorising with common factors", "page": 42, "skills": [], "status": "todo" },
-    { "id": "1H", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Difference of two squares factorisation", "page": 45, "skills": ["factorise-dots"], "status": "ready" },
+    { "id": "1H", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Difference of two squares factorisation", "page": 45, "skills": ["factorise-dots"], "status": "todo" },
     { "id": "1I", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Perfect squares factorisation", "page": 47, "skills": [], "status": "todo" },
     { "id": "1J", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Expressions with four terms", "page": 48, "skills": [], "status": "todo" },
-    { "id": "1K", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Factorising x² + bx + c", "page": 49, "skills": ["factorise-simple-quadratic"], "status": "ready" },
+    { "id": "1K", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Factorising x² + bx + c", "page": 49, "skills": ["factorise-simple-quadratic"], "status": "todo" },
     { "id": "1L", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Splitting the middle term", "page": 51, "skills": [], "status": "todo" },
     { "id": "1M", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Miscellaneous factorisation", "page": 54, "skills": [], "status": "todo" },
 
@@ -26,9 +26,9 @@
     { "id": "2E", "ch": 2, "unit": "Sets", "lesson": "Union and intersection", "page": 65, "skills": [], "status": "todo" },
     { "id": "2F", "ch": 2, "unit": "Sets", "lesson": "Problem solving", "page": 69, "skills": [], "status": "skip" },
 
-    { "id": "3A", "ch": 3, "unit": "Algebra: equations and inequalities", "lesson": "Solving linear equations", "page": 75, "skills": ["solve-linear-equation", "solve-linear-both-sides"], "status": "ready" },
+    { "id": "3A", "ch": 3, "unit": "Algebra: equations and inequalities", "lesson": "Solving linear equations", "page": 75, "skills": ["solve-linear-equation", "solve-linear-both-sides"], "status": "todo" },
     { "id": "3B", "ch": 3, "unit": "Algebra: equations and inequalities", "lesson": "Solving equations with fractions", "page": 80, "skills": [], "status": "todo" },
-    { "id": "3C", "ch": 3, "unit": "Algebra: equations and inequalities", "lesson": "Forming equations", "page": 83, "skills": ["think-of-a-number"], "status": "ready" },
+    { "id": "3C", "ch": 3, "unit": "Algebra: equations and inequalities", "lesson": "Forming equations", "page": 83, "skills": ["think-of-a-number"], "status": "todo" },
     { "id": "3D", "ch": 3, "unit": "Algebra: equations and inequalities", "lesson": "Problem solving using equations", "page": 85, "skills": [], "status": "skip" },
     { "id": "3E", "ch": 3, "unit": "Algebra: equations and inequalities", "lesson": "Power equations", "page": 87, "skills": [], "status": "todo" },
     { "id": "3F", "ch": 3, "unit": "Algebra: equations and inequalities", "lesson": "Interpreting linear inequalities", "page": 88, "skills": [], "status": "todo" },
@@ -46,7 +46,7 @@
 
     { "id": "6A", "ch": 6, "unit": "Exponents and surds", "lesson": "Index notation", "page": 123, "skills": [], "status": "todo" },
     { "id": "6B", "ch": 6, "unit": "Exponents and surds", "lesson": "Index laws", "page": 126, "skills": [], "status": "todo" },
-    { "id": "6C", "ch": 6, "unit": "Exponents and surds", "lesson": "Zero and negative indices", "page": 129, "skills": ["indices-negative-fractional"], "status": "ready" },
+    { "id": "6C", "ch": 6, "unit": "Exponents and surds", "lesson": "Zero and negative indices", "page": 129, "skills": ["indices-negative-fractional"], "status": "todo" },
     { "id": "6D", "ch": 6, "unit": "Exponents and surds", "lesson": "Standard form", "page": 131, "skills": [], "status": "todo" },
     { "id": "6E", "ch": 6, "unit": "Exponents and surds", "lesson": "Surds", "page": 134, "skills": [], "status": "todo" },
     { "id": "6F", "ch": 6, "unit": "Exponents and surds", "lesson": "Properties of surds", "page": 137, "skills": [], "status": "todo" },
@@ -57,14 +57,14 @@
     { "id": "7B", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Formula rearrangement", "page": 150, "skills": [], "status": "todo" },
     { "id": "7C", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Formula derivation", "page": 153, "skills": [], "status": "todo" },
     { "id": "7D", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "More difficult rearrangements", "page": 155, "skills": [], "status": "todo" },
-    { "id": "7E", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Simultaneous equations", "page": 158, "skills": ["simultaneous-linear"], "status": "ready" },
+    { "id": "7E", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Simultaneous equations", "page": 158, "skills": ["simultaneous-linear"], "status": "todo" },
     { "id": "7F", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Problem solving", "page": 164, "skills": [], "status": "skip" },
 
-    { "id": "8A", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Pythagoras' theorem", "page": 170, "skills": ["pythagoras-hypotenuse", "pythagoras-missing-side"], "status": "ready" },
+    { "id": "8A", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Pythagoras' theorem", "page": 170, "skills": ["pythagoras-hypotenuse", "pythagoras-missing-side"], "status": "todo" },
     { "id": "8B", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "The converse of Pythagoras' theorem", "page": 176, "skills": [], "status": "todo" },
-    { "id": "8C", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Problem solving", "page": 177, "skills": ["pythagoras-isosceles"], "status": "ready" },
+    { "id": "8C", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Problem solving", "page": 177, "skills": ["pythagoras-isosceles"], "status": "todo" },
     { "id": "8D", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Circle problems", "page": 181, "skills": [], "status": "todo" },
-    { "id": "8E", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Three-dimensional problems", "page": 185, "skills": ["pythagoras-3d-diagonal"], "status": "ready" },
+    { "id": "8E", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Three-dimensional problems", "page": 185, "skills": ["pythagoras-3d-diagonal"], "status": "todo" },
 
     { "id": "9A", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Length", "page": 192, "skills": [], "status": "todo" },
     { "id": "9B", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Perimeter", "page": 194, "skills": [], "status": "todo" },
@@ -109,8 +109,8 @@
     { "id": "14F", "ch": 14, "unit": "Straight lines", "lesson": "Lines of symmetry", "page": 308, "skills": [], "status": "todo" },
 
     { "id": "15A", "ch": 15, "unit": "Trigonometry", "lesson": "Labelling sides of a right angled triangle", "page": 314, "skills": [], "status": "todo" },
-    { "id": "15B", "ch": 15, "unit": "Trigonometry", "lesson": "The trigonometric ratios", "page": 316, "skills": ["sohcahtoa-find-side", "sohcahtoa-find-angle"], "status": "ready" },
-    { "id": "15C", "ch": 15, "unit": "Trigonometry", "lesson": "Problem solving", "page": 322, "skills": ["trig-calculator"], "status": "ready" },
+    { "id": "15B", "ch": 15, "unit": "Trigonometry", "lesson": "The trigonometric ratios", "page": 316, "skills": ["sohcahtoa-find-side", "sohcahtoa-find-angle"], "status": "todo" },
+    { "id": "15C", "ch": 15, "unit": "Trigonometry", "lesson": "Problem solving", "page": 322, "skills": ["trig-calculator"], "status": "todo" },
     { "id": "15D", "ch": 15, "unit": "Trigonometry", "lesson": "The first quadrant of the unit circle", "page": 327, "skills": [], "status": "todo" },
     { "id": "15E", "ch": 15, "unit": "Trigonometry", "lesson": "True bearings", "page": 330, "skills": [], "status": "todo" },
     { "id": "15F", "ch": 15, "unit": "Trigonometry", "lesson": "3-dimensional problem solving", "page": 331, "skills": [], "status": "todo" },
@@ -194,7 +194,7 @@
     { "id": "27A", "ch": 27, "unit": "Circle geometry", "lesson": "Circle theorems", "page": 547, "skills": [], "status": "todo" },
     { "id": "27B", "ch": 27, "unit": "Circle geometry", "lesson": "Cyclic quadrilaterals", "page": 556, "skills": [], "status": "todo" },
 
-    { "id": "28A", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Rational exponents", "page": 566, "skills": ["indices-fractional-algebraic"], "status": "ready" },
+    { "id": "28A", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Rational exponents", "page": 566, "skills": ["indices-fractional-algebraic"], "status": "todo" },
     { "id": "28B", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Exponential functions", "page": 568, "skills": [], "status": "todo" },
     { "id": "28C", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Exponential equations", "page": 570, "skills": [], "status": "todo" },
     { "id": "28D", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Problem solving with exponential functions", "page": 573, "skills": [], "status": "skip" },
@@ -225,6 +225,6 @@
     { "id": "32C", "ch": 32, "unit": "Inequalities", "lesson": "Integer points in regions", "page": 644, "skills": [], "status": "todo" },
     { "id": "32D", "ch": 32, "unit": "Inequalities", "lesson": "Problem solving (extension)", "page": 645, "skills": [], "status": "skip" },
 
-    { "id": "PZ", "ch": null, "unit": "Puzzles", "lesson": "Retrieval puzzles", "page": null, "skills": ["symbol-puzzle", "magic-square"], "status": "ready" }
+    { "id": "PZ", "ch": null, "unit": "Puzzles", "lesson": "Retrieval puzzles", "page": null, "skills": ["symbol-puzzle", "magic-square"], "status": "todo" }
   ]
 }

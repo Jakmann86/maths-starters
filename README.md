@@ -80,7 +80,7 @@ The scheme file doubles as the build backlog. Each entry carries a `status`:
 - **todo** — startable, generator still needed
 - **skip** — not reducible to a starter question
 
-Currently 14 ready, 137 todo, 21 skip across 32 Haese chapters. Only `ready`
+Currently 4 ready, 166 todo, 19 skip across 32 Haese chapters. Only `ready`
 entries can be ticked into play, so the scheme screen shows progress and
 remaining work at once.
 
