@@ -8,11 +8,13 @@
 // see MIGRATION.md issue 5.
 
 import * as expressions from '../generators/algebra/expressionsGenerators';
+import * as magicSquares from '../generators/puzzles/magicSquareGenerators';
+import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
 export const skills = {
-  // --- Haese 1A -----------------------------------------------------------
+  // --- Haese 1A: the distributive law -----------------------------------------------------------
   'expand-single-brackets': {
     label: 'Expanding single brackets',
     generate: (opts) => expressions.generateExpandSingleBrackets(opts),
@@ -20,13 +22,16 @@ export const skills = {
   },
 
   // --- Haese 1B -----------------------------------------------------------
+  // Two bands. Exercise 1B's harder strands — Q3 difference of two squares and
+  // Q4 perfect squares — are separate skills below, which leaves 1B itself with
+  // monic and non-monic and nothing genuinely harder.
   'expand-double-brackets': {
     label: 'Expanding double brackets',
     generate: (opts) => expressions.generateExpandDoubleBrackets(opts),
     difficulties: ['foundation', 'core'],
   },
 
-  // --- Haese 1C -----------------------------------------------------------
+  // --- Haese 1C: difference of two squares -----------------------------------------------------------
   'difference-of-two-squares': {
     label: 'Difference of two squares',
     generate: (opts) => expressions.generateDifferenceOfTwoSquares(opts),
@@ -38,10 +43,23 @@ export const skills = {
     difficulties: ['core', 'stretch'],
   },
 
-  // --- Haese 1D -------------------------------------------------------------
+  // --- Haese 1D -----------------------------------------------------------
   'expand-perfect-square': {
-    label: 'Expanding perfect squares',
+    label: 'Expanding a perfect square',
     generate: (opts) => expressions.generateExpandPerfectSquare(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Puzzles: the retrieval pool, and the backstop every fallback chain in
+  // SPEC.md 4.2 terminates in. No prerequisites, so these can always fill a slot.
+  'magic-square': {
+    label: 'Magic squares',
+    generate: (opts) => magicSquares.generateMagicSquare(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'symbol-puzzle': {
+    label: 'Symbol puzzles',
+    generate: (opts) => symbolPuzzles.generateSymbolPuzzle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 };
