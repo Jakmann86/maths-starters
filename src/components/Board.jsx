@@ -1,81 +1,84 @@
 import { useEffect, useState } from 'react';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
-import TopicsPanel from './TopicsPanel.jsx';
-import { TOPICS } from '../lib/placeholderTopics.js';
-import { pick } from '../lib/random.js';
+import { generateForSkill, getSkill } from '../curriculum/skills.js';
+import { parseArchivoLine } from '../lib/archivoMath.jsx';
 import './Board.css';
 
 const SLOTS = ['Last lesson', 'Last week', 'Last topic', 'Last year'];
 const SLOT_COLORS = ['var(--slot-1)', 'var(--slot-2)', 'var(--slot-3)', 'var(--slot-4)'];
 const DIFF = ['Foundation', 'Core', 'Stretch'];
+const BANDS = ['foundation', 'core', 'stretch'];
 
-function pool(selected) {
-  const p = TOPICS.filter((t) => selected.includes(t.id));
-  return p.length ? p : TOPICS;
-}
+// Hardcoded until resolveSlots (SPEC.md §4) picks a skill per box from the
+// scheme and class position. One fixed skill per box for now.
+const SKILL_IDS = [
+  'expand-single-brackets',
+  'expand-double-brackets',
+  'difference-of-two-squares',
+  'expand-perfect-square',
+];
 
-function build(selected, diff, i, avoid, used) {
-  const p = pool(selected);
-  const taken = (used || []).concat(avoid ? [avoid] : []).filter(Boolean);
-  const unused = p.filter((t) => !taken.includes(t.id));
-  const notAvoided = p.filter((t) => t.id !== avoid);
-  const choices = unused.length ? unused : notAvoided.length ? notAvoided : p;
-  const t = pick(choices);
-  return { slot: SLOTS[i], topicId: t.id, topic: t.name, ...t.gen(diff + 1) };
-}
-
-function fourFresh(selected, diff) {
-  const used = [];
-  return SLOTS.map((_, i) => {
-    const b = build(selected, diff, i, null, used);
-    used.push(b.topicId);
-    return b;
+// These generators (SPEC.md §6) emit only \times, \text{} and ^{}, all of
+// which the Archivo parser handles — nothing here should ever reach the
+// KaTeX fallback. A null means the parser can't take output it's supposed
+// to, which is a parser bug, not expected behaviour.
+function warnIfUnparseable(id, field, text) {
+  if (!text) return;
+  String(text).split('\n').forEach((line, i) => {
+    if (parseArchivoLine(line, 'chk') === null) {
+      console.warn(`[${id}] ${field}${i ? ` line ${i}` : ''} fell back to KaTeX: ${line}`);
+    }
   });
+}
+
+function slotData(i, band) {
+  const id = SKILL_IDS[i];
+  const q = generateForSkill(id, band);
+  if (!q) return { slot: SLOTS[i], topic: '—', instr: '', q: '', a: '', w: '' };
+
+  warnIfUnparseable(id, 'questionMath', q.questionMath);
+  warnIfUnparseable(id, 'answer', q.answer);
+  warnIfUnparseable(id, 'workingOut', q.workingOut);
+
+  return {
+    slot: SLOTS[i],
+    topic: getSkill(id)?.label ?? id,
+    instr: q.instruction,
+    q: q.questionMath,
+    a: q.answer,
+    w: q.workingOut,
+  };
+}
+
+function fourFresh(band) {
+  return SLOTS.map((_, i) => slotData(i, band));
 }
 
 export default function Board() {
   const [state, setState] = useState({
-    selected: TOPICS.map((t) => t.id),
     slots: [],
     revealed: false,
     diff: 1,
     seconds: 300,
     running: false,
-    panelOpen: false,
   });
 
-  const regenAll = () => setState((s) => ({ ...s, revealed: false, slots: fourFresh(s.selected, s.diff) }));
+  const regenAll = () => setState((s) => ({ ...s, revealed: false, slots: fourFresh(BANDS[s.diff]) }));
 
   const regenOne = (i) => setState((s) => {
     const slots = s.slots.slice();
-    const t = TOPICS.find((x) => x.id === slots[i].topicId);
-    slots[i] = { slot: SLOTS[i], topicId: t.id, topic: t.name, ...t.gen(s.diff + 1) };
+    slots[i] = slotData(i, BANDS[s.diff]);
     return { ...s, slots };
   });
-
-  const swapOne = (i) => setState((s) => {
-    const slots = s.slots.slice();
-    slots[i] = build(s.selected, s.diff, i, slots[i].topicId, slots.map((x) => x.topicId));
-    return { ...s, slots };
-  });
-
-  const toggleTopic = (id) => setState((s) => ({
-    ...s,
-    selected: s.selected.includes(id) ? s.selected.filter((x) => x !== id) : s.selected.concat(id),
-  }));
 
   const setDiff = (delta) => setState((s) => {
     const diff = Math.min(2, Math.max(0, s.diff + delta));
-    const slots = s.slots.map((sl, i) => {
-      const t = TOPICS.find((x) => x.id === sl.topicId);
-      return { slot: SLOTS[i], topicId: t.id, topic: t.name, ...t.gen(diff + 1) };
-    });
-    return { ...s, diff, slots, revealed: false };
+    return { ...s, diff, slots: fourFresh(BANDS[diff]), revealed: false };
   });
 
   useEffect(() => {
-    setState((s) => ({ ...s, slots: fourFresh(s.selected, s.diff) }));
+    setState((s) => ({ ...s, slots: fourFresh(BANDS[s.diff]) }));
   }, []);
 
   useEffect(() => {
@@ -98,9 +101,7 @@ export default function Board() {
     return () => document.removeEventListener('keydown', handler);
   }, []);
 
-  const { selected, slots, revealed, diff, seconds, running, panelOpen } = state;
-
-  const strands = [...new Set(TOPICS.map((t) => t.strand))];
+  const { slots, revealed, diff, seconds, running } = state;
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
   const ss = String(seconds % 60).padStart(2, '0');
 
@@ -123,21 +124,9 @@ export default function Board() {
     else document.documentElement.requestFullscreen?.();
   };
 
-  const groups = strands.map((name) => ({
-    name,
-    items: TOPICS.filter((t) => t.strand === name).map((t) => ({
-      id: t.id,
-      name: t.name,
-      on: selected.includes(t.id),
-      toggle: () => toggleTopic(t.id),
-    })),
-  }));
-
   return (
     <div className="board">
       <Header
-        topicSummary={selected.length === TOPICS.length ? 'All topics' : `${selected.length} of ${TOPICS.length} selected`}
-        onOpenPanel={() => setState((s) => ({ ...s, panelOpen: true }))}
         diffLabel={DIFF[diff]}
         onDiffUp={() => setDiff(1)}
         onDiffDown={() => setDiff(-1)}
@@ -164,18 +153,9 @@ export default function Board() {
             data={slots[i] || { topic: '—', instr: '', q: '', a: '', w: '' }}
             revealed={revealed}
             onRegen={() => regenOne(i)}
-            onSwap={() => swapOne(i)}
           />
         ))}
       </main>
-
-      <TopicsPanel
-        open={panelOpen}
-        groups={groups}
-        onSelectAll={() => setState((s) => ({ ...s, selected: TOPICS.map((t) => t.id) }))}
-        onSelectNone={() => setState((s) => ({ ...s, selected: [] }))}
-        onClose={() => setState((s) => ({ ...s, panelOpen: false }))}
-      />
     </div>
   );
 }
