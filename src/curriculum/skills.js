@@ -9,6 +9,7 @@
 
 import * as expressions from '../generators/algebra/expressionsGenerators';
 import * as factorising from '../generators/algebra/factorisingGenerators';
+import * as equations from '../generators/algebra/equationGenerators';
 import * as magicSquares from '../generators/puzzles/magicSquareGenerators';
 import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 
@@ -78,6 +79,13 @@ export const skills = {
   'factorise-splitting-middle': {
     label: 'Factorising: ax² + bx + c',
     generate: (opts) => factorising.generateFactoriseSplittingMiddle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+    // --- Haese 3A: solving linear equations ---
+  'solve-linear-equations': {
+    label: 'Solving linear equations',
+    generate: (opts) => equations.generateSolveLinear(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
