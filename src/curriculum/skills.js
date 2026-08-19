@@ -8,6 +8,7 @@
 // see MIGRATION.md issue 5.
 
 import * as expressions from '../generators/algebra/expressionsGenerators';
+import * as factorising from '../generators/algebra/factorisingGenerators';
 import * as magicSquares from '../generators/puzzles/magicSquareGenerators';
 import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 
@@ -47,6 +48,36 @@ export const skills = {
   'expand-perfect-square': {
     label: 'Expanding a perfect square',
     generate: (opts) => expressions.generateExpandPerfectSquare(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 1H: difference of two squares, factorising -----------------------------------------------------------
+  // The reverse operation of 'difference-of-two-squares' above (which expands).
+  // Same object, opposite direction, so it carries its own id.
+  'factorise-difference-of-two-squares': {
+    label: 'Factorising a difference of two squares',
+    generate: (opts) => factorising.generateDifferenceOfTwoSquares(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 1J: expressions with four terms -----------------------------------------------------------
+  'factorise-grouping': {
+    label: 'Factorising by grouping',
+    generate: (opts) => factorising.generateFactoriseGrouping(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 1K: x^2 + bx + c -----------------------------------------------------------
+  'factorise-monic': {
+    label: 'Factorising: x² + bx + c',
+    generate: (opts) => factorising.generateFactoriseMonic(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 1L: ax^2 + bx + c, splitting the middle term -----------------------------------------------------------
+  'factorise-splitting-middle': {
+    label: 'Factorising: ax² + bx + c',
+    generate: (opts) => factorising.generateFactoriseSplittingMiddle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
