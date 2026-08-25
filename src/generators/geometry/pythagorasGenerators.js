@@ -51,3 +51,40 @@ export const generatePythagorasHypotenuse = (options = {}) => {
     metadata: { topic: 'pythagoras-hypotenuse', difficulty },
   };
 };
+
+// Drop a perpendicular from the apex to the base: it bisects the base and
+// splits the isosceles triangle into two right triangles with legs
+// half-the-base and the unknown height x, hypotenuse the given equal side.
+export const generatePythagorasIsosceles = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  let half, height, side, base, answer, steps;
+
+  if (difficulty === 'foundation') {
+    const [p, q, h] = _.sample(TRIPLES);
+    [half, height] = _.shuffle([p, q]);
+    side = h;
+    base = half * 2;
+    answer = `x = ${height}`;
+    steps = [`x^2 = ${side}^2 - ${half}^2`, `x^2 = ${side * side - half * half}`, `x = ${height}`];
+  } else {
+    do { half = _.random(3, 9); side = _.random(half + 1, half + 10); } while (isSquare(side * side - half * half));
+    base = half * 2;
+    const s = side * side - half * half;
+    if (difficulty === 'stretch') {
+      answer = `x = ${toSig3(Math.sqrt(s))}`;
+      steps = [`x^2 = ${side}^2 - ${half}^2`, `x^2 = ${s}`, `x = ${toSig3(Math.sqrt(s))} \\text{ (3 s.f.)}`];
+    } else {
+      answer = `x = \\sqrt{${s}}`;
+      steps = [`x^2 = ${side}^2 - ${half}^2`, `x^2 = ${s}`, `x = \\sqrt{${s}}`];
+    }
+  }
+
+  return {
+    instruction: 'Find the height of the isosceles triangle',
+    answer,
+    answerUnits: 'cm',
+    workingOut: steps.join(NL),
+    visualization: { type: 'isosceles-triangle', base: `${base} cm`, side: `${side} cm`, big: 1 },
+    metadata: { topic: 'pythagoras-isosceles', difficulty },
+  };
+};

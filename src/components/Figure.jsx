@@ -77,6 +77,26 @@ export default function Figure({ fig, color, shown }) {
     ], 230, 168, 'rt', fig.big, shown);
   }
 
+  if (fig.type === 'isosceles-triangle') {
+    if (!fig.base || !fig.side) return null;
+    const nodes = [
+      <polygon key="p" points="100,24 170,140 30,140" fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+      <line key="tl" x1={59.9} y1={78.9} x2={70.1} y2={85.1} stroke="var(--ink)" strokeWidth={3} />,
+      <line key="tr" x1={129.9} y1={85.1} x2={140.1} y2={78.9} stroke="var(--ink)" strokeWidth={3} />,
+      figLabel('sl', 52, 80, fig.side, 'end'),
+      figLabel('sr', 148, 80, fig.side, 'start'),
+      figLabel('b', 100, 158, fig.base, 'middle'),
+    ];
+    if (shown) {
+      nodes.push(
+        <line key="h" x1={100} y1={24} x2={100} y2={140} stroke="var(--ink)" strokeWidth={2} strokeDasharray="6 6" />,
+        <path key="r" d="M100 128 L112 128 L112 140" fill="none" stroke="var(--ink)" strokeWidth={2} />,
+        figLabel('x', 108, 90, 'x', 'start', color),
+      );
+    }
+    return svgWrap(nodes, 200, 170, 'it', fig.big, shown);
+  }
+
   if (fig.type === 'circle') {
     return svgWrap([
       <circle key="c" cx={88} cy={88} r={72} fill="none" stroke="var(--ink)" strokeWidth={3} />,

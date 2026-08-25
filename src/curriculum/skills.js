@@ -144,6 +144,12 @@ export const skills = {
     generate: (opts) => pythagoras.generatePythagorasHypotenuse(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'pythagoras-isosceles': {
+    label: 'Pythagoras: isosceles triangles',
+    topic: 'Pythagoras',
+    generate: (opts) => pythagoras.generatePythagorasIsosceles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 
   // --- Puzzles: the retrieval pool, and the backstop every fallback chain in
   // SPEC.md 4.2 terminates in. No prerequisites, so these can always fill a slot.
