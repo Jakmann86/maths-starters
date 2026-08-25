@@ -3,7 +3,7 @@ import Figure from './Figure.jsx';
 import { iSize, qSize } from '../lib/typeSizing.js';
 
 export default function Slot({ label, colorVar, data, revealed, onRegen }) {
-  const { topic, instr, q, a, w, fig } = data;
+  const { topic, instr, q, a, fig } = data;
 
   return (
     <section className="slot" style={{ '--c': colorVar }}>
@@ -32,10 +32,7 @@ export default function Slot({ label, colorVar, data, revealed, onRegen }) {
 
       <div className={`slot-answer${revealed ? ' is-revealed' : ''}`}>
         {revealed && (
-          <>
-            <div className="answer-value"><MathDisplay math={a} /></div>
-            <div className="answer-working"><MathDisplay math={w} /></div>
-          </>
+          <div className="answer-value"><MathDisplay math={a} /></div>
         )}
       </div>
     </section>

@@ -1,0 +1,53 @@
+// src/generators/geometry/pythagorasGenerators.js
+//
+// Pythagoras — Haese IGCSE Chapter 8. First generator to emit a figure config
+// (SPEC §3 `visualization`); the board's Figure component maps type -> shape.
+//
+// One skill per concept (as with factorising): this is find-the-hypotenuse
+// only, so the unknown is always c and matches Figure.jsx's right-triangle
+// branch as-is. The structurally different find-a-shorter-side (c^2 - a^2)
+// is its own skill, and needs Figure to colour the unknown leg.
+//
+// The unknown stays the hypotenuse across all three bands; the ladder is a
+// genuine exact -> surd -> approximate progression, not just bigger numbers:
+//   Foundation  Pythagorean triple      clean integer, no calculator
+//   Core        non-triple legs         exact surd  x = √n
+//   Stretch     non-triple legs         3 s.f. decimal
+
+import _ from 'lodash';
+
+const NL = '\n';
+const TRIPLES = [[3, 4, 5], [6, 8, 10], [5, 12, 13], [9, 12, 15], [8, 15, 17], [12, 16, 20], [7, 24, 25], [10, 24, 26], [20, 21, 29]];
+const toSig3 = (n) => n.toPrecision(3); // string, so a significant trailing zero survives (12.0, not 12)
+const isSquare = (n) => Number.isInteger(Math.sqrt(n));
+
+export const generatePythagorasHypotenuse = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  let a, b, answer, steps;
+
+  if (difficulty === 'foundation') {
+    const [p, q, h] = _.sample(TRIPLES);
+    [a, b] = _.shuffle([p, q]);
+    answer = `x = ${h}`;
+    steps = [`x^2 = ${a}^2 + ${b}^2`, `x^2 = ${a * a + b * b}`, `x = ${h}`];
+  } else {
+    do { a = _.random(2, 9); b = _.random(2, 9); } while (isSquare(a * a + b * b));
+    const s = a * a + b * b;
+    if (difficulty === 'stretch') {
+      answer = `x = ${toSig3(Math.sqrt(s))}`;
+      steps = [`x^2 = ${a}^2 + ${b}^2`, `x^2 = ${s}`, `x = ${toSig3(Math.sqrt(s))} \\text{ (3 s.f.)}`];
+    } else {
+      answer = `x = \\sqrt{${s}}`;
+      steps = [`x^2 = ${a}^2 + ${b}^2`, `x^2 = ${s}`, `x = \\sqrt{${s}}`];
+    }
+  }
+
+  return {
+    instruction: 'Find the length of the hypotenuse',
+    answer,
+    answerUnits: 'cm',
+    workingOut: steps.join(NL),
+    visualization: { type: 'right-triangle', a: `${a} cm`, b: `${b} cm`, c: 'x', big: 1 },
+    metadata: { topic: 'pythagoras-hypotenuse', difficulty },
+  };
+};

@@ -1,4 +1,5 @@
 export default function Header({
+  topicSummary, onOpenTopics,
   diffLabel, onDiffUp, onDiffDown,
   clock, clockExpired, onClockChange, onClockFocus,
   onAddMinute, onSubMinute, timerRunning, onToggleTimer,
@@ -11,6 +12,11 @@ export default function Header({
           <div className="header-label">Starter bank</div>
           <div className="header-value">Four in a row</div>
         </div>
+
+        <button type="button" className="header-seg header-seg--topics" onClick={onOpenTopics}>
+          <div className="header-label">Topics in play</div>
+          <div className="header-value">{topicSummary}</div>
+        </button>
 
         <div className="header-seg header-seg--diff">
           <div className="header-label">Difficulty</div>

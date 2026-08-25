@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import _ from 'lodash';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
-import { generateForSkill, getSkill } from '../curriculum/skills.js';
+import TopicPanel from './TopicPanel.jsx';
+import { generateForSkill, getSkill, skillIds } from '../curriculum/skills.js';
 import { parseArchivoLine } from '../lib/archivoMath.jsx';
 import './Board.css';
 
@@ -10,19 +12,11 @@ const SLOT_COLORS = ['var(--slot-1)', 'var(--slot-2)', 'var(--slot-3)', 'var(--s
 const DIFF = ['Foundation', 'Core', 'Stretch'];
 const BANDS = ['foundation', 'core', 'stretch'];
 
-// Hardcoded until resolveSlots (SPEC.md §4) picks a skill per box from the
-// scheme and class position. One fixed skill per box for now.
-const SKILL_IDS = [
-  'expand-single-brackets',
-  'expand-double-brackets',
-  'difference-of-two-squares',
-  'expand-perfect-square',
-];
-
-// These generators (SPEC.md §6) emit only \times, \text{} and ^{}, all of
-// which the Archivo parser handles — nothing here should ever reach the
-// KaTeX fallback. A null means the parser can't take output it's supposed
-// to, which is a parser bug, not expected behaviour.
+// Most generator output (SPEC.md §6) only ever emits \times, \text{} and
+// ^{}, all of which the Archivo parser handles. solve-power-equations at
+// stretch band is the one deliberate exception — it emits \sqrt[3]{}, which
+// is expected to fall back to KaTeX (DESIGN.md §6). Anything else logging
+// here is a parser bug.
 function warnIfUnparseable(id, field, text) {
   if (!text) return;
   String(text).split('\n').forEach((line, i) => {
@@ -32,8 +26,7 @@ function warnIfUnparseable(id, field, text) {
   });
 }
 
-function slotData(i, band) {
-  const id = SKILL_IDS[i];
+function slotData(i, id, band) {
   const q = generateForSkill(id, band);
   if (!q) return { slot: SLOTS[i], topic: '—', instr: '', q: '', a: '', w: '' };
 
@@ -46,39 +39,70 @@ function slotData(i, band) {
     topic: getSkill(id)?.label ?? id,
     instr: q.instruction,
     q: q.questionMath,
-    a: q.answer,
+    a: q.answerUnits ? `${q.answer}\\text{ ${q.answerUnits}}` : q.answer,
     w: q.workingOut,
+    fig: q.visualization,
   };
 }
 
-function fourFresh(band) {
-  return SLOTS.map((_, i) => slotData(i, band));
+// Stand-in for resolveSlots (SPEC.md §4), which will pick a skill per box
+// from the scheme and class position. Until that lands, the four boxes are
+// filled by sampling uniformly at random from the teacher's chosen pool —
+// no repeats across the four boxes unless the pool is too small to avoid it.
+function pickFourIds(pool) {
+  const base = pool.length > 0 ? pool : skillIds;
+  if (base.length >= 4) return _.sampleSize(base, 4);
+  return Array.from({ length: 4 }, () => _.sample(base));
+}
+
+function fourFresh(band, pool) {
+  const ids = pickFourIds(pool);
+  return { ids, slots: ids.map((id, i) => slotData(i, id, band)) };
 }
 
 export default function Board() {
   const [state, setState] = useState({
     slots: [],
+    slotIds: [],
     revealed: false,
     diff: 1,
     seconds: 300,
     running: false,
+    selected: skillIds,
   });
+  const [panelOpen, setPanelOpen] = useState(false);
 
-  const regenAll = () => setState((s) => ({ ...s, revealed: false, slots: fourFresh(BANDS[s.diff]) }));
+  const regenAll = useCallback(() => setState((s) => {
+    const { ids, slots } = fourFresh(BANDS[s.diff], s.selected);
+    return { ...s, revealed: false, slotIds: ids, slots };
+  }), []);
 
   const regenOne = (i) => setState((s) => {
     const slots = s.slots.slice();
-    slots[i] = slotData(i, BANDS[s.diff]);
+    slots[i] = slotData(i, s.slotIds[i], BANDS[s.diff]);
     return { ...s, slots };
   });
 
   const setDiff = (delta) => setState((s) => {
     const diff = Math.min(2, Math.max(0, s.diff + delta));
-    return { ...s, diff, slots: fourFresh(BANDS[diff]), revealed: false };
+    const { ids, slots } = fourFresh(BANDS[diff], s.selected);
+    return { ...s, diff, slotIds: ids, slots, revealed: false };
   });
 
+  // Toggling a topic only changes the pool; it takes effect on the next
+  // regenerate (New four / regen-one / difficulty change), not immediately.
+  const toggleTopic = (id) => setState((s) => ({
+    ...s,
+    selected: s.selected.includes(id) ? s.selected.filter((x) => x !== id) : [...s.selected, id],
+  }));
+  const selectAllTopics = () => setState((s) => ({ ...s, selected: skillIds }));
+  const selectNoneTopics = () => setState((s) => ({ ...s, selected: [] }));
+
   useEffect(() => {
-    setState((s) => ({ ...s, slots: fourFresh(BANDS[s.diff]) }));
+    setState((s) => {
+      const { ids, slots } = fourFresh(BANDS[s.diff], s.selected);
+      return { ...s, slotIds: ids, slots };
+    });
   }, []);
 
   useEffect(() => {
@@ -90,6 +114,7 @@ export default function Board() {
 
   useEffect(() => {
     const handler = (e) => {
+      if (panelOpen) return;
       if (e.target && e.target.tagName === 'INPUT') return;
       if (e.code === 'Space') {
         e.preventDefault();
@@ -99,9 +124,12 @@ export default function Board() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, []);
+  }, [panelOpen, regenAll]);
 
-  const { slots, revealed, diff, seconds, running } = state;
+  const { slots, revealed, diff, seconds, running, selected } = state;
+  const topicSummary = selected.length === skillIds.length
+    ? 'All topics'
+    : `${selected.length} of ${skillIds.length} selected`;
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
   const ss = String(seconds % 60).padStart(2, '0');
 
@@ -127,6 +155,8 @@ export default function Board() {
   return (
     <div className="board">
       <Header
+        topicSummary={topicSummary}
+        onOpenTopics={() => setPanelOpen(true)}
         diffLabel={DIFF[diff]}
         onDiffUp={() => setDiff(1)}
         onDiffDown={() => setDiff(-1)}
@@ -156,6 +186,15 @@ export default function Board() {
           />
         ))}
       </main>
+
+      <TopicPanel
+        open={panelOpen}
+        selected={selected}
+        onToggle={toggleTopic}
+        onSelectAll={selectAllTopics}
+        onSelectNone={selectNoneTopics}
+        onClose={() => setPanelOpen(false)}
+      />
     </div>
   );
 }

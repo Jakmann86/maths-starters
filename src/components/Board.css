@@ -1,10 +1,9 @@
 .board {
-  height: 100dvh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--ground);
   color: var(--ink);
-  overflow: hidden;
 }
 
 /* — header — */
@@ -54,6 +53,20 @@
   overflow: hidden;
 }
 
+
+.header-seg--topics {
+  border: 0;
+  border-right: 2px solid var(--ink);
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.header-seg--topics:hover {
+  background: var(--surface);
+}
 
 .header-seg--diff {
   flex: 0 0 auto;
@@ -219,13 +232,12 @@
 /* — main grid — */
 
 .board-main {
-  flex: 1;
+  flex: 1 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-auto-rows: minmax(340px, 1fr);
   gap: 2px;
   background: var(--ink);
-  min-height: 0;
 }
 
 /* — slot — */
@@ -293,7 +305,7 @@
 .slot-body {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 10px;
   min-height: 0;
   overflow: hidden;
@@ -308,7 +320,7 @@
 .slot-row {
   flex: 1 1 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   min-height: 0;
   overflow: hidden;
 }

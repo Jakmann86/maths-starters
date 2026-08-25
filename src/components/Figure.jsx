@@ -30,7 +30,34 @@ function figLabel(key, x, y, text, anchor = 'middle', color = 'var(--ink)') {
 export default function Figure({ fig, color, shown }) {
   if (!fig) return null;
 
-  if (fig.kind === 'right-triangle') {
+  if (fig.type === 'magic-square') {
+    const n = fig.size;
+    const cell = 40;
+    const w = n * cell + 8;
+    const h = n * cell + 8;
+    const cells = [];
+    for (let r = 0; r < n; r += 1) {
+      for (let c = 0; c < n; c += 1) {
+        const x = 4 + c * cell;
+        const y = 4 + r * cell;
+        const given = fig.cells[r][c];
+        const isBlank = given === null;
+        const value = isBlank ? (shown ? fig.solution[r][c] : null) : given;
+        cells.push(
+          <rect key={`b${r}-${c}`} x={x} y={y} width={cell} height={cell} fill="none" stroke="var(--ink)" strokeWidth={2} />
+        );
+        if (value !== null) {
+          cells.push(figLabel(`v${r}-${c}`, x + cell / 2, y + cell / 2 + 7, value, 'middle', isBlank ? color : 'var(--ink)'));
+        }
+      }
+    }
+    // Unlike the shape figures, the grid never shrinks on reveal (DESIGN.md
+    // §Figures) — it's what has to be read after the reveal — so this always
+    // uses the "not shown" cap regardless of the `shown` prop.
+    return svgWrap(cells, w, h, 'ms', fig.big, false);
+  }
+
+  if (fig.type === 'right-triangle') {
     return svgWrap([
       <polygon key="p" points="24,132 24,20 168,132" fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
       <path key="r" d="M24 112 h20 v20" fill="none" stroke="var(--ink)" strokeWidth={3} />,
@@ -40,7 +67,7 @@ export default function Figure({ fig, color, shown }) {
     ], 190, 168, 'rt', fig.big, shown);
   }
 
-  if (fig.kind === 'circle') {
+  if (fig.type === 'circle') {
     return svgWrap([
       <circle key="c" cx={88} cy={88} r={72} fill="none" stroke="var(--ink)" strokeWidth={3} />,
       figLine('r', 88, 88, 160, 88),
@@ -49,7 +76,7 @@ export default function Figure({ fig, color, shown }) {
     ], 176, 176, 'ci', fig.big, shown);
   }
 
-  if (fig.kind === 'trapezium') {
+  if (fig.type === 'trapezium') {
     return svgWrap([
       <polygon key="p" points="48,24 148,24 180,124 16,124" fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
       figLine('h', 98, 24, 98, 124, { strokeDasharray: '6 6', strokeWidth: 2 }),
@@ -59,7 +86,7 @@ export default function Figure({ fig, color, shown }) {
     ], 196, 152, 'tz', fig.big, shown);
   }
 
-  if (fig.kind === 'polygon') {
+  if (fig.type === 'polygon') {
     const n = fig.n, radius = 68, cx = 84, cy = 84, pts = [];
     for (let i = 0; i < n; i++) {
       const t = (Math.PI * 2 * i) / n - Math.PI / 2;

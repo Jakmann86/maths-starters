@@ -12,6 +12,7 @@ import * as factorising from '../generators/algebra/factorisingGenerators';
 import * as equations from '../generators/algebra/equationGenerators';
 import * as magicSquares from '../generators/puzzles/magicSquareGenerators';
 import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
+import * as pythagoras from '../generators/geometry/pythagorasGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -86,6 +87,46 @@ export const skills = {
   'solve-linear-equations': {
     label: 'Solving linear equations',
     generate: (opts) => equations.generateSolveLinear(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 3A.2: unknown on both sides ---
+  // id matches the generator's own metadata.topic ('solve-linear-both-sides'),
+  // not the -equations- naming used by the other three below.
+  'solve-linear-both-sides': {
+    label: 'Solving equations: unknown on both sides',
+    generate: (opts) => equations.generateSolveBothSides(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 3B: equations with fractions ---
+  'solve-equations-fractions': {
+    label: 'Solving equations with fractions',
+    generate: (opts) => equations.generateSolveFractions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 3E: power equations ---
+  'solve-power-equations': {
+    label: 'Solving power equations',
+    generate: (opts) => equations.generateSolvePower(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 3C-D: forming equations -----------------------------------------
+  // Returns `questionText`, not `questionMath` — Board.jsx's slotData only
+  // wires questionMath through to the slot's question field, so this skill
+  // will render with a blank question until that text path is added.
+  'forming-equations': {
+    label: 'Forming equations',
+    generate: (opts) => equations.generateFormingEquation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+    // --- Haese Ch 8: Pythagoras ---
+  'pythagoras-hypotenuse': {
+    label: 'Pythagoras: find the hypotenuse',
+    generate: (opts) => pythagoras.generatePythagorasHypotenuse(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
