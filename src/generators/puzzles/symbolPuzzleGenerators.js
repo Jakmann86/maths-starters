@@ -78,7 +78,7 @@ const render = ({ glyphs, equations }) =>
       const usedCoeffs = coeffs.filter((k) => k > 0);
       return `${lhs(usedCoeffs, used)} = ${total}`;
     })
-    .join('\\n');
+    .join('\n');
 
 const answerOf = ({ glyphs, values }) =>
   glyphs.map((g, i) => `${g} = ${values[i]}`).join(',\\ ');

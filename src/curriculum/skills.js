@@ -20,6 +20,7 @@ export const skills = {
   // --- Haese 1A: the distributive law -----------------------------------------------------------
   'expand-single-brackets': {
     label: 'Expanding single brackets',
+    topic: 'Expanding brackets',
     generate: (opts) => expressions.generateExpandSingleBrackets(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -30,6 +31,7 @@ export const skills = {
   // monic and non-monic and nothing genuinely harder.
   'expand-double-brackets': {
     label: 'Expanding double brackets',
+    topic: 'Expanding brackets',
     generate: (opts) => expressions.generateExpandDoubleBrackets(opts),
     difficulties: ['foundation', 'core'],
   },
@@ -37,11 +39,13 @@ export const skills = {
   // --- Haese 1C: difference of two squares -----------------------------------------------------------
   'difference-of-two-squares': {
     label: 'Difference of two squares',
+    topic: 'Expanding brackets',
     generate: (opts) => expressions.generateDifferenceOfTwoSquares(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'difference-of-two-squares-numeric': {
     label: 'Difference of two squares: mental arithmetic',
+    topic: 'Expanding brackets',
     generate: (opts) => expressions.generateDifferenceOfTwoSquaresNumeric(opts),
     difficulties: ['core', 'stretch'],
   },
@@ -49,6 +53,7 @@ export const skills = {
   // --- Haese 1D -----------------------------------------------------------
   'expand-perfect-square': {
     label: 'Expanding a perfect square',
+    topic: 'Expanding brackets',
     generate: (opts) => expressions.generateExpandPerfectSquare(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -58,6 +63,7 @@ export const skills = {
   // Same object, opposite direction, so it carries its own id.
   'factorise-difference-of-two-squares': {
     label: 'Factorising a difference of two squares',
+    topic: 'Factorising',
     generate: (opts) => factorising.generateDifferenceOfTwoSquares(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -65,6 +71,7 @@ export const skills = {
   // --- Haese 1J: expressions with four terms -----------------------------------------------------------
   'factorise-grouping': {
     label: 'Factorising by grouping',
+    topic: 'Factorising',
     generate: (opts) => factorising.generateFactoriseGrouping(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -72,6 +79,7 @@ export const skills = {
   // --- Haese 1K: x^2 + bx + c -----------------------------------------------------------
   'factorise-monic': {
     label: 'Factorising: x² + bx + c',
+    topic: 'Factorising',
     generate: (opts) => factorising.generateFactoriseMonic(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -79,6 +87,7 @@ export const skills = {
   // --- Haese 1L: ax^2 + bx + c, splitting the middle term -----------------------------------------------------------
   'factorise-splitting-middle': {
     label: 'Factorising: ax² + bx + c',
+    topic: 'Factorising',
     generate: (opts) => factorising.generateFactoriseSplittingMiddle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -86,6 +95,7 @@ export const skills = {
     // --- Haese 3A: solving linear equations ---
   'solve-linear-equations': {
     label: 'Solving linear equations',
+    topic: 'Equations',
     generate: (opts) => equations.generateSolveLinear(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -95,6 +105,7 @@ export const skills = {
   // not the -equations- naming used by the other three below.
   'solve-linear-both-sides': {
     label: 'Solving equations: unknown on both sides',
+    topic: 'Equations',
     generate: (opts) => equations.generateSolveBothSides(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -102,6 +113,7 @@ export const skills = {
   // --- Haese 3B: equations with fractions ---
   'solve-equations-fractions': {
     label: 'Solving equations with fractions',
+    topic: 'Equations',
     generate: (opts) => equations.generateSolveFractions(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -109,6 +121,7 @@ export const skills = {
   // --- Haese 3E: power equations ---
   'solve-power-equations': {
     label: 'Solving power equations',
+    topic: 'Equations',
     generate: (opts) => equations.generateSolvePower(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -119,6 +132,7 @@ export const skills = {
   // will render with a blank question until that text path is added.
   'forming-equations': {
     label: 'Forming equations',
+    topic: 'Equations',
     generate: (opts) => equations.generateFormingEquation(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -126,6 +140,7 @@ export const skills = {
     // --- Haese Ch 8: Pythagoras ---
   'pythagoras-hypotenuse': {
     label: 'Pythagoras: find the hypotenuse',
+    topic: 'Pythagoras',
     generate: (opts) => pythagoras.generatePythagorasHypotenuse(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -134,11 +149,13 @@ export const skills = {
   // SPEC.md 4.2 terminates in. No prerequisites, so these can always fill a slot.
   'magic-square': {
     label: 'Magic squares',
+    topic: 'Puzzles',
     generate: (opts) => magicSquares.generateMagicSquare(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'symbol-puzzle': {
     label: 'Symbol puzzles',
+    topic: 'Puzzles',
     generate: (opts) => symbolPuzzles.generateSymbolPuzzle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -172,4 +189,33 @@ export const generateForSkill = (id, wanted = 'core') => {
   const skill = skills[id];
   if (!skill) return null;
   return skill.generate({ difficulty: nearestBand(id, wanted) });
+};
+
+/**
+ * Distinct topic names, in order of first appearance in `skills` (SPEC.md
+ * "Design revision: topic-level selection (v1)").
+ */
+export const topics = () => {
+  const seen = [];
+  skillIds.forEach((id) => {
+    const t = skills[id].topic;
+    if (!seen.includes(t)) seen.push(t);
+  });
+  return seen;
+};
+
+/** Skill ids whose topic matches `topicName`, in catalogue order. */
+export const skillsInTopic = (topicName) => skillIds.filter((id) => skills[id].topic === topicName);
+
+/**
+ * The next skill id within a topic, cycling back to the first after the
+ * last. An unknown/null/missing `currentSkillId` (or one not in the topic)
+ * returns the topic's first skill. A single-skill topic returns itself.
+ */
+export const nextSkillInTopic = (topicName, currentSkillId) => {
+  const ids = skillsInTopic(topicName);
+  if (ids.length === 0) return null;
+  const index = ids.indexOf(currentSkillId);
+  if (index === -1) return ids[0];
+  return ids[(index + 1) % ids.length];
 };

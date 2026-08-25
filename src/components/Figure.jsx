@@ -1,7 +1,8 @@
 import './Figure.css';
 
-function svgWrap(children, w, h, key, big, shown) {
-  const cap = shown ? (big ? '30cqh' : '24cqh') : (big ? '46cqh' : '34cqh');
+function svgWrap(children, w, h, key, big, shown, noShrink = false) {
+  const capShown = noShrink ? false : shown;
+  const cap = capShown ? (big ? '30cqh' : '24cqh') : (big ? '46cqh' : '34cqh');
   return (
     <svg
       key={key}
@@ -31,40 +32,49 @@ export default function Figure({ fig, color, shown }) {
   if (!fig) return null;
 
   if (fig.type === 'magic-square') {
-    const n = fig.size;
-    const cell = 40;
-    const w = n * cell + 8;
-    const h = n * cell + 8;
-    const cells = [];
-    for (let r = 0; r < n; r += 1) {
-      for (let c = 0; c < n; c += 1) {
-        const x = 4 + c * cell;
-        const y = 4 + r * cell;
-        const given = fig.cells[r][c];
-        const isBlank = given === null;
-        const value = isBlank ? (shown ? fig.solution[r][c] : null) : given;
-        cells.push(
-          <rect key={`b${r}-${c}`} x={x} y={y} width={cell} height={cell} fill="none" stroke="var(--ink)" strokeWidth={2} />
-        );
-        if (value !== null) {
-          cells.push(figLabel(`v${r}-${c}`, x + cell / 2, y + cell / 2 + 7, value, 'middle', isBlank ? color : 'var(--ink)'));
-        }
+    const { n, cells: given, solution, big } = fig;
+    if (!Array.isArray(given) || !Array.isArray(solution)) return null;
+
+    const cellSize = 56;
+    const inset = 2;
+    const w = n * cellSize + inset * 2;
+    const h = n * cellSize + inset * 2;
+    const nodes = [];
+    for (let i = 0; i < n * n; i += 1) {
+      const row = Math.floor(i / n);
+      const col = i % n;
+      const x = inset + col * cellSize;
+      const y = inset + row * cellSize;
+      const isBlank = given[i] === null;
+      const value = isBlank ? (shown ? solution[i] : null) : given[i];
+      nodes.push(
+        <rect key={`b${i}`} x={x} y={y} width={cellSize} height={cellSize} fill="none" stroke="var(--ink)" strokeWidth={3} />
+      );
+      if (value !== null) {
+        const cx = inset + (col + 0.5) * cellSize;
+        const cy = inset + (row + 0.5) * cellSize + 7;
+        nodes.push(figLabel(`v${i}`, cx, cy, value, 'middle', isBlank ? color : 'var(--ink)'));
       }
     }
     // Unlike the shape figures, the grid never shrinks on reveal (DESIGN.md
-    // §Figures) — it's what has to be read after the reveal — so this always
-    // uses the "not shown" cap regardless of the `shown` prop.
-    return svgWrap(cells, w, h, 'ms', fig.big, false);
+    // §Figures) — it's what has to be read after the reveal — so noShrink
+    // pins the wrapper to the "not shown" size cap regardless of `shown`.
+    return svgWrap(nodes, w, h, 'ms', big, shown, true);
   }
 
   if (fig.type === 'right-triangle') {
+    // Whichever side the generator marks unknown gets the slot colour; the
+    // other two stay ink. Defaults to 'c' so pythagoras-hypotenuse (which
+    // predates this field) is unaffected.
+    const unknown = fig.unknown ?? 'c';
+    const labelColor = (side) => (side === unknown ? color : 'var(--ink)');
     return svgWrap([
-      <polygon key="p" points="24,132 24,20 168,132" fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
-      <path key="r" d="M24 112 h20 v20" fill="none" stroke="var(--ink)" strokeWidth={3} />,
-      figLabel('a', 34, 80, fig.a, 'start'),
-      figLabel('b', 96, 156, fig.b),
-      figLabel('c', 110, 66, fig.c, 'start', color),
-    ], 190, 168, 'rt', fig.big, shown);
+      <polygon key="p" points="64,132 64,20 208,132" fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+      <path key="r" d="M64 112 h20 v20" fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      figLabel('a', 54, 80, fig.a, 'end', labelColor('a')),
+      figLabel('b', 136, 156, fig.b, 'middle', labelColor('b')),
+      figLabel('c', 150, 66, fig.c, 'start', labelColor('c')),
+    ], 230, 168, 'rt', fig.big, shown);
   }
 
   if (fig.type === 'circle') {

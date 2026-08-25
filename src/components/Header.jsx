@@ -1,5 +1,5 @@
 export default function Header({
-  topicSummary, onOpenTopics,
+  poolSummary, onOpenPool,
   diffLabel, onDiffUp, onDiffDown,
   clock, clockExpired, onClockChange, onClockFocus,
   onAddMinute, onSubMinute, timerRunning, onToggleTimer,
@@ -13,9 +13,9 @@ export default function Header({
           <div className="header-value">Four in a row</div>
         </div>
 
-        <button type="button" className="header-seg header-seg--topics" onClick={onOpenTopics}>
+        <button type="button" className="header-seg header-seg--topics" onClick={onOpenPool}>
           <div className="header-label">Topics in play</div>
-          <div className="header-value">{topicSummary}</div>
+          <div className="header-value">{poolSummary}</div>
         </button>
 
         <div className="header-seg header-seg--diff">

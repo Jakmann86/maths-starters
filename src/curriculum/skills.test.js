@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { skillIds, generateForSkill, skills, nearestBand } from './skills';
+import { skillIds, generateForSkill, skills, nearestBand, topics, skillsInTopic, nextSkillInTopic } from './skills';
 
 describe('skill catalogue', () => {
   it('resolves every declared skill at every declared band', () => {
@@ -34,5 +34,35 @@ describe('skill catalogue', () => {
       expect(q.$$typeof).toBeUndefined();
       if (q.visualization) expect(q.visualization.$$typeof).toBeUndefined();
     });
+  });
+});
+
+describe('topic grouping', () => {
+  it('cycles through a multi-skill topic and wraps back to the first', () => {
+    const ids = skillsInTopic('Equations');
+    expect(ids.length).toBeGreaterThan(1);
+
+    let current = null;
+    ids.forEach((expected) => {
+      current = nextSkillInTopic('Equations', current);
+      expect(current).toBe(expected);
+    });
+    // one more step wraps back to the first
+    expect(nextSkillInTopic('Equations', current)).toBe(ids[0]);
+  });
+
+  it('returns the same skill for a single-skill topic', () => {
+    const single = topics().find((t) => skillsInTopic(t).length === 1);
+    expect(single).toBeTruthy();
+    const [id] = skillsInTopic(single);
+    expect(nextSkillInTopic(single, id)).toBe(id);
+    expect(nextSkillInTopic(single, null)).toBe(id);
+  });
+
+  it('returns the first skill for a null or unknown currentSkillId', () => {
+    const ids = skillsInTopic('Pythagoras');
+    expect(nextSkillInTopic('Pythagoras', null)).toBe(ids[0]);
+    expect(nextSkillInTopic('Pythagoras', undefined)).toBe(ids[0]);
+    expect(nextSkillInTopic('Pythagoras', 'not-a-skill')).toBe(ids[0]);
   });
 });

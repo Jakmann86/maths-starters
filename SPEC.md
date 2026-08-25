@@ -3,6 +3,36 @@
 Supersedes the earlier draft. Reconciled with the final design
 (`reference/starter-board.html`) and `DESIGN.md`.
 
+## Design revision: topic-level selection (v1) — 2026-08-25
+
+The teacher-facing unit of selection is the **topic** (e.g. "Pythagoras"), not
+the granular skill (`pythagoras-hypotenuse`) — there are roughly 30 topics
+against roughly 150 skills. A teacher teaches "Pythagoras this week," not
+"find-the-hypotenuse this week," so the thing they pick from has to match
+that grain.
+
+- Skills stay exactly as granular as they are today. A `topic` field on each
+  catalogue entry (`src/curriculum/skills.js`) groups them; nothing about an
+  individual skill or generator changes.
+- The teacher picks topics from a **list**, not a fixed scheme of work — every
+  class has a different scheme and year group, and a single ordered scheme
+  can't represent that.
+- A board box holds a topic. The regenerate button **cycles** through that
+  topic's skills in catalogue order (changing question = changing skill),
+  with difficulty held fixed.
+- "Last lesson" / "Last week" etc. will be driven by **which topics were last
+  ticked** — starting deliberately simple, with no calendar-window maths in
+  v1. (Contrast with §4's date-window walk, which this replaces for now.)
+- Guiding principle: get it working, then optimised, then pretty. The app
+  does not grow structurally beyond this for v1 — the full scheme-of-work
+  screen, unit boundaries, and date-window resolution described below are
+  explicitly **deferred, possibly indefinitely**.
+
+This contradicts §4 (`resolveSlots`'s recency algorithm), §5 (shuffle/label
+switching) and §7.2 (the scheme screen) below. Those sections are marked
+superseded rather than deleted or rewritten — they remain a possible future
+direction if the app ever grows to support a real scheme of work.
+
 ## 1. What it does
 
 Generates four maths questions for the start of a lesson, on a classroom
@@ -103,6 +133,9 @@ Multi-line questions use `\n` in `questionMath`.
 
 ## 4. Slot resolution
 
+> **SUPERSEDED FOR v1** by [Design revision: topic-level selection (v1)](#design-revision-topic-level-selection-v1--2026-08-25) —
+> retained as possible future direction.
+
 A pure function, unit tested: `resolveSlots(scheme, catalogue, cls, today)`.
 
 Work from the class's ticks, sorted by `tickedAt` descending. Let `latest` be
@@ -145,6 +178,9 @@ pass the nearest it does (stretch → core → foundation). The header stepper
 regenerates all four slots and hides answers, as it does now.
 
 ## 5. Shuffle
+
+> **SUPERSEDED FOR v1** by [Design revision: topic-level selection (v1)](#design-revision-topic-level-selection-v1--2026-08-25) —
+> retained as possible future direction.
 
 A header toggle. When on, all four slots sample independently from every
 ticked `ready` entry, ignoring recency. For revision lessons and cover.
@@ -199,6 +235,9 @@ click action — it is fast mid-lesson — and add a picker on long press or
 right-click for when you want something specific.
 
 ### 7.2 Scheme — `/scheme`
+
+> **SUPERSEDED FOR v1** by [Design revision: topic-level selection (v1)](#design-revision-topic-level-selection-v1--2026-08-25) —
+> retained as possible future direction.
 
 The existing topic panel, grown up. Same sheet, same 20px square tick boxes,
 same All / None / Done header.

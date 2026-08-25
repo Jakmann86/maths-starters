@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import _ from 'lodash';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
 import TopicPanel from './TopicPanel.jsx';
-import { generateForSkill, getSkill, skillIds } from '../curriculum/skills.js';
+import { generateForSkill, getSkill, skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
+import { loadPool, savePool, togglePool, drawBoxTopics, pickSwapTopic } from '../curriculum/topicPool.js';
 import { parseArchivoLine } from '../lib/archivoMath.jsx';
 import './Board.css';
 
-const SLOTS = ['Last lesson', 'Last week', 'Last topic', 'Last year'];
 const SLOT_COLORS = ['var(--slot-1)', 'var(--slot-2)', 'var(--slot-3)', 'var(--slot-4)'];
 const DIFF = ['Foundation', 'Core', 'Stretch'];
 const BANDS = ['foundation', 'core', 'stretch'];
@@ -26,82 +25,104 @@ function warnIfUnparseable(id, field, text) {
   });
 }
 
-function slotData(i, id, band) {
-  const q = generateForSkill(id, band);
-  if (!q) return { slot: SLOTS[i], topic: '—', instr: '', q: '', a: '', w: '' };
+function slotData(skillId, band) {
+  const q = generateForSkill(skillId, band);
+  if (!q) return { topic: '—', instr: '', q: '', a: '', w: '' };
 
-  warnIfUnparseable(id, 'questionMath', q.questionMath);
-  warnIfUnparseable(id, 'answer', q.answer);
-  warnIfUnparseable(id, 'workingOut', q.workingOut);
+  warnIfUnparseable(skillId, 'questionMath', q.questionMath);
+  warnIfUnparseable(skillId, 'answer', q.answer);
+  warnIfUnparseable(skillId, 'workingOut', q.workingOut);
 
   return {
-    slot: SLOTS[i],
-    topic: getSkill(id)?.label ?? id,
+    topic: getSkill(skillId)?.label ?? skillId,
     instr: q.instruction,
-    q: q.questionMath,
+    q: q.questionMath != null ? q.questionMath : (q.questionText ?? ''),
     a: q.answerUnits ? `${q.answer}\\text{ ${q.answerUnits}}` : q.answer,
     w: q.workingOut,
     fig: q.visualization,
   };
 }
 
-// Stand-in for resolveSlots (SPEC.md §4), which will pick a skill per box
-// from the scheme and class position. Until that lands, the four boxes are
-// filled by sampling uniformly at random from the teacher's chosen pool —
-// no repeats across the four boxes unless the pool is too small to avoid it.
-function pickFourIds(pool) {
-  const base = pool.length > 0 ? pool : skillIds;
-  if (base.length >= 4) return _.sampleSize(base, 4);
-  return Array.from({ length: 4 }, () => _.sample(base));
+// A fresh draw: 4 topics at random from the pool (SPEC.md "Design revision:
+// topic-level selection (v1)"), each starting at its topic's first skill.
+// Used on mount and by "New four" — every draw is independent, no memory of
+// the previous one.
+function drawBoxes(pool, band) {
+  return drawBoxTopics(pool, topics()).map((topic) => {
+    const skillId = skillsInTopic(topic)[0];
+    return { topic, skillId, data: slotData(skillId, band) };
+  });
 }
 
-function fourFresh(band, pool) {
-  const ids = pickFourIds(pool);
-  return { ids, slots: ids.map((id, i) => slotData(i, id, band)) };
+// Re-rolls every box's question at the given band without touching topic or
+// skill selection — used by the difficulty stepper (fresh numbers at the
+// new band, same skills).
+function refreshBoxes(boxes, band) {
+  return boxes.map((b) => ({ ...b, data: slotData(b.skillId, band) }));
 }
 
 export default function Board() {
   const [state, setState] = useState({
-    slots: [],
-    slotIds: [],
+    boxes: [],
+    pool: [],
     revealed: false,
     diff: 1,
     seconds: 300,
     running: false,
-    selected: skillIds,
   });
   const [panelOpen, setPanelOpen] = useState(false);
 
-  const regenAll = useCallback(() => setState((s) => {
-    const { ids, slots } = fourFresh(BANDS[s.diff], s.selected);
-    return { ...s, revealed: false, slotIds: ids, slots };
-  }), []);
+  const regenAll = useCallback(() => setState((s) => ({
+    ...s,
+    revealed: false,
+    boxes: drawBoxes(s.pool, BANDS[s.diff]),
+  })), []);
 
   const regenOne = (i) => setState((s) => {
-    const slots = s.slots.slice();
-    slots[i] = slotData(i, s.slotIds[i], BANDS[s.diff]);
-    return { ...s, slots };
+    const boxes = s.boxes.slice();
+    const { topic, skillId: current } = boxes[i];
+    const skillId = nextSkillInTopic(topic, current);
+    boxes[i] = { topic, skillId, data: slotData(skillId, BANDS[s.diff]) };
+    return { ...s, boxes };
+  });
+
+  const swapOne = (i) => setState((s) => {
+    const boxes = s.boxes.slice();
+    const otherTopics = boxes.filter((_b, idx) => idx !== i).map((b) => b.topic);
+    const topic = pickSwapTopic(s.pool, topics(), boxes[i].topic, otherTopics);
+    const skillId = skillsInTopic(topic)[0];
+    boxes[i] = { topic, skillId, data: slotData(skillId, BANDS[s.diff]) };
+    return { ...s, boxes };
   });
 
   const setDiff = (delta) => setState((s) => {
     const diff = Math.min(2, Math.max(0, s.diff + delta));
-    const { ids, slots } = fourFresh(BANDS[diff], s.selected);
-    return { ...s, diff, slotIds: ids, slots, revealed: false };
+    return { ...s, diff, revealed: false, boxes: refreshBoxes(s.boxes, BANDS[diff]) };
   });
 
-  // Toggling a topic only changes the pool; it takes effect on the next
-  // regenerate (New four / regen-one / difficulty change), not immediately.
-  const toggleTopic = (id) => setState((s) => ({
-    ...s,
-    selected: s.selected.includes(id) ? s.selected.filter((x) => x !== id) : [...s.selected, id],
-  }));
-  const selectAllTopics = () => setState((s) => ({ ...s, selected: skillIds }));
-  const selectNoneTopics = () => setState((s) => ({ ...s, selected: [] }));
+  // Toggling only changes the pool; it takes effect on the next fresh draw
+  // ("New four", or a future mount) rather than immediately reshuffling the
+  // board while the teacher is still adjusting the set. The panel stays open
+  // on tap so multiple topics can be toggled in one visit.
+  const toggleTopic = (topicName) => setState((s) => {
+    const pool = togglePool(s.pool, topicName);
+    savePool(pool);
+    return { ...s, pool };
+  });
+  const selectAllTopics = () => setState((s) => {
+    const pool = topics();
+    savePool(pool);
+    return { ...s, pool };
+  });
+  const selectNoneTopics = () => setState((s) => {
+    savePool([]);
+    return { ...s, pool: [] };
+  });
 
   useEffect(() => {
     setState((s) => {
-      const { ids, slots } = fourFresh(BANDS[s.diff], s.selected);
-      return { ...s, slotIds: ids, slots };
+      const pool = loadPool();
+      return { ...s, pool, boxes: drawBoxes(pool, BANDS[s.diff]) };
     });
   }, []);
 
@@ -126,10 +147,11 @@ export default function Board() {
     return () => document.removeEventListener('keydown', handler);
   }, [panelOpen, regenAll]);
 
-  const { slots, revealed, diff, seconds, running, selected } = state;
-  const topicSummary = selected.length === skillIds.length
+  const { boxes, revealed, diff, seconds, running, pool } = state;
+  const total = topics().length;
+  const poolSummary = (pool.length === 0 || pool.length === total)
     ? 'All topics'
-    : `${selected.length} of ${skillIds.length} selected`;
+    : `${pool.length} topic${pool.length === 1 ? '' : 's'}`;
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
   const ss = String(seconds % 60).padStart(2, '0');
 
@@ -155,8 +177,8 @@ export default function Board() {
   return (
     <div className="board">
       <Header
-        topicSummary={topicSummary}
-        onOpenTopics={() => setPanelOpen(true)}
+        poolSummary={poolSummary}
+        onOpenPool={() => setPanelOpen(true)}
         diffLabel={DIFF[diff]}
         onDiffUp={() => setDiff(1)}
         onDiffDown={() => setDiff(-1)}
@@ -175,21 +197,22 @@ export default function Board() {
       />
 
       <main className="board-main">
-        {SLOTS.map((label, i) => (
+        {SLOT_COLORS.map((colorVar, i) => (
           <Slot
-            key={label}
-            label={label}
-            colorVar={SLOT_COLORS[i]}
-            data={slots[i] || { topic: '—', instr: '', q: '', a: '', w: '' }}
+            key={i}
+            label={boxes[i]?.topic ?? '—'}
+            colorVar={colorVar}
+            data={boxes[i]?.data || { topic: '—', instr: '', q: '', a: '', w: '' }}
             revealed={revealed}
             onRegen={() => regenOne(i)}
+            onSwap={() => swapOne(i)}
           />
         ))}
       </main>
 
       <TopicPanel
         open={panelOpen}
-        selected={selected}
+        selected={pool}
         onToggle={toggleTopic}
         onSelectAll={selectAllTopics}
         onSelectNone={selectNoneTopics}
