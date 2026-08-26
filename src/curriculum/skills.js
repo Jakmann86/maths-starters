@@ -215,6 +215,14 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 4: angle problem solving (two-theorem chains) ---
+  'angles-problem-solving': {
+    label: 'Angle problem solving',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateAnglesProblemSolving(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Puzzles: the retrieval pool, and the backstop every fallback chain in
   // SPEC.md 4.2 terminates in. No prerequisites, so these can always fill a slot.
   'magic-square': {

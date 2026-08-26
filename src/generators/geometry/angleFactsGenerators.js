@@ -395,3 +395,116 @@ export const generateIsoscelesBaseAngles = (options = {}) => {
     metadata: { topic: 'isosceles-base-angles', difficulty },
   };
 };
+
+// generateAnglesProblemSolving ----------------------------------------------
+// Haese's "give a reason for each step" habit, extended to a genuine
+// two-theorem chain rather than one fact. Each call randomly picks one of
+// two chain structures and generates fresh random values for it — never a
+// fixed bank of pre-written scenarios. Both reuse the 'triangle' figure
+// from generateTriangleExteriorAngle above, so no new figure work is needed.
+//   isosceles-exterior  apex given -> base angles equal (180-apex)/2 ->
+//                       exterior angle = apex + that base angle
+//                       (mirrors Haese's own Example 4b: exterior = 2 x base angle)
+//   line-triangle-sum   an angle on a line adjacent to the triangle gives
+//                       one interior angle by subtraction -> triangle angle
+//                       sum (with a second given interior) finds the third
+//
+//   Foundation/Core  as above, with nice (Foundation) or arbitrary (Core)
+//                    numeric angles throughout — find the final angle by
+//                    subtraction, same as this file's other Core bands.
+//   Stretch          the first theorem's numeric fact stays as given (that
+//                    single clean fact is what starts the chain), but the
+//                    second theorem's equation is algebraic — one expression
+//                    in x (isosceles-exterior) or two expressions in x
+//                    (line-triangle-sum, via the shared algebraSummingTo
+//                    helper) — so Stretch genuinely differs from Core rather
+//                    than reusing its logic under a different label.
+export const generateAnglesProblemSolving = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const nice = difficulty === 'foundation';
+  const chain = _.sample(['isosceles-exterior', 'line-triangle-sum']);
+
+  if (difficulty === 'stretch') {
+    const x = _.random(4, 20);
+
+    if (chain === 'isosceles-exterior') {
+      const apex = _.random(5, 80) * 2; // even, so (180 - apex) / 2 is a clean integer
+      const base = (180 - apex) / 2;
+      const total = apex + base;
+      const m = _.random(1, 4);
+      const c = total - m * x;
+      const expr = formatLinear(m, c);
+      return {
+        instruction: 'Find the value of x',
+        answer: `x = ${x}`,
+        workingOut: [
+          `y = \\frac{180^\\circ - ${apex}^\\circ}{2} \\text{ (base angles of an isosceles triangle are equal)}`,
+          `y = ${base}^\\circ`,
+          `${expr} = ${apex}^\\circ + ${base}^\\circ \\text{ (exterior angle = sum of interior opposite angles)}`,
+          `${expr} = ${total}^\\circ`,
+          `x = ${x}`,
+        ].join(NL),
+        visualization: { type: 'triangle', labels: ['', '', `${apex}^\\circ`], exteriorLabel: expr, exteriorUnknown: true, big: 1 },
+        metadata: { topic: 'angles-problem-solving', difficulty },
+      };
+    }
+
+    const p = _.random(30, 150);
+    const y = 180 - p;
+    const { ms, cs, exprs } = algebraSummingTo(2, p, x, 10, p - 10);
+    const totalM = ms[0] + ms[1];
+    const totalC = cs[0] + cs[1];
+    return {
+      instruction: 'Find the value of x',
+      answer: `x = ${x}`,
+      workingOut: [
+        `y = 180^\\circ - ${p}^\\circ \\text{ (angles on a line)}`,
+        `y = ${y}^\\circ`,
+        `${exprs[0]} + ${exprs[1]} = 180^\\circ - ${y}^\\circ \\text{ (angle sum of a triangle)}`,
+        `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = ${p}`,
+        `x = ${x}`,
+      ].join(NL),
+      visualization: { type: 'triangle', labels: [exprs[0], '', exprs[1]], exteriorLabel: `${p}^\\circ`, big: 1 },
+      metadata: { topic: 'angles-problem-solving', difficulty },
+    };
+  }
+
+  if (chain === 'isosceles-exterior') {
+    const apex = nice ? _.random(1, 17) * 10 : _.random(5, 80) * 2; // always even, so (180 - apex) / 2 is a clean integer
+    const base = (180 - apex) / 2;
+    const exterior = apex + base;
+    return {
+      instruction: 'Find the exterior angle x',
+      answer: `x = ${exterior}^\\circ`,
+      workingOut: [
+        `y = \\frac{180^\\circ - ${apex}^\\circ}{2} \\text{ (base angles of an isosceles triangle are equal)}`,
+        `y = ${base}^\\circ`,
+        `x = ${apex}^\\circ + ${base}^\\circ \\text{ (exterior angle = sum of interior opposite angles)}`,
+        `x = ${exterior}^\\circ`,
+      ].join(NL),
+      visualization: { type: 'triangle', labels: ['', '', `${apex}^\\circ`], exteriorLabel: 'x', exteriorUnknown: true, big: 1 },
+      metadata: { topic: 'angles-problem-solving', difficulty },
+    };
+  }
+
+  const ib = nice ? _.random(2, 16) * 5 : _.random(10, 80);
+  const p = 180 - ib;
+  let q, thirdInterior;
+  do {
+    q = nice ? _.random(2, 20) * 5 : _.random(10, 100);
+    thirdInterior = 180 - ib - q;
+  } while (thirdInterior < 5 || thirdInterior > 170);
+
+  return {
+    instruction: 'Find the size of angle x',
+    answer: `x = ${thirdInterior}^\\circ`,
+    workingOut: [
+      `y = 180^\\circ - ${p}^\\circ \\text{ (angles on a line)}`,
+      `y = ${ib}^\\circ`,
+      `x = 180^\\circ - ${ib}^\\circ - ${q}^\\circ \\text{ (angle sum of a triangle)}`,
+      `x = ${thirdInterior}^\\circ`,
+    ].join(NL),
+    visualization: { type: 'triangle', labels: [`${q}^\\circ`, '', 'x'], unknownIndex: 2, exteriorLabel: `${p}^\\circ`, big: 1 },
+    metadata: { topic: 'angles-problem-solving', difficulty },
+  };
+};
