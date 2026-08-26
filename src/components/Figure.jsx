@@ -50,11 +50,17 @@ function angleMarker(vertex, p1, p2, label, keyBase, strokeColor = 'var(--ink)')
   const B = [vx + u2[0] * r, vy + u2[1] * r];
   const sweep = u1[0] * u2[1] - u1[1] * u2[0] > 0 ? 1 : 0;
   const bis = unitVec(u1[0] + u2[0], u1[1] + u2[1]);
-  const lx = vx + bis[0] * (r + 16);
-  const ly = vy + bis[1] * (r + 16) + 4;
+  const text = plainAngleLabel(label);
+  // The wedge here is a fixed ~38-52 deg regardless of what the label says,
+  // so a longer string ('76°' vs 'x') needs pushing further out along the
+  // bisector or its sides spill past the triangle's edges before it clears
+  // them — the opening only widens with distance from the vertex.
+  const labelR = r + 16 + Math.max(0, text.length - 1) * 16;
+  const lx = vx + bis[0] * labelR;
+  const ly = vy + bis[1] * labelR + 4;
   return [
     <path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 0 ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke={strokeColor} strokeWidth={3} />,
-    figLabel(`${keyBase}-lbl`, lx, ly, plainAngleLabel(label), 'middle', strokeColor),
+    figLabel(`${keyBase}-lbl`, lx, ly, text, 'middle', strokeColor),
   ];
 }
 
