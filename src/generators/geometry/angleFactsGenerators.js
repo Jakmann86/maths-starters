@@ -83,6 +83,7 @@ export const generateAnglesOnALine = (options = {}) => {
     visualization: {
       type: 'angle-rays',
       rays: [180, a2, 0],
+      gapDegrees: [180 - a2, a2],
       wrap: false,
       labels,
       unknownIndex,
@@ -114,7 +115,7 @@ export const generateAnglesAtAPoint = (options = {}) => {
         `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = 360`,
         `x = ${x}`,
       ].join(NL),
-      visualization: { type: 'angle-rays', rays: rayAngles(vs), wrap: true, labels: exprs, big: 1 },
+      visualization: { type: 'angle-rays', rays: rayAngles(vs), gapDegrees: vs, wrap: true, labels: exprs, big: 1 },
       metadata: { topic: 'angles-at-a-point', difficulty },
     };
   }
@@ -141,7 +142,7 @@ export const generateAnglesAtAPoint = (options = {}) => {
       `x = 360^\\circ - ${sumOthers}^\\circ`,
       `x = ${found}^\\circ`,
     ].join(NL),
-    visualization: { type: 'angle-rays', rays: rayAngles(vs), wrap: true, labels, unknownIndex, big: 1 },
+    visualization: { type: 'angle-rays', rays: rayAngles(vs), gapDegrees: vs, wrap: true, labels, unknownIndex, big: 1 },
     metadata: { topic: 'angles-at-a-point', difficulty },
   };
 };
@@ -168,6 +169,7 @@ export const generateVerticallyOpposite = (options = {}) => {
   const { difficulty = 'core' } = options;
   const theta = _.random(10, 170);
   const rays = [0, theta, 180, 180 + theta];
+  const gapDegrees = [theta, 180 - theta, theta, 180 - theta];
 
   if (difficulty === 'stretch') {
     const x = _.random(4, 20);
@@ -187,7 +189,7 @@ export const generateVerticallyOpposite = (options = {}) => {
         `${m1 - m2}x = ${c2 - c1}`,
         `x = ${x}`,
       ].join(NL),
-      visualization: { type: 'angle-rays', rays, wrap: true, labels, big: 1 },
+      visualization: { type: 'angle-rays', rays, gapDegrees, wrap: true, labels, big: 1 },
       metadata: { topic: 'vertically-opposite', difficulty },
     };
   }
@@ -206,7 +208,7 @@ export const generateVerticallyOpposite = (options = {}) => {
     instruction: 'Find the size of angle x',
     answer: `x = ${found}^\\circ`,
     workingOut: steps.join(NL),
-    visualization: { type: 'angle-rays', rays, wrap: true, labels, unknownIndex: targetIndex, big: 1 },
+    visualization: { type: 'angle-rays', rays, gapDegrees, wrap: true, labels, unknownIndex: targetIndex, big: 1 },
     metadata: { topic: 'vertically-opposite', difficulty },
   };
 };
