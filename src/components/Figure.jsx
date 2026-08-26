@@ -310,5 +310,36 @@ export default function Figure({ fig, color, shown }) {
     ], 168, 168, 'pg', fig.big, shown);
   }
 
+  if (fig.type === 'branching-pattern') {
+    // Each node at generation k grows `ratio` children at generation k+1
+    // (Haese 26C: geometric growth shown as a tree, not literal dots, since
+    // raw counts explode too fast to lay out honestly past 3 generations).
+    // `counts` is the node count per row, already computed by the
+    // generator; children of node i in one row sit directly under it as a
+    // contiguous block (index Math.floor(i / ratio) in the row above), so
+    // the drawn tree reads as one growing shape rather than loose dots.
+    const { ratio, counts = [] } = fig;
+    if (!Array.isArray(counts) || counts.length < 1) return null;
+    const W = 260;
+    const rowY = [30, 95, 160].slice(0, counts.length);
+    const nodeAt = (row, i) => {
+      const n = counts[row];
+      return [(W / (n + 1)) * (i + 1), rowY[row]];
+    };
+    const lines = [];
+    const dots = [];
+    for (let row = 0; row < counts.length; row++) {
+      for (let i = 0; i < counts[row]; i++) {
+        const [x, y] = nodeAt(row, i);
+        if (row > 0) {
+          const [px, py] = nodeAt(row - 1, Math.floor(i / ratio));
+          lines.push(<line key={`ln${row}-${i}`} x1={px} y1={py} x2={x} y2={y} stroke="var(--ink)" strokeWidth={2} />);
+        }
+        dots.push(<circle key={`nd${row}-${i}`} cx={x} cy={y} r={6} fill="var(--ink)" />);
+      }
+    }
+    return svgWrap([...lines, ...dots], W, 180, 'bp', fig.big, shown);
+  }
+
   return null;
 }

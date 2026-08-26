@@ -15,6 +15,7 @@ import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 import * as pythagoras from '../generators/geometry/pythagorasGenerators';
 import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
+import * as sequences from '../generators/algebra/sequencesGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -220,6 +221,32 @@ export const skills = {
     label: 'Angle problem solving',
     topic: 'Angles',
     generate: (opts) => angleFacts.generateAnglesProblemSolving(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 26C: geometric sequences ---
+  'sequences-geometric-nth-term': {
+    label: 'Geometric sequences: find the nth term rule',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequenceFindNthTermGeometric(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-geometric-use-nth-term': {
+    label: 'Geometric sequences: use the nth term rule',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequenceUseNthTermGeometric(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-geometric-is-term': {
+    label: 'Geometric sequences: is it a term?',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequenceIsInSequenceGeometric(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-geometric-pattern': {
+    label: 'Geometric sequences: branching pattern',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequencePatternGeometric(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
