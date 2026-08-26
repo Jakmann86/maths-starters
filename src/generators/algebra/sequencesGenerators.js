@@ -197,3 +197,175 @@ export const generateSequencePatternGeometric = (options = {}) => {
     metadata: { topic: 'sequences-geometric-pattern', difficulty },
   };
 };
+
+// ===========================================================================
+// Arithmetic sequences — Haese Ch26B convention: a_n = dn + c
+// ===========================================================================
+
+const formatArithmeticRule = (d, c) => {
+  const dPart = d === 1 ? 'n' : d === -1 ? '-n' : `${d}n`;
+  if (c === 0) return `a_n = ${dPart}`;
+  const cPart = c > 0 ? `+ ${c}` : `- ${Math.abs(c)}`;
+  return `a_n = ${dPart} ${cPart}`;
+};
+
+const randomFirstTerm = (allowNegative) => {
+  const v = allowNegative ? _.random(-12, 12) : _.random(1, 12);
+  return v === 0 ? 1 : v; // 0 is a valid term but reads like a mistake on a board
+};
+
+// generateSequenceFindNthTermArithmetic --------------------------------------
+// Sequence -> a_n = dn + c. Presentation is randomised each call: either
+// the first 4 terms, or a_1 and d stated directly (the slides' Type 1 vs
+// Type 4) - same skill, different starting information.
+export const generateSequenceFindNthTermArithmetic = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  const d = difficulty === 'stretch'
+    ? _.sample([-9, -8, -7, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9])
+    : _.random(2, 9);
+  const firstTerm = randomFirstTerm(difficulty !== 'foundation');
+  const c = firstTerm - d; // a_1 = d(1) + c  =>  c = a_1 - d
+
+  const terms = [1, 2, 3, 4].map((n) => d * n + c);
+  const givenAsTerms = Math.random() < 0.5;
+
+  return {
+    instruction: givenAsTerms
+      ? 'Find a formula for the nth term of the sequence'
+      : 'Find a formula for the nth term, given the first term and the common difference',
+    questionMath: givenAsTerms
+      ? `${terms.join(', ')}, ...`
+      : `a_1 = ${firstTerm}, d = ${d}`,
+    answer: formatArithmeticRule(d, c),
+    workingOut:
+      (givenAsTerms
+        ? `\\text{common difference } d = ${terms[1]} - ${terms[0]} = ${d}`
+        : `\\text{common difference } d = ${d}`) + NL +
+      `\\text{first term } a_1 = ${firstTerm}` + NL +
+      formatArithmeticRule(d, c),
+    metadata: { topic: 'sequences-arithmetic-nth-term', difficulty },
+  };
+};
+
+// generateSequenceUseNthTermArithmetic ----------------------------------------
+// Given a_n = dn + c, find the first 5 terms and one far term. Target
+// ranges step up cleanly across bands (6-20 / 21-50 / 51-100) so they
+// never overlap at the edges.
+export const generateSequenceUseNthTermArithmetic = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  const d = difficulty === 'stretch'
+    ? _.sample([-9, -7, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9])
+    : _.random(2, 9);
+  const c = difficulty === 'foundation' ? _.random(1, 10) : _.random(-15, 15);
+  const targetN = { foundation: _.random(6, 20), core: _.random(21, 50), stretch: _.random(51, 100) }[difficulty] || _.random(21, 50);
+
+  const firstFive = [1, 2, 3, 4, 5].map((n) => d * n + c);
+  const targetValue = d * targetN + c;
+
+  return {
+    instruction: `Find the first 5 terms, then find the ${targetN}th term`,
+    questionMath: formatArithmeticRule(d, c),
+    answer: `${firstFive.join(', ')}` + NL + `a_{${targetN}} = ${targetValue}`,
+    workingOut:
+      firstFive.map((t, i) => `a_{${i + 1}} = ${t}`).join(NL) + NL +
+      `a_{${targetN}} = ${d}(${targetN}) ${c >= 0 ? '+' : '-'} ${Math.abs(c)} = ${targetValue}`,
+    metadata: { topic: 'sequences-arithmetic-use-nth-term', difficulty },
+  };
+};
+
+// generateSequenceIsInSequenceArithmetic --------------------------------------
+// Is a target value a term of a_n = dn + c? "Yes" and "no" outcomes are
+// both constructed deliberately (never left to chance): "yes" plants the
+// target as a real term; "no" offsets from a real term by an amount less
+// than |d|, so n is guaranteed non-integer — and, unlike the geometric
+// version of this skill, that's the whole story: the step size here is
+// constant, so any offset strictly inside (0, |d|) rules out every term,
+// not just the two immediate neighbours. Stretch nudges the offset off the
+// exact half so it doesn't land on the too-obvious "16.5" case, except
+// when |d| = 2, where 1 is the *only* valid offset and there's nothing to
+// nudge to — forcing it there would overshoot to |d| itself and land back
+// on a genuine term (found by the verification pass: |d|=2 in Stretch was
+// answering "No" to a target that was actually in the sequence).
+export const generateSequenceIsInSequenceArithmetic = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  const d = difficulty === 'stretch'
+    ? _.sample([-9, -7, -5, -4, -3, 2, 3, 4, 5, 6, 7])
+    : _.random(2, 9);
+  const c = _.random(-10, 10);
+
+  const wantYes = difficulty === 'foundation' ? true
+    : difficulty === 'stretch' ? false
+    : Math.random() < 0.5;
+
+  let target, isIn, matchedN;
+
+  if (wantYes) {
+    matchedN = _.random(8, 20);
+    target = d * matchedN + c;
+    isIn = true;
+  } else {
+    const n = _.random(8, 20);
+    const termAtN = d * n + c;
+    let offset = _.random(1, Math.abs(d) - 1) || 1;
+    if (difficulty === 'stretch' && Math.abs(d) > 2 && Math.abs(d) % 2 === 0 && offset === Math.abs(d) / 2) {
+      offset = offset === 1 ? offset + 1 : offset - 1; // avoid the exact-half decimal
+    }
+    target = termAtN + (d > 0 ? offset : -offset);
+    isIn = false;
+    matchedN = Number(((target - c) / d).toFixed(2));
+  }
+
+  return {
+    instruction: `Is ${target} a term of this sequence?`,
+    questionMath: formatArithmeticRule(d, c),
+    answer: isIn ? `\\text{Yes} - a_{${matchedN}} = ${target}` : '\\text{No}',
+    workingOut:
+      `${target} = ${d}n ${c >= 0 ? '+' : '-'} ${Math.abs(c)}` + NL +
+      `n = ${matchedN}` + NL +
+      (isIn ? '\\text{whole number, so yes}' : '\\text{not a whole number, so no}'),
+    metadata: { topic: 'sequences-arithmetic-is-term', difficulty },
+  };
+};
+
+// generateSequencePatternArithmetic -------------------------------------------
+// "Continue the pattern" for arithmetic growth. Figure.jsx's
+// 'growing-pattern' case draws terms 1-3 for whichever motif is picked.
+const PATTERN_MOTIFS = ['matchstick-squares', 'dot-row', 'tile-squares'];
+
+export const generateSequencePatternArithmetic = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  const step = difficulty === 'foundation' ? _.random(2, 5) : _.random(4, 9);
+  const startCount = _.random(3, 8);
+  const motif = _.sample(PATTERN_MOTIFS);
+  const countAt = (n) => startCount + step * (n - 1);
+  const shownCounts = [1, 2, 3].map(countAt);
+  const unit = motif === 'matchstick-squares' ? 'matches' : 'units';
+
+  let instruction, answer;
+  if (difficulty === 'foundation') {
+    const askN = _.random(4, 5);
+    instruction = `How many ${unit} are in term ${askN}?`;
+    answer = `${countAt(askN)}`;
+  } else if (difficulty === 'core') {
+    const askN = _.random(8, 15);
+    instruction = `Which term number uses ${countAt(askN)} ${unit}?`;
+    answer = `\\text{Term } ${askN}`;
+  } else {
+    const askN = _.random(15, 25);
+    const c = startCount - step;
+    instruction = `Write a rule for the nth term, then find term number ${askN}`;
+    answer = `${formatArithmeticRule(step, c)}` + NL + `a_{${askN}} = ${countAt(askN)}`;
+  }
+
+  return {
+    instruction,
+    answer,
+    workingOut: `\\text{terms shown: } ${shownCounts.join(', ')}`,
+    visualization: { type: 'growing-pattern', motif, step, startCount, counts: shownCounts, big: 1 },
+    metadata: { topic: 'sequences-arithmetic-pattern', difficulty },
+  };
+};

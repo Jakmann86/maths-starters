@@ -341,5 +341,39 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap([...lines, ...dots], W, 180, 'bp', fig.big, shown);
   }
 
+  if (fig.type === 'growing-pattern') {
+    // Terms 1-3 of an arithmetic "continue the pattern" question (Haese
+    // 26B), one row each, as small repeated marks whose count is exactly
+    // `counts[row]` — not a to-scale rebuild of a specific real construction
+    // (a genuine matchstick-squares chain needs step = 3 exactly; this
+    // generator's step is any 2-9), so each motif is a schematic stand-in
+    // for "this many units" rather than a literal count of matches. Cell
+    // size shrinks with the row's count so even the widest term (up to the
+    // upper 20s) still fits the same box.
+    const { motif, counts = [] } = fig;
+    if (!Array.isArray(counts) || counts.length < 1) return null;
+    const W = 280;
+    const rowY = [40, 100, 160].slice(0, counts.length);
+    const nodes = [];
+    counts.forEach((n, row) => {
+      const y = rowY[row];
+      const cell = Math.min(22, (W - 16) / n);
+      const startX = (W - n * cell) / 2 + cell / 2;
+      for (let i = 0; i < n; i++) {
+        const x = startX + i * cell;
+        if (motif === 'matchstick-squares') {
+          const s = cell * 0.82;
+          nodes.push(<rect key={`sq${row}-${i}`} x={x - s / 2} y={y - s / 2} width={s} height={s} fill="none" stroke="var(--ink)" strokeWidth={2.5} />);
+        } else if (motif === 'tile-squares') {
+          const s = cell * 0.6;
+          nodes.push(<rect key={`ts${row}-${i}`} x={x - s / 2} y={y - s / 2} width={s} height={s} fill="var(--ink)" />);
+        } else {
+          nodes.push(<circle key={`dt${row}-${i}`} cx={x} cy={y} r={Math.min(6, cell * 0.3)} fill="var(--ink)" />);
+        }
+      }
+    });
+    return svgWrap(nodes, W, 190, 'gp', fig.big, shown);
+  }
+
   return null;
 }
