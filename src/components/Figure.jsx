@@ -65,6 +65,33 @@ function angleMarker(vertex, p1, p2, label, keyBase, color) {
   ];
 }
 
+// Same arc-+-label idea as angleMarker, but for a wedge between two rays
+// that both radiate from a shared point (angle-rays), given as absolute
+// directions in degrees rather than as points on a fixed triangle. The arc
+// always stays ink — matching the existing right-angle marker — and only
+// the label takes labelColor, since here (unlike right-triangle) a given
+// angle and the asked-for one are visually distinguished by which label is
+// coloured, not by both markers matching.
+function pointAngleMarker(cx, cy, deg1, deg2, label, keyBase, labelColor = 'var(--ink)') {
+  const r = 22;
+  const rad1 = (deg1 * Math.PI) / 180;
+  const rad2 = (deg2 * Math.PI) / 180;
+  const u1 = [Math.cos(rad1), Math.sin(rad1)];
+  const u2 = [Math.cos(rad2), Math.sin(rad2)];
+  const A = [cx + u1[0] * r, cy + u1[1] * r];
+  const B = [cx + u2[0] * r, cy + u2[1] * r];
+  const sweep = u1[0] * u2[1] - u1[1] * u2[0] > 0 ? 1 : 0;
+  const bis = unitVec(u1[0] + u2[0], u1[1] + u2[1]);
+  const text = plainAngleLabel(label);
+  const labelR = r + 12 + Math.max(0, text.length - 1) * 6;
+  const lx = cx + bis[0] * labelR;
+  const ly = cy + bis[1] * labelR + 5;
+  return [
+    <path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 0 ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+    figLabel(`${keyBase}-lbl`, lx, ly, text, 'middle', labelColor, 16),
+  ];
+}
+
 export default function Figure({ fig, color, shown }) {
   if (!fig) return null;
 
@@ -118,6 +145,34 @@ export default function Figure({ fig, color, shown }) {
       else if (fig.angleAt === 'bottomRight') nodes.push(...angleMarker(BOTTOM_RIGHT, RIGHT_ANGLE, TOP, fig.angleLabel, 'ang', color));
     }
     return svgWrap(nodes, 230, 168, 'rt', fig.big, shown);
+  }
+
+  if (fig.type === 'angle-rays') {
+    // 2-5 rays fanning out from a shared point (Haese 4A: angles on a line,
+    // at a point, vertically opposite). `wrap` decides whether the gap
+    // between the last ray and the first also gets an arc (closed, e.g.
+    // angles at a point / vertically opposite) or not (open, e.g. a
+    // straight line, whose two ends aren't "adjacent"). A falsy label
+    // skips that gap's arc entirely — used when only some of the angles at
+    // an intersection are actually part of the question.
+    const { rays, labels = [], unknownIndex, wrap } = fig;
+    if (!Array.isArray(rays) || rays.length < 2) return null;
+    const cx = 115, cy = 112, R = 88;
+    const toXY = (deg) => [cx + R * Math.cos((deg * Math.PI) / 180), cy + R * Math.sin((deg * Math.PI) / 180)];
+    const nodes = [<circle key="pt" cx={cx} cy={cy} r={3} fill="var(--ink)" />];
+    rays.forEach((deg, i) => {
+      const [x, y] = toXY(deg);
+      nodes.push(<line key={`ray${i}`} x1={cx} y1={cy} x2={x} y2={y} stroke="var(--ink)" strokeWidth={3} strokeLinecap="round" />);
+    });
+    const gaps = wrap ? rays.length : rays.length - 1;
+    for (let i = 0; i < gaps; i++) {
+      const label = labels[i];
+      if (!label) continue;
+      const next = (i + 1) % rays.length;
+      const labelColor = i === unknownIndex ? color : 'var(--ink)';
+      nodes.push(...pointAngleMarker(cx, cy, rays[i], rays[next], label, `g${i}`, labelColor));
+    }
+    return svgWrap(nodes, 230, 224, 'ar', fig.big, shown);
   }
 
   if (fig.type === 'isosceles-triangle') {

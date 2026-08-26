@@ -14,6 +14,7 @@ import * as magicSquares from '../generators/puzzles/magicSquareGenerators';
 import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 import * as pythagoras from '../generators/geometry/pythagorasGenerators';
 import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
+import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -169,6 +170,26 @@ export const skills = {
     label: 'SOHCAHTOA: find an angle',
     topic: 'Trigonometry',
     generate: (opts) => sohcahtoa.generateSohcahtoaFindAngle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 4A: angle facts at a point ---
+  'angles-on-a-line': {
+    label: 'Angles on a line',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateAnglesOnALine(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'angles-at-a-point': {
+    label: 'Angles at a point',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateAnglesAtAPoint(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'vertically-opposite': {
+    label: 'Vertically opposite angles',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateVerticallyOpposite(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
