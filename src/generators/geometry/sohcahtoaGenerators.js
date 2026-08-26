@@ -92,10 +92,10 @@ export const generateSohcahtoaFindSide = (options = {}) => {
 // generateSohcahtoaFindAngle -----------------------------------------------
 // Two of the three sides are given outright (no angle is chosen up front —
 // the angle falls out of their ratio), so no side is "the unknown": the
-// figure instead sets unknown: '' (Figure.jsx's right-triangle branch
-// defaults an absent `unknown` to 'c' for pythagoras-hypotenuse's sake, so
-// an explicit empty string is needed here to opt out of colouring any side)
-// and unknownAngle: true, which colours the angle marker itself instead.
+// figure sets unknown: '' (Figure.jsx's right-triangle branch defaults an
+// absent `unknown` to 'c' for pythagoras-hypotenuse's sake, so an explicit
+// empty string is needed here to opt out of colouring any side). The angle
+// marker itself is always slot-coloured regardless (see Figure.jsx).
 //   Foundation  opposite & adjacent only (tan), both integers under 15      answer 1 d.p.
 //   Core        any two sides, any ratio, values up to 30                   answer 1 d.p.
 //   Stretch     as Core, with one given side to 1 d.p.
@@ -152,7 +152,6 @@ export const generateSohcahtoaFindAngle = (options = {}) => {
       unknown: '',
       angleAt,
       angleLabel: 'x',
-      unknownAngle: true,
       big: 1,
     },
     metadata: { topic: 'sohcahtoa-find-angle', difficulty },

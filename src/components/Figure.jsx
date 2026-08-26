@@ -20,9 +20,9 @@ function figLine(key, x1, y1, x2, y2, extra) {
   return <line key={key} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--ink)" strokeWidth={3} strokeLinecap="square" {...extra} />;
 }
 
-function figLabel(key, x, y, text, anchor = 'middle', color = 'var(--ink)') {
+function figLabel(key, x, y, text, anchor = 'middle', color = 'var(--ink)', fontSize) {
   return (
-    <text key={key} x={x} y={y} textAnchor={anchor} className="fig-label" fill={color}>
+    <text key={key} x={x} y={y} textAnchor={anchor} className="fig-label" fill={color} style={fontSize ? { fontSize } : undefined}>
       {text}
     </text>
   );
@@ -39,9 +39,9 @@ function unitVec(dx, dy) {
 }
 
 // A small arc + label at `vertex`, spanning the angle between the rays to
-// p1 and p2 — same visual weight as the existing right-angle marker (ink
-// stroke, width 3).
-function angleMarker(vertex, p1, p2, label, keyBase, strokeColor = 'var(--ink)') {
+// p1 and p2 — the arc matches the existing right-angle marker's stroke
+// weight; the label always takes the slot colour, same as an 'x' side does.
+function angleMarker(vertex, p1, p2, label, keyBase, color) {
   const r = 20;
   const [vx, vy] = vertex;
   const u1 = unitVec(p1[0] - vx, p1[1] - vy);
@@ -52,15 +52,16 @@ function angleMarker(vertex, p1, p2, label, keyBase, strokeColor = 'var(--ink)')
   const bis = unitVec(u1[0] + u2[0], u1[1] + u2[1]);
   const text = plainAngleLabel(label);
   // The wedge here is a fixed ~38-52 deg regardless of what the label says,
-  // so a longer string ('76°' vs 'x') needs pushing further out along the
-  // bisector or its sides spill past the triangle's edges before it clears
-  // them — the opening only widens with distance from the vertex.
-  const labelR = r + 16 + Math.max(0, text.length - 1) * 16;
-  const lx = vx + bis[0] * labelR;
-  const ly = vy + bis[1] * labelR + 4;
+  // so a longer string ('76°' vs 'x') still needs pushing out a little
+  // further than 'x' does or its sides spill past the triangle's edges —
+  // but only a little; a small fixed nudge down-left re-centres it on the
+  // arc rather than letting it drift out along the bisector.
+  const labelR = r + 16 + Math.max(0, text.length - 1) * 8;
+  const lx = vx + bis[0] * labelR - 2;
+  const ly = vy + bis[1] * labelR + 3;
   return [
-    <path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 0 ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke={strokeColor} strokeWidth={3} />,
-    figLabel(`${keyBase}-lbl`, lx, ly, text, 'middle', strokeColor),
+    <path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 0 ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke={color} strokeWidth={3} />,
+    figLabel(`${keyBase}-lbl`, lx, ly, text, 'middle', color, 15),
   ];
 }
 
@@ -113,13 +114,8 @@ export default function Figure({ fig, color, shown }) {
       figLabel('c', 150, 66, fig.c, 'start', labelColor('c')),
     ];
     if (fig.angleAt && fig.angleLabel) {
-      // unknownAngle mirrors `unknown` for sides: the angle itself is the
-      // thing being asked for (sohcahtoa-find-angle), so it takes the slot
-      // colour instead of ink. `unknown` colours a side as normal alongside
-      // it (sohcahtoa-find-side) — the two flags are independent.
-      const angleColor = fig.unknownAngle ? color : 'var(--ink)';
-      if (fig.angleAt === 'top') nodes.push(...angleMarker(TOP, RIGHT_ANGLE, BOTTOM_RIGHT, fig.angleLabel, 'ang', angleColor));
-      else if (fig.angleAt === 'bottomRight') nodes.push(...angleMarker(BOTTOM_RIGHT, RIGHT_ANGLE, TOP, fig.angleLabel, 'ang', angleColor));
+      if (fig.angleAt === 'top') nodes.push(...angleMarker(TOP, RIGHT_ANGLE, BOTTOM_RIGHT, fig.angleLabel, 'ang', color));
+      else if (fig.angleAt === 'bottomRight') nodes.push(...angleMarker(BOTTOM_RIGHT, RIGHT_ANGLE, TOP, fig.angleLabel, 'ang', color));
     }
     return svgWrap(nodes, 230, 168, 'rt', fig.big, shown);
   }
