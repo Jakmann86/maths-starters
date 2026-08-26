@@ -375,5 +375,42 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, W, 190, 'gp', fig.big, shown);
   }
 
+  if (fig.type === 'dot-grid-pattern') {
+    // Terms 1-3 of a quadratic "continue the pattern" question (Haese
+    // 26D), one column each: an n×n dot grid (the n² part) plus a row of
+    // `extraDots` underneath (the constant +c part). The extra-dots row
+    // sits at the same fixed height in every column regardless of that
+    // column's grid size, so the one thing that visibly *doesn't* grow
+    // across terms 1-3 reads as clearly constant.
+    const { extraDots = 0, counts = [] } = fig;
+    if (!Array.isArray(counts) || counts.length < 1) return null;
+    const W = 280;
+    const spacing = 15;
+    const dotR = 4;
+    const gridTop = 30;
+    const extraY = gridTop + 3 * spacing + 24; // fixed baseline, sized for the largest (3x3) grid shown
+    const nodes = [];
+    counts.forEach((_count, col) => {
+      const n = col + 1; // term number
+      const cx = (W / (counts.length + 1)) * (col + 1);
+      const gridSpan = (n - 1) * spacing;
+      for (let row = 0; row < n; row++) {
+        for (let gcol = 0; gcol < n; gcol++) {
+          const x = cx - gridSpan / 2 + gcol * spacing;
+          const y = gridTop + row * spacing;
+          nodes.push(<circle key={`g${col}-${row}-${gcol}`} cx={x} cy={y} r={dotR} fill="var(--ink)" />);
+        }
+      }
+      if (extraDots > 0) {
+        const rowSpan = (extraDots - 1) * (spacing * 0.7);
+        for (let i = 0; i < extraDots; i++) {
+          const x = cx - rowSpan / 2 + i * (spacing * 0.7);
+          nodes.push(<circle key={`e${col}-${i}`} cx={x} cy={extraY} r={dotR * 0.75} fill="var(--ink)" />);
+        }
+      }
+    });
+    return svgWrap(nodes, W, 190, 'dg', fig.big, shown);
+  }
+
   return null;
 }

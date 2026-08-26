@@ -369,3 +369,178 @@ export const generateSequencePatternArithmetic = (options = {}) => {
     metadata: { topic: 'sequences-arithmetic-pattern', difficulty },
   };
 };
+
+// ===========================================================================
+// Quadratic sequences — Haese Ch26D convention: a_n = a·n² + c (no linear
+// term — the "compare to n²" method, not the full difference method)
+// ===========================================================================
+
+const formatQuadraticRule = (a, c) => {
+  const aPart = a === 1 ? 'n^2' : `${a}n^2`;
+  if (c === 0) return `a_n = ${aPart}`;
+  const cPart = c > 0 ? `+ ${c}` : `- ${Math.abs(c)}`;
+  return `a_n = ${aPart} ${cPart}`;
+};
+
+const nthTermQuadratic = (a, c, n) => a * n * n + c;
+
+// generateSequenceFindNthTermQuadratic ----------------------------------------
+// Foundation fixes a = 1 and shows the n² reference row so it's a direct
+// comparison; Core/Stretch drop the scaffold and vary a.
+export const generateSequenceFindNthTermQuadratic = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  const a = difficulty === 'foundation' ? 1
+    : difficulty === 'core' ? _.sample([1, 2, 3])
+    : _.sample([2, 3, 4, 5]);
+  const c = difficulty === 'foundation' ? _.random(1, 10)
+    : difficulty === 'core' ? _.random(-10, 10)
+    : _.random(-20, 20);
+
+  const terms = [1, 2, 3, 4, 5].map((n) => nthTermQuadratic(a, c, n));
+  const showReference = difficulty === 'foundation';
+
+  return {
+    instruction: showReference
+      ? 'Compare this sequence to the n² row below, then find a formula for the nth term'
+      : 'Find a formula for the nth term of the sequence',
+    questionMath:
+      (showReference ? `n^2: 1, 4, 9, 16, 25` + NL : '') +
+      `a_n: ${terms.join(', ')}`,
+    answer: formatQuadraticRule(a, c),
+    workingOut:
+      (showReference
+        ? `\\text{each term is } ${a === 1 ? '' : `${a} \\times `}n^2 ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`
+        : `\\text{2nd difference} = ${2 * a}, \\text{ so } a = ${2 * a} \\div 2 = ${a}`) + NL +
+      `\\text{check } n=1: ${a}(1) ${c >= 0 ? '+' : '-'} ${Math.abs(c)} = ${terms[0]}` + NL +
+      formatQuadraticRule(a, c),
+    metadata: { topic: 'sequences-quadratic-nth-term', difficulty },
+  };
+};
+
+// generateSequenceUseNthTermQuadratic ------------------------------------------
+// Given a_n = a·n² + c, find the first 5 terms and one further term.
+// Target ranges step cleanly across bands - 6-9 / 10-15 / 16-20.
+export const generateSequenceUseNthTermQuadratic = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  const a = difficulty === 'foundation' ? 1
+    : difficulty === 'core' ? _.sample([1, 2, 3])
+    : _.sample([2, 3, 4, 5]);
+  const c = difficulty === 'foundation' ? _.random(1, 10)
+    : difficulty === 'core' ? _.random(-10, 10)
+    : _.random(-20, 20);
+  const targetN = { foundation: _.random(6, 9), core: _.random(10, 15), stretch: _.random(16, 20) }[difficulty] || _.random(10, 15);
+
+  const firstFive = [1, 2, 3, 4, 5].map((n) => nthTermQuadratic(a, c, n));
+  const targetValue = nthTermQuadratic(a, c, targetN);
+
+  return {
+    instruction: `Find the first 5 terms, then find the ${targetN}th term`,
+    questionMath: formatQuadraticRule(a, c),
+    answer: `${firstFive.join(', ')}` + NL + `a_{${targetN}} = ${targetValue}`,
+    workingOut:
+      firstFive.map((t, i) => `a_{${i + 1}} = ${t}`).join(NL) + NL +
+      `a_{${targetN}} = ${a}(${targetN})^2 ${c >= 0 ? '+' : '-'} ${Math.abs(c)} = ${targetValue}`,
+    metadata: { topic: 'sequences-quadratic-use-nth-term', difficulty },
+  };
+};
+
+// generateSequenceIsInSequenceQuadratic -----------------------------------------
+// Is a target value a term of a_n = a·n² + c? Same deliberate yes/no
+// construction as the arithmetic version, and the same reasoning for why
+// "no" only needs to dodge its two immediate neighbours: a·n² + c (a > 0)
+// is strictly increasing in n, so unlike the geometric version's
+// sign-alternating sequence, no other term can ever fall inside the gap
+// between two consecutive ones. The gap between quadratic terms also grows
+// with n, so a proportional offset (25-65% of the gap) comfortably avoids
+// landing on either neighbour by accident.
+export const generateSequenceIsInSequenceQuadratic = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  const a = difficulty === 'foundation' ? 1
+    : difficulty === 'core' ? _.sample([1, 2, 3])
+    : _.sample([2, 3, 4, 5]);
+  const c = _.random(-10, 10);
+
+  const wantYes = difficulty === 'foundation' ? true
+    : difficulty === 'stretch' ? false
+    : Math.random() < 0.5;
+
+  let target, isIn, matchedN, workingLines;
+
+  if (wantYes) {
+    matchedN = _.random(4, 10);
+    target = nthTermQuadratic(a, c, matchedN);
+    isIn = true;
+    workingLines = [
+      `n^2 = (${target} ${c >= 0 ? '-' : '+'} ${Math.abs(c)}) \\div ${a} = ${matchedN * matchedN}`,
+      `n = \\sqrt{${matchedN * matchedN}} = ${matchedN}`,
+      '\\text{whole number, so yes}',
+    ];
+  } else {
+    const n = _.random(4, 9);
+    const lower = nthTermQuadratic(a, c, n);
+    const upper = nthTermQuadratic(a, c, n + 1);
+    const gap = upper - lower;
+    const offset = Math.max(1, Math.round(gap * (0.25 + Math.random() * 0.4)));
+    target = lower + offset;
+    isIn = false;
+    const nSquared = (target - c) / a;
+    workingLines = [
+      `n^2 = (${target} ${c >= 0 ? '-' : '+'} ${Math.abs(c)}) \\div ${a} = ${nSquared.toFixed(2)}`,
+      // "≈" is a literal character here, not "\approx" — the Archivo parser
+      // (src/lib/archivoMath.jsx) doesn't know that command either, same
+      // silent-KaTeX-fallback issue as "\ "/"\ldots"/"\quad" elsewhere in
+      // this file.
+      `n = \\sqrt{${nSquared.toFixed(2)}} ≈ ${Math.sqrt(nSquared).toFixed(2)}`,
+      '\\text{not a whole number, so no}',
+    ];
+  }
+
+  return {
+    instruction: `Is ${target} a term of this sequence?`,
+    questionMath: formatQuadraticRule(a, c),
+    answer: isIn ? `\\text{Yes} - a_{${matchedN}} = ${target}` : '\\text{No}',
+    workingOut: workingLines.join(NL),
+    metadata: { topic: 'sequences-quadratic-is-term', difficulty },
+  };
+};
+
+// generateSequencePatternQuadratic -----------------------------------------------
+// "Continue the pattern" for quadratic growth - an n×n dot grid plus c
+// extra dots in a distinct spot. a fixed at 1 for the figure specifically
+// (scaling the grid to 'a copies' isn't worth the visual complexity yet),
+// even though a varies in the three skills above. Figure.jsx's
+// 'dot-grid-pattern' case draws the grid and the extra-dot row.
+export const generateSequencePatternQuadratic = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  const a = 1;
+  const c = difficulty === 'foundation' ? _.random(0, 4) : _.random(0, 8);
+  const countAt = (n) => nthTermQuadratic(a, c, n);
+  const shownCounts = [1, 2, 3].map(countAt);
+
+  let instruction, answer;
+  if (difficulty === 'foundation') {
+    const askN = _.random(4, 5);
+    instruction = `How many dots are in term ${askN}?`;
+    answer = `${countAt(askN)}`;
+  } else if (difficulty === 'core') {
+    const askN = _.random(6, 9);
+    instruction = `Which term number has ${countAt(askN)} dots?`;
+    answer = `\\text{Term } ${askN}`;
+  } else {
+    const askN = _.random(10, 15);
+    instruction = `Write a rule for the nth term, then find term number ${askN}`;
+    answer = `${formatQuadraticRule(a, c)}` + NL + `a_{${askN}} = ${countAt(askN)}`;
+  }
+
+  return {
+    instruction,
+    answer,
+    workingOut: `\\text{terms shown: } ${shownCounts.join(', ')}`,
+    visualization: { type: 'dot-grid-pattern', extraDots: c, counts: shownCounts, big: 1 },
+    metadata: { topic: 'sequences-quadratic-pattern', difficulty },
+  };
+};

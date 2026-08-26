@@ -276,6 +276,32 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 26D: quadratic sequences ---
+  'sequences-quadratic-nth-term': {
+    label: 'Quadratic sequences: find the nth term rule',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequenceFindNthTermQuadratic(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-quadratic-use-nth-term': {
+    label: 'Quadratic sequences: use the nth term rule',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequenceUseNthTermQuadratic(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-quadratic-is-term': {
+    label: 'Quadratic sequences: is it a term?',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequenceIsInSequenceQuadratic(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-quadratic-pattern': {
+    label: 'Quadratic sequences: dot grid pattern',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequencePatternQuadratic(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Puzzles: the retrieval pool, and the backstop every fallback chain in
   // SPEC.md 4.2 terminates in. No prerequisites, so these can always fill a slot.
   'magic-square': {
