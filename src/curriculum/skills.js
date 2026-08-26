@@ -13,6 +13,7 @@ import * as equations from '../generators/algebra/equationGenerators';
 import * as magicSquares from '../generators/puzzles/magicSquareGenerators';
 import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 import * as pythagoras from '../generators/geometry/pythagorasGenerators';
+import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -154,6 +155,20 @@ export const skills = {
     label: 'Pythagoras: isosceles triangles',
     topic: 'Pythagoras',
     generate: (opts) => pythagoras.generatePythagorasIsosceles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 15B: right-angled trigonometry ---
+  'sohcahtoa-find-side': {
+    label: 'SOHCAHTOA: find a side',
+    topic: 'Trigonometry',
+    generate: (opts) => sohcahtoa.generateSohcahtoaFindSide(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sohcahtoa-find-angle': {
+    label: 'SOHCAHTOA: find an angle',
+    topic: 'Trigonometry',
+    generate: (opts) => sohcahtoa.generateSohcahtoaFindAngle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 

@@ -41,7 +41,7 @@ function unitVec(dx, dy) {
 // A small arc + label at `vertex`, spanning the angle between the rays to
 // p1 and p2 — same visual weight as the existing right-angle marker (ink
 // stroke, width 3).
-function angleMarker(vertex, p1, p2, label, keyBase) {
+function angleMarker(vertex, p1, p2, label, keyBase, strokeColor = 'var(--ink)') {
   const r = 20;
   const [vx, vy] = vertex;
   const u1 = unitVec(p1[0] - vx, p1[1] - vy);
@@ -53,8 +53,8 @@ function angleMarker(vertex, p1, p2, label, keyBase) {
   const lx = vx + bis[0] * (r + 16);
   const ly = vy + bis[1] * (r + 16) + 4;
   return [
-    <path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 0 ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke="var(--ink)" strokeWidth={3} />,
-    figLabel(`${keyBase}-lbl`, lx, ly, plainAngleLabel(label), 'middle', 'var(--ink)'),
+    <path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 0 ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke={strokeColor} strokeWidth={3} />,
+    figLabel(`${keyBase}-lbl`, lx, ly, plainAngleLabel(label), 'middle', strokeColor),
   ];
 }
 
@@ -107,8 +107,13 @@ export default function Figure({ fig, color, shown }) {
       figLabel('c', 150, 66, fig.c, 'start', labelColor('c')),
     ];
     if (fig.angleAt && fig.angleLabel) {
-      if (fig.angleAt === 'top') nodes.push(...angleMarker(TOP, RIGHT_ANGLE, BOTTOM_RIGHT, fig.angleLabel, 'ang'));
-      else if (fig.angleAt === 'bottomRight') nodes.push(...angleMarker(BOTTOM_RIGHT, RIGHT_ANGLE, TOP, fig.angleLabel, 'ang'));
+      // unknownAngle mirrors `unknown` for sides: the angle itself is the
+      // thing being asked for (sohcahtoa-find-angle), so it takes the slot
+      // colour instead of ink. `unknown` colours a side as normal alongside
+      // it (sohcahtoa-find-side) — the two flags are independent.
+      const angleColor = fig.unknownAngle ? color : 'var(--ink)';
+      if (fig.angleAt === 'top') nodes.push(...angleMarker(TOP, RIGHT_ANGLE, BOTTOM_RIGHT, fig.angleLabel, 'ang', angleColor));
+      else if (fig.angleAt === 'bottomRight') nodes.push(...angleMarker(BOTTOM_RIGHT, RIGHT_ANGLE, TOP, fig.angleLabel, 'ang', angleColor));
     }
     return svgWrap(nodes, 230, 168, 'rt', fig.big, shown);
   }
