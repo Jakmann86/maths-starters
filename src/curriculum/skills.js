@@ -193,6 +193,20 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 4B: triangle angle sum / exterior angle ---
+  'triangle-angle-sum': {
+    label: 'Triangle angle sum',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateTriangleAngleSum(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'triangle-exterior-angle': {
+    label: 'Triangle exterior angle',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateTriangleExteriorAngle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Puzzles: the retrieval pool, and the backstop every fallback chain in
   // SPEC.md 4.2 terminates in. No prerequisites, so these can always fill a slot.
   'magic-square': {

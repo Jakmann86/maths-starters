@@ -25,6 +25,23 @@ const formatLinear = (m, c) => {
   return c > 0 ? `${coeff} + ${c}` : `${coeff} - ${Math.abs(c)}`;
 };
 
+// Picks n coefficients and constants for expressions that sum to `total`,
+// working backward from randomly chosen actual angle values so every call
+// produces a different equation rather than a hardcoded combo — shared by
+// every Stretch band below (angles on a line, at a point, triangle sum).
+function algebraSummingTo(n, total, x, partMin, partMax) {
+  const ms = Array.from({ length: n }, () => _.random(1, 4));
+  let vs;
+  do {
+    const given = Array.from({ length: n - 1 }, () => _.random(partMin, partMax));
+    const last = total - given.reduce((s, v) => s + v, 0);
+    vs = [...given, last];
+  } while (vs[n - 1] < partMin || vs[n - 1] > partMax);
+  const cs = vs.map((v, i) => v - ms[i] * x);
+  const exprs = vs.map((v, i) => formatLinear(ms[i], cs[i]));
+  return { ms, vs, cs, exprs };
+}
+
 // generateAnglesOnALine -------------------------------------------------
 //   Foundation  one angle given, a multiple of 5 in 20-160     find the other by subtraction
 //   Core        one angle given, any integer 1-179             find the other by subtraction
@@ -35,21 +52,16 @@ export const generateAnglesOnALine = (options = {}) => {
 
   if (difficulty === 'stretch') {
     const x = _.random(4, 20);
-    a1 = _.random(30, 150);
-    a2 = 180 - a1;
-    const m1 = _.random(1, 4);
-    const m2 = _.random(1, 4);
-    const c1 = a1 - m1 * x;
-    const c2 = a2 - m2 * x;
-    const expr1 = formatLinear(m1, c1);
-    const expr2 = formatLinear(m2, c2);
-    labels = [expr1, expr2];
+    const { ms, vs, cs, exprs } = algebraSummingTo(2, 180, x, 30, 150);
+    a2 = vs[1];
+    labels = exprs;
     unknownIndex = undefined;
     answer = `x = ${x}`;
-    const cSum = c1 + c2;
+    const totalM = ms[0] + ms[1];
+    const totalC = cs[0] + cs[1];
     steps = [
-      `${expr1} + ${expr2} = 180 \\text{ (angles on a line)}`,
-      `${m1 + m2}x ${cSum >= 0 ? '+' : '-'} ${Math.abs(cSum)} = 180`,
+      `${exprs[0]} + ${exprs[1]} = 180 \\text{ (angles on a line)}`,
+      `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = 180`,
       `x = ${x}`,
     ];
   } else {
@@ -90,15 +102,7 @@ export const generateAnglesAtAPoint = (options = {}) => {
 
   if (difficulty === 'stretch') {
     const x = _.random(4, 15);
-    const ms = Array.from({ length: n }, () => _.random(1, 4));
-    let vs;
-    do {
-      const given = Array.from({ length: n - 1 }, () => _.random(20, 130));
-      const last = 360 - given.reduce((s, v) => s + v, 0);
-      vs = [...given, last];
-    } while (vs[n - 1] < 15 || vs[n - 1] > 300);
-    const cs = vs.map((v, i) => v - ms[i] * x);
-    const exprs = vs.map((v, i) => formatLinear(ms[i], cs[i]));
+    const { ms, vs, cs, exprs } = algebraSummingTo(n, 360, x, 20, 130);
     const totalM = ms.reduce((s, m) => s + m, 0);
     const totalC = cs.reduce((s, c) => s + c, 0);
 
@@ -204,5 +208,129 @@ export const generateVerticallyOpposite = (options = {}) => {
     workingOut: steps.join(NL),
     visualization: { type: 'angle-rays', rays, wrap: true, labels, unknownIndex: targetIndex, big: 1 },
     metadata: { topic: 'vertically-opposite', difficulty },
+  };
+};
+
+// generateTriangleAngleSum -------------------------------------------------
+// Haese 4B. Shares Figure.jsx's 'triangle' type (a plain scalene outline,
+// distinct from right-triangle/isosceles-triangle) with generateTriangleExteriorAngle below.
+//   Foundation  two nice angles given (multiples of 5)     find the third
+//   Core        any valid pair                              find the third
+//   Stretch     three expressions in x summing to 180       solve for x
+export const generateTriangleAngleSum = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const unknownIndex = _.random(0, 2);
+
+  if (difficulty === 'stretch') {
+    const x = _.random(4, 20);
+    const { ms, cs, exprs } = algebraSummingTo(3, 180, x, 20, 120);
+    const totalM = ms.reduce((s, m) => s + m, 0);
+    const totalC = cs.reduce((s, c) => s + c, 0);
+    return {
+      instruction: 'Find the value of x',
+      answer: `x = ${x}`,
+      workingOut: [
+        `${exprs.join(' + ')} = 180 \\text{ (angle sum of a triangle)}`,
+        `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = 180`,
+        `x = ${x}`,
+      ].join(NL),
+      visualization: { type: 'triangle', labels: exprs, big: 1 },
+      metadata: { topic: 'triangle-angle-sum', difficulty },
+    };
+  }
+
+  let raw;
+  do {
+    const genOne = () => (difficulty === 'foundation' ? _.random(4, 28) * 5 : _.random(5, 170));
+    const given = [genOne(), genOne()];
+    const last = 180 - given[0] - given[1];
+    raw = [...given, last];
+  } while (raw[2] < 5 || raw[2] > 170);
+  const vs = _.shuffle(raw);
+  const others = vs.filter((_v, i) => i !== unknownIndex);
+  const found = vs[unknownIndex];
+  const labels = vs.map((v, i) => (i === unknownIndex ? 'x' : `${v}^\\circ`));
+
+  return {
+    instruction: 'Find the size of angle x',
+    answer: `x = ${found}^\\circ`,
+    workingOut: [
+      `x + ${others[0]}^\\circ + ${others[1]}^\\circ = 180^\\circ \\text{ (angle sum of a triangle)}`,
+      `x = 180^\\circ - ${others[0]}^\\circ - ${others[1]}^\\circ`,
+      `x = ${found}^\\circ`,
+    ].join(NL),
+    visualization: { type: 'triangle', labels, unknownIndex, big: 1 },
+    metadata: { topic: 'triangle-angle-sum', difficulty },
+  };
+};
+
+// generateTriangleExteriorAngle --------------------------------------------
+//   Foundation  both interior-opposite angles given     find the exterior angle
+//   Core        exterior + one interior given            find the other interior
+//   Stretch     algebraic: exterior expr = sum of two interior-opposite exprs, solve for x
+export const generateTriangleExteriorAngle = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  if (difficulty === 'stretch') {
+    const x = _.random(4, 20);
+    const m1 = _.random(1, 4);
+    const m2 = _.random(1, 4);
+    const v1 = _.random(20, 100);
+    const v2 = _.random(20, 100);
+    const c1 = v1 - m1 * x;
+    const c2 = v2 - m2 * x;
+    const expr1 = formatLinear(m1, c1);
+    const expr2 = formatLinear(m2, c2);
+    const m3 = _.random(1, 4);
+    const c3 = v1 + v2 - m3 * x;
+    const expr3 = formatLinear(m3, c3);
+    const cSum = c1 + c2;
+    return {
+      instruction: 'Find the value of x',
+      answer: `x = ${x}`,
+      workingOut: [
+        `${expr3} = ${expr1} + ${expr2} \\text{ (exterior angle = sum of interior opposite angles)}`,
+        `${m3}x ${c3 >= 0 ? '+' : '-'} ${Math.abs(c3)} = ${m1 + m2}x ${cSum >= 0 ? '+' : '-'} ${Math.abs(cSum)}`,
+        `x = ${x}`,
+      ].join(NL),
+      visualization: { type: 'triangle', labels: [expr1, '', expr2], exteriorLabel: expr3, big: 1 },
+      metadata: { topic: 'triangle-exterior-angle', difficulty },
+    };
+  }
+
+  let a, c;
+  do {
+    a = difficulty === 'foundation' ? _.random(4, 16) * 5 : _.random(10, 90);
+    c = difficulty === 'foundation' ? _.random(4, 16) * 5 : _.random(10, 90);
+  } while (a + c >= 175 || a + c <= 10);
+  const ext = a + c;
+
+  if (difficulty === 'foundation') {
+    return {
+      instruction: 'Find the exterior angle x',
+      answer: `x = ${ext}^\\circ`,
+      workingOut: [
+        `x = ${a}^\\circ + ${c}^\\circ \\text{ (exterior angle = sum of interior opposite angles)}`,
+        `x = ${ext}^\\circ`,
+      ].join(NL),
+      visualization: { type: 'triangle', labels: [`${a}^\\circ`, '', `${c}^\\circ`], exteriorLabel: 'x', exteriorUnknown: true, big: 1 },
+      metadata: { topic: 'triangle-exterior-angle', difficulty },
+    };
+  }
+
+  const hideA = _.sample([true, false]);
+  const given = hideA ? c : a;
+  const found = hideA ? a : c;
+  const labels = hideA ? ['x', '', `${c}^\\circ`] : [`${a}^\\circ`, '', 'x'];
+  return {
+    instruction: 'Find the size of angle x',
+    answer: `x = ${found}^\\circ`,
+    workingOut: [
+      `${ext}^\\circ = x + ${given}^\\circ \\text{ (exterior angle = sum of interior opposite angles)}`,
+      `x = ${ext}^\\circ - ${given}^\\circ`,
+      `x = ${found}^\\circ`,
+    ].join(NL),
+    visualization: { type: 'triangle', labels, exteriorLabel: `${ext}^\\circ`, unknownIndex: hideA ? 0 : 2, big: 1 },
+    metadata: { topic: 'triangle-exterior-angle', difficulty },
   };
 };

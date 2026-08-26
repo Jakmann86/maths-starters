@@ -175,6 +175,35 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, 230, 224, 'ar', fig.big, shown);
   }
 
+  if (fig.type === 'triangle') {
+    // A plain scalene outline — distinct from right-triangle (no right-angle
+    // mark) and isosceles-triangle (no symmetry) — for Haese 4B's angle sum
+    // and exterior angle theorems. Reuses angleMarker for each vertex's
+    // interior angle; a falsy label skips that vertex, same convention as
+    // angle-rays. An optional exterior extension beyond B (drawn only when
+    // exteriorLabel is given) covers the exterior-angle-theorem figure.
+    const TA = [35, 158], TB = [200, 158], TC = [130, 25];
+    const { labels = [], unknownIndex, exteriorLabel, exteriorUnknown } = fig;
+    const vertices = [TA, TB, TC];
+    const adjacent = [[TC, TB], [TA, TC], [TA, TB]];
+    const nodes = [
+      <polygon key="p" points={`${TA.join(',')} ${TB.join(',')} ${TC.join(',')}`} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+    ];
+    vertices.forEach((v, i) => {
+      const label = labels[i];
+      if (!label) return;
+      const labelColor = i === unknownIndex ? color : 'var(--ink)';
+      nodes.push(...angleMarker(v, adjacent[i][0], adjacent[i][1], label, `tv${i}`, labelColor));
+    });
+    if (exteriorLabel) {
+      const dir = unitVec(TB[0] - TA[0], TB[1] - TA[1]);
+      const D = [TB[0] + dir[0] * 60, TB[1] + dir[1] * 60];
+      nodes.push(<line key="ext" x1={TB[0]} y1={TB[1]} x2={D[0]} y2={D[1]} stroke="var(--ink)" strokeWidth={3} strokeLinecap="round" />);
+      nodes.push(...angleMarker(TB, D, TC, exteriorLabel, 'text', exteriorUnknown ? color : 'var(--ink)'));
+    }
+    return svgWrap(nodes, 280, 180, 'tr', fig.big, shown);
+  }
+
   if (fig.type === 'isosceles-triangle') {
     if (!fig.base || !fig.side) return null;
     const nodes = [
