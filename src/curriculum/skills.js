@@ -144,6 +144,12 @@ export const skills = {
     generate: (opts) => pythagoras.generatePythagorasHypotenuse(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'pythagoras-missing-side': {
+    label: 'Pythagoras: find a missing side',
+    topic: 'Pythagoras',
+    generate: (opts) => pythagoras.generatePythagorasMissingSide(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'pythagoras-isosceles': {
     label: 'Pythagoras: isosceles triangles',
     topic: 'Pythagoras',
