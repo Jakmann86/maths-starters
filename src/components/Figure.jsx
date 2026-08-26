@@ -56,7 +56,7 @@ function angleMarker(vertex, p1, p2, label, keyBase, color) {
   // further than 'x' does or its sides spill past the triangle's edges —
   // but only a little; a small fixed nudge down-left re-centres it on the
   // arc rather than letting it drift out along the bisector.
-  const labelR = r + 16 + Math.max(0, text.length - 1) * 8;
+  const labelR = r + 12 + Math.max(0, text.length - 1) * 6;
   const lx = vx + bis[0] * labelR - 2;
   const ly = vy + bis[1] * labelR + 3;
   return [
