@@ -204,6 +204,26 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, 280, 180, 'tr', fig.big, shown);
   }
 
+  if (fig.type === 'isosceles-angles') {
+    // Same outline as isosceles-triangle, but labels the three angles
+    // (Haese 4C: base angles are equal) instead of gating a hidden-height
+    // reveal behind `shown` — kept as a sibling type rather than overloading
+    // isosceles-triangle so pythagoras-isosceles's rendering is untouched.
+    const APEX = [100, 24], BASE_L = [30, 140], BASE_R = [170, 140];
+    const { apexLabel, baseLabel, unknownIsApex } = fig;
+    const apexColor = unknownIsApex === true ? color : 'var(--ink)';
+    const baseColor = unknownIsApex === false ? color : 'var(--ink)';
+    const nodes = [
+      <polygon key="p" points="100,24 170,140 30,140" fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+    ];
+    if (apexLabel) nodes.push(...angleMarker(APEX, BASE_L, BASE_R, apexLabel, 'ia', apexColor));
+    if (baseLabel) {
+      nodes.push(...angleMarker(BASE_L, APEX, BASE_R, baseLabel, 'ib1', baseColor));
+      nodes.push(...angleMarker(BASE_R, APEX, BASE_L, baseLabel, 'ib2', baseColor));
+    }
+    return svgWrap(nodes, 200, 170, 'ia', fig.big, shown);
+  }
+
   if (fig.type === 'isosceles-triangle') {
     if (!fig.base || !fig.side) return null;
     const nodes = [

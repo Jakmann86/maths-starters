@@ -334,3 +334,64 @@ export const generateTriangleExteriorAngle = (options = {}) => {
     metadata: { topic: 'triangle-exterior-angle', difficulty },
   };
 };
+
+// generateIsoscelesBaseAngles -----------------------------------------------
+// Haese 4C. A DIFFERENT skill from pythagoras-isosceles (which finds a side
+// length via Pythagoras) — this one uses the isosceles triangle theorem
+// (base angles equal) to find an angle, and shares Figure.jsx's sibling
+// 'isosceles-angles' type rather than pythagoras-isosceles's hidden-height
+// figure.
+//   Foundation  apex given (chosen to divide evenly)     find each base angle: (180 - apex) / 2
+//   Core        one base angle given                     find the apex: 180 - 2*base
+//   Stretch     base angle given as an expression in x    solve for x
+export const generateIsoscelesBaseAngles = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  if (difficulty === 'stretch') {
+    const x = _.random(4, 20);
+    const apex = _.random(5, 80) * 2; // even, so (180 - apex) / 2 is a clean integer
+    const base = (180 - apex) / 2;
+    const m = _.random(1, 4);
+    const c = base - m * x;
+    const baseExpr = formatLinear(m, c);
+    return {
+      instruction: 'Find the value of x',
+      answer: `x = ${x}`,
+      workingOut: [
+        `${baseExpr} = \\frac{180 - ${apex}}{2} \\text{ (base angles of an isosceles triangle are equal)}`,
+        `${baseExpr} = ${base}`,
+        `x = ${x}`,
+      ].join(NL),
+      visualization: { type: 'isosceles-angles', apexLabel: `${apex}^\\circ`, baseLabel: baseExpr, big: 1 },
+      metadata: { topic: 'isosceles-base-angles', difficulty },
+    };
+  }
+
+  if (difficulty === 'core') {
+    const base = _.random(10, 80);
+    const apex = 180 - 2 * base;
+    return {
+      instruction: 'Find the apex angle x',
+      answer: `x = ${apex}^\\circ`,
+      workingOut: [
+        `x = 180^\\circ - 2 \\times ${base}^\\circ \\text{ (base angles of an isosceles triangle are equal)}`,
+        `x = ${apex}^\\circ`,
+      ].join(NL),
+      visualization: { type: 'isosceles-angles', apexLabel: 'x', baseLabel: `${base}^\\circ`, unknownIsApex: true, big: 1 },
+      metadata: { topic: 'isosceles-base-angles', difficulty },
+    };
+  }
+
+  const apex = _.random(5, 80) * 2; // even, so this divides evenly
+  const base = (180 - apex) / 2;
+  return {
+    instruction: 'Find each base angle x',
+    answer: `x = ${base}^\\circ`,
+    workingOut: [
+      `x = \\frac{180^\\circ - ${apex}^\\circ}{2} \\text{ (base angles of an isosceles triangle are equal)}`,
+      `x = ${base}^\\circ`,
+    ].join(NL),
+    visualization: { type: 'isosceles-angles', apexLabel: `${apex}^\\circ`, baseLabel: 'x', unknownIsApex: false, big: 1 },
+    metadata: { topic: 'isosceles-base-angles', difficulty },
+  };
+};

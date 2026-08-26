@@ -207,6 +207,14 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 4C: isosceles base angles ---
+  'isosceles-base-angles': {
+    label: 'Isosceles base angles',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateIsoscelesBaseAngles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Puzzles: the retrieval pool, and the backstop every fallback chain in
   // SPEC.md 4.2 terminates in. No prerequisites, so these can always fill a slot.
   'magic-square': {
