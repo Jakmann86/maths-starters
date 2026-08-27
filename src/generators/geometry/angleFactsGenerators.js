@@ -167,7 +167,11 @@ function rayAngles(gapSizes) {
 //               expressions in x, set equal, solve for x
 export const generateVerticallyOpposite = (options = {}) => {
   const { difficulty = 'core' } = options;
-  const theta = _.random(10, 170);
+  // Kept away from the extremes (theta and its supplement 180-theta both
+  // stay >= 30) — near 0 or 180 the two crossing lines sit almost on top
+  // of each other and the "X" reads as two overlapping lines rather than
+  // two clear pairs of vertically opposite angles.
+  const theta = _.random(30, 150);
   const rays = [0, theta, 180, 180 + theta];
   const gapDegrees = [theta, 180 - theta, theta, 180 - theta];
 
@@ -252,6 +256,10 @@ export const generateTriangleAngleSum = (options = {}) => {
   const others = vs.filter((_v, i) => i !== unknownIndex);
   const found = vs[unknownIndex];
   const labels = vs.map((v, i) => (i === unknownIndex ? 'x' : `${v}^\\circ`));
+  // Numeric bands know the real angle sizes, so the drawn triangle can
+  // actually have an obtuse corner when one of vs genuinely is obtuse,
+  // rather than always looking like the same acute/isosceles-ish shape.
+  const obtuseIdx = vs.findIndex((v) => v > 90);
 
   return {
     instruction: 'Find the size of angle x',
@@ -261,7 +269,7 @@ export const generateTriangleAngleSum = (options = {}) => {
       `x = 180^\\circ - ${others[0]}^\\circ - ${others[1]}^\\circ`,
       `x = ${found}^\\circ`,
     ].join(NL),
-    visualization: { type: 'triangle', labels, unknownIndex, big: 1 },
+    visualization: { type: 'triangle', labels, unknownIndex, obtuseIndex: obtuseIdx >= 0 ? obtuseIdx : undefined, big: 1 },
     metadata: { topic: 'triangle-angle-sum', difficulty },
   };
 };
@@ -446,7 +454,7 @@ export const generateAnglesProblemSolving = (options = {}) => {
           `${expr} = ${total}^\\circ`,
           `x = ${x}`,
         ].join(NL),
-        visualization: { type: 'triangle', labels: ['', '', `${apex}^\\circ`], exteriorLabel: expr, exteriorUnknown: true, big: 1 },
+        visualization: { type: 'triangle', labels: ['', '', `${apex}^\\circ`], exteriorLabel: expr, exteriorUnknown: true, isosceles: true, big: 1 },
         metadata: { topic: 'angles-problem-solving', difficulty },
       };
     }
@@ -484,7 +492,7 @@ export const generateAnglesProblemSolving = (options = {}) => {
         `x = ${apex}^\\circ + ${base}^\\circ \\text{ (exterior angle = sum of interior opposite angles)}`,
         `x = ${exterior}^\\circ`,
       ].join(NL),
-      visualization: { type: 'triangle', labels: ['', '', `${apex}^\\circ`], exteriorLabel: 'x', exteriorUnknown: true, big: 1 },
+      visualization: { type: 'triangle', labels: ['', '', `${apex}^\\circ`], exteriorLabel: 'x', exteriorUnknown: true, isosceles: true, big: 1 },
       metadata: { topic: 'angles-problem-solving', difficulty },
     };
   }
@@ -508,5 +516,194 @@ export const generateAnglesProblemSolving = (options = {}) => {
     ].join(NL),
     visualization: { type: 'triangle', labels: [`${q}^\\circ`, '', 'x'], unknownIndex: 2, exteriorLabel: `${p}^\\circ`, big: 1 },
     metadata: { topic: 'angles-problem-solving', difficulty },
+  };
+};
+
+// generateCorrespondingAngles / generateAlternateAngles / generateCoInteriorAngles ------------
+// Haese: angle facts from two parallel lines cut by a transversal. All three
+// share Figure.jsx's 'parallel-transversal' type (fixed geometry, eight
+// possible labelled positions — see POSITION_PAIRS) and this one builder,
+// since they differ only in which pair of positions gets used and whether
+// that pair is equal or supplementary.
+//   Foundation  one angle given, a multiple of 5     find the other by the relationship
+//   Core        one angle given, any integer          find the other by the relationship
+//   Stretch     the given is numeric, the unknown is an expression in x     solve for x
+const RELATIONSHIP_INFO = {
+  corresponding: { label: 'corresponding angles', equal: true, topic: 'corresponding-angles' },
+  alternate: { label: 'alternate angles', equal: true, topic: 'alternate-angles' },
+  coInterior: { label: 'co-interior angles', equal: false, topic: 'co-interior-angles' },
+};
+const POSITION_PAIRS = {
+  corresponding: [['TL1', 'TL2'], ['TR1', 'TR2'], ['BL1', 'BL2'], ['BR1', 'BR2']],
+  alternate: [['BR1', 'TL2'], ['BL1', 'TR2']],
+  coInterior: [['BR1', 'TR2'], ['BL1', 'TL2']],
+};
+
+const buildParallelAngle = (relationship, options = {}) => {
+  const { difficulty = 'core' } = options;
+  const { label: factLabel, equal, topic } = RELATIONSHIP_INFO[relationship];
+  const [posA, posB] = _.sample(POSITION_PAIRS[relationship]);
+  const [givenPos, unknownPos] = _.sample([true, false]) ? [posA, posB] : [posB, posA];
+
+  const givenValue = difficulty === 'foundation' ? _.random(6, 30) * 5 : _.random(10, 170);
+  const trueUnknownValue = equal ? givenValue : 180 - givenValue;
+
+  let unknownLabel, answer, workingOut;
+  if (difficulty === 'stretch') {
+    const x = _.random(4, 15);
+    const coeff = _.random(2, 6);
+    const constant = trueUnknownValue - coeff * x;
+    unknownLabel = `${coeff}x${constant >= 0 ? ` + ${constant}` : ` - ${Math.abs(constant)}`}`;
+    answer = `x = ${x}`;
+    workingOut =
+      `\\text{${factLabel} are ${equal ? 'equal' : 'supplementary'}, so:}` + NL +
+      `${coeff}x ${constant >= 0 ? '+' : '-'} ${Math.abs(constant)} = ${trueUnknownValue}` + NL +
+      `x = ${x}`;
+  } else {
+    unknownLabel = 'x';
+    answer = `${trueUnknownValue}^\\circ`;
+    workingOut = equal
+      ? `\\text{${factLabel} are equal}` + NL + `${trueUnknownValue}^\\circ`
+      : `\\text{${factLabel} are supplementary}` + NL + `180 - ${givenValue} = ${trueUnknownValue}^\\circ`;
+  }
+
+  return {
+    instruction: `Find ${difficulty === 'stretch' ? 'x' : 'the marked angle'} — the lines are parallel`,
+    // No separate questionMath line — the given angle is already labelled
+    // directly on the diagram, restating it in text above the figure too
+    // is redundant.
+    questionMath: null,
+    answer,
+    workingOut,
+    visualization: {
+      type: 'parallel-transversal',
+      given: { position: givenPos, label: `${givenValue}^\\circ` },
+      unknown: { position: unknownPos, label: unknownLabel },
+      big: 1,
+    },
+    metadata: { topic, difficulty, tags: ['angles', relationship] },
+  };
+};
+
+export const generateCorrespondingAngles = (options = {}) => buildParallelAngle('corresponding', options);
+export const generateAlternateAngles = (options = {}) => buildParallelAngle('alternate', options);
+export const generateCoInteriorAngles = (options = {}) => buildParallelAngle('coInterior', options);
+
+// generatePolygonInteriorAngles / generatePolygonExteriorAngles ----------------------------------
+// Haese: regular-polygon angle facts. Both share Figure.jsx's 'polygon' type
+// (n-sided outline, either an interior corner mark or an exterior
+// extension + arc depending on `exterior`).
+//   Foundation  small n (<= 8, interior) / <= 10 (exterior)     read off the fact
+//   Core        any n from the nice-n pool                       read off the fact
+//   Stretch     interior: given the angle, find n. exterior: given all-but-one
+//               exterior angle (sum to 360, any polygon), find the missing one
+const NICE_POLYGON_N = [4, 5, 6, 8, 9, 10, 12, 15, 18, 20];
+const interiorAngleOf = (n) => (180 * (n - 2)) / n;
+// Per-vertex radius multipliers for the 'polygon-irregular' figure — kept
+// close to 1 (0.72-1.00) so the shape stays convex and legible while still
+// reading as genuinely irregular rather than a regular n-gon with
+// mismatched angle labels.
+const randomRadiusFactors = (n) => Array.from({ length: n }, () => _.random(72, 100) / 100);
+
+export const generatePolygonInteriorAngles = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  if (difficulty === 'stretch') {
+    // Half the time: the regular-polygon reverse lookup (given the interior
+    // angle, find n). The other half: an irregular polygon with all but one
+    // interior angle given, find the missing one via 180(n-2) — genuinely
+    // different reasoning (the general angle-sum fact, not the regular-n
+    // formula), so Stretch isn't just the same trick with bigger numbers.
+    if (_.sample([true, false])) {
+      const n = _.sample(NICE_POLYGON_N.filter((v) => v >= 6));
+      const angle = interiorAngleOf(n);
+      return {
+        instruction: 'Each interior angle of a regular polygon is given. How many sides does it have?',
+        questionMath: `${angle}^\\circ`,
+        answer: `n = ${n}`,
+        workingOut: `\\frac{180(n-2)}{n} = ${angle}` + NL + `n = ${n}`,
+        visualization: { type: 'polygon', n, angleLabel: `${angle}^\\circ`, big: 1 },
+        metadata: { topic: 'polygon-interior-angles', difficulty, tags: ['angles', 'polygon', 'interior'] },
+      };
+    }
+
+    // Rejection-sample so the missing angle always lands somewhere sensible
+    // (30-170) rather than risking a near-zero or implausibly large corner.
+    let n, knownAngles, missing;
+    do {
+      n = _.random(4, 7);
+      knownAngles = Array.from({ length: n - 1 }, () => _.random(60, 150));
+      missing = 180 * (n - 2) - knownAngles.reduce((a, b) => a + b, 0);
+    } while (missing < 30 || missing > 170);
+
+    const unknownIndex = _.random(0, n - 1);
+    const angles = [];
+    let k = 0;
+    for (let i = 0; i < n; i++) angles.push(i === unknownIndex ? 'x' : `${knownAngles[k++]}^\\circ`);
+
+    return {
+      instruction: `This is an irregular ${n}-sided polygon. Find the missing angle x.`,
+      questionMath: `${knownAngles.map((a) => `${a}^\\circ`).join(',\\ ')},\\ x`,
+      answer: `x = ${missing}^\\circ`,
+      workingOut:
+        `\\text{sum of interior angles} = 180(${n} - 2) = ${180 * (n - 2)}^\\circ` + NL +
+        `x = ${180 * (n - 2)} - (${knownAngles.join(' + ')}) = ${missing}^\\circ`,
+      visualization: { type: 'polygon-irregular', n, angles, unknownIndex, radiusFactors: randomRadiusFactors(n) },
+      metadata: { topic: 'polygon-interior-angles', difficulty, tags: ['angles', 'polygon', 'interior', 'irregular'] },
+    };
+  }
+
+  const pool = difficulty === 'foundation' ? NICE_POLYGON_N.filter((v) => v <= 8) : NICE_POLYGON_N;
+  const n = _.sample(pool);
+  const angle = interiorAngleOf(n);
+  return {
+    instruction: `Find the interior angle of a regular ${n}-sided polygon`,
+    questionMath: null,
+    answer: `${angle}^\\circ`,
+    workingOut: `\\frac{180(${n}-2)}{${n}} = \\frac{${180 * (n - 2)}}{${n}} = ${angle}^\\circ`,
+    visualization: { type: 'polygon', n, angleLabel: 'x', big: 1 },
+    metadata: { topic: 'polygon-interior-angles', difficulty, tags: ['angles', 'polygon', 'interior'] },
+  };
+};
+
+const NICE_EXTERIOR_N = [4, 5, 6, 8, 9, 10, 12, 15, 18, 20, 24, 36];
+const exteriorAngleOf = (n) => 360 / n;
+
+export const generatePolygonExteriorAngles = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  if (difficulty === 'stretch') {
+    // Exterior angles of ANY polygon sum to 360 - doesn't need regularity.
+    // Rejection-sample so the missing angle always lands somewhere
+    // sensible (15-150) rather than risking a negative or tiny result.
+    let n, knownAngles, missing;
+    do {
+      n = _.random(5, 7);
+      knownAngles = Array.from({ length: n - 1 }, () => _.random(25, 75));
+      missing = 360 - knownAngles.reduce((a, b) => a + b, 0);
+    } while (missing < 15 || missing > 150);
+
+    return {
+      instruction: `The exterior angles of a ${n}-sided polygon are shown. Find the missing one.`,
+      questionMath: `${knownAngles.map((a) => `${a}^\\circ`).join(',\\ ')},\\ x`,
+      answer: `x = ${missing}^\\circ`,
+      workingOut:
+        `\\text{exterior angles of any polygon sum to } 360^\\circ` + NL +
+        `x = 360 - (${knownAngles.join(' + ')}) = ${missing}^\\circ`,
+      visualization: { type: 'polygon', n, exterior: true, angleLabel: 'x', big: 1 },
+      metadata: { topic: 'polygon-exterior-angles', difficulty, tags: ['angles', 'polygon', 'exterior'] },
+    };
+  }
+
+  const pool = difficulty === 'foundation' ? NICE_EXTERIOR_N.filter((v) => v <= 10) : NICE_EXTERIOR_N;
+  const n = _.sample(pool);
+  const angle = exteriorAngleOf(n);
+  return {
+    instruction: `Find the exterior angle of a regular ${n}-sided polygon`,
+    questionMath: null,
+    answer: `${angle}^\\circ`,
+    workingOut: `360 \\div ${n} = ${angle}^\\circ`,
+    visualization: { type: 'polygon', n, exterior: true, angleLabel: 'x', big: 1 },
+    metadata: { topic: 'polygon-exterior-angles', difficulty, tags: ['angles', 'polygon', 'exterior'] },
   };
 };

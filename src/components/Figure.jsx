@@ -41,8 +41,7 @@ function unitVec(dx, dy) {
 // A small arc + label at `vertex`, spanning the angle between the rays to
 // p1 and p2 — the arc matches the existing right-angle marker's stroke
 // weight; the label always takes the slot colour, same as an 'x' side does.
-function angleMarker(vertex, p1, p2, label, keyBase, color) {
-  const r = 20;
+function angleMarker(vertex, p1, p2, label, keyBase, color, opts = {}, r = 20) {
   const [vx, vy] = vertex;
   const u1 = unitVec(p1[0] - vx, p1[1] - vy);
   const u2 = unitVec(p2[0] - vx, p2[1] - vy);
@@ -54,21 +53,42 @@ function angleMarker(vertex, p1, p2, label, keyBase, color) {
   // The wedge here is a fixed ~38-52 deg regardless of what the label says,
   // so a longer string ('76°', or an algebraic '3x - 25' at Stretch) still
   // needs pushing out a little further than 'x' does or its sides spill
-  // past the triangle's edges. Pushing straight out along the bisector does
-  // that, but for the two base vertices of a triangle their bisectors both
-  // lean inward toward the same central column — a long label on each
-  // converges on the other and they collide over the base. Damping the
-  // horizontal share of the push (keeping the full vertical share, since
-  // there's headroom up toward the apex) sends long labels up rather than
-  // sideways, so the two base labels spread apart instead of crashing.
-  const labelDir = unitVec(bis[0] * 0.35, bis[1]);
-  const labelR = r + 12 + Math.max(0, text.length - 1) * 4;
+  // past the triangle's edges — that widening is automatic, based purely on
+  // text length, regardless of any directional nudge below.
+  //
+  // `horizScale`/`vShift` (short labels) and `longHorizScale`/`longVShift`
+  // (long ones) are an explicit per-call push, independent of each other —
+  // a figure can want its short numeric labels nudged one way and its long
+  // algebraic ones nudged differently (e.g. a triangle's base vertices pull
+  // in a little for an ordinary numeric label, but pull in much more *and*
+  // drop further down for a long algebraic one, since two long labels on
+  // adjacent base vertices would otherwise collide over the base). Default
+  // is a plain bisector push either way — no change from the original
+  // behaviour for a caller that doesn't set them.
+  const long = text.length > 4;
+  const { horizScale = 1, vShift = 0, longHorizScale = 0.35, longVShift = 0 } = opts;
+  const hs = long ? longHorizScale : horizScale;
+  const vs = long ? longVShift : vShift;
+  const labelDir = hs === 1 ? bis : unitVec(bis[0] * hs, bis[1]);
+  const labelR = r + 12 + Math.max(0, text.length - 1) * (long ? 4 : 6);
   const lx = vx + labelDir[0] * labelR - 2;
-  const ly = vy + labelDir[1] * labelR + 3;
+  const ly = vy + labelDir[1] * labelR + 3 + vs;
   return [
     <path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 0 ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke={color} strokeWidth={3} />,
     figLabel(`${keyBase}-lbl`, lx, ly, text, 'middle', color, 15),
   ];
+}
+
+// A short tick mark crossing the midpoint of p1-p2, perpendicular to that
+// side — the standard "these two sides are equal" convention, matching
+// isosceles-triangle's and isosceles-angles' existing tick marks.
+function tickMark(p1, p2, keySuffix) {
+  const mx = (p1[0] + p2[0]) / 2, my = (p1[1] + p2[1]) / 2;
+  const dx = p2[0] - p1[0], dy = p2[1] - p1[1];
+  const len = Math.hypot(dx, dy) || 1;
+  const px = -dy / len, py = dx / len;
+  const half = 6;
+  return <line key={`tick-${keySuffix}`} x1={mx - px * half} y1={my - py * half} x2={mx + px * half} y2={my + py * half} stroke="var(--ink)" strokeWidth={3} />;
 }
 
 // Same arc-+-label idea as angleMarker, but for a wedge between two rays
@@ -78,49 +98,34 @@ function angleMarker(vertex, p1, p2, label, keyBase, color) {
 // `gapDeg` is the wedge's true size in degrees, always supplied by the
 // generator — it can't be recovered reliably from deg1/deg2 alone once a
 // wedge wraps past 180°, since the two generators that build reflex-capable
-// ray sets sweep in different rotational directions. Up to 100° this draws
-// one small arc, same as before. Beyond that, it draws one right-angle
-// corner mark (ink, same convention as the existing right-triangle marker)
-// covering the first 90°, then a single arc for whatever's left — capped at
-// one square regardless of how large the wedge gets, since "angles at a
-// point" can have three or four of these markers crowded round the same
-// centre and stacking more than one square per wedge made that unreadable.
-// The remainder arc uses the real SVG large-arc-flag (derived from its own
-// size, not guessed), so it sweeps correctly even reflex; the label sits at
-// its true angular midpoint (found by interpolating degrees directly, which
-// stays correct past 180° — unlike averaging the two end unit vectors) —
-// one number, on one arc, never two pieces added together.
+// ray sets sweep in different rotational directions. The arc always spans
+// the wedge's full true size (a reflex angle already reads as visually much
+// bigger than an acute one once it sweeps that much of the circle — no
+// right-angle corner mark needed, and a real one can't be drawn here
+// anyway: unlike right-triangle's, this wedge's only two real sides are its
+// two rays, so any split into a "first 90° + remainder" invents a corner
+// edge that has no ray under it and reads as a floating, disconnected
+// square). The real bug this fixes is the SVG large-arc-flag: it must come
+// from gapDeg itself, not be assumed 0, or any wedge over 180° draws the
+// wrong, complementary-sized notch. The label sits at the wedge's true
+// angular midpoint (interpolating degrees directly, which stays correct
+// past 180° — unlike averaging the two end unit vectors).
 function pointAngleMarker(cx, cy, deg1, deg2, gapDeg, label, keyBase, labelColor = 'var(--ink)') {
   const r = 26;
   const raw = ((deg2 - deg1) % 360 + 360) % 360;
   const dir = Math.abs(raw - gapDeg) < Math.abs(360 - raw - gapDeg) ? 1 : -1;
   const toXY = (deg, rad) => [cx + Math.cos((deg * Math.PI) / 180) * rad, cy + Math.sin((deg * Math.PI) / 180) * rad];
-  const nodes = [];
-
-  const hasSquare = gapDeg > 100;
-  let armStart = deg1;
-  if (hasSquare) {
-    const s = 16;
-    const armEnd = deg1 + dir * 90;
-    const P = toXY(deg1, s);
-    const Q = toXY(armEnd, s);
-    const corner = [P[0] + (Q[0] - cx), P[1] + (Q[1] - cy)];
-    nodes.push(<path key={`${keyBase}-sq`} d={`M ${P[0]} ${P[1]} L ${corner[0]} ${corner[1]} L ${Q[0]} ${Q[1]}`} fill="none" stroke="var(--ink)" strokeWidth={3} />);
-    armStart = armEnd;
-  }
-
-  const remainder = gapDeg - (hasSquare ? 90 : 0);
-  const armEnd = armStart + dir * remainder;
-  if (remainder > 1) {
-    const A = toXY(armStart, r);
-    const B = toXY(armEnd, r);
-    const sweep = dir > 0 ? 1 : 0;
-    const largeArc = remainder > 180 ? 1 : 0;
-    nodes.push(<path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 ${largeArc} ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke="var(--ink)" strokeWidth={3} />);
-  }
+  const armEnd = deg1 + dir * gapDeg;
+  const A = toXY(deg1, r);
+  const B = toXY(armEnd, r);
+  const sweep = dir > 0 ? 1 : 0;
+  const largeArc = gapDeg > 180 ? 1 : 0;
+  const nodes = [
+    <path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 ${largeArc} ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+  ];
 
   const text = plainAngleLabel(label);
-  const midDeg = armStart + dir * (remainder / 2);
+  const midDeg = deg1 + dir * (gapDeg / 2);
   const labelR = r + 12 + Math.max(0, text.length - 1) * 6;
   const [lx, lyBase] = toXY(midDeg, labelR);
   nodes.push(figLabel(`${keyBase}-lbl`, lx, lyBase + 5, text, 'middle', labelColor, 16));
@@ -192,7 +197,14 @@ export default function Figure({ fig, color, shown }) {
     // an intersection are actually part of the question.
     const { rays, gapDegrees = [], labels = [], unknownIndex, wrap } = fig;
     if (!Array.isArray(rays) || rays.length < 2) return null;
-    const cx = 100, cy = 100, R = 90;
+    // Same ray geometry, tighter box (182 vs 200) — ~10% bigger on screen
+    // for the same reason the previous 230->200 tightening was: the SVG's
+    // on-screen size is set by CSS (svgWrap's width/maxHeight), not by the
+    // viewBox, so shrinking the box just lets the same geometry fill more
+    // of that fixed on-screen area. .fig-svg has overflow: visible, so the
+    // ~1px a ray's rounded cap can poke past the box at the four cardinal
+    // directions isn't clipped.
+    const cx = 91, cy = 91, R = 90;
     const toXY = (deg) => [cx + R * Math.cos((deg * Math.PI) / 180), cy + R * Math.sin((deg * Math.PI) / 180)];
     const nodes = [<circle key="pt" cx={cx} cy={cy} r={3} fill="var(--ink)" />];
     rays.forEach((deg, i) => {
@@ -207,7 +219,7 @@ export default function Figure({ fig, color, shown }) {
       const labelColor = i === unknownIndex ? color : 'var(--ink)';
       nodes.push(...pointAngleMarker(cx, cy, rays[i], rays[next], gapDegrees[i], label, `g${i}`, labelColor));
     }
-    return svgWrap(nodes, 200, 200, 'ar', fig.big, shown);
+    return svgWrap(nodes, 182, 182, 'ar', fig.big, shown);
   }
 
   if (fig.type === 'triangle') {
@@ -217,18 +229,44 @@ export default function Figure({ fig, color, shown }) {
     // interior angle; a falsy label skips that vertex, same convention as
     // angle-rays. An optional exterior extension beyond B (drawn only when
     // exteriorLabel is given) covers the exterior-angle-theorem figure.
-    const TA = [20, 158], TB = [215, 158], TC = [130, 25];
-    const { labels = [], unknownIndex, exteriorLabel, exteriorUnknown } = fig;
-    const vertices = [TA, TB, TC];
+    // Default shape reads as acute/isosceles-ish regardless of the actual
+    // angle values. `obtuseIndex` (numeric bands only — see the generator)
+    // swaps in a second shape with one genuinely obtuse corner instead, so
+    // an obtuse answer doesn't always get drawn as if it were acute; the
+    // labelled vertex named by obtuseIndex lands on that obtuse corner, the
+    // other two on the shape's two acute corners in index order.
+    const ACUTE_TRI = [[20, 158], [215, 158], [130, 25]];
+    const OBTUSE_CORNER = [250, 150], OBTUSE_ACUTE_A = [20, 150], OBTUSE_ACUTE_B = [280, 40];
+    const { labels = [], unknownIndex, exteriorLabel, exteriorUnknown, obtuseIndex } = fig;
+    let vertices = ACUTE_TRI;
+    if (obtuseIndex === 0 || obtuseIndex === 1 || obtuseIndex === 2) {
+      const acuteSlots = [OBTUSE_ACUTE_A, OBTUSE_ACUTE_B];
+      vertices = [0, 1, 2].map((i) => (i === obtuseIndex ? OBTUSE_CORNER : acuteSlots.shift()));
+    }
+    const [TA, TB, TC] = vertices;
     const adjacent = [[TC, TB], [TA, TC], [TA, TB]];
     const nodes = [
       <polygon key="p" points={`${TA.join(',')} ${TB.join(',')} ${TC.join(',')}`} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
     ];
+    // Tick-marking the two sides into the apex is the one visual cue that
+    // tells the student the isosceles base-angles theorem even applies —
+    // without it the figure looks like an ordinary scalene triangle with a
+    // blank third corner. Only generateAnglesProblemSolving's
+    // isosceles-exterior chain sets this; the ordinary triangle-angle-sum
+    // and exterior-angle-theorem uses of this same figure never do.
+    if (fig.isosceles) nodes.push(tickMark(TA, TC, 'l'), tickMark(TB, TC, 'r'));
     vertices.forEach((v, i) => {
       const label = labels[i];
       if (!label) return;
       const labelColor = i === unknownIndex ? color : 'var(--ink)';
-      nodes.push(...angleMarker(v, adjacent[i][0], adjacent[i][1], label, `tv${i}`, labelColor));
+      // Algebraic (long) Stretch labels only ever land on the default
+      // ACUTE_TRI shape (see generator), so index 2 reliably means "apex"
+      // here: it nudges up a touch when long, while the two base labels
+      // (0, 1) pull in closer together and drop further down the open
+      // lower area when long — and pull in a touch even for the ordinary
+      // short numeric case, where the apex stays untouched either way.
+      const opts = i === 2 ? { longVShift: -5 } : { horizScale: 0.85, longHorizScale: 0.6, longVShift: 10 };
+      nodes.push(...angleMarker(v, adjacent[i][0], adjacent[i][1], label, `tv${i}`, labelColor, opts));
     });
     if (exteriorLabel) {
       const dir = unitVec(TB[0] - TA[0], TB[1] - TA[1]);
@@ -248,13 +286,31 @@ export default function Figure({ fig, color, shown }) {
     const { apexLabel, baseLabel, unknownIsApex } = fig;
     const apexColor = unknownIsApex === true ? color : 'var(--ink)';
     const baseColor = unknownIsApex === false ? color : 'var(--ink)';
+    // A single matching tick at the midpoint of each of the two equal
+    // sides — the usual "these sides are equal" convention, and the thing
+    // that told isosceles-triangle apart from a plain scalene one; this
+    // sibling type needs its own pair since it draws angle labels instead.
+    const tick = (key, p1, p2) => {
+      const [mx, my] = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2];
+      const [ux, uy] = unitVec(p2[0] - p1[0], p2[1] - p1[1]);
+      const [px, py] = [-uy * 7, ux * 7];
+      return <line key={key} x1={mx - px} y1={my - py} x2={mx + px} y2={my + py} stroke="var(--ink)" strokeWidth={3} />;
+    };
     const nodes = [
       <polygon key="p" points="100,24 185,140 15,140" fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+      tick('t1', APEX, BASE_L),
+      tick('t2', APEX, BASE_R),
     ];
-    if (apexLabel) nodes.push(...angleMarker(APEX, BASE_L, BASE_R, apexLabel, 'ia', apexColor));
+    // All three labels sit a little further down and in from the plain
+    // bisector push — same nudge whether the label is a short number or a
+    // long Stretch expression (unlike the plain 'triangle' figure, this
+    // isn't scoped to just the algebraic case). Harmless no-op on the
+    // apex's horizontal share, which is already dead vertical by symmetry.
+    const isoNudge = { horizScale: 0.8, vShift: 6, longHorizScale: 0.8, longVShift: 6 };
+    if (apexLabel) nodes.push(...angleMarker(APEX, BASE_L, BASE_R, apexLabel, 'ia', apexColor, isoNudge));
     if (baseLabel) {
-      nodes.push(...angleMarker(BASE_L, APEX, BASE_R, baseLabel, 'ib1', baseColor));
-      nodes.push(...angleMarker(BASE_R, APEX, BASE_L, baseLabel, 'ib2', baseColor));
+      nodes.push(...angleMarker(BASE_L, APEX, BASE_R, baseLabel, 'ib1', baseColor, isoNudge));
+      nodes.push(...angleMarker(BASE_R, APEX, BASE_L, baseLabel, 'ib2', baseColor, isoNudge));
     }
     return svgWrap(nodes, 220, 170, 'ia', fig.big, shown);
   }
@@ -298,16 +354,126 @@ export default function Figure({ fig, color, shown }) {
     ], 196, 152, 'tz', fig.big, shown);
   }
 
+  if (fig.type === 'parallel-transversal') {
+    // Two parallel lines cut by one transversal (Haese: corresponding /
+    // alternate / co-interior angles). Fixed schematic geometry, matching
+    // textbook convention — the transversal's slant never reflects the
+    // actual angle values, only the arc + label at each of the eight fixed
+    // positions changes per question. TL/TR/BL/BR name the quadrant around
+    // each of the two crossings (1 = upper crossing, 2 = lower).
+    const POS = {
+      TL1: { arc: [80, 60, 88.53, 43.62], label: [68.07, 43.38] },
+      TR1: { arc: [88.53, 43.62, 120, 60], label: [116.62, 28.07] },
+      BL1: { arc: [111.47, 76.38, 80, 60], label: [83.38, 91.93] },
+      BR1: { arc: [120, 60, 111.47, 76.38], label: [131.93, 76.62] },
+      TL2: { arc: [143, 150, 151.53, 133.62], label: [131.07, 133.38] },
+      TR2: { arc: [151.53, 133.62, 183, 150], label: [179.62, 118.07] },
+      BL2: { arc: [174.47, 166.38, 143, 150], label: [146.38, 181.93] },
+      BR2: { arc: [183, 150, 174.47, 166.38], label: [194.93, 166.62] },
+    };
+    const { given, unknown } = fig;
+    const arcPath = ([x1, y1, x2, y2]) => `M ${x1} ${y1} A 20 20 0 0 1 ${x2} ${y2}`;
+    const elements = [
+      <line key="l1" x1={20} y1={60} x2={240} y2={60} stroke="var(--ink)" strokeWidth={2} />,
+      <line key="l2" x1={20} y1={150} x2={240} y2={150} stroke="var(--ink)" strokeWidth={2} />,
+      <path key="t1" d="M40,54 L48,60 L40,66" fill="none" stroke="var(--ink)" strokeWidth={2} />,
+      <path key="t2" d="M40,144 L48,150 L40,156" fill="none" stroke="var(--ink)" strokeWidth={2} />,
+      <line key="tv" x1={80} y1={31} x2={183} y2={179} stroke="var(--ink)" strokeWidth={2} />,
+    ];
+    if (given) {
+      const p = POS[given.position];
+      elements.push(
+        <path key="ga" d={arcPath(p.arc)} fill="none" stroke="var(--ink)" strokeWidth={2} />,
+        figLabel('gl', p.label[0], p.label[1] + 6, plainAngleLabel(given.label), 'middle', 'var(--ink)'),
+      );
+    }
+    if (unknown) {
+      const p = POS[unknown.position];
+      elements.push(
+        <path key="ua" d={arcPath(p.arc)} fill="none" stroke={color} strokeWidth={2.5} />,
+        figLabel('ul', p.label[0], p.label[1] + 6, plainAngleLabel(unknown.label), 'middle', color),
+      );
+    }
+    return svgWrap(elements, 260, 210, 'pt', fig.big, shown);
+  }
+
   if (fig.type === 'polygon') {
-    const n = fig.n, radius = 68, cx = 84, cy = 84, pts = [];
+    const n = fig.n, radius = 68, cx = 84, cy = 84;
+    const verts = [];
     for (let i = 0; i < n; i++) {
       const t = (Math.PI * 2 * i) / n - Math.PI / 2;
-      pts.push(`${(cx + radius * Math.cos(t)).toFixed(1)},${(cy + radius * Math.sin(t)).toFixed(1)}`);
+      verts.push([cx + radius * Math.cos(t), cy + radius * Math.sin(t)]);
     }
-    return svgWrap([
-      <polygon key="p" points={pts.join(' ')} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
-      <path key="arc" d={`M ${cx} ${cy - radius + 22} a 22 22 0 0 1 18 12`} fill="none" stroke={color} strokeWidth={3} />,
-    ], 168, 168, 'pg', fig.big, shown);
+    const ptsStr = verts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+    const elements = [
+      <polygon key="p" points={ptsStr} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+    ];
+
+    if (fig.exterior) {
+      // Extend the side INTO vertex 0 past vertex 0, mark the angle between
+      // that extension and the side OUT of vertex 0. General vertex math,
+      // not hand-tuned to one n. The arc + label reuse angleMarker (the same
+      // helper the 'triangle' figure's own exterior-angle mark uses) rather
+      // than hand-rolled trig — its bisector-based label placement stays
+      // inside the wedge for any n, where a fixed offset from vertex 0 could
+      // land outside the polygon for a sharp n=3/4 corner.
+      const [x0, y0] = verts[0];
+      const [xPrev, yPrev] = verts[n - 1];
+      const [xNext, yNext] = verts[1];
+      const dirExt = [x0 - xPrev, y0 - yPrev];
+      const lenExt = Math.hypot(...dirExt);
+      const ext = [x0 + (dirExt[0] / lenExt) * 40, y0 + (dirExt[1] / lenExt) * 40];
+      elements.push(<line key="ext" x1={x0} y1={y0} x2={ext[0]} y2={ext[1]} stroke="var(--ink)" strokeWidth={2} strokeDasharray="5,5" />);
+      if (fig.angleLabel) elements.push(...angleMarker([x0, y0], ext, [xNext, yNext], fig.angleLabel, 'al', color, {}, 30));
+    } else {
+      // Interior: same angleMarker reuse, at vertex 0 between its two real
+      // neighbours — bigger (r=30) and the label always lands inside the
+      // polygon by construction (true bisector), unlike the old fixed
+      // corner-mark's hand-tuned offset which could spill outside for a
+      // sharp n=3/4 corner.
+      if (fig.angleLabel) elements.push(...angleMarker(verts[0], verts[n - 1], verts[1], fig.angleLabel, 'al', color, {}, 30));
+    }
+
+    return svgWrap(elements, 168, 168, 'pg', fig.big, shown);
+  }
+
+  if (fig.type === 'polygon-irregular') {
+    // Interior-angle-sum Stretch band: all-but-one interior angle labelled
+    // around an irregular n-gon. `radiusFactors` (per-vertex multipliers on
+    // the regular n-gon's radius, from the generator) makes the outline
+    // read as genuinely irregular rather than a regular shape carrying
+    // mismatched labels — the actual drawn angles still needn't match the
+    // label values exactly (schematic, like every other angle figure here).
+    const { n, angles = [], unknownIndex, radiusFactors = [] } = fig;
+    if (!Array.isArray(angles) || angles.length < 3) return null;
+    // Bigger and further out than the single-label polygon types above
+    // (radius 90 vs 68, angleMarker's own arc radius pulled down to 6 vs
+    // the default 20): this figure labels every vertex at once, so with
+    // the default radius a 3-digit label at one vertex and its neighbour's
+    // routinely landed on top of each other (checked by hand — median
+    // adjacent-label gap was single-digit pixels, sometimes literally
+    // overlapping) on a compact hexagon/heptagon. This spacing keeps every
+    // pair of labels comfortably apart even at n=7 with 3-digit angles.
+    const radius = 90, cx = 98, cy = 98;
+    const verts = [];
+    for (let i = 0; i < n; i++) {
+      const t = (Math.PI * 2 * i) / n - Math.PI / 2;
+      const rf = radiusFactors[i] ?? 1;
+      verts.push([cx + radius * rf * Math.cos(t), cy + radius * rf * Math.sin(t)]);
+    }
+    const ptsStr = verts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+    const elements = [
+      <polygon key="p" points={ptsStr} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+    ];
+    verts.forEach((v, i) => {
+      const label = angles[i];
+      if (!label) return;
+      const prev = verts[(i - 1 + n) % n];
+      const next = verts[(i + 1) % n];
+      const labelColor = i === unknownIndex ? color : 'var(--ink)';
+      elements.push(...angleMarker(v, prev, next, label, `pi${i}`, labelColor, {}, 6));
+    });
+    return svgWrap(elements, 200, 200, 'pgi', fig.big, shown);
   }
 
   if (fig.type === 'branching-pattern') {

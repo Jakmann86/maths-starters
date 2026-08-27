@@ -16,6 +16,7 @@ import * as pythagoras from '../generators/geometry/pythagorasGenerators';
 import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
+import * as formulae from '../generators/algebra/formulaGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -217,10 +218,48 @@ export const skills = {
   },
 
   // --- Haese 4: angle problem solving (two-theorem chains) ---
+  // Topic moved from 'Angles' to 'Problem solving' alongside
+  // simultaneous-problem-solving below — the two are the same kind of
+  // skill (a worded problem building a small system to solve), not really
+  // an "Angles" skill that happens to use a triangle figure.
   'angles-problem-solving': {
     label: 'Angle problem solving',
-    topic: 'Angles',
+    topic: 'Problem solving',
     generate: (opts) => angleFacts.generateAnglesProblemSolving(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese: angles in parallel lines ---
+  'corresponding-angles': {
+    label: 'Corresponding angles',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateCorrespondingAngles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'alternate-angles': {
+    label: 'Alternate angles',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateAlternateAngles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'co-interior-angles': {
+    label: 'Co-interior angles',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateCoInteriorAngles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese: polygon angles ---
+  'polygon-interior-angles': {
+    label: 'Polygon interior angles',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generatePolygonInteriorAngles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'polygon-exterior-angles': {
+    label: 'Polygon exterior angles',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generatePolygonExteriorAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -314,6 +353,41 @@ export const skills = {
     label: 'Symbol puzzles',
     topic: 'Puzzles',
     generate: (opts) => symbolPuzzles.generateSymbolPuzzle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 7: formulae and simultaneous equations -----------------------
+  'formula-substitution': {
+    label: 'Formula substitution',
+    topic: 'Formulae and simultaneous equations',
+    generate: (opts) => formulae.generateFormulaSubstitution(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'formula-rearrangement': {
+    label: 'Formula rearrangement',
+    topic: 'Formulae and simultaneous equations',
+    generate: (opts) => formulae.generateFormulaRearrangement(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'formula-derivation': {
+    label: 'Formula derivation',
+    topic: 'Formulae and simultaneous equations',
+    generate: (opts) => formulae.generateFormulaDerivation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'simultaneous-equations': {
+    label: 'Simultaneous equations',
+    topic: 'Formulae and simultaneous equations',
+    generate: (opts) => formulae.generateSimultaneousEquations(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // Joins angles-problem-solving under 'Problem solving' (see its entry
+  // above) rather than 'Formulae and simultaneous equations' — it's a
+  // worded-problem skill first, algebra-topic second.
+  'simultaneous-problem-solving': {
+    label: 'Simultaneous equations: problem solving',
+    topic: 'Problem solving',
+    generate: (opts) => formulae.generateSimultaneousProblemSolving(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 };

@@ -86,6 +86,13 @@ export default function Board() {
     return { ...s, boxes };
   });
 
+  const regenSame = (i) => setState((s) => {
+    const boxes = s.boxes.slice();
+    const { topic, skillId } = boxes[i];
+    boxes[i] = { topic, skillId, data: slotData(skillId, BANDS[s.diff]) };
+    return { ...s, boxes };
+  });
+
   const swapOne = (i) => setState((s) => {
     const boxes = s.boxes.slice();
     const otherTopics = boxes.filter((_b, idx) => idx !== i).map((b) => b.topic);
@@ -204,6 +211,7 @@ export default function Board() {
             colorVar={colorVar}
             data={boxes[i]?.data || { topic: '—', instr: '', q: '', a: '', w: '' }}
             revealed={revealed}
+            onRegenSame={() => regenSame(i)}
             onRegen={() => regenOne(i)}
             onSwap={() => swapOne(i)}
           />

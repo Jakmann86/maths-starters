@@ -2,7 +2,7 @@ import MathDisplay from './MathDisplay.jsx';
 import Figure from './Figure.jsx';
 import { iSize, qSize } from '../lib/typeSizing.js';
 
-export default function Slot({ label, colorVar, data, revealed, onRegen, onSwap }) {
+export default function Slot({ label, colorVar, data, revealed, onRegenSame, onRegen, onSwap }) {
   const { topic, instr, q, a, fig } = data;
 
   return (
@@ -17,8 +17,17 @@ export default function Slot({ label, colorVar, data, revealed, onRegen, onSwap 
           <button
             type="button"
             className="slot-action-btn"
-            title="New question, same topic"
-            aria-label="New question, same topic"
+            title="New numbers, same question"
+            aria-label="New numbers, same question"
+            onClick={onRegenSame}
+          >
+            #
+          </button>
+          <button
+            type="button"
+            className="slot-action-btn"
+            title="New question type, same topic"
+            aria-label="New question type, same topic"
             onClick={onRegen}
           >
             ↻
@@ -26,8 +35,8 @@ export default function Slot({ label, colorVar, data, revealed, onRegen, onSwap 
           <button
             type="button"
             className="slot-action-btn"
-            title="Swap topic"
-            aria-label="Swap topic"
+            title="Different topic"
+            aria-label="Different topic"
             onClick={onSwap}
           >
             ⇄
