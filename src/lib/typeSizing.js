@@ -26,8 +26,8 @@ export function qSize(q, instr) {
   const lines = String(q || '').split('\n').length;
   const longest = Math.max(...String(q || '').split('\n').map((l) => visualLength(l)), 1);
   const wordy = String(instr || '').length > 44;
-  const h = lines >= 3 ? 9 : lines === 2 ? 13 : wordy ? 17 : 21;
-  const w = Math.min(95 / Math.max(longest, 7), 12);
-  const floor = lines >= 3 ? 24 : 26;
-  return `clamp(${floor}px,min(${h}cqh,${w.toFixed(1)}cqi),66px)`;
+  const h = lines >= 3 ? 10 : lines === 2 ? 15 : wordy ? 19 : 24;
+  const w = Math.min(109 / Math.max(longest, 7), 14);
+  const floor = lines >= 3 ? 28 : 30;
+  return `clamp(${floor}px,min(${h}cqh,${w.toFixed(1)}cqi),76px)`;
 }

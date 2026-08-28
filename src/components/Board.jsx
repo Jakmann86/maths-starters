@@ -37,7 +37,14 @@ function slotData(skillId, band) {
     topic: getSkill(skillId)?.label ?? skillId,
     instr: q.instruction,
     q: q.questionMath != null ? q.questionMath : (q.questionText ?? ''),
-    a: q.answerUnits ? `${q.answer}\\text{ ${q.answerUnits}}` : q.answer,
+    // answerUnits may be plain ('cm', as every generator before Chapter 11
+    // passes) or already-LaTeX ('\\text{cm}^3', where the exponent has to
+    // survive). Wrapping the plain case keeps it upright; passing the LaTeX
+    // case through keeps the superscript. Detecting on the backslash means
+    // no existing generator changes.
+    a: q.answerUnits
+      ? `${q.answer}\\text{ }${/\\/.test(q.answerUnits) ? q.answerUnits : `\\text{${q.answerUnits}}`}`
+      : q.answer,
     w: q.workingOut,
     fig: q.visualization,
   };

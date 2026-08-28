@@ -17,6 +17,7 @@ import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
 import * as formulae from '../generators/algebra/formulaGenerators';
+import * as solids from '../generators/geometry/solidsGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -388,6 +389,62 @@ export const skills = {
     label: 'Simultaneous equations: problem solving',
     topic: 'Problem solving',
     generate: (opts) => formulae.generateSimultaneousProblemSolving(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 11A: surface area ---
+  'surface-area-cuboid': {
+    label: 'Surface area of a cuboid',
+    topic: 'Surface area',
+    generate: (opts) => solids.generateSurfaceAreaCuboid(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 11A: surface area of solids with curved surfaces ---
+  'surface-area-cylinder': {
+    label: 'Surface area of a cylinder',
+    topic: 'Surface area',
+    generate: (opts) => solids.generateSurfaceAreaCylinder(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'surface-area-cone': {
+    label: 'Surface area of a cone',
+    topic: 'Surface area',
+    generate: (opts) => solids.generateSurfaceAreaCone(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'surface-area-sphere': {
+    label: 'Surface area of a sphere',
+    topic: 'Surface area',
+    generate: (opts) => solids.generateSurfaceAreaSphere(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 11B: volume ---
+  'volume-cuboid': {
+    label: 'Volume of a cuboid',
+    topic: 'Volume',
+    generate: (opts) => solids.generateVolumeCuboid(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 11B: volume of solids with curved surfaces ---
+  'volume-cylinder': {
+    label: 'Volume of a cylinder',
+    topic: 'Volume',
+    generate: (opts) => solids.generateVolumeCylinder(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'volume-cone': {
+    label: 'Volume of a cone',
+    topic: 'Volume',
+    generate: (opts) => solids.generateVolumeCone(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'volume-sphere': {
+    label: 'Volume of a sphere',
+    topic: 'Volume',
+    generate: (opts) => solids.generateVolumeSphere(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 };

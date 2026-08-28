@@ -1,15 +1,19 @@
 import './Figure.css';
 
+// All sizes here are 1.2x the original figures — shapes and labels share one
+// viewBox-relative coordinate system, so scaling this shared wrapper scales
+// both together for every figure type without touching any branch's own
+// coordinates.
 function svgWrap(children, w, h, key, big, shown, noShrink = false) {
   const capShown = noShrink ? false : shown;
-  const cap = capShown ? (big ? '30cqh' : '24cqh') : (big ? '46cqh' : '34cqh');
+  const cap = capShown ? (big ? '41cqh' : '34cqh') : (big ? '64cqh' : '47cqh');
   return (
     <svg
       key={key}
       className="fig-svg"
       viewBox={`0 0 ${w} ${h}`}
       preserveAspectRatio="xMidYMid meet"
-      style={{ width: big ? 'min(50cqi,420px)' : 'min(34cqi,250px)', maxHeight: cap }}
+      style={{ width: big ? 'min(70cqi,580px)' : 'min(47cqi,346px)', maxHeight: cap }}
     >
       {children}
     </svg>
@@ -185,6 +189,208 @@ export default function Figure({ fig, color, shown }) {
       else if (fig.angleAt === 'bottomRight') nodes.push(...angleMarker(BOTTOM_RIGHT, RIGHT_ANGLE, TOP, fig.angleLabel, 'ang', color));
     }
     return svgWrap(nodes, 230, 168, 'rt', fig.big, shown);
+  }
+
+  if (fig.type === 'cuboid') {
+    // Cabinet oblique: the front face is drawn as a true rectangle, and depth
+    // recedes up-right at 45 degrees at half scale. Isometric was the
+    // alternative and was rejected because figLabel only draws horizontal
+    // text — isometric puts all three edge directions on a slant, leaving
+    // every dimension label floating with nothing to align against. Here two
+    // of the three sit against a genuinely horizontal or vertical edge.
+    //
+    // Geometry is fixed regardless of the label values, the same schematic
+    // convention parallel-transversal uses: a 20 x 3 x 2 box drawn to scale
+    // is an unreadable sliver, so only the labels vary.
+    //
+    // F = front face, B = back face; T/B = top/bottom, L/R = left/right.
+    // Back is the front offset by (+45, -45) — that offset IS the projection.
+    const FBL = [58, 158], FBR = [208, 158], FTR = [208, 63], FTL = [58, 63];
+    const BBL = [103, 113], BBR = [253, 113], BTR = [253, 18], BTL = [103, 18];
+    const edge = (key, p, q, extra) => figLine(key, p[0], p[1], q[0], q[1], extra);
+
+    // Whichever dimension the generator marks unknown gets the slot colour.
+    // Defaults to null, not 'l' — unlike right-triangle, the usual case here
+    // is that the unknown is the volume or the surface area, i.e. not a
+    // labelled edge at all, so nothing should be coloured.
+    const unknown = fig.unknown ?? null;
+    const labelColor = (dim) => (dim === unknown ? color : 'var(--ink)');
+
+    const nodes = [];
+
+    // A tint on the front face, for questions that give the cross-sectional
+    // area rather than two separate dimensions ("area of cross-section x
+    // length", Haese 11B). Drawn first so every edge sits over it.
+    if (fig.crossSection) {
+      nodes.push(
+        <polygon
+          key="xs"
+          points={`${FBL.join(',')} ${FBR.join(',')} ${FTR.join(',')} ${FTL.join(',')}`}
+          fill={color}
+          fillOpacity={0.12}
+          stroke="none"
+        />
+      );
+      // The true centre of the front face (133, 116) sits almost exactly on
+      // the hidden back-bottom-left vertex's projection — h1/h2/h3 all pass
+      // through that point, so a label there gets a hidden edge drawn right
+      // through it. The upper-right quarter of the face (right of h3, above
+      // h2) is the one region those three edges never cross, so the label
+      // sits there instead. It is given information rather than the
+      // unknown, so it takes ink, not the slot colour — the tint alone is
+      // enough to tie it to the face.
+      if (fig.crossSectionLabel) {
+        nodes.push(figLabel('xsl', 155, 92, fig.crossSectionLabel, 'middle'));
+      }
+    }
+
+    // Nine visible edges. The three that meet at BBL (the back-bottom-left
+    // vertex) are the only occluded ones on a solid box.
+    nodes.push(
+      edge('e1', FBL, FBR),
+      edge('e2', FBR, FTR),
+      edge('e3', FTR, FTL),
+      edge('e4', FTL, FBL),
+      edge('e5', FBR, BBR),
+      edge('e6', FTR, BTR),
+      edge('e7', FTL, BTL),
+      edge('e8', BTL, BTR),
+      edge('e9', BBR, BTR),
+    );
+
+    // The three edges at BBL. On a closed box they are hidden, so they are
+    // dashed, matching isosceles-triangle's hidden height and trapezium's
+    // internal height line. On an open box (`open`, for the five-face
+    // Stretch band) you are genuinely looking down into it through the
+    // missing lid and those same three edges are the visible inside corner,
+    // so they become solid. The instruction text still carries the "no lid"
+    // wording — the figure supports it rather than being sole evidence, the
+    // same way isosceles-angles' tick marks support rather than replace the
+    // word "isosceles".
+    const hidden = fig.open ? undefined : { strokeDasharray: '6 6', strokeWidth: 2 };
+    nodes.push(
+      edge('h1', FBL, BBL, hidden),
+      edge('h2', BBL, BBR, hidden),
+      edge('h3', BBL, BTL, hidden),
+    );
+
+    // Three dimension labels. A cube is not a special case here — the
+    // generator simply passes the same value for l, h and d, and all three
+    // are drawn. That repetition is the point: it is the visual cue that
+    // makes 6s^2 obvious rather than something to be recalled, the same
+    // argument as the tick marks on the isosceles figures.
+    if (fig.l) nodes.push(figLabel('l', 133, 181, fig.l, 'middle', labelColor('l')));
+    if (fig.h) nodes.push(figLabel('h', 48, 116, fig.h, 'end', labelColor('h')));
+    // Sits just outside the midpoint of the bottom-right receding edge,
+    // pushed along that edge's outward normal into clear space. .fig-svg has
+    // overflow: visible, so a long label here is not clipped.
+    if (fig.d) nodes.push(figLabel('d', 245, 150, fig.d, 'start', labelColor('d')));
+
+    return svgWrap(nodes, 300, 195, 'cb', fig.big, shown);
+  }
+
+  if (fig.type === 'cylinder') {
+    // Upright, following Haese p235 rather than Rayner's horizontal p143
+    // drawing: standing on end puts h against a true vertical edge, which is
+    // the same reason the cuboid uses oblique — figLabel only draws
+    // horizontal text.
+    const RX = 62, RY = 18, CX = 105, TOP = 42, BOT = 195;
+    const L = CX - RX, R = CX + RX;
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [
+      // Far half of the base, hidden behind the body.
+      <path key="bb" d={`M ${L} ${BOT} A ${RX} ${RY} 0 0 1 ${R} ${BOT}`} fill="none" stroke="var(--ink)" strokeWidth={2} strokeDasharray="6 6" />,
+      <path key="bf" d={`M ${L} ${BOT} A ${RX} ${RY} 0 0 0 ${R} ${BOT}`} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      figLine('sl', L, TOP, L, BOT),
+      figLine('sr', R, TOP, R, BOT),
+      <ellipse key="top" cx={CX} cy={TOP} rx={RX} ry={RY} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+    ];
+    // An inner rim ellipse is how both textbooks show a cylinder that is open
+    // at the top (hollow, or a can with one end). The instruction still says
+    // so in words — this supports it rather than replacing it.
+    if (fig.openTop) {
+      nodes.push(<ellipse key="rim" cx={CX} cy={TOP} rx={RX * 0.84} ry={RY * 0.84} fill="none" stroke="var(--ink)" strokeWidth={2} />);
+    }
+    // The label sits above the ellipse's own crest (TOP - RY), not just above
+    // the diameter line at TOP — at font-size 20 a fixed 8-unit offset from
+    // the line lands the text on top of the curve itself.
+    if (fig.diameter) {
+      nodes.push(figLine('dl', L, TOP, R, TOP, { strokeWidth: 2 }));
+      nodes.push(figLabel('dv', CX, TOP - RY - 8, fig.diameter, 'middle', col('diameter')));
+    } else if (fig.r) {
+      nodes.push(figLine('rl', CX, TOP, R, TOP, { strokeWidth: 2 }));
+      nodes.push(<circle key="rc" cx={CX} cy={TOP} r={3} fill="var(--ink)" />);
+      nodes.push(figLabel('rv', CX + RX / 2, TOP - RY - 8, fig.r, 'middle', col('r')));
+    }
+    if (fig.h) nodes.push(figLabel('hv', L - 10, (TOP + BOT) / 2 + 5, fig.h, 'end', col('h')));
+    return svgWrap(nodes, 210, 240, 'cy', fig.big, shown);
+  }
+
+  if (fig.type === 'cone') {
+    const RX = 62, RY = 17, CX = 105, BASE = 178, APEX_Y = 28;
+    const L = CX - RX, R = CX + RX;
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [
+      <path key="bb" d={`M ${L} ${BASE} A ${RX} ${RY} 0 0 1 ${R} ${BASE}`} fill="none" stroke="var(--ink)" strokeWidth={2} strokeDasharray="6 6" />,
+      <path key="bf" d={`M ${L} ${BASE} A ${RX} ${RY} 0 0 0 ${R} ${BASE}`} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      figLine('s1', CX, APEX_Y, L, BASE),
+      figLine('s2', CX, APEX_Y, R, BASE),
+    ];
+    // The perpendicular height is a construction line, not an edge, so it is
+    // dashed and carries a right-angle mark where it meets the base — the
+    // detail that tells a student which length Pythagoras actually uses.
+    if (fig.h) {
+      nodes.push(figLine('hl', CX, APEX_Y, CX, BASE, { strokeDasharray: '6 6', strokeWidth: 2 }));
+      nodes.push(<path key="ra" d={`M ${CX} ${BASE - 12} L ${CX + 12} ${BASE - 12} L ${CX + 12} ${BASE}`} fill="none" stroke="var(--ink)" strokeWidth={2} />);
+      // Sitting next to the dashed line, between it and the left slant,
+      // doesn't work — the two lines are only ~60 units apart at their
+      // widest and a label is routinely wider than that. Outside the base,
+      // past L, is the only place with guaranteed clearance from both.
+      nodes.push(figLabel('hv', L - 10, (APEX_Y + BASE) / 2 + 5, fig.h, 'end', col('h')));
+    }
+    // Same reasoning as the cylinder's top label: clear the base ellipse's
+    // own lowest point (BASE + RY), not just the diameter line at BASE. The
+    // label's own ascent (~18 units at this font size) has to fit in that
+    // gap too, not just its baseline.
+    if (fig.diameter) {
+      nodes.push(figLine('dl', L, BASE, R, BASE, { strokeWidth: 2 }));
+      nodes.push(figLabel('dv', CX, BASE + RY + 21, fig.diameter, 'middle', col('diameter')));
+    } else if (fig.r) {
+      nodes.push(figLine('rl', CX, BASE, R, BASE, { strokeWidth: 2 }));
+      nodes.push(figLabel('rv', CX + RX / 2, BASE + RY + 21, fig.r, 'middle', col('r')));
+    }
+    // Slant height sits just outside the right-hand slant, pushed along that
+    // edge's outward normal.
+    if (fig.l) nodes.push(figLabel('lv', 151, 97, fig.l, 'start', col('l')));
+    return svgWrap(nodes, 210, 220, 'cn', fig.big, shown);
+  }
+
+  if (fig.type === 'sphere') {
+    // A plain circle would be indistinguishable from the existing 'circle'
+    // figure, which matters because both live in this app. The dashed far
+    // half of the equator is what makes it read as a solid.
+    const CX = 94, CY = 94, RAD = 72, ERY = 20;
+    const L = CX - RAD, R = CX + RAD;
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [
+      <circle key="o" cx={CX} cy={CY} r={RAD} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      <path key="eb" d={`M ${L} ${CY} A ${RAD} ${ERY} 0 0 1 ${R} ${CY}`} fill="none" stroke="var(--ink)" strokeWidth={2} strokeDasharray="6 6" />,
+      <path key="ef" d={`M ${L} ${CY} A ${RAD} ${ERY} 0 0 0 ${R} ${CY}`} fill="none" stroke="var(--ink)" strokeWidth={2} />,
+    ];
+    // Clears the sphere's own outline (its topmost point is CY - RAD, well
+    // above the equator line at CY) rather than just the equator line.
+    if (fig.diameter) {
+      nodes.push(figLine('dl', L, CY, R, CY, { strokeWidth: 2 }));
+      nodes.push(figLabel('dv', CX, CY - RAD - 8, fig.diameter, 'middle', col('diameter')));
+    } else if (fig.r) {
+      nodes.push(figLine('rl', CX, CY, R, CY, { strokeWidth: 2 }));
+      nodes.push(<circle key="c" cx={CX} cy={CY} r={4} fill="var(--ink)" />);
+      nodes.push(figLabel('rv', CX + RAD / 2, CY - RAD - 8, fig.r, 'middle', col('r')));
+    }
+    return svgWrap(nodes, 190, 190, 'sp', fig.big, shown);
   }
 
   if (fig.type === 'angle-rays') {

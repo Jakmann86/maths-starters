@@ -3,7 +3,10 @@
   flex: 0 0 auto;
   display: block;
   overflow: visible;
-  margin-right: clamp(16px, 3cqi, 34px);
+  /* Some labels (e.g. the cuboid's h) are deliberately drawn outside their
+     own viewBox, relying on this box's overflow:visible plus the slot's own
+     padding for clearance. Symmetric margin so the same holds on the left. */
+  margin: 0 clamp(16px, 3cqi, 34px);
 }
 
 .fig-label {

@@ -80,8 +80,8 @@
     { "id": "10G", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Speed, distance and time", "page": 224, "skills": [], "status": "todo" },
     { "id": "10H", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Travel graphs", "page": 226, "skills": [], "status": "todo" },
 
-    { "id": "11A", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Surface area", "page": 231, "skills": [], "status": "todo" },
-    { "id": "11B", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Volume", "page": 239, "skills": [], "status": "todo" },
+    { "id": "11A", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Surface area", "page": 231, "skills": ["surface-area-cuboid", "surface-area-cylinder", "surface-area-cone", "surface-area-sphere"], "status": "ready" },
+    { "id": "11B", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Volume", "page": 239, "skills": ["volume-cuboid", "volume-cylinder", "volume-cone", "volume-sphere"], "status": "ready" },
     { "id": "11C", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Capacity", "page": 245, "skills": [], "status": "todo" },
     { "id": "11D", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Mass", "page": 248, "skills": [], "status": "todo" },
     { "id": "11E", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Compound solids", "page": 249, "skills": [], "status": "todo" },
