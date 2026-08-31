@@ -419,6 +419,18 @@ export const skills = {
     generate: (opts) => solids.generateSurfaceAreaSphere(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'surface-area-prism': {
+    label: 'Surface area of a prism',
+    topic: 'Surface area',
+    generate: (opts) => solids.generateSurfaceAreaPrism(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'surface-area-pyramid': {
+    label: 'Surface area of a pyramid',
+    topic: 'Surface area',
+    generate: (opts) => solids.generateSurfaceAreaPyramid(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 
   // --- Haese 11B: volume ---
   'volume-cuboid': {
@@ -445,6 +457,18 @@ export const skills = {
     label: 'Volume of a sphere',
     topic: 'Volume',
     generate: (opts) => solids.generateVolumeSphere(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'volume-prism': {
+    label: 'Volume of a prism',
+    topic: 'Volume',
+    generate: (opts) => solids.generateVolumePrism(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'volume-pyramid': {
+    label: 'Volume of a pyramid',
+    topic: 'Volume',
+    generate: (opts) => solids.generateVolumePyramid(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 };

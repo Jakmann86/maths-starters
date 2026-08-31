@@ -393,6 +393,105 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, 190, 190, 'sp', fig.big, shown);
   }
 
+  if (fig.type === 'prism') {
+    // Cross-section on the front face, length receding — the orientation both
+    // textbooks use (Haese p241, Rayner p142). `shape` picks the cross-section:
+    // a right-angled triangle, or a trapezium for the Cambridge exam version
+    // (Haese p155 Q3, the gold bar).
+    const OFF = [45, -45];
+    const back = (p) => [p[0] + OFF[0], p[1] + OFF[1]];
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const isTrap = fig.shape === 'trapezium';
+
+    // Front face, anticlockwise from bottom-left. The triangle is right-angled
+    // at its bottom-left corner so b and ht sit on true horizontal/vertical
+    // edges; the trapezium's parallel sides are its top and bottom.
+    const front = isTrap
+      ? [[45, 165], [175, 165], [150, 90], [75, 90]]
+      : [[55, 165], [165, 165], [55, 75]];
+    const rear = front.map(back);
+    const pts = (ps) => ps.map((p) => p.join(',')).join(' ');
+    const nodes = [];
+
+    if (fig.crossSection) {
+      nodes.push(<polygon key="xs" points={pts(front)} fill={color} fillOpacity={0.12} stroke="none" />);
+    }
+
+    // Front outline is always whole. Of the rear outline, only the edges that
+    // touch the hidden vertex are dashed — that vertex is front[0]'s partner,
+    // the one the body sits in front of.
+    nodes.push(<polygon key="fp" points={pts(front)} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />);
+    for (let i = 0; i < rear.length; i++) {
+      const j = (i + 1) % rear.length;
+      const hiddenEdge = i === 0 || j === 0;
+      nodes.push(figLine(`r${i}`, rear[i][0], rear[i][1], rear[j][0], rear[j][1],
+        hiddenEdge ? { strokeDasharray: '6 6', strokeWidth: 2 } : undefined));
+    }
+    front.forEach((p, i) => {
+      const q = rear[i];
+      nodes.push(figLine(`c${i}`, p[0], p[1], q[0], q[1],
+        i === 0 ? { strokeDasharray: '6 6', strokeWidth: 2 } : undefined));
+    });
+
+    if (!isTrap) {
+      // Right-angle mark at the triangle's corner, so it is clear which two
+      // lengths Pythagoras applies to.
+      nodes.push(<path key="ra" d="M55 151 L69 151 L69 165" fill="none" stroke="var(--ink)" strokeWidth={2} />);
+    }
+
+    if (isTrap) {
+      if (fig.a) nodes.push(figLabel('la', 112, 82, fig.a, 'middle', col('a')));
+      if (fig.b) nodes.push(figLabel('lb', 110, 188, fig.b, 'middle', col('b')));
+      if (fig.ht) nodes.push(figLine('hl', 110, 90, 110, 165, { strokeDasharray: '6 6', strokeWidth: 2 }));
+      if (fig.ht) nodes.push(figLabel('lh', 118, 132, fig.ht, 'start', col('ht')));
+      if (fig.L) nodes.push(figLabel('lL', 211, 157, fig.L, 'start', col('L')));
+    } else {
+      if (fig.b) nodes.push(figLabel('lb', 110, 188, fig.b, 'middle', col('b')));
+      if (fig.ht) nodes.push(figLabel('lh', 45, 126, fig.ht, 'end', col('ht')));
+      if (fig.hyp) nodes.push(figLabel('ly', 122, 112, fig.hyp, 'start', col('hyp')));
+      if (fig.L) nodes.push(figLabel('lL', 201, 157, fig.L, 'start', col('L')));
+    }
+    if (fig.crossSectionLabel) {
+      const cx = front.reduce((s, p) => s + p[0], 0) / front.length;
+      const cy = front.reduce((s, p) => s + p[1], 0) / front.length;
+      nodes.push(figLabel('xsl', cx, cy + 5, fig.crossSectionLabel, 'middle'));
+    }
+    return svgWrap(nodes, 280, 205, 'pr', fig.big, shown);
+  }
+
+  if (fig.type === 'pyramid') {
+    // Square or rectangular base in oblique, apex above the base centre.
+    const FL = [60, 175], FR = [200, 175], BR = [240, 135], BL = [100, 135];
+    const CENTRE = [150, 155], APEX = [150, 30];
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const dash = { strokeDasharray: '6 6', strokeWidth: 2 };
+    const e = (k, p, q, extra) => figLine(k, p[0], p[1], q[0], q[1], extra);
+    // BL is the occluded corner, so its three edges are the dashed ones.
+    const nodes = [
+      e('b1', FL, FR), e('b2', FR, BR),
+      e('b3', BR, BL, dash), e('b4', BL, FL, dash),
+      e('e1', FL, APEX), e('e2', FR, APEX), e('e3', BR, APEX),
+      e('e4', BL, APEX, dash),
+    ];
+    if (fig.h) {
+      nodes.push(e('hl', APEX, CENTRE, dash));
+      nodes.push(<path key="ra" d={`M ${CENTRE[0]} ${CENTRE[1] - 13} L ${CENTRE[0] + 13} ${CENTRE[1] - 13} L ${CENTRE[0] + 13} ${CENTRE[1]}`} fill="none" stroke="var(--ink)" strokeWidth={2} />);
+      nodes.push(figLabel('lh', 141, 100, fig.h, 'end', col('h')));
+    }
+    if (fig.l) {
+      // Slant height runs to the midpoint of the RIGHT base edge, not the
+      // front one — on the front edge its label would collide with h.
+      const MID = [(FR[0] + BR[0]) / 2, (FR[1] + BR[1]) / 2];
+      nodes.push(e('sl', APEX, MID));
+      nodes.push(figLabel('ll', 202, 88, fig.l, 'start', col('l')));
+    }
+    if (fig.base) nodes.push(figLabel('lb', 130, 196, fig.base, 'middle', col('base')));
+    if (fig.baseSide) nodes.push(figLabel('lbs', 232, 168, fig.baseSide, 'start', col('baseSide')));
+    return svgWrap(nodes, 285, 215, 'py', fig.big, shown);
+  }
+
   if (fig.type === 'angle-rays') {
     // 2-5 rays fanning out from a shared point (Haese 4A: angles on a line,
     // at a point, vertically opposite). `wrap` decides whether the gap

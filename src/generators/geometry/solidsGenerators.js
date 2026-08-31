@@ -36,7 +36,7 @@ const piThirds = (num) => (num % 3 === 0 ? piTerm(num / 3) : `\\frac{${num}}{3}\
 // range of (m, n, k), then filtered to sane classroom sizes. The two legs
 // become r and h in random order, so the slant height is always a whole
 // number without any hardcoded (3,4,5)-style bank.
-const coneTriple = () => {
+const triple = () => {
   const options = [];
   for (let m = 2; m <= 13; m++) {
     for (let n = 1; n < m; n++) {
@@ -295,7 +295,7 @@ export const generateSurfaceAreaCone = (options = {}) => {
   if (difficulty === 'stretch') {
     // Slant height NOT given — Pythagoras first, then the total. This is
     // Haese Example 6 and Rayner Example 11, the standard hard version.
-    const [r, h, l] = coneTriple();
+    const [r, h, l] = triple();
     const k = r * (l + r);
     return {
       instruction: 'Find the total surface area. Leave your answer in terms of π',
@@ -451,5 +451,211 @@ export const generateVolumeSphere = (options = {}) => {
     workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}V = \\frac{4}{3}\\pi r^3 = \\frac{4}{3} \\times \\pi \\times ${r}^3${NL}V = ${piThirds(num)}`,
     visualization: { type: 'sphere', diameter: lbl(2 * r, u) },
     metadata: { topic: 'volume-sphere', difficulty },
+  };
+};
+
+/* --------------------------------------------------------------------- prism */
+
+export const generateVolumePrism = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const u = pick();
+
+  if (difficulty === 'core') {
+    // Trapezium cross-section — the shape Cambridge actually asks about
+    // (Haese p155 Q3, the gold bar; Rayner p142). Constrained so the half
+    // cancels and the answer stays a whole number.
+    let a, b, h;
+    do {
+      a = _.random(2, 14);
+      b = _.random(a + 1, a + 14);
+      h = _.random(2, 14);
+    } while (((a + b) * h) % 2 !== 0);
+    const L = _.random(3, 20);
+    const A = ((a + b) * h) / 2;
+    return {
+      instruction: 'Find the volume of the prism',
+      answer: String(A * L),
+      answerUnits: `\\text{${u}}^3`,
+      workingOut: `A = \\frac{1}{2}(a + b)h = \\frac{1}{2}(${a} + ${b}) \\times ${h} = ${A}${NL}V = A \\times \\text{length} = ${A} \\times ${L}${NL}V = ${A * L}`,
+      visualization: { type: 'prism', shape: 'trapezium', a: lbl(a, u), b: lbl(b, u), ht: lbl(h, u), L: lbl(L, u), crossSection: true },
+      metadata: { topic: 'volume-prism', difficulty },
+    };
+  }
+
+  let b, h;
+  do {
+    b = _.random(2, 20);
+    h = _.random(2, 20);
+  } while ((b * h) % 2 !== 0);
+  const L = _.random(3, 20);
+  const A = (b * h) / 2;
+
+  if (difficulty === 'foundation') {
+    return {
+      instruction: 'Find the volume of the prism',
+      answer: String(A * L),
+      answerUnits: `\\text{${u}}^3`,
+      workingOut: `A = \\frac{1}{2}bh = \\frac{1}{2} \\times ${b} \\times ${h} = ${A}${NL}V = A \\times \\text{length} = ${A} \\times ${L}${NL}V = ${A * L}`,
+      visualization: { type: 'prism', shape: 'triangle', b: lbl(b, u), ht: lbl(h, u), L: lbl(L, u), crossSection: true },
+      metadata: { topic: 'volume-prism', difficulty },
+    };
+  }
+
+  // stretch: volume given, one dimension missing.
+  const V = A * L;
+  const which = _.sample(['b', 'ht', 'L']);
+  const value = { b, ht: h, L }[which];
+  const fig = { type: 'prism', shape: 'triangle', b: lbl(b, u), ht: lbl(h, u), L: lbl(L, u), crossSection: true, unknown: which };
+  fig[which] = 'x';
+  return {
+    instruction: 'Find the missing length',
+    questionMath: `V = ${V}\\text{ ${u}}^3`,
+    answer: `x = ${value}`,
+    answerUnits: `\\text{${u}}`,
+    // Substituting x in place shows the structure; a bare "V divided by the
+    // known product" line would print an awkward 7.5 whenever the remaining
+    // pair is odd.
+    workingOut: `\\frac{1}{2}bh \\times \\text{length} = ${V}${NL}\\frac{1}{2} \\times ${which === 'b' ? 'x' : b} \\times ${which === 'ht' ? 'x' : h} \\times ${which === 'L' ? 'x' : L} = ${V}${NL}x = ${value}`,
+    visualization: fig,
+    metadata: { topic: 'volume-prism', difficulty },
+  };
+};
+
+export const generateSurfaceAreaPrism = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const u = pick();
+  const [b, h, hyp] = triple();
+  const L = _.random(3, 20);
+  const lateral = (b + h + hyp) * L;
+  const ends = b * h; // 2 x (1/2 b h)
+
+  if (difficulty === 'foundation') {
+    return {
+      instruction: 'Find the area of the three rectangular faces',
+      answer: String(lateral),
+      answerUnits: `\\text{${u}}^2`,
+      workingOut: `\\text{perimeter} = ${b} + ${h} + ${hyp} = ${b + h + hyp}${NL}A = \\text{perimeter} \\times \\text{length}${NL}A = ${b + h + hyp} \\times ${L} = ${lateral}`,
+      visualization: { type: 'prism', shape: 'triangle', b: lbl(b, u), ht: lbl(h, u), hyp: lbl(hyp, u), L: lbl(L, u) },
+      metadata: { topic: 'surface-area-prism', difficulty },
+    };
+  }
+
+  if (difficulty === 'stretch') {
+    // Sloping edge not given — Pythagoras first, then the whole solid.
+    // This is Haese Example 2, the wedge.
+    return {
+      instruction: 'Find the total surface area of the prism',
+      answer: String(lateral + ends),
+      answerUnits: `\\text{${u}}^2`,
+      workingOut: `x^2 = ${b}^2 + ${h}^2 = ${b * b + h * h},\\ x = ${hyp}${NL}\\text{rectangles} = (${b} + ${h} + ${hyp}) \\times ${L} = ${lateral}${NL}\\text{2 triangles} = ${b} \\times ${h} = ${ends}${NL}A = ${lateral + ends}`,
+      visualization: { type: 'prism', shape: 'triangle', b: lbl(b, u), ht: lbl(h, u), hyp: 'x', L: lbl(L, u), unknown: 'hyp' },
+      metadata: { topic: 'surface-area-prism', difficulty },
+    };
+  }
+
+  return {
+    instruction: 'Find the total surface area of the prism',
+    answer: String(lateral + ends),
+    answerUnits: `\\text{${u}}^2`,
+    workingOut: `\\text{rectangles} = (${b} + ${h} + ${hyp}) \\times ${L} = ${lateral}${NL}\\text{2 triangles} = ${b} \\times ${h} = ${ends}${NL}A = ${lateral} + ${ends} = ${lateral + ends}`,
+    visualization: { type: 'prism', shape: 'triangle', b: lbl(b, u), ht: lbl(h, u), hyp: lbl(hyp, u), L: lbl(L, u) },
+    metadata: { topic: 'surface-area-prism', difficulty },
+  };
+};
+
+/* ------------------------------------------------------------------- pyramid */
+
+export const generateVolumePyramid = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const u = pick();
+
+  if (difficulty === 'core') {
+    // Rectangular base (Rayner Ex 4.11 Q9), so the base area is itself a
+    // step rather than a square.
+    let l, w, h;
+    do {
+      l = _.random(2, 18);
+      w = _.random(2, 18);
+      h = _.random(2, 24);
+    } while ((l * w * h) % 3 !== 0 || l === w);
+    const V = (l * w * h) / 3;
+    return {
+      instruction: 'Find the volume of the pyramid',
+      answer: String(V),
+      answerUnits: `\\text{${u}}^3`,
+      workingOut: `V = \\frac{1}{3} \\times \\text{base area} \\times h${NL}V = \\frac{1}{3} \\times ${l} \\times ${w} \\times ${h}${NL}V = ${V}`,
+      visualization: { type: 'pyramid', base: lbl(l, u), baseSide: lbl(w, u), h: lbl(h, u) },
+      metadata: { topic: 'volume-pyramid', difficulty },
+    };
+  }
+
+  const s = _.random(2, 20);
+  const h = 3 * _.random(1, 12);
+  const V = (s * s * h) / 3;
+
+  if (difficulty === 'foundation') {
+    return {
+      instruction: 'Find the volume of the square-based pyramid',
+      answer: String(V),
+      answerUnits: `\\text{${u}}^3`,
+      workingOut: `V = \\frac{1}{3} \\times \\text{base area} \\times h${NL}V = \\frac{1}{3} \\times ${s}^2 \\times ${h}${NL}V = ${V}`,
+      visualization: { type: 'pyramid', base: lbl(s, u), h: lbl(h, u) },
+      metadata: { topic: 'volume-pyramid', difficulty },
+    };
+  }
+
+  return {
+    instruction: 'Find the height of the pyramid',
+    questionMath: `V = ${V}\\text{ ${u}}^3`,
+    answer: `x = ${h}`,
+    answerUnits: `\\text{${u}}`,
+    workingOut: `\\frac{1}{3} \\times ${s}^2 \\times h = ${V}${NL}${s * s}h = ${3 * V}${NL}h = ${3 * V} \\div ${s * s} = ${h}`,
+    visualization: { type: 'pyramid', base: lbl(s, u), h: 'x', unknown: 'h' },
+    metadata: { topic: 'volume-pyramid', difficulty },
+  };
+};
+
+export const generateSurfaceAreaPyramid = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const u = pick();
+
+  if (difficulty === 'stretch') {
+    // Slant height not given: it comes from the perpendicular height and
+    // HALF the base, which is the step students miss. Haese Example 3.
+    // Half the base is one leg of the triple, so the base is twice it.
+    const [half, h, slant] = triple();
+    const s = 2 * half;
+    const A = s * s + 2 * s * slant;
+    return {
+      instruction: 'Find the total surface area of the square-based pyramid',
+      answer: String(A),
+      answerUnits: `\\text{${u}}^2`,
+      workingOut: `l^2 = ${h}^2 + ${half}^2 = ${h * h + half * half},\\ l = ${slant}${NL}\\text{base} = ${s}^2 = ${s * s}${NL}\\text{4 triangles} = 4 \\times \\frac{1}{2} \\times ${s} \\times ${slant} = ${2 * s * slant}${NL}A = ${A}`,
+      visualization: { type: 'pyramid', base: lbl(s, u), h: lbl(h, u), l: 'l', unknown: 'l' },
+      metadata: { topic: 'surface-area-pyramid', difficulty },
+    };
+  }
+
+  const s = _.random(2, 20);
+  const l = _.random(s, s + 24);
+
+  if (difficulty === 'foundation') {
+    return {
+      instruction: 'Find the area of the four triangular faces',
+      answer: String(2 * s * l),
+      answerUnits: `\\text{${u}}^2`,
+      workingOut: `\\text{one face} = \\frac{1}{2} \\times ${s} \\times ${l}${NL}A = 4 \\times \\frac{1}{2} \\times ${s} \\times ${l}${NL}A = ${2 * s * l}`,
+      visualization: { type: 'pyramid', base: lbl(s, u), l: lbl(l, u) },
+      metadata: { topic: 'surface-area-pyramid', difficulty },
+    };
+  }
+
+  return {
+    instruction: 'Find the total surface area of the square-based pyramid',
+    answer: String(s * s + 2 * s * l),
+    answerUnits: `\\text{${u}}^2`,
+    workingOut: `\\text{base} = ${s}^2 = ${s * s}${NL}\\text{4 triangles} = 4 \\times \\frac{1}{2} \\times ${s} \\times ${l} = ${2 * s * l}${NL}A = ${s * s} + ${2 * s * l} = ${s * s + 2 * s * l}`,
+    visualization: { type: 'pyramid', base: lbl(s, u), l: lbl(l, u) },
+    metadata: { topic: 'surface-area-pyramid', difficulty },
   };
 };
