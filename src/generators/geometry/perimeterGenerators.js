@@ -1,4 +1,7 @@
 import _ from 'lodash';
+import {
+  mode, sf, ask, closing, val, EXACT,
+} from './solidsGenerators';
 
 const NL = '\n';
 const UNITS = ['cm', 'm', 'mm'];
@@ -11,37 +14,52 @@ const piTerm = (n) => (n === 1 ? '\\pi' : `${n}\\pi`);
 export const generateCircumferenceCircle = (options = {}) => {
   const { difficulty = 'core' } = options;
   const u = pick();
+  const m = mode();
 
   if (difficulty === 'stretch') {
-    const r = _.random(2, 40);
+    if (m === EXACT) {
+      const r = _.random(2, 40);
+      return {
+        instruction: 'Find the radius of the circle',
+        answer: `x = ${r}`,
+        answerUnits: `\\text{${u}}`,
+        workingOut: `2\\pi r = ${piTerm(2 * r)}${NL}2r = ${2 * r}${NL}r = ${r}`,
+        visualization: { type: 'circle', r: 'x', given: `C = ${2 * r}π ${u}`, unknown: 'r' },
+        metadata: { topic: 'circumference-circle', difficulty },
+      };
+    }
+    // Rayner Example 3.
+    const C = _.random(10, 400);
+    const r = C / (2 * Math.PI);
     return {
-      instruction: 'Find the radius of the circle',
-      answer: `x = ${r}`,
+      instruction: 'Find the radius of the circle. Give your answer to 3 significant figures',
+      answer: `x = ${sf(r)}`,
       answerUnits: `\\text{${u}}`,
-      workingOut: `2\\pi r = ${piTerm(2 * r)}${NL}2r = ${2 * r}${NL}r = ${r}`,
-      visualization: { type: 'circle', r: 'x', given: `C = ${2 * r}π ${u}`, unknown: 'r' },
+      workingOut: `2\\pi r = ${C}${NL}r = ${C} \\div (2\\pi)${NL}r = ${sf(r)} \\text{ (3 s.f.)}`,
+      visualization: { type: 'circle', r: 'x', given: `C = ${C} ${u}`, unknown: 'r' },
       metadata: { topic: 'circumference-circle', difficulty },
     };
   }
 
   const r = _.random(2, 40);
+  const k = 2 * r;
 
   if (difficulty === 'foundation') {
     return {
-      instruction: 'Find the circumference. Leave your answer in terms of π',
-      answer: piTerm(2 * r),
+      instruction: ask('Find the circumference', m),
+      answer: val(k, m),
       answerUnits: `\\text{${u}}`,
-      workingOut: `C = 2\\pi r${NL}C = 2 \\times \\pi \\times ${r}${NL}C = ${piTerm(2 * r)}`,
+      workingOut: `C = 2\\pi r${NL}C = 2 \\times \\pi \\times ${r}${NL}C = ${piTerm(k)}${closing(k, m, 'C')}`,
       visualization: { type: 'circle', r: lbl(r, u) },
       metadata: { topic: 'circumference-circle', difficulty },
     };
   }
 
   return {
-    instruction: 'Find the circumference. Leave your answer in terms of π',
-    answer: piTerm(2 * r),
+    instruction: ask('Find the circumference', m),
+    answer: val(k, m),
     answerUnits: `\\text{${u}}`,
-    workingOut: `C = \\pi d${NL}C = \\pi \\times ${2 * r}${NL}C = ${piTerm(2 * r)}`,
+    workingOut: `C = \\pi d${NL}C = \\pi \\times ${2 * r}${NL}C = ${piTerm(k)}${closing(k, m, 'C')}`,
     visualization: { type: 'circle', diameter: lbl(2 * r, u) },
     metadata: { topic: 'circumference-circle', difficulty },
   };
@@ -50,37 +68,52 @@ export const generateCircumferenceCircle = (options = {}) => {
 export const generateAreaCircle = (options = {}) => {
   const { difficulty = 'core' } = options;
   const u = pick();
+  const m = mode();
 
   if (difficulty === 'stretch') {
-    const r = _.random(2, 40);
+    if (m === EXACT) {
+      const r = _.random(2, 40);
+      return {
+        instruction: 'Find the radius of the circle',
+        answer: `x = ${r}`,
+        answerUnits: `\\text{${u}}`,
+        workingOut: `\\pi r^2 = ${piTerm(r * r)}${NL}r^2 = ${r * r}${NL}r = ${r}`,
+        visualization: { type: 'circle', r: 'x', given: `A = ${r * r}π ${u}²`, unknown: 'r' },
+        metadata: { topic: 'area-circle', difficulty },
+      };
+    }
+    // Rayner Example 4.
+    const A = _.random(10, 2000);
+    const r = Math.sqrt(A / Math.PI);
     return {
-      instruction: 'Find the radius of the circle',
-      answer: `x = ${r}`,
+      instruction: 'Find the radius of the circle. Give your answer to 3 significant figures',
+      answer: `x = ${sf(r)}`,
       answerUnits: `\\text{${u}}`,
-      workingOut: `\\pi r^2 = ${piTerm(r * r)}${NL}r^2 = ${r * r}${NL}r = ${r}`,
-      visualization: { type: 'circle', r: 'x', given: `A = ${r * r}π ${u}²`, unknown: 'r' },
+      workingOut: `\\pi r^2 = ${A}${NL}r^2 = ${A} \\div \\pi${NL}r = ${sf(r)} \\text{ (3 s.f.)}`,
+      visualization: { type: 'circle', r: 'x', given: `A = ${A} ${u}²`, unknown: 'r' },
       metadata: { topic: 'area-circle', difficulty },
     };
   }
 
   const r = _.random(2, 40);
+  const k = r * r;
 
   if (difficulty === 'foundation') {
     return {
-      instruction: 'Find the area. Leave your answer in terms of π',
-      answer: piTerm(r * r),
+      instruction: ask('Find the area', m),
+      answer: val(k, m),
       answerUnits: `\\text{${u}}^2`,
-      workingOut: `A = \\pi r^2${NL}A = \\pi \\times ${r}^2${NL}A = ${piTerm(r * r)}`,
+      workingOut: `A = \\pi r^2${NL}A = \\pi \\times ${r}^2${NL}A = ${piTerm(k)}${closing(k, m, 'A')}`,
       visualization: { type: 'circle', r: lbl(r, u) },
       metadata: { topic: 'area-circle', difficulty },
     };
   }
 
   return {
-    instruction: 'Find the area. Leave your answer in terms of π',
-    answer: piTerm(r * r),
+    instruction: ask('Find the area', m),
+    answer: val(k, m),
     answerUnits: `\\text{${u}}^2`,
-    workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}A = \\pi r^2 = \\pi \\times ${r}^2${NL}A = ${piTerm(r * r)}`,
+    workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}A = \\pi r^2 = \\pi \\times ${r}^2${NL}A = ${piTerm(k)}${closing(k, m, 'A')}`,
     visualization: { type: 'circle', diameter: lbl(2 * r, u) },
     metadata: { topic: 'area-circle', difficulty },
   };

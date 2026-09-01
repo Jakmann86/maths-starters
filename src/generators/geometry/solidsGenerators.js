@@ -32,6 +32,45 @@ const piTerm = (n) => (n === 1 ? '\\pi' : `${n}\\pi`);
 // the band with almost no distinct questions), print the honest fraction.
 const piThirds = (num) => (num % 3 === 0 ? piTerm(num / 3) : `\\frac{${num}}{3}\\pi`);
 
+// A pi-based question randomly asks for the exact multiple of pi or the 3
+// s.f. decimal, always stating which in the instruction, so nobody settles
+// into a habit of only ever seeing one form (Haese Example 5 prints both
+// side by side: 252pi, then 792 to 3 s.f.). Rounding is a presentation
+// choice, not a structural one, so it is randomised within every band
+// rather than tied to a particular difficulty.
+export const EXACT = 'exact';
+export const mode = () => (_.random(0, 1) ? EXACT : 'rounded');
+
+// 3 significant figures, the IGCSE default. Returns a string, not a number,
+// so trailing zeros survive: 1260 and 3.10 are both correct to 3 s.f. and
+// both must print exactly as written.
+export const sf = (x, n = 3) => {
+  if (!Number.isFinite(x) || x === 0) return '0';
+  let mag = Math.floor(Math.log10(Math.abs(x)));
+  let f = 10 ** (n - 1 - mag);
+  let rounded = Math.round(x * f) / f;
+  // Rounding can carry the value over a power-of-ten boundary (9.996 -> 10),
+  // which needs one fewer decimal place than the pre-rounding magnitude
+  // implied — recompute against the rounded value's own magnitude.
+  const roundedMag = Math.floor(Math.log10(Math.abs(rounded)));
+  if (roundedMag !== mag) {
+    mag = roundedMag;
+    f = 10 ** (n - 1 - mag);
+    rounded = Math.round(x * f) / f;
+  }
+  return rounded.toFixed(Math.max(0, n - 1 - mag));
+};
+
+// The Archivo parser (SPEC.md section 6) does not know \approx, so writing
+// one here would drop the whole line into KaTeX's serif for the sake of one
+// symbol. The rounded value gets its own working line ending in
+// \text{ (3 s.f.)} instead.
+export const ask = (what, m) => (m === EXACT
+  ? `${what}. Leave your answer in terms of π`
+  : `${what}. Give your answer to 3 significant figures`);
+export const closing = (k, m, sym) => (m === EXACT ? '' : `${NL}${sym} = ${sf(k * Math.PI)} \\text{ (3 s.f.)}`);
+export const val = (k, m) => (m === EXACT ? piTerm(k) : sf(k * Math.PI));
+
 // Pythagorean triples generated, never listed: Euclid's formula over a real
 // range of (m, n, k), then filtered to sane classroom sizes. The two legs
 // become r and h in random order, so the slant height is always a whole
@@ -174,16 +213,18 @@ export const generateSurfaceAreaCuboid = (options = {}) => {
 export const generateSurfaceAreaCylinder = (options = {}) => {
   const { difficulty = 'core' } = options;
   const u = pick();
+  const m = mode();
 
   if (difficulty === 'foundation') {
     // Hollow cylinder, no ends (Haese p235, first row of the table).
     const r = _.random(2, 20);
     const h = _.random(3, 30);
+    const k = 2 * r * h;
     return {
-      instruction: 'Find the curved surface area. Leave your answer in terms of π',
-      answer: piTerm(2 * r * h),
+      instruction: ask('Find the curved surface area', m),
+      answer: val(k, m),
       answerUnits: `\\text{${u}}^2`,
-      workingOut: `A = 2\\pi rh${NL}A = 2 \\times \\pi \\times ${r} \\times ${h}${NL}A = ${piTerm(2 * r * h)}`,
+      workingOut: `A = 2\\pi rh${NL}A = 2 \\times \\pi \\times ${r} \\times ${h}${NL}A = ${piTerm(k)}${closing(k, m, 'A')}`,
       visualization: { type: 'cylinder', r: lbl(r, u), h: lbl(h, u), openTop: true },
       metadata: { topic: 'surface-area-cylinder', difficulty },
     };
@@ -196,10 +237,10 @@ export const generateSurfaceAreaCylinder = (options = {}) => {
     const h = _.random(3, 30);
     const k = r * (2 * h + r);
     return {
-      instruction: 'The can is closed at one end only. Find its surface area in terms of π',
-      answer: piTerm(k),
+      instruction: ask('The can is closed at one end only. Find its surface area', m),
+      answer: val(k, m),
       answerUnits: `\\text{${u}}^2`,
-      workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}A = 2\\pi rh + \\pi r^2${NL}A = ${piTerm(2 * r * h)} + ${piTerm(r * r)} = ${piTerm(k)}`,
+      workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}A = 2\\pi rh + \\pi r^2${NL}A = ${piTerm(k)}${closing(k, m, 'A')}`,
       visualization: { type: 'cylinder', diameter: lbl(2 * r, u), h: lbl(h, u), openTop: true },
       metadata: { topic: 'surface-area-cylinder', difficulty },
     };
@@ -210,10 +251,10 @@ export const generateSurfaceAreaCylinder = (options = {}) => {
   const h = _.random(3, 30);
   const k = 2 * r * (h + r);
   return {
-    instruction: 'Find the total surface area. Leave your answer in terms of π',
-    answer: piTerm(k),
+    instruction: ask('Find the total surface area', m),
+    answer: val(k, m),
     answerUnits: `\\text{${u}}^2`,
-    workingOut: `A = 2\\pi rh + 2\\pi r^2${NL}A = ${piTerm(2 * r * h)} + ${piTerm(2 * r * r)}${NL}A = ${piTerm(k)}`,
+    workingOut: `A = 2\\pi rh + 2\\pi r^2${NL}A = ${piTerm(2 * r * h)} + ${piTerm(2 * r * r)}${NL}A = ${piTerm(k)}${closing(k, m, 'A')}`,
     visualization: { type: 'cylinder', r: lbl(r, u), h: lbl(h, u) },
     metadata: { topic: 'surface-area-cylinder', difficulty },
   };
@@ -222,51 +263,75 @@ export const generateSurfaceAreaCylinder = (options = {}) => {
 export const generateVolumeCylinder = (options = {}) => {
   const { difficulty = 'core' } = options;
   const u = pick();
+  const m = mode();
 
   if (difficulty === 'foundation') {
     const r = _.random(2, 20);
     const h = _.random(3, 30);
+    const k = r * r * h;
     return {
-      instruction: 'Find the volume. Leave your answer in terms of π',
-      answer: piTerm(r * r * h),
+      instruction: ask('Find the volume', m),
+      answer: val(k, m),
       answerUnits: `\\text{${u}}^3`,
-      workingOut: `V = \\pi r^2 h${NL}V = \\pi \\times ${r}^2 \\times ${h}${NL}V = ${piTerm(r * r * h)}`,
+      workingOut: `V = \\pi r^2 h${NL}V = \\pi \\times ${r}^2 \\times ${h}${NL}V = ${piTerm(k)}${closing(k, m, 'V')}`,
       visualization: { type: 'cylinder', r: lbl(r, u), h: lbl(h, u) },
       metadata: { topic: 'volume-cylinder', difficulty },
     };
   }
 
   if (difficulty === 'stretch') {
-    // Reverse: the volume is given, one dimension is missing. The given
+    // Reverse: a quantity is given, one dimension is missing. The given
     // quantity is not a length, so it cannot sit on the figure as a label —
-    // this is the one case that uses questionMath.
+    // this is the one case that uses questionMath. The exact form gives V as
+    // a pi-multiple and the answer is a whole number; the rounded form gives
+    // V as an ordinary number (Rayner Example 8) and the answer is 3 s.f.
     const r = _.random(2, 16);
-    const h = _.random(3, 30);
-    const k = r * r * h;
     const findH = _.random(0, 1) === 1;
-    const fig = { type: 'cylinder', r: lbl(r, u), h: lbl(h, u), unknown: findH ? 'h' : 'r' };
-    fig[findH ? 'h' : 'r'] = 'x';
+
+    if (m === EXACT) {
+      const h = _.random(3, 30);
+      const k = r * r * h;
+      const fig = { type: 'cylinder', r: lbl(r, u), h: lbl(h, u), unknown: findH ? 'h' : 'r' };
+      fig[findH ? 'h' : 'r'] = 'x';
+      return {
+        instruction: 'Find the missing length',
+        questionMath: `V = ${piTerm(k)}\\text{ ${u}}^3`,
+        answer: `x = ${findH ? h : r}`,
+        answerUnits: `\\text{${u}}`,
+        workingOut: findH
+          ? `\\pi r^2 h = ${piTerm(k)}${NL}${r * r}h = ${k}${NL}h = ${k} \\div ${r * r} = ${h}`
+          : `\\pi r^2 h = ${piTerm(k)}${NL}${h}r^2 = ${k}${NL}r^2 = ${r * r},\\ r = ${r}`,
+        visualization: fig,
+        metadata: { topic: 'volume-cylinder', difficulty },
+      };
+    }
+
+    const V = _.random(50, 4000);
+    const known = _.random(3, 25);
+    const answer = findH ? V / (Math.PI * known * known) : Math.sqrt(V / (Math.PI * known));
+    const fig = { type: 'cylinder', r: findH ? lbl(known, u) : 'x', h: findH ? 'x' : lbl(known, u), unknown: findH ? 'h' : 'r' };
     return {
-      instruction: 'Find the missing length',
-      questionMath: `V = ${piTerm(k)}\\text{ ${u}}^3`,
-      answer: `x = ${findH ? h : r}`,
+      instruction: 'Find the missing length. Give your answer to 3 significant figures',
+      questionMath: `V = ${V}\\text{ ${u}}^3`,
+      answer: `x = ${sf(answer)}`,
       answerUnits: `\\text{${u}}`,
       workingOut: findH
-        ? `\\pi r^2 h = ${piTerm(k)}${NL}${r * r}h = ${k}${NL}h = ${k} \\div ${r * r} = ${h}`
-        : `\\pi r^2 h = ${piTerm(k)}${NL}${h}r^2 = ${k}${NL}r^2 = ${r * r},\\ r = ${r}`,
+        ? `\\pi r^2 h = ${V}${NL}h = ${V} \\div (\\pi \\times ${known}^2)${NL}h = ${sf(answer)} \\text{ (3 s.f.)}`
+        : `\\pi r^2 h = ${V}${NL}r^2 = ${V} \\div (\\pi \\times ${known})${NL}r = ${sf(answer)} \\text{ (3 s.f.)}`,
       visualization: fig,
       metadata: { topic: 'volume-cylinder', difficulty },
     };
   }
 
-  // Diameter given, so it must be halved before substituting.
+  // core: diameter given, so it must be halved before substituting.
   const r = _.random(2, 20);
   const h = _.random(3, 30);
+  const k = r * r * h;
   return {
-    instruction: 'Find the volume. Leave your answer in terms of π',
-    answer: piTerm(r * r * h),
+    instruction: ask('Find the volume', m),
+    answer: val(k, m),
     answerUnits: `\\text{${u}}^3`,
-    workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}V = \\pi r^2 h = \\pi \\times ${r}^2 \\times ${h}${NL}V = ${piTerm(r * r * h)}`,
+    workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}V = \\pi r^2 h = \\pi \\times ${r}^2 \\times ${h}${NL}V = ${piTerm(k)}${closing(k, m, 'V')}`,
     visualization: { type: 'cylinder', diameter: lbl(2 * r, u), h: lbl(h, u) },
     metadata: { topic: 'volume-cylinder', difficulty },
   };
@@ -277,16 +342,18 @@ export const generateVolumeCylinder = (options = {}) => {
 export const generateSurfaceAreaCone = (options = {}) => {
   const { difficulty = 'core' } = options;
   const u = pick();
+  const m = mode();
 
   if (difficulty === 'foundation') {
     // Slant height given, curved surface only.
     const r = _.random(2, 20);
     const l = _.random(r + 2, r + 30);
+    const k = r * l;
     return {
-      instruction: 'Find the curved surface area. Leave your answer in terms of π',
-      answer: piTerm(r * l),
+      instruction: ask('Find the curved surface area', m),
+      answer: val(k, m),
       answerUnits: `\\text{${u}}^2`,
-      workingOut: `A = \\pi rl${NL}A = \\pi \\times ${r} \\times ${l}${NL}A = ${piTerm(r * l)}`,
+      workingOut: `A = \\pi rl${NL}A = \\pi \\times ${r} \\times ${l}${NL}A = ${piTerm(k)}${closing(k, m, 'A')}`,
       visualization: { type: 'cone', r: lbl(r, u), l: lbl(l, u) },
       metadata: { topic: 'surface-area-cone', difficulty },
     };
@@ -298,10 +365,10 @@ export const generateSurfaceAreaCone = (options = {}) => {
     const [r, h, l] = triple();
     const k = r * (l + r);
     return {
-      instruction: 'Find the total surface area. Leave your answer in terms of π',
-      answer: piTerm(k),
+      instruction: ask('Find the total surface area', m),
+      answer: val(k, m),
       answerUnits: `\\text{${u}}^2`,
-      workingOut: `l^2 = ${r}^2 + ${h}^2 = ${r * r + h * h},\\ l = ${l}${NL}A = \\pi rl + \\pi r^2${NL}A = ${piTerm(r * l)} + ${piTerm(r * r)} = ${piTerm(k)}`,
+      workingOut: `l^2 = ${r}^2 + ${h}^2 = ${r * r + h * h},\\ l = ${l}${NL}A = \\pi rl + \\pi r^2${NL}A = ${piTerm(k)}${closing(k, m, 'A')}`,
       visualization: { type: 'cone', r: lbl(r, u), h: lbl(h, u), l: 'l', unknown: 'l' },
       metadata: { topic: 'surface-area-cone', difficulty },
     };
@@ -312,10 +379,10 @@ export const generateSurfaceAreaCone = (options = {}) => {
   const l = _.random(r + 2, r + 30);
   const k = r * (l + r);
   return {
-    instruction: 'Find the total surface area. Leave your answer in terms of π',
-    answer: piTerm(k),
+    instruction: ask('Find the total surface area', m),
+    answer: val(k, m),
     answerUnits: `\\text{${u}}^2`,
-    workingOut: `A = \\pi rl + \\pi r^2${NL}A = ${piTerm(r * l)} + ${piTerm(r * r)}${NL}A = ${piTerm(k)}`,
+    workingOut: `A = \\pi rl + \\pi r^2${NL}A = ${piTerm(r * l)} + ${piTerm(r * r)}${NL}A = ${piTerm(k)}${closing(k, m, 'A')}`,
     visualization: { type: 'cone', r: lbl(r, u), l: lbl(l, u) },
     metadata: { topic: 'surface-area-cone', difficulty },
   };
@@ -324,44 +391,60 @@ export const generateSurfaceAreaCone = (options = {}) => {
 export const generateVolumeCone = (options = {}) => {
   const { difficulty = 'core' } = options;
   const u = pick();
+  const m = mode();
 
   if (difficulty === 'stretch') {
     const r = _.random(2, 16);
-    const h = 3 * _.random(1, 15);
-    const k = (r * r * h) / 3;
+
+    if (m === EXACT) {
+      const h = 3 * _.random(1, 15);
+      const k = (r * r * h) / 3;
+      return {
+        instruction: 'Find the height of the cone',
+        questionMath: `V = ${piTerm(k)}\\text{ ${u}}^3`,
+        answer: `x = ${h}`,
+        answerUnits: `\\text{${u}}`,
+        workingOut: `\\frac{1}{3}\\pi r^2 h = ${piTerm(k)}${NL}${r * r}h = ${3 * k}${NL}h = ${3 * k} \\div ${r * r} = ${h}`,
+        visualization: { type: 'cone', r: lbl(r, u), h: 'x', unknown: 'h' },
+        metadata: { topic: 'volume-cone', difficulty },
+      };
+    }
+
+    const V = _.random(50, 4000);
+    const h = (3 * V) / (Math.PI * r * r);
     return {
-      instruction: 'Find the height of the cone',
-      questionMath: `V = ${piTerm(k)}\\text{ ${u}}^3`,
-      answer: `x = ${h}`,
+      instruction: 'Find the height of the cone. Give your answer to 3 significant figures',
+      questionMath: `V = ${V}\\text{ ${u}}^3`,
+      answer: `x = ${sf(h)}`,
       answerUnits: `\\text{${u}}`,
-      workingOut: `\\frac{1}{3}\\pi r^2 h = ${piTerm(k)}${NL}${r * r}h = ${3 * k}${NL}h = ${3 * k} \\div ${r * r} = ${h}`,
+      workingOut: `\\frac{1}{3}\\pi r^2 h = ${V}${NL}h = (3 \\times ${V}) \\div (\\pi \\times ${r}^2)${NL}h = ${sf(h)} \\text{ (3 s.f.)}`,
       visualization: { type: 'cone', r: lbl(r, u), h: 'x', unknown: 'h' },
       metadata: { topic: 'volume-cone', difficulty },
     };
   }
 
-  // h is a multiple of 3 so the third cancels and the answer stays a whole
-  // multiple of pi rather than a fraction.
+  // h is a multiple of 3 so the third cancels and the exact answer stays a
+  // whole multiple of pi rather than a fraction.
   const r = _.random(2, 20);
   const h = 3 * _.random(1, 15);
   const k = (r * r * h) / 3;
 
   if (difficulty === 'foundation') {
     return {
-      instruction: 'Find the volume. Leave your answer in terms of π',
-      answer: piTerm(k),
+      instruction: ask('Find the volume', m),
+      answer: val(k, m),
       answerUnits: `\\text{${u}}^3`,
-      workingOut: `V = \\frac{1}{3}\\pi r^2 h${NL}V = \\frac{1}{3} \\times \\pi \\times ${r}^2 \\times ${h}${NL}V = ${piTerm(k)}`,
+      workingOut: `V = \\frac{1}{3}\\pi r^2 h${NL}V = \\frac{1}{3} \\times \\pi \\times ${r}^2 \\times ${h}${NL}V = ${piTerm(k)}${closing(k, m, 'V')}`,
       visualization: { type: 'cone', r: lbl(r, u), h: lbl(h, u) },
       metadata: { topic: 'volume-cone', difficulty },
     };
   }
 
   return {
-    instruction: 'Find the volume. Leave your answer in terms of π',
-    answer: piTerm(k),
+    instruction: ask('Find the volume', m),
+    answer: val(k, m),
     answerUnits: `\\text{${u}}^3`,
-    workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}V = \\frac{1}{3}\\pi r^2 h = \\frac{1}{3} \\times \\pi \\times ${r}^2 \\times ${h}${NL}V = ${piTerm(k)}`,
+    workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}V = \\frac{1}{3}\\pi r^2 h = \\frac{1}{3} \\times \\pi \\times ${r}^2 \\times ${h}${NL}V = ${piTerm(k)}${closing(k, m, 'V')}`,
     visualization: { type: 'cone', diameter: lbl(2 * r, u), h: lbl(h, u) },
     metadata: { topic: 'volume-cone', difficulty },
   };
@@ -372,16 +455,30 @@ export const generateVolumeCone = (options = {}) => {
 export const generateSurfaceAreaSphere = (options = {}) => {
   const { difficulty = 'core' } = options;
   const u = pick();
+  const m = mode();
 
   if (difficulty === 'stretch') {
-    const r = _.random(2, 40);
-    const k = 4 * r * r;
+    if (m === EXACT) {
+      const r = _.random(2, 40);
+      const k = 4 * r * r;
+      return {
+        instruction: 'Find the radius of the sphere',
+        questionMath: `A = ${piTerm(k)}\\text{ ${u}}^2`,
+        answer: `x = ${r}`,
+        answerUnits: `\\text{${u}}`,
+        workingOut: `4\\pi r^2 = ${piTerm(k)}${NL}r^2 = ${k} \\div 4 = ${r * r}${NL}r = ${r}`,
+        visualization: { type: 'sphere', r: 'x', unknown: 'r' },
+        metadata: { topic: 'surface-area-sphere', difficulty },
+      };
+    }
+    const A = _.random(30, 3000);
+    const r = Math.sqrt(A / (4 * Math.PI));
     return {
-      instruction: 'Find the radius of the sphere',
-      questionMath: `A = ${piTerm(k)}\\text{ ${u}}^2`,
-      answer: `x = ${r}`,
+      instruction: 'Find the radius of the sphere. Give your answer to 3 significant figures',
+      questionMath: `A = ${A}\\text{ ${u}}^2`,
+      answer: `x = ${sf(r)}`,
       answerUnits: `\\text{${u}}`,
-      workingOut: `4\\pi r^2 = ${piTerm(k)}${NL}r^2 = ${k} \\div 4 = ${r * r}${NL}r = ${r}`,
+      workingOut: `4\\pi r^2 = ${A}${NL}r^2 = ${A} \\div (4\\pi)${NL}r = ${sf(r)} \\text{ (3 s.f.)}`,
       visualization: { type: 'sphere', r: 'x', unknown: 'r' },
       metadata: { topic: 'surface-area-sphere', difficulty },
     };
@@ -392,20 +489,20 @@ export const generateSurfaceAreaSphere = (options = {}) => {
 
   if (difficulty === 'foundation') {
     return {
-      instruction: 'Find the surface area. Leave your answer in terms of π',
-      answer: piTerm(k),
+      instruction: ask('Find the surface area', m),
+      answer: val(k, m),
       answerUnits: `\\text{${u}}^2`,
-      workingOut: `A = 4\\pi r^2${NL}A = 4 \\times \\pi \\times ${r}^2${NL}A = ${piTerm(k)}`,
+      workingOut: `A = 4\\pi r^2${NL}A = 4 \\times \\pi \\times ${r}^2${NL}A = ${piTerm(k)}${closing(k, m, 'A')}`,
       visualization: { type: 'sphere', r: lbl(r, u) },
       metadata: { topic: 'surface-area-sphere', difficulty },
     };
   }
 
   return {
-    instruction: 'Find the surface area. Leave your answer in terms of π',
-    answer: piTerm(k),
+    instruction: ask('Find the surface area', m),
+    answer: val(k, m),
     answerUnits: `\\text{${u}}^2`,
-    workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}A = 4\\pi r^2 = 4 \\times \\pi \\times ${r}^2${NL}A = ${piTerm(k)}`,
+    workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}A = 4\\pi r^2 = 4 \\times \\pi \\times ${r}^2${NL}A = ${piTerm(k)}${closing(k, m, 'A')}`,
     visualization: { type: 'sphere', diameter: lbl(2 * r, u) },
     metadata: { topic: 'surface-area-sphere', difficulty },
   };
@@ -414,17 +511,32 @@ export const generateSurfaceAreaSphere = (options = {}) => {
 export const generateVolumeSphere = (options = {}) => {
   const { difficulty = 'core' } = options;
   const u = pick();
+  const m = mode();
 
   if (difficulty === 'stretch') {
-    // Cube root, integer by construction.
-    const r = _.random(2, 15);
-    const num = 4 * r * r * r;
+    if (m === EXACT) {
+      // Cube root, integer by construction.
+      const r = _.random(2, 15);
+      const num = 4 * r * r * r;
+      return {
+        instruction: 'Find the radius of the sphere',
+        questionMath: `V = ${piThirds(num)}\\text{ ${u}}^3`,
+        answer: `x = ${r}`,
+        answerUnits: `\\text{${u}}`,
+        workingOut: `\\frac{4}{3}\\pi r^3 = ${piThirds(num)}${NL}r^3 = ${num} \\div 4 = ${r * r * r}${NL}r = ${r}`,
+        visualization: { type: 'sphere', r: 'x', unknown: 'r' },
+        metadata: { topic: 'volume-sphere', difficulty },
+      };
+    }
+    // Rayner Example 10: volume given as a plain number, cube root, 3 s.f.
+    const V = _.random(50, 5000);
+    const r = Math.cbrt((3 * V) / (4 * Math.PI));
     return {
-      instruction: 'Find the radius of the sphere',
-      questionMath: `V = ${piThirds(num)}\\text{ ${u}}^3`,
-      answer: `x = ${r}`,
+      instruction: 'Find the radius of the sphere. Give your answer to 3 significant figures',
+      questionMath: `V = ${V}\\text{ ${u}}^3`,
+      answer: `x = ${sf(r)}`,
       answerUnits: `\\text{${u}}`,
-      workingOut: `\\frac{4}{3}\\pi r^3 = ${piThirds(num)}${NL}r^3 = ${num} \\div 4 = ${r * r * r}${NL}r = ${r}`,
+      workingOut: `\\frac{4}{3}\\pi r^3 = ${V}${NL}r^3 = (3 \\times ${V}) \\div (4\\pi)${NL}r = ${sf(r)} \\text{ (3 s.f.)}`,
       visualization: { type: 'sphere', r: 'x', unknown: 'r' },
       metadata: { topic: 'volume-sphere', difficulty },
     };
@@ -432,23 +544,27 @@ export const generateVolumeSphere = (options = {}) => {
 
   const r = _.random(2, 20);
   const num = 4 * r * r * r;
+  const exactStr = piThirds(num);
+  const rounded = sf((num / 3) * Math.PI);
+  const answer = m === EXACT ? exactStr : rounded;
+  const tail = m === EXACT ? '' : `${NL}V = ${rounded} \\text{ (3 s.f.)}`;
 
   if (difficulty === 'foundation') {
     return {
-      instruction: 'Find the volume. Leave your answer in terms of π',
-      answer: piThirds(num),
+      instruction: ask('Find the volume', m),
+      answer,
       answerUnits: `\\text{${u}}^3`,
-      workingOut: `V = \\frac{4}{3}\\pi r^3${NL}V = \\frac{4}{3} \\times \\pi \\times ${r}^3${NL}V = ${piThirds(num)}`,
+      workingOut: `V = \\frac{4}{3}\\pi r^3${NL}V = \\frac{4}{3} \\times \\pi \\times ${r}^3${NL}V = ${exactStr}${tail}`,
       visualization: { type: 'sphere', r: lbl(r, u) },
       metadata: { topic: 'volume-sphere', difficulty },
     };
   }
 
   return {
-    instruction: 'Find the volume. Leave your answer in terms of π',
-    answer: piThirds(num),
+    instruction: ask('Find the volume', m),
+    answer,
     answerUnits: `\\text{${u}}^3`,
-    workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}V = \\frac{4}{3}\\pi r^3 = \\frac{4}{3} \\times \\pi \\times ${r}^3${NL}V = ${piThirds(num)}`,
+    workingOut: `r = ${2 * r} \\div 2 = ${r}${NL}V = \\frac{4}{3}\\pi r^3${NL}V = ${exactStr}${tail}`,
     visualization: { type: 'sphere', diameter: lbl(2 * r, u) },
     metadata: { topic: 'volume-sphere', difficulty },
   };
