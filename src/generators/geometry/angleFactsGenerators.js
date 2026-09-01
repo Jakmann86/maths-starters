@@ -707,3 +707,94 @@ export const generatePolygonExteriorAngles = (options = {}) => {
     metadata: { topic: 'polygon-exterior-angles', difficulty, tags: ['angles', 'polygon', 'exterior'] },
   };
 };
+
+/* ------------------------------------------------ angle sum of a quadrilateral */
+
+const deg = (n) => `${n}^\\circ`;
+
+// Four vertex radii for the irregular polygon figure, so it reads as a
+// genuine quadrilateral rather than a square carrying mismatched labels.
+// Kept between 0.75 and 1.25 so it stays convex — every angle a quadrilateral
+// question of this kind produces is under 180, and a concave outline would
+// contradict that.
+const radiusFactors = () => [0, 1, 2, 3].map(() => _.round(_.random(0.75, 1.25, true), 2));
+
+const shuffleWithUnknown = (labels, unknownAt) => {
+  const idx = _.shuffle([0, 1, 2, 3]);
+  const out = [];
+  const mark = [];
+  idx.forEach((from, to) => {
+    out[to] = labels[from];
+    if (unknownAt.includes(from)) mark.push(to);
+  });
+  return [out, mark];
+};
+
+export const generateQuadrilateralAngleSum = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  if (difficulty === 'foundation') {
+    // Three angles given, find the fourth.
+    let a, b, c, d;
+    do {
+      a = _.random(30, 150);
+      b = _.random(30, 150);
+      c = _.random(30, 150);
+      d = 360 - a - b - c;
+    } while (d < 25 || d > 170);
+    const [labels, mark] = shuffleWithUnknown([deg(a), deg(b), deg(c), 'x'], [3]);
+    return {
+      instruction: 'Find the size of angle x',
+      answer: `x = ${d}^\\circ`,
+      workingOut: `\\text{angles in a quadrilateral add to } 360^\\circ${NL}${a} + ${b} + ${c} = ${a + b + c}${NL}x = 360 - ${a + b + c} = ${d}`,
+      visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors() },
+      metadata: { topic: 'quadrilateral-angle-sum', difficulty },
+    };
+  }
+
+  if (difficulty === 'core') {
+    // Two angles given and the remaining two are equal, so the last step is a
+    // division rather than a subtraction.
+    let a, b, x;
+    do {
+      a = _.random(30, 150);
+      b = _.random(30, 150);
+      x = (360 - a - b) / 2;
+    } while (!Number.isInteger(x) || x < 25 || x > 170);
+    const [labels, mark] = shuffleWithUnknown([deg(a), deg(b), 'x', 'x'], [2, 3]);
+    return {
+      instruction: 'The two unmarked angles are equal. Find x',
+      answer: `x = ${x}^\\circ`,
+      workingOut: `\\text{angles in a quadrilateral add to } 360^\\circ${NL}2x = 360 - ${a} - ${b} = ${360 - a - b}${NL}x = ${x}`,
+      visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors() },
+      metadata: { topic: 'quadrilateral-angle-sum', difficulty },
+    };
+  }
+
+  // Algebraic: three angles carry x, the fourth is numeric. Constructed from a
+  // whole-number x so the equation always solves cleanly.
+  let x, terms, numeric;
+  do {
+    x = _.random(15, 60);
+    terms = [0, 1, 2].map(() => ({ c: _.random(1, 3), d: _.random(-30, 40) }));
+    numeric = 360 - terms.reduce((s, t) => s + t.c * x + t.d, 0);
+  } while (
+    numeric < 25 || numeric > 170
+    || terms.some((t) => t.c * x + t.d < 20 || t.c * x + t.d > 170)
+  );
+  const show = ({ c, d }) => {
+    const head = c === 1 ? 'x' : `${c}x`;
+    if (d === 0) return head;
+    return `${head} ${d < 0 ? '-' : '+'} ${Math.abs(d)}`;
+  };
+  const sumC = terms.reduce((s, t) => s + t.c, 0);
+  const sumD = terms.reduce((s, t) => s + t.d, 0) + numeric;
+  const [labels, mark] = shuffleWithUnknown([...terms.map(show), deg(numeric)], [0, 1, 2]);
+  return {
+    instruction: 'Form an equation and solve it to find x',
+    answer: `x = ${x}`,
+    workingOut: `\\text{angles in a quadrilateral add to } 360^\\circ${NL}${sumC}x + ${sumD} = 360${NL}${sumC}x = ${360 - sumD}${NL}x = ${x}`,
+    visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors() },
+    metadata: { topic: 'quadrilateral-angle-sum', difficulty },
+  };
+};

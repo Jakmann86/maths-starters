@@ -145,9 +145,9 @@
     { "id": "20G", "ch": 20, "unit": "Transformation geometry", "lesson": "The inverse of a transformation", "page": 416, "skills": [], "status": "todo" },
     { "id": "20H", "ch": 20, "unit": "Transformation geometry", "lesson": "Combinations of transformations", "page": 417, "skills": [], "status": "todo" },
 
-    { "id": "21A", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "Quadratic equations", "page": 422, "skills": [], "status": "todo" },
-    { "id": "21B", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "The Null Factor law", "page": 423, "skills": [], "status": "todo" },
-    { "id": "21C", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "The quadratic formula", "page": 427, "skills": [], "status": "todo" },
+    { "id": "21A", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "Quadratic equations", "page": 422, "skills": ["solve-quadratic-roots"], "status": "ready" },
+    { "id": "21B", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "The Null Factor law", "page": 423, "skills": ["solve-quadratic-factorising"], "status": "ready" },
+    { "id": "21C", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "The quadratic formula", "page": 427, "skills": ["solve-quadratic-formula"], "status": "ready" },
     { "id": "21D", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "Quadratic functions", "page": 429, "skills": [], "status": "todo" },
     { "id": "21E", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "Graphs of quadratic functions", "page": 431, "skills": [], "status": "todo" },
     { "id": "21F", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "Axes intercepts", "page": 438, "skills": [], "status": "todo" },

@@ -17,6 +17,7 @@ import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
 import * as formulae from '../generators/algebra/formulaGenerators';
+import * as quadEq from '../generators/algebra/quadraticEquationGenerators';
 import * as solids from '../generators/geometry/solidsGenerators';
 import * as area from '../generators/geometry/areaGenerators';
 import * as perim from '../generators/geometry/perimeterGenerators';
@@ -96,6 +97,26 @@ export const skills = {
     label: 'Factorising: ax² + bx + c',
     topic: 'Factorising',
     generate: (opts) => factorising.generateFactoriseSplittingMiddle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 21A-C: solving quadratic equations ---
+  'solve-quadratic-roots': {
+    label: 'Quadratic equations of the form x² = k',
+    topic: 'Quadratic equations',
+    generate: (opts) => quadEq.generateSolveQuadraticRoots(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'solve-quadratic-factorising': {
+    label: 'Solving quadratics by factorising',
+    topic: 'Quadratic equations',
+    generate: (opts) => quadEq.generateSolveQuadraticFactorising(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'solve-quadratic-formula': {
+    label: 'Solving quadratics with the formula',
+    topic: 'Quadratic equations',
+    generate: (opts) => quadEq.generateSolveQuadraticFormula(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -217,6 +238,14 @@ export const skills = {
     label: 'Isosceles base angles',
     topic: 'Angles',
     generate: (opts) => angleFacts.generateIsoscelesBaseAngles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- angle sum of a quadrilateral ---
+  'quadrilateral-angle-sum': {
+    label: 'Angle sum of a quadrilateral',
+    topic: 'Angles',
+    generate: (opts) => angleFacts.generateQuadrilateralAngleSum(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 

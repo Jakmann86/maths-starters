@@ -932,7 +932,13 @@ export default function Figure({ fig, color, shown }) {
       if (!label) return;
       const prev = verts[(i - 1 + n) % n];
       const next = verts[(i + 1) % n];
-      const labelColor = i === unknownIndex ? color : 'var(--ink)';
+      // unknownIndex is either a single vertex or a list of them: a
+      // quadrilateral question can have two equal unknowns, or three vertices
+      // carrying the same x. Every existing caller passes a number and is
+      // unaffected.
+      const labelColor = (Array.isArray(unknownIndex) ? unknownIndex.includes(i) : i === unknownIndex)
+        ? color
+        : 'var(--ink)';
       elements.push(...angleMarker(v, prev, next, label, `pi${i}`, labelColor, {}, 6));
     });
     return svgWrap(elements, 200, 200, 'pgi', fig.big, shown);
