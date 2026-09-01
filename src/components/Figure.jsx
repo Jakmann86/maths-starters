@@ -641,12 +641,51 @@ export default function Figure({ fig, color, shown }) {
   }
 
   if (fig.type === 'circle') {
-    return svgWrap([
-      <circle key="c" cx={88} cy={88} r={72} fill="none" stroke="var(--ink)" strokeWidth={3} />,
-      figLine('r', 88, 88, 160, 88),
-      <circle key="d" cx={88} cy={88} r={4} fill="var(--ink)" />,
-      figLabel('l', 124, 80, fig.r, 'middle', color),
-    ], 176, 176, 'ci', fig.big, shown);
+    const CX = 88, CY = 88, RAD = 72;
+    // Defaults to 'r' so pythagoras-circle-problems, which predates this
+    // field and always asks for the radius, is unaffected.
+    const unknown = fig.unknown ?? 'r';
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [
+      <circle key="c" cx={CX} cy={CY} r={RAD} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      <circle key="d" cx={CX} cy={CY} r={4} fill="var(--ink)" />,
+    ];
+    if (fig.diameter) {
+      nodes.push(figLine('dl', CX - RAD, CY, CX + RAD, CY));
+      nodes.push(figLabel('dv', CX, CY - 10, fig.diameter, 'middle', col('diameter')));
+    } else if (fig.r) {
+      nodes.push(figLine('rl', CX, CY, CX + RAD, CY));
+      nodes.push(figLabel('rv', CX + 36, CY - 10, fig.r, 'middle', col('r')));
+    }
+    // A given circumference or area is not a length on the figure, so it sits
+    // below the centre where it cannot collide with the radius line.
+    if (fig.given) nodes.push(figLabel('gv', CX, CY + 34, fig.given, 'middle'));
+    return svgWrap(nodes, 176, 176, 'ci', fig.big, shown);
+  }
+
+  if (fig.type === 'l-shape') {
+    // Six sides, four labelled. The two unlabelled ones are the bottom
+    // (= a + c) and the left (= b + d), and deriving them is the skill —
+    // so they are deliberately left blank, never labelled.
+    const A = [20, 20], B = [140, 20], C = [140, 90], D = [230, 90], E = [230, 160], F = [20, 160];
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [
+      <polygon
+        key="p"
+        points={[A, B, C, D, E, F].map((p) => p.join(',')).join(' ')}
+        fill="none"
+        stroke="var(--ink)"
+        strokeWidth={3}
+        strokeLinejoin="round"
+      />,
+    ];
+    if (fig.a) nodes.push(figLabel('la', 80, 13, fig.a, 'middle', col('a')));
+    if (fig.b) nodes.push(figLabel('lb', 148, 60, fig.b, 'start', col('b')));
+    if (fig.c) nodes.push(figLabel('lc', 185, 82, fig.c, 'middle', col('c')));
+    if (fig.d) nodes.push(figLabel('ld', 238, 130, fig.d, 'start', col('d')));
+    if (fig.given) nodes.push(figLabel('lg', 100, 130, fig.given, 'middle'));
+    return svgWrap(nodes, 262, 175, 'ls', fig.big, shown);
   }
 
   if (fig.type === 'trapezium') {
@@ -657,6 +696,124 @@ export default function Figure({ fig, color, shown }) {
       figLabel('b', 98, 144, fig.b),
       figLabel('hh', 106, 80, fig.h, 'start', color),
     ], 196, 152, 'tz', fig.big, shown);
+  }
+
+  if (fig.type === 'rectangle') {
+    const L = 30, R = 200, T = 25, B = 125;
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [
+      <rect key="r" x={L} y={T} width={R - L} height={B - T} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      <path key="ra" d={`M ${L} ${B - 14} L ${L + 14} ${B - 14} L ${L + 14} ${B}`} fill="none" stroke="var(--ink)" strokeWidth={2} />,
+    ];
+    // The diagonal is drawn solid because it is a real edge of the data, not
+    // a construction line — the student has to decide it is irrelevant,
+    // which is the whole point of the band.
+    if (fig.diagonal) {
+      nodes.push(figLine('dg', L, B, R, T, { strokeWidth: 2 }));
+      // Sits in the upper-left half the diagonal cuts off — the only region
+      // with nothing else drawn in it — rather than on the diagonal's own
+      // midpoint, which the line itself runs straight through.
+      nodes.push(figLabel('dl', 85, 50, fig.diagonal, 'middle', col('diagonal')));
+    }
+    if (fig.l) nodes.push(figLabel('ll', (L + R) / 2, B + 24, fig.l, 'middle', col('l')));
+    if (fig.w) nodes.push(figLabel('wl', R + 10, (T + B) / 2 + 5, fig.w, 'start', col('w')));
+    if (fig.area) nodes.push(figLabel('ar', (L + R) / 2, (T + B) / 2 + 5, fig.area, 'middle'));
+    return svgWrap(nodes, 245, 155, 'rc', fig.big, shown);
+  }
+
+  if (fig.type === 'triangle-area') {
+    // Base horizontal, apex above it, perpendicular height dropped inside.
+    // Deliberately not the existing 'triangle' type, which labels angles.
+    const BL = [30, 145], BR = [210, 145], APEX = [95, 30];
+    const FOOT = [APEX[0], BL[1]];
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [
+      <polygon key="p" points={`${BL.join(',')} ${BR.join(',')} ${APEX.join(',')}`} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+      figLine('hl', APEX[0], APEX[1], FOOT[0], FOOT[1], { strokeDasharray: '6 6', strokeWidth: 2 }),
+      <path key="ra" d={`M ${FOOT[0]} ${FOOT[1] - 13} L ${FOOT[0] + 13} ${FOOT[1] - 13} L ${FOOT[0] + 13} ${FOOT[1]}`} fill="none" stroke="var(--ink)" strokeWidth={2} />,
+    ];
+    if (fig.b) nodes.push(figLabel('bl', 120, 168, fig.b, 'middle', col('b')));
+    // Lower down the dashed line than a height label "should" sit, but the
+    // right edge's slope closes the gap to it fast near the apex — even a
+    // short "10 cm" two rows up from here (y=95) still clips it. Down here,
+    // near the base, the triangle is wide enough for the full label width.
+    if (fig.h) nodes.push(figLabel('hh', FOOT[0] + 2, 127, fig.h, 'start', col('h')));
+    if (fig.slant) nodes.push(figLabel('sl', 48, 82, fig.slant, 'end', col('slant')));
+    // Below the base, alongside 'bl' rather than inside the triangle — 'area'
+    // only appears in the Stretch band, where 'slant' is never set, so there
+    // is nothing else down here for it to collide with.
+    if (fig.area) nodes.push(figLabel('ar', 178, 168, fig.area, 'start'));
+    return svgWrap(nodes, 240, 178, 'ta', fig.big, shown);
+  }
+
+  if (fig.type === 'parallelogram') {
+    // Shifted 30 units right of where the shape would naturally sit (and the
+    // viewBox widened to match) so the end-anchored slant label — which grows
+    // leftward and can be a 2-digit "24 mm"-length string — has real room
+    // before the slot's own clip boundary, rather than sitting right at the
+    // viewBox's x=0 edge where a long label gets cut off.
+    const TL = [90, 25], TR = [245, 25], BR = [205, 125], BL = [50, 125];
+    const FOOT = [TL[0], BL[1]];
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [
+      <polygon key="p" points={`${TL.join(',')} ${TR.join(',')} ${BR.join(',')} ${BL.join(',')}`} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+      figLine('hl', TL[0], TL[1], FOOT[0], FOOT[1], { strokeDasharray: '6 6', strokeWidth: 2 }),
+      <path key="ra" d={`M ${FOOT[0]} ${FOOT[1] - 13} L ${FOOT[0] + 13} ${FOOT[1] - 13} L ${FOOT[0] + 13} ${FOOT[1]}`} fill="none" stroke="var(--ink)" strokeWidth={2} />,
+    ];
+    if (fig.b) nodes.push(figLabel('bl', 127, 148, fig.b, 'middle', col('b')));
+    if (fig.h) nodes.push(figLabel('hh', FOOT[0] + 8, 82, fig.h, 'start', col('h')));
+    if (fig.slant) nodes.push(figLabel('sl', 60, 72, fig.slant, 'end', col('slant')));
+    if (fig.area) nodes.push(figLabel('ar', 170, 82, fig.area, 'middle'));
+    return svgWrap(nodes, 270, 160, 'pl', fig.big, shown);
+  }
+
+  if (fig.type === 'trapezium-area') {
+    // Sibling of the existing 'trapezium', which hardcodes h as the coloured
+    // label and has no distractor slot. Leave that branch untouched — it is
+    // still used elsewhere.
+    const TL = [58, 24], TR = [148, 24], BR = [190, 124], BL = [16, 124];
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [
+      <polygon key="p" points={`${TL.join(',')} ${TR.join(',')} ${BR.join(',')} ${BL.join(',')}`} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+      figLine('hl', 103, 24, 103, 124, { strokeDasharray: '6 6', strokeWidth: 2 }),
+      <path key="ra" d="M103 111 L116 111 L116 124" fill="none" stroke="var(--ink)" strokeWidth={2} />,
+    ];
+    if (fig.a) nodes.push(figLabel('al', 103, 16, fig.a, 'middle', col('a')));
+    if (fig.b) nodes.push(figLabel('bl', 103, 146, fig.b, 'middle', col('b')));
+    // Right edge (TR to BR) widens going down, and starting hard against the
+    // dashed line rather than 8 units clear of it buys back the room that
+    // costs — at the original (111, 80) even a plain "10 cm" clipped it.
+    if (fig.h) nodes.push(figLabel('hh', 106, 100, fig.h, 'start', col('h')));
+    if (fig.slant) nodes.push(figLabel('sl', 196, 80, fig.slant, 'start', col('slant')));
+    // 'area' only appears in the Stretch band, where 'slant' is never set —
+    // reuses that same outside-the-right-edge spot rather than the shape's
+    // own interior, which the left slanting edge cuts close to.
+    if (fig.area) nodes.push(figLabel('ar', 196, 80, fig.area, 'start'));
+    return svgWrap(nodes, 250, 158, 'tza', fig.big, shown);
+  }
+
+  if (fig.type === 'kite') {
+    const TOP = [100, 15], LEFT = [40, 80], RIGHT = [160, 80], BOT = [100, 165];
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [
+      <polygon key="p" points={`${TOP.join(',')} ${RIGHT.join(',')} ${BOT.join(',')} ${LEFT.join(',')}`} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+      // Both diagonals are construction lines, so both are dashed.
+      figLine('dh', LEFT[0], LEFT[1], RIGHT[0], RIGHT[1], { strokeDasharray: '6 6', strokeWidth: 2 }),
+      figLine('dv', TOP[0], TOP[1], BOT[0], BOT[1], { strokeDasharray: '6 6', strokeWidth: 2 }),
+      // One tick on each short side, two on each long side: the usual
+      // convention, and what tells a kite from a rhombus at a glance.
+      tickMark(TOP, LEFT, 'kl'),
+      tickMark(TOP, RIGHT, 'kr'),
+    ];
+    if (fig.d1) nodes.push(figLabel('d1', 66, 72, fig.d1, 'middle', col('d1')));
+    if (fig.d2) nodes.push(figLabel('d2', 110, 128, fig.d2, 'start', col('d2')));
+    if (fig.area) nodes.push(figLabel('ar', 100, 185, fig.area, 'middle'));
+    return svgWrap(nodes, 220, 195, 'kt', fig.big, shown);
   }
 
   if (fig.type === 'parallel-transversal') {

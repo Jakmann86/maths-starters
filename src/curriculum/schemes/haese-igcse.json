@@ -67,9 +67,9 @@
     { "id": "8E", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Three-dimensional problems", "page": 185, "skills": ["pythagoras-3d-diagonal"], "status": "todo" },
 
     { "id": "9A", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Length", "page": 192, "skills": [], "status": "todo" },
-    { "id": "9B", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Perimeter", "page": 194, "skills": [], "status": "todo" },
-    { "id": "9C", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Area", "page": 196, "skills": [], "status": "todo" },
-    { "id": "9D", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Circles and sectors", "page": 201, "skills": [], "status": "todo" },
+    { "id": "9B", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Perimeter", "page": 194, "skills": ["perimeter-rectangle", "perimeter-compound"], "status": "ready" },
+    { "id": "9C", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Area", "page": 196, "skills": ["area-rectangle", "area-triangle", "area-parallelogram", "area-trapezium", "area-kite", "area-compound"], "status": "ready" },
+    { "id": "9D", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Circles and sectors", "page": 201, "skills": ["circumference-circle", "area-circle"], "status": "ready" },
 
     { "id": "10A", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Percentage", "page": 209, "skills": [], "status": "todo" },
     { "id": "10B", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Profit and loss", "page": 211, "skills": [], "status": "todo" },

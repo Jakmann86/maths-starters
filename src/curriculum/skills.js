@@ -18,6 +18,8 @@ import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
 import * as formulae from '../generators/algebra/formulaGenerators';
 import * as solids from '../generators/geometry/solidsGenerators';
+import * as area from '../generators/geometry/areaGenerators';
+import * as perim from '../generators/geometry/perimeterGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -470,6 +472,72 @@ export const skills = {
     topic: 'Volume',
     generate: (opts) => solids.generateVolumePyramid(opts),
     difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 9C / Rayner 4.1: area of plane shapes ---
+  'area-rectangle': {
+    label: 'Area of a rectangle',
+    topic: 'Area',
+    generate: (opts) => area.generateAreaRectangle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'area-triangle': {
+    label: 'Area of a triangle',
+    topic: 'Area',
+    generate: (opts) => area.generateAreaTriangle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'area-parallelogram': {
+    label: 'Area of a parallelogram',
+    topic: 'Area',
+    generate: (opts) => area.generateAreaParallelogram(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'area-trapezium': {
+    label: 'Area of a trapezium',
+    topic: 'Area',
+    generate: (opts) => area.generateAreaTrapezium(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'area-kite': {
+    label: 'Area of a kite',
+    topic: 'Area',
+    generate: (opts) => area.generateAreaKite(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'area-compound': {
+    label: 'Area of a compound shape',
+    topic: 'Area',
+    generate: (opts) => perim.generateAreaCompound(opts),
+    difficulties: ['foundation', 'core'],
+  },
+
+  // --- Haese 9D / Rayner 4.2: circles ---
+  'circumference-circle': {
+    label: 'Circumference of a circle',
+    topic: 'Circles',
+    generate: (opts) => perim.generateCircumferenceCircle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'area-circle': {
+    label: 'Area of a circle',
+    topic: 'Circles',
+    generate: (opts) => perim.generateAreaCircle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 9B: perimeter ---
+  'perimeter-rectangle': {
+    label: 'Perimeter of a rectangle',
+    topic: 'Perimeter',
+    generate: (opts) => perim.generatePerimeterRectangle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'perimeter-compound': {
+    label: 'Perimeter of a compound shape',
+    topic: 'Perimeter',
+    generate: (opts) => perim.generatePerimeterCompound(opts),
+    difficulties: ['foundation', 'core'],
   },
 };
 
