@@ -21,6 +21,8 @@ import * as quadEq from '../generators/algebra/quadraticEquationGenerators';
 import * as solids from '../generators/geometry/solidsGenerators';
 import * as area from '../generators/geometry/areaGenerators';
 import * as perim from '../generators/geometry/perimeterGenerators';
+import * as circleThm from '../generators/geometry/circleTheoremGenerators';
+import * as pct from '../generators/number/percentageGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -567,6 +569,54 @@ export const skills = {
     topic: 'Perimeter',
     generate: (opts) => perim.generatePerimeterCompound(opts),
     difficulties: ['foundation', 'core'],
+  },
+
+  // --- Haese 27A-B: circle theorems ---
+  'angle-in-semicircle': {
+    label: 'The angle in a semi-circle',
+    topic: 'Circle theorems',
+    generate: (opts) => circleThm.generateAngleInSemicircle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'angle-at-centre': {
+    label: 'The angle at the centre',
+    topic: 'Circle theorems',
+    generate: (opts) => circleThm.generateAngleAtCentre(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'cyclic-quadrilateral': {
+    label: 'Cyclic quadrilaterals',
+    topic: 'Circle theorems',
+    generate: (opts) => circleThm.generateCyclicQuadrilateral(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 10A, 10D, 10E: percentages ---
+  'percentage-of-amount': {
+    label: 'Percentage of an amount',
+    topic: 'Percentages',
+    generate: (opts) => pct.generatePercentageOfAmount(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'percentage-multiplier': {
+    label: 'Percentage multipliers',
+    topic: 'Percentages',
+    generate: (opts) => pct.generatePercentageMultiplier(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'percentage-change': {
+    label: 'Percentage increase and decrease',
+    topic: 'Percentages',
+    generate: (opts) => pct.generatePercentageChange(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 6B: index laws ---
+  'index-laws': {
+    label: 'Index laws',
+    topic: 'Indices',
+    generate: (opts) => pct.generateIndexLaws(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
   },
 };
 

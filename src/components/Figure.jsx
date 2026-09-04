@@ -136,6 +136,30 @@ function pointAngleMarker(cx, cy, deg1, deg2, gapDeg, label, keyBase, labelColor
   return nodes;
 }
 
+// Shared by the three circle-theorem figures below (semicircle, angle at the
+// centre, cyclic quadrilateral): one circle, and every configuration point on
+// it placed by SVG angle rather than by hand — `rotate` (0/90/180/270, chosen
+// per question) is added to each point's angle before the coordinate is
+// computed, so the whole configuration turns as a rigid shape and nothing
+// else about a branch needs to change.
+const CIRC = { cx: 110, cy: 110, r: 88 };
+const onCircle = (degrees, rotate = 0) => {
+  const t = ((degrees + rotate) * Math.PI) / 180;
+  return [CIRC.cx + CIRC.r * Math.cos(t), CIRC.cy + CIRC.r * Math.sin(t)];
+};
+const circleOutline = () => (
+  <circle key="o" cx={CIRC.cx} cy={CIRC.cy} r={CIRC.r} fill="none" stroke="var(--ink)" strokeWidth={3} />
+);
+// A small square at `vertex`, in the corner between the rays to p1 and p2.
+const rightAngleAt = (vertex, p1, p2, key, size = 13) => {
+  const u1 = unitVec(p1[0] - vertex[0], p1[1] - vertex[1]);
+  const u2 = unitVec(p2[0] - vertex[0], p2[1] - vertex[1]);
+  const a = [vertex[0] + u1[0] * size, vertex[1] + u1[1] * size];
+  const b = [vertex[0] + (u1[0] + u2[0]) * size, vertex[1] + (u1[1] + u2[1]) * size];
+  const c = [vertex[0] + u2[0] * size, vertex[1] + u2[1] * size];
+  return <path key={key} d={`M ${a[0]} ${a[1]} L ${b[0]} ${b[1]} L ${c[0]} ${c[1]}`} fill="none" stroke="var(--ink)" strokeWidth={2} />;
+};
+
 export default function Figure({ fig, color, shown }) {
   if (!fig) return null;
 
@@ -661,6 +685,131 @@ export default function Figure({ fig, color, shown }) {
     // below the centre where it cannot collide with the radius line.
     if (fig.given) nodes.push(figLabel('gv', CX, CY + 34, fig.given, 'middle'));
     return svgWrap(nodes, 176, 176, 'ci', fig.big, shown);
+  }
+
+  if (fig.type === 'circle-semicircle') {
+    // AB is a diameter through the centre, C is elsewhere on the circle, so
+    // angle ACB is a right angle. The two remaining angles sum to 90.
+    const rot = fig.rotate ?? 0;
+    const A = onCircle(180, rot), B = onCircle(0, rot), C = onCircle(240, rot);
+    const O = [CIRC.cx, CIRC.cy];
+    const colA = fig.unknown === 'A' || fig.unknown === 'both' ? color : 'var(--ink)';
+    const colB = fig.unknown === 'B' || fig.unknown === 'both' ? color : 'var(--ink)';
+    const nodes = [
+      circleOutline(),
+      figLine('ab', A[0], A[1], B[0], B[1], { strokeWidth: 2 }),
+      figLine('ac', A[0], A[1], C[0], C[1]),
+      figLine('cb', C[0], C[1], B[0], B[1]),
+      <circle key="ctr" cx={O[0]} cy={O[1]} r={4} fill="var(--ink)" />,
+      rightAngleAt(C, A, B, 'ra'),
+    ];
+    if (fig.angleA) nodes.push(...angleMarker(A, C, B, fig.angleA, 'sa', colA, {}, 22));
+    if (fig.angleB) nodes.push(...angleMarker(B, C, A, fig.angleB, 'sb', colB, {}, 22));
+    return svgWrap(nodes, 240, 240, 'csc', fig.big, shown);
+  }
+
+  if (fig.type === 'circle-angle-centre') {
+    // A and B on the circle, P on the major arc. The drawn angle at O really
+    // is twice the drawn angle at P.
+    const rot = fig.rotate ?? 0;
+    const A = onCircle(150, rot), B = onCircle(30, rot), P = onCircle(270, rot);
+    const O = [CIRC.cx, CIRC.cy];
+    const colC = fig.unknown === 'centre' ? color : 'var(--ink)';
+    const colP = fig.unknown === 'circumference' ? color : 'var(--ink)';
+    // A, B and P sit exactly 120deg apart (150, 30, 270), so the gap centred
+    // on local 90deg — the one the non-reflex centre-angle arc occupies — is
+    // the only one still clear once the reflex arc sweeps the other two. Pick
+    // whichever is free and turn it by `rot` with the rest of the figure,
+    // rather than a fixed screen-space offset that drifts onto a ray at some
+    // rotations (it used to sit almost on top of line OB at rotate=90).
+    const oGap = ((fig.reflex ? 90 : 210) + rot) * (Math.PI / 180);
+    const oLabelPos = [O[0] + Math.cos(oGap) * 20, O[1] + Math.sin(oGap) * 20 + 5];
+    const nodes = [
+      circleOutline(),
+      figLine('oa', O[0], O[1], A[0], A[1]),
+      figLine('ob', O[0], O[1], B[0], B[1]),
+      figLine('pa', P[0], P[1], A[0], A[1]),
+      figLine('pb', P[0], P[1], B[0], B[1]),
+      <circle key="ctr" cx={O[0]} cy={O[1]} r={4} fill="var(--ink)" />,
+      figLabel('ol', oLabelPos[0], oLabelPos[1], 'O', 'middle'),
+    ];
+    if (fig.centre) {
+      // The reflex case sweeps the long way round, past P. pointAngleMarker
+      // already sets the SVG large-arc flag from gapDeg, so the arc itself
+      // is drawn the same way either way.
+      const gap = fig.reflex ? 240 : 120;
+      const marker = pointAngleMarker(O[0], O[1], 150 + rot, 30 + rot, gap, fig.centre, 'ac', colC);
+      if (fig.reflex) {
+        // pointAngleMarker's own label sits at the sweep's true angular
+        // midpoint — which, for this fixed A/B/P configuration, is exactly
+        // P's own direction from O (the reflex angle is defined to sweep
+        // past P), the same spot the circumference angle's own label sits.
+        // Keep the arc pointAngleMarker drew, but move the label further
+        // round the same sweep, clear of both P's label and the OA line.
+        const text = plainAngleLabel(fig.centre);
+        const labelDeg = 150 + rot + 55;
+        const labelR = 40 + Math.max(0, text.length - 1) * 4;
+        const lx = O[0] + Math.cos((labelDeg * Math.PI) / 180) * labelR;
+        const ly = O[1] + Math.sin((labelDeg * Math.PI) / 180) * labelR;
+        nodes.push(marker[0], figLabel('ac-lbl', lx, ly + 5, text, 'middle', colC, 16));
+      } else {
+        nodes.push(...marker);
+      }
+    }
+    if (fig.circumference) nodes.push(...angleMarker(P, A, B, fig.circumference, 'ap', colP, {}, 24));
+    return svgWrap(nodes, 240, 240, 'cac', fig.big, shown);
+  }
+
+  if (fig.type === 'cyclic-quadrilateral') {
+    // Four points in order round the circle, so a is opposite c and b is
+    // opposite d.
+    const rot = fig.rotate ?? 0;
+    const V = [200, 290, 20, 110].map((d) => onCircle(d, rot));
+    const keys = ['a', 'b', 'c', 'd'];
+    const unknown = fig.unknown ?? [];
+    const nodes = [
+      circleOutline(),
+      <polygon key="q" points={V.map((p) => p.join(',')).join(' ')} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+    ];
+    V.forEach((v, i) => {
+      const label = fig[keys[i]];
+      if (!label) return;
+      const prev = V[(i + 3) % 4], next = V[(i + 1) % 4];
+      const col = unknown.includes(keys[i]) ? color : 'var(--ink)';
+      nodes.push(...angleMarker(v, prev, next, label, `cq${i}`, col, {}, 20));
+    });
+    return svgWrap(nodes, 240, 240, 'cqd', fig.big, shown);
+  }
+
+  if (fig.type === 'cyclic-quadrilateral-centre') {
+    // A composite Stretch case: the given is a centre angle on diagonal AC,
+    // and the unknown is an opposite-pair angle of the quadrilateral —
+    // solving it chains the centre-angle theorem into the opposite-angles
+    // rule, rather than testing either alone. A, B, C, D sit at uneven gaps
+    // (20/100/130/110), not the 90-90-90-90 square `cyclic-quadrilateral`
+    // uses — a diagonal there is a true diameter, which would make radii OA
+    // and OC collinear and the centre-angle wedge degenerate into a straight
+    // line no matter what it's labelled. B specifically sits off the AC arc's
+    // true bisector (not at its midpoint, local 260) — a vertex exactly at
+    // that midpoint has its own interior-angle bisector run straight back
+    // through O, landing its "x" label on top of the centre label.
+    const rot = fig.rotate ?? 0;
+    const A = onCircle(200, rot), B = onCircle(220, rot), C = onCircle(320, rot), D = onCircle(90, rot);
+    const O = [CIRC.cx, CIRC.cy];
+    const colB = fig.unknown === 'B' ? color : 'var(--ink)';
+    const colD = fig.unknown === 'D' ? color : 'var(--ink)';
+    const nodes = [
+      circleOutline(),
+      <polygon key="q" points={[A, B, C, D].map((p) => p.join(',')).join(' ')} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+      figLine('oa', O[0], O[1], A[0], A[1]),
+      figLine('oc', O[0], O[1], C[0], C[1]),
+      figLine('ac', A[0], A[1], C[0], C[1], { strokeDasharray: '5 5', strokeWidth: 2 }),
+      <circle key="ctr" cx={O[0]} cy={O[1]} r={4} fill="var(--ink)" />,
+    ];
+    nodes.push(...pointAngleMarker(O[0], O[1], 200 + rot, 320 + rot, 120, fig.centreAngle, 'cqc-o', 'var(--ink)'));
+    if (fig.unknown === 'B') nodes.push(...angleMarker(B, A, C, 'x', 'cqc-b', colB, {}, 20));
+    else nodes.push(...angleMarker(D, C, A, 'x', 'cqc-d', colD, {}, 20));
+    return svgWrap(nodes, 240, 240, 'cqc', fig.big, shown);
   }
 
   if (fig.type === 'l-shape') {

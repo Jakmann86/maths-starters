@@ -45,7 +45,7 @@
     { "id": "5C", "ch": 5, "unit": "Graphs, charts and tables", "lesson": "Using technology to graph data", "page": 119, "skills": [], "status": "skip" },
 
     { "id": "6A", "ch": 6, "unit": "Exponents and surds", "lesson": "Index notation", "page": 123, "skills": [], "status": "todo" },
-    { "id": "6B", "ch": 6, "unit": "Exponents and surds", "lesson": "Index laws", "page": 126, "skills": [], "status": "todo" },
+    { "id": "6B", "ch": 6, "unit": "Exponents and surds", "lesson": "Index laws", "page": 126, "skills": ["index-laws"], "status": "ready" },
     { "id": "6C", "ch": 6, "unit": "Exponents and surds", "lesson": "Zero and negative indices", "page": 129, "skills": ["indices-negative-fractional"], "status": "todo" },
     { "id": "6D", "ch": 6, "unit": "Exponents and surds", "lesson": "Standard form", "page": 131, "skills": [], "status": "todo" },
     { "id": "6E", "ch": 6, "unit": "Exponents and surds", "lesson": "Surds", "page": 134, "skills": [], "status": "todo" },
@@ -71,11 +71,11 @@
     { "id": "9C", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Area", "page": 196, "skills": ["area-rectangle", "area-triangle", "area-parallelogram", "area-trapezium", "area-kite", "area-compound"], "status": "ready" },
     { "id": "9D", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Circles and sectors", "page": 201, "skills": ["circumference-circle", "area-circle"], "status": "ready" },
 
-    { "id": "10A", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Percentage", "page": 209, "skills": [], "status": "todo" },
+    { "id": "10A", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Percentage", "page": 209, "skills": ["percentage-of-amount"], "status": "ready" },
     { "id": "10B", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Profit and loss", "page": 211, "skills": [], "status": "todo" },
     { "id": "10C", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Simple interest", "page": 214, "skills": [], "status": "todo" },
-    { "id": "10D", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Reverse percentage problems", "page": 217, "skills": [], "status": "todo" },
-    { "id": "10E", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Multipliers and chain percentage", "page": 218, "skills": [], "status": "todo" },
+    { "id": "10D", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Reverse percentage problems", "page": 217, "skills": ["percentage-of-amount"], "status": "ready" },
+    { "id": "10E", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Multipliers and chain percentage", "page": 218, "skills": ["percentage-multiplier", "percentage-change"], "status": "ready" },
     { "id": "10F", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Compound growth", "page": 222, "skills": [], "status": "todo" },
     { "id": "10G", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Speed, distance and time", "page": 224, "skills": [], "status": "todo" },
     { "id": "10H", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Travel graphs", "page": 226, "skills": [], "status": "todo" },
@@ -191,8 +191,8 @@
     { "id": "26C", "ch": 26, "unit": "Sequences", "lesson": "Geometric sequences", "page": 537, "skills": [], "status": "todo" },
     { "id": "26D", "ch": 26, "unit": "Sequences", "lesson": "The difference method for sequences", "page": 539, "skills": [], "status": "todo" },
 
-    { "id": "27A", "ch": 27, "unit": "Circle geometry", "lesson": "Circle theorems", "page": 547, "skills": [], "status": "todo" },
-    { "id": "27B", "ch": 27, "unit": "Circle geometry", "lesson": "Cyclic quadrilaterals", "page": 556, "skills": [], "status": "todo" },
+    { "id": "27A", "ch": 27, "unit": "Circle geometry", "lesson": "Circle theorems", "page": 547, "skills": ["angle-in-semicircle", "angle-at-centre"], "status": "ready" },
+    { "id": "27B", "ch": 27, "unit": "Circle geometry", "lesson": "Cyclic quadrilaterals", "page": 556, "skills": ["cyclic-quadrilateral"], "status": "ready" },
 
     { "id": "28A", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Rational exponents", "page": 566, "skills": ["indices-fractional-algebraic"], "status": "todo" },
     { "id": "28B", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Exponential functions", "page": 568, "skills": [], "status": "todo" },
