@@ -189,7 +189,7 @@
     { "id": "26A", "ch": 26, "unit": "Sequences", "lesson": "Number sequences", "page": 534, "skills": [], "status": "todo" },
     { "id": "26B", "ch": 26, "unit": "Sequences", "lesson": "Algebraic rules for sequences", "page": 535, "skills": [], "status": "todo" },
     { "id": "26C", "ch": 26, "unit": "Sequences", "lesson": "Geometric sequences", "page": 537, "skills": [], "status": "todo" },
-    { "id": "26D", "ch": 26, "unit": "Sequences", "lesson": "The difference method for sequences", "page": 539, "skills": [], "status": "todo" },
+    { "id": "26D", "ch": 26, "unit": "Sequences", "lesson": "The difference method for sequences", "page": 539, "skills": ["sequences-difference-method", "sequences-cubic-nth-term", "sequences-cubic-use-nth-term", "sequences-quadratic-nth-term"], "status": "ready" },
 
     { "id": "27A", "ch": 27, "unit": "Circle geometry", "lesson": "Circle theorems", "page": 547, "skills": ["angle-in-semicircle", "angle-at-centre"], "status": "ready" },
     { "id": "27B", "ch": 27, "unit": "Circle geometry", "lesson": "Cyclic quadrilaterals", "page": 556, "skills": ["cyclic-quadrilateral"], "status": "ready" },

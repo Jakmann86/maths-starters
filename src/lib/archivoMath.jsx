@@ -1,8 +1,8 @@
 // Parses one line of maths markup into Archivo-native React nodes.
 // Understands the original `~f{}{}` / `~r{}` shorthand plus the LaTeX
 // subset from SPEC.md §6: \frac{}{}, \sqrt{}, ^{}, _{}, \times, \div, \pm,
-// \le, \ge, \ne, \pi, \text{}, \circ (degrees), and plain algebra. Hyphens
-// before a digit or letter become U+2212.
+// \le, \ge, \ne, \pi, \Delta, \text{}, \circ (degrees), and plain algebra.
+// Hyphens before a digit or letter become U+2212.
 //
 // Returns `null` — instead of rendering anything — when it meets a command
 // it doesn't know, a `\frac` (or `~f`) nested two or more levels deep, or an
@@ -18,6 +18,7 @@ const SYMBOLS = {
   ne: '≠',
   pi: 'π',
   circ: '°',
+  Delta: 'Δ',
 };
 
 function matchBrace(s, i) {

@@ -16,6 +16,7 @@ import * as pythagoras from '../generators/geometry/pythagorasGenerators';
 import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
+import * as cubicSeq from '../generators/algebra/cubicSequenceGenerators';
 import * as formulae from '../generators/algebra/formulaGenerators';
 import * as quadEq from '../generators/algebra/quadraticEquationGenerators';
 import * as solids from '../generators/geometry/solidsGenerators';
@@ -375,6 +376,26 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 26D: the difference method and cubic sequences ---
+  'sequences-difference-method': {
+    label: 'The difference method: naming a sequence',
+    topic: 'Sequences',
+    generate: (opts) => cubicSeq.generateDifferenceMethod(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-cubic-use-nth-term': {
+    label: 'Cubic sequences: use the nth term rule',
+    topic: 'Sequences',
+    generate: (opts) => cubicSeq.generateCubicUseNthTerm(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-cubic-nth-term': {
+    label: 'Cubic sequences: find the nth term rule',
+    topic: 'Sequences',
+    generate: (opts) => cubicSeq.generateCubicNthTerm(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Puzzles: the retrieval pool, and the backstop every fallback chain in
   // SPEC.md 4.2 terminates in. No prerequisites, so these can always fill a slot.
   'magic-square': {
@@ -651,16 +672,70 @@ export const generateForSkill = (id, wanted = 'core') => {
 };
 
 /**
- * Distinct topic names, in order of first appearance in `skills` (SPEC.md
- * "Design revision: topic-level selection (v1)").
+ * Display order for the topic panel, grouped into curriculum strands.
+ *
+ * Kept deliberately separate from the catalogue's physical order: where a
+ * skill sits in this file and where a teacher sees it on screen are different
+ * decisions, and adding a skill should never silently reshuffle the panel.
+ *
+ * Within a strand, topics run in Haese chapter order.
  */
-export const topics = () => {
+export const STRANDS = [
+  { name: 'Number', topics: ['Indices', 'Percentages'] },
+  {
+    name: 'Algebra',
+    topics: [
+      'Expanding brackets',
+      'Factorising',
+      'Equations',
+      'Formulae and simultaneous equations',
+      'Quadratic equations',
+      'Sequences',
+    ],
+  },
+  { name: 'Geometry', topics: ['Angles', 'Pythagoras', 'Trigonometry', 'Circle theorems'] },
+  { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Circles', 'Surface area', 'Volume'] },
+  // Listed with nothing in it yet so that whoever adds averages or probability
+  // has somewhere obvious to put them. Empty strands are dropped before render.
+  { name: 'Statistics and probability', topics: [] },
+  { name: 'Problem solving', topics: ['Problem solving', 'Puzzles'] },
+];
+
+const catalogueTopics = () => {
   const seen = [];
   skillIds.forEach((id) => {
     const t = skills[id].topic;
     if (!seen.includes(t)) seen.push(t);
   });
   return seen;
+};
+
+/**
+ * Distinct topic names in strand order. Every topic in the catalogue appears
+ * exactly once, whether or not STRANDS mentions it — an unlisted topic is
+ * appended rather than dropped.
+ */
+export const topics = () => {
+  const all = catalogueTopics();
+  const listed = STRANDS.flatMap((s) => s.topics);
+  return [
+    ...listed.filter((t) => all.includes(t)),
+    ...all.filter((t) => !listed.includes(t)),
+  ];
+};
+
+/**
+ * The same topics grouped for the panel. Empty strands are dropped, and
+ * anything not listed in STRANDS lands in "Other" at the end.
+ */
+export const topicGroups = () => {
+  const all = catalogueTopics();
+  const listed = STRANDS.flatMap((s) => s.topics);
+  const groups = STRANDS
+    .map((s) => ({ name: s.name, topics: s.topics.filter((t) => all.includes(t)) }))
+    .filter((g) => g.topics.length > 0);
+  const leftover = all.filter((t) => !listed.includes(t));
+  return leftover.length ? [...groups, { name: 'Other', topics: leftover }] : groups;
 };
 
 /** Skill ids whose topic matches `topicName`, in catalogue order. */

@@ -75,23 +75,22 @@
   padding: 8px 26px 26px;
 }
 
-.topic-group {
-  padding-top: 20px;
+.topic-strand {
+  padding-top: 24px;
 }
 
-.topic-group-label {
-  font-size: 11px;
+.topic-strand-label {
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
   padding-bottom: 8px;
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 1px solid var(--hairline);
 }
 
-.topic-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.topic-item {
+  padding-top: 4px;
 }
 
 .topic-row {

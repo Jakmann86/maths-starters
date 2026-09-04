@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { topics, skillsInTopic, getSkill } from '../curriculum/skills.js';
+import { topicGroups, skillsInTopic, getSkill } from '../curriculum/skills.js';
 import './TopicPanel.css';
 
 // The pool picker (SPEC.md "Design revision: topic-level selection (v1)").
@@ -34,42 +34,47 @@ export default function TopicPanel({ open, selected, onToggle, onSelectAll, onSe
         </div>
 
         <div className="topic-panel-body">
-          {topics().map((topic) => {
-            const isSelected = selected.includes(topic);
-            const isExpanded = expanded.has(topic);
-            return (
-              <div key={topic} className="topic-group">
-                <div className="topic-header-row">
-                  <button
-                    type="button"
-                    className={`topic-toggle${isSelected ? ' is-selected' : ''}`}
-                    onClick={() => onToggle(topic)}
-                  >
-                    <span className={`topic-tick${isSelected ? ' is-checked' : ''}`}>
-                      {isSelected ? '✓' : ''}
-                    </span>
-                    <span className="topic-name">{topic}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="topic-expand-btn"
-                    onClick={() => toggleExpanded(topic)}
-                    aria-expanded={isExpanded}
-                    aria-label={`${isExpanded ? 'Hide' : 'Show'} ${topic} skills`}
-                  >
-                    {isExpanded ? '−' : '+'}
-                  </button>
-                </div>
-                {isExpanded && (
-                  <div className="topic-skill-list">
-                    {skillsInTopic(topic).map((id) => (
-                      <div key={id} className="topic-skill-row">{getSkill(id)?.label ?? id}</div>
-                    ))}
+          {topicGroups().map((group) => (
+            <section key={group.name} className="topic-strand">
+              <div className="topic-strand-label">{group.name}</div>
+              {group.topics.map((topic) => {
+                const isSelected = selected.includes(topic);
+                const isExpanded = expanded.has(topic);
+                return (
+                  <div key={topic} className="topic-item">
+                    <div className="topic-header-row">
+                      <button
+                        type="button"
+                        className={`topic-toggle${isSelected ? ' is-selected' : ''}`}
+                        onClick={() => onToggle(topic)}
+                      >
+                        <span className={`topic-tick${isSelected ? ' is-checked' : ''}`}>
+                          {isSelected ? '✓' : ''}
+                        </span>
+                        <span className="topic-name">{topic}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="topic-expand-btn"
+                        onClick={() => toggleExpanded(topic)}
+                        aria-expanded={isExpanded}
+                        aria-label={`${isExpanded ? 'Hide' : 'Show'} ${topic} skills`}
+                      >
+                        {isExpanded ? '−' : '+'}
+                      </button>
+                    </div>
+                    {isExpanded && (
+                      <div className="topic-skill-list">
+                        {skillsInTopic(topic).map((id) => (
+                          <div key={id} className="topic-skill-row">{getSkill(id)?.label ?? id}</div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              })}
+            </section>
+          ))}
         </div>
       </div>
     </div>
