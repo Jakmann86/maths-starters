@@ -3,7 +3,7 @@ import Figure from './Figure.jsx';
 import { iSize, qSize } from '../lib/typeSizing.js';
 
 export default function Slot({ label, colorVar, data, revealed, onRegenSame, onRegen, onSwap }) {
-  const { topic, instr, q, a, fig } = data;
+  const { topic, instr, q, qCompact, a, fig } = data;
 
   return (
     <section className="slot" style={{ '--c': colorVar }}>
@@ -50,7 +50,7 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
           <div className="slot-figure-wrap">
             <Figure fig={fig} color={colorVar} shown={revealed} />
           </div>
-          <div className="slot-question" style={{ fontSize: qSize(q, instr) }}>
+          <div className="slot-question" style={{ fontSize: qSize(q, instr, qCompact) }}>
             <MathDisplay math={q} />
           </div>
         </div>

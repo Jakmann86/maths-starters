@@ -73,7 +73,7 @@ export const generateSohcahtoaFindSide = (options = {}) => {
   return {
     instruction: 'Find the length of the marked side',
     answer: `x = ${unknownValue}`,
-    answerUnits: 'cm',
+    answerUnits: '\\text{cm}',
     workingOut: steps.join(NL),
     visualization: {
       type: 'right-triangle',

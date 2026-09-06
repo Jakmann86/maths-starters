@@ -46,12 +46,12 @@
 
     { "id": "6A", "ch": 6, "unit": "Exponents and surds", "lesson": "Index notation", "page": 123, "skills": [], "status": "todo" },
     { "id": "6B", "ch": 6, "unit": "Exponents and surds", "lesson": "Index laws", "page": 126, "skills": ["index-laws"], "status": "ready" },
-    { "id": "6C", "ch": 6, "unit": "Exponents and surds", "lesson": "Zero and negative indices", "page": 129, "skills": ["indices-negative-fractional"], "status": "todo" },
-    { "id": "6D", "ch": 6, "unit": "Exponents and surds", "lesson": "Standard form", "page": 131, "skills": [], "status": "todo" },
+    { "id": "6C", "ch": 6, "unit": "Exponents and surds", "lesson": "Zero and negative indices", "page": 129, "skills": ["indices-zero-negative"], "status": "ready" },
+    { "id": "6D", "ch": 6, "unit": "Exponents and surds", "lesson": "Standard form", "page": 131, "skills": ["standard-form-write", "standard-form-calculate"], "status": "ready" },
     { "id": "6E", "ch": 6, "unit": "Exponents and surds", "lesson": "Surds", "page": 134, "skills": [], "status": "todo" },
-    { "id": "6F", "ch": 6, "unit": "Exponents and surds", "lesson": "Properties of surds", "page": 137, "skills": [], "status": "todo" },
+    { "id": "6F", "ch": 6, "unit": "Exponents and surds", "lesson": "Properties of surds", "page": 137, "skills": ["surds-simplify"], "status": "ready" },
     { "id": "6G", "ch": 6, "unit": "Exponents and surds", "lesson": "Multiplication of surds", "page": 139, "skills": [], "status": "todo" },
-    { "id": "6H", "ch": 6, "unit": "Exponents and surds", "lesson": "Division by surds", "page": 142, "skills": [], "status": "todo" },
+    { "id": "6H", "ch": 6, "unit": "Exponents and surds", "lesson": "Division by surds", "page": 142, "skills": ["rationalise-denominator"], "status": "ready" },
 
     { "id": "7A", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Formula substitution", "page": 148, "skills": [], "status": "todo" },
     { "id": "7B", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Formula rearrangement", "page": 150, "skills": [], "status": "todo" },
@@ -95,10 +95,10 @@
 
     { "id": "13A", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Variables used in statistics", "page": 277, "skills": [], "status": "todo" },
     { "id": "13B", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Organising and describing discrete data", "page": 278, "skills": [], "status": "todo" },
-    { "id": "13C", "ch": 13, "unit": "Analysis of discrete data", "lesson": "The centre of a discrete data set", "page": 282, "skills": [], "status": "todo" },
-    { "id": "13D", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Measuring the spread of discrete data", "page": 285, "skills": [], "status": "todo" },
-    { "id": "13E", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Data in frequency tables", "page": 288, "skills": [], "status": "todo" },
-    { "id": "13F", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Grouped discrete data", "page": 290, "skills": [], "status": "todo" },
+    { "id": "13C", "ch": 13, "unit": "Analysis of discrete data", "lesson": "The centre of a discrete data set", "page": 282, "skills": ["averages-from-list"], "status": "ready" },
+    { "id": "13D", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Measuring the spread of discrete data", "page": 285, "skills": ["averages-from-list"], "status": "ready" },
+    { "id": "13E", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Data in frequency tables", "page": 288, "skills": ["averages-from-table"], "status": "ready" },
+    { "id": "13F", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Grouped discrete data", "page": 290, "skills": ["estimated-mean"], "status": "ready" },
     { "id": "13G", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Statistics from technology", "page": 292, "skills": [], "status": "skip" },
 
     { "id": "14A", "ch": 14, "unit": "Straight lines", "lesson": "Vertical and horizontal lines", "page": 297, "skills": [], "status": "todo" },
@@ -120,7 +120,7 @@
     { "id": "16C", "ch": 16, "unit": "Algebraic fractions", "lesson": "Adding and subtracting algebraic fractions", "page": 346, "skills": [], "status": "todo" },
     { "id": "16D", "ch": 16, "unit": "Algebraic fractions", "lesson": "More complicated fractions", "page": 348, "skills": [], "status": "todo" },
 
-    { "id": "17A", "ch": 17, "unit": "Continuous data", "lesson": "The mean of continuous data", "page": 354, "skills": [], "status": "todo" },
+    { "id": "17A", "ch": 17, "unit": "Continuous data", "lesson": "The mean of continuous data", "page": 354, "skills": ["estimated-mean"], "status": "ready" },
     { "id": "17B", "ch": 17, "unit": "Continuous data", "lesson": "Histograms", "page": 355, "skills": [], "status": "todo" },
     { "id": "17C", "ch": 17, "unit": "Continuous data", "lesson": "Cumulative frequency", "page": 359, "skills": [], "status": "todo" },
 
@@ -225,6 +225,6 @@
     { "id": "32C", "ch": 32, "unit": "Inequalities", "lesson": "Integer points in regions", "page": 644, "skills": [], "status": "todo" },
     { "id": "32D", "ch": 32, "unit": "Inequalities", "lesson": "Problem solving (extension)", "page": 645, "skills": [], "status": "skip" },
 
-    { "id": "PZ", "ch": null, "unit": "Puzzles", "lesson": "Retrieval puzzles", "page": null, "skills": ["symbol-puzzle", "magic-square"], "status": "ready" }
+    { "id": "PZ", "ch": null, "unit": "Puzzles", "lesson": "Retrieval puzzles", "page": null, "skills": ["symbol-puzzle", "magic-square", "arithmagon", "number-wall"], "status": "ready" }
   ]
 }

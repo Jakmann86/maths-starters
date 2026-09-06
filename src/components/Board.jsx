@@ -8,14 +8,20 @@ import { parseArchivoLine } from '../lib/archivoMath.jsx';
 import './Board.css';
 
 const SLOT_COLORS = ['var(--slot-1)', 'var(--slot-2)', 'var(--slot-3)', 'var(--slot-4)'];
-const DIFF = ['Foundation', 'Core', 'Stretch'];
+const DIFF = ['Foundation', 'Core', 'Stretch', 'Mixed'];
 const BANDS = ['foundation', 'core', 'stretch'];
+// In Mixed the four boxes ramp in reading order, so the last box is always the
+// hard one. Fixed rather than random: a teacher should be able to say "box 4
+// is the stretch" and be right every time.
+const MIXED = ['foundation', 'core', 'core', 'stretch'];
+const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 
 // Most generator output (SPEC.md §6) only ever emits \times, \text{} and
-// ^{}, all of which the Archivo parser handles. solve-power-equations at
-// stretch band is the one deliberate exception — it emits \sqrt[3]{}, which
-// is expected to fall back to KaTeX (DESIGN.md §6). Anything else logging
-// here is a parser bug.
+// ^{}, all of which the Archivo parser handles. Two deliberate exceptions
+// fall back to KaTeX (DESIGN.md §6): solve-power-equations at stretch band
+// emits \sqrt[3]{}, and indices-zero-negative at core band emits
+// \left(\frac{}{}\right) — \left/\right aren't in the Archivo subset (SPEC
+// §6). Anything else logging here is a parser bug.
 function warnIfUnparseable(id, field, text) {
   if (!text) return;
   String(text).split('\n').forEach((line, i) => {
@@ -37,14 +43,8 @@ function slotData(skillId, band) {
     topic: getSkill(skillId)?.label ?? skillId,
     instr: q.instruction,
     q: q.questionMath != null ? q.questionMath : (q.questionText ?? ''),
-    // answerUnits may be plain ('cm', as every generator before Chapter 11
-    // passes) or already-LaTeX ('\\text{cm}^3', where the exponent has to
-    // survive). Wrapping the plain case keeps it upright; passing the LaTeX
-    // case through keeps the superscript. Detecting on the backslash means
-    // no existing generator changes.
-    a: q.answerUnits
-      ? `${q.answer}\\text{ }${/\\/.test(q.answerUnits) ? q.answerUnits : `\\text{${q.answerUnits}}`}`
-      : q.answer,
+    qCompact: q.questionMathCompact === true,
+    a: q.answerUnits ? `${q.answer}\\text{ }${q.answerUnits}` : q.answer,
     w: q.workingOut,
     fig: q.visualization,
   };
@@ -54,18 +54,18 @@ function slotData(skillId, band) {
 // topic-level selection (v1)"), each starting at its topic's first skill.
 // Used on mount and by "New four" — every draw is independent, no memory of
 // the previous one.
-function drawBoxes(pool, band) {
-  return drawBoxTopics(pool, topics()).map((topic) => {
+function drawBoxes(pool, diff) {
+  return drawBoxTopics(pool, topics()).map((topic, i) => {
     const skillId = skillsInTopic(topic)[0];
-    return { topic, skillId, data: slotData(skillId, band) };
+    return { topic, skillId, data: slotData(skillId, bandFor(diff, i)) };
   });
 }
 
-// Re-rolls every box's question at the given band without touching topic or
-// skill selection — used by the difficulty stepper (fresh numbers at the
-// new band, same skills).
-function refreshBoxes(boxes, band) {
-  return boxes.map((b) => ({ ...b, data: slotData(b.skillId, band) }));
+// Re-rolls every box's question at the given difficulty without touching
+// topic or skill selection — used by the difficulty stepper (fresh numbers
+// at the new band, same skills).
+function refreshBoxes(boxes, diff) {
+  return boxes.map((b, i) => ({ ...b, data: slotData(b.skillId, bandFor(diff, i)) }));
 }
 
 export default function Board() {
@@ -82,21 +82,21 @@ export default function Board() {
   const regenAll = useCallback(() => setState((s) => ({
     ...s,
     revealed: false,
-    boxes: drawBoxes(s.pool, BANDS[s.diff]),
+    boxes: drawBoxes(s.pool, s.diff),
   })), []);
 
   const regenOne = (i) => setState((s) => {
     const boxes = s.boxes.slice();
     const { topic, skillId: current } = boxes[i];
     const skillId = nextSkillInTopic(topic, current);
-    boxes[i] = { topic, skillId, data: slotData(skillId, BANDS[s.diff]) };
+    boxes[i] = { topic, skillId, data: slotData(skillId, bandFor(s.diff, i)) };
     return { ...s, boxes };
   });
 
   const regenSame = (i) => setState((s) => {
     const boxes = s.boxes.slice();
     const { topic, skillId } = boxes[i];
-    boxes[i] = { topic, skillId, data: slotData(skillId, BANDS[s.diff]) };
+    boxes[i] = { topic, skillId, data: slotData(skillId, bandFor(s.diff, i)) };
     return { ...s, boxes };
   });
 
@@ -105,13 +105,13 @@ export default function Board() {
     const otherTopics = boxes.filter((_b, idx) => idx !== i).map((b) => b.topic);
     const topic = pickSwapTopic(s.pool, topics(), boxes[i].topic, otherTopics);
     const skillId = skillsInTopic(topic)[0];
-    boxes[i] = { topic, skillId, data: slotData(skillId, BANDS[s.diff]) };
+    boxes[i] = { topic, skillId, data: slotData(skillId, bandFor(s.diff, i)) };
     return { ...s, boxes };
   });
 
   const setDiff = (delta) => setState((s) => {
-    const diff = Math.min(2, Math.max(0, s.diff + delta));
-    return { ...s, diff, revealed: false, boxes: refreshBoxes(s.boxes, BANDS[diff]) };
+    const diff = Math.min(DIFF.length - 1, Math.max(0, s.diff + delta));
+    return { ...s, diff, revealed: false, boxes: refreshBoxes(s.boxes, diff) };
   });
 
   // Toggling only changes the pool; it takes effect on the next fresh draw
@@ -136,7 +136,7 @@ export default function Board() {
   useEffect(() => {
     setState((s) => {
       const pool = loadPool();
-      return { ...s, pool, boxes: drawBoxes(pool, BANDS[s.diff]) };
+      return { ...s, pool, boxes: drawBoxes(pool, s.diff) };
     });
   }, []);
 

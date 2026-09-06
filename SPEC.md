@@ -118,6 +118,11 @@ output to match the board's internal field names.
   instruction: 'Factorise',            // plain text, imperative
   questionMath: 'x^2 + 7x + 12',       // LaTeX, no delimiters
   questionText: undefined,             // instead of questionMath, for prose
+  questionMathCompact: undefined,      // true → render questionMath smaller
+                                        // (the "given" line of a reverse
+                                        // question, e.g. "Volume = 1030 cm^3",
+                                        // names the given, not the answer, so
+                                        // it shouldn't outsize it)
   answer: '(x + 3)(x + 4)',
   answerUnits: undefined,              // 'cm' — never baked into answer
   workingOut: '\\text{pair multiplying to } 12',

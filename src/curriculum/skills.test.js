@@ -51,12 +51,14 @@ describe('topic grouping', () => {
     expect(nextSkillInTopic('Equations', current)).toBe(ids[0]);
   });
 
-  it('returns the same skill for a single-skill topic', () => {
-    const single = topics().find((t) => skillsInTopic(t).length === 1);
-    expect(single).toBeTruthy();
-    const [id] = skillsInTopic(single);
-    expect(nextSkillInTopic(single, id)).toBe(id);
-    expect(nextSkillInTopic(single, null)).toBe(id);
+  // A single-skill topic makes ↻ a no-op — that was the Indices topic's
+  // defect before indices-zero-negative joined index-laws there. Assert the
+  // property directly rather than hunting for an example: every topic must
+  // hold at least two skills, so this can't silently reappear.
+  it('never leaves a topic with only one skill', () => {
+    topics().forEach((t) => {
+      expect(skillsInTopic(t).length, t).toBeGreaterThan(1);
+    });
   });
 
   it('returns the first skill for a null or unknown currentSkillId', () => {

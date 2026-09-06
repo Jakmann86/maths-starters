@@ -120,7 +120,8 @@ export const generateVolumeCuboid = (options = {}) => {
     const others = { l: [w, h], d: [l, h], h: [l, w] }[which];
     return {
       instruction: 'Find the missing length',
-      questionMath: `V = ${V}\\text{ ${u}}^3`,
+      questionMath: `\\text{Volume} = ${V}\\text{ ${u}}^3`,
+      questionMathCompact: true,
       answer: `x = ${value}`,
       answerUnits: `\\text{${u}}`,
       workingOut: `l \\times w \\times h = V${NL}${others[0]} \\times ${others[1]} \\times x = ${V}${NL}x = ${V} \\div ${others[0] * others[1]} = ${value}`,
@@ -295,7 +296,8 @@ export const generateVolumeCylinder = (options = {}) => {
       fig[findH ? 'h' : 'r'] = 'x';
       return {
         instruction: 'Find the missing length',
-        questionMath: `V = ${piTerm(k)}\\text{ ${u}}^3`,
+        questionMath: `\\text{Volume} = ${piTerm(k)}\\text{ ${u}}^3`,
+        questionMathCompact: true,
         answer: `x = ${findH ? h : r}`,
         answerUnits: `\\text{${u}}`,
         workingOut: findH
@@ -312,7 +314,8 @@ export const generateVolumeCylinder = (options = {}) => {
     const fig = { type: 'cylinder', r: findH ? lbl(known, u) : 'x', h: findH ? 'x' : lbl(known, u), unknown: findH ? 'h' : 'r' };
     return {
       instruction: 'Find the missing length. Give your answer to 3 significant figures',
-      questionMath: `V = ${V}\\text{ ${u}}^3`,
+      questionMath: `\\text{Volume} = ${V}\\text{ ${u}}^3`,
+      questionMathCompact: true,
       answer: `x = ${sf(answer)}`,
       answerUnits: `\\text{${u}}`,
       workingOut: findH
@@ -401,7 +404,8 @@ export const generateVolumeCone = (options = {}) => {
       const k = (r * r * h) / 3;
       return {
         instruction: 'Find the height of the cone',
-        questionMath: `V = ${piTerm(k)}\\text{ ${u}}^3`,
+        questionMath: `\\text{Volume} = ${piTerm(k)}\\text{ ${u}}^3`,
+        questionMathCompact: true,
         answer: `x = ${h}`,
         answerUnits: `\\text{${u}}`,
         workingOut: `\\frac{1}{3}\\pi r^2 h = ${piTerm(k)}${NL}${r * r}h = ${3 * k}${NL}h = ${3 * k} \\div ${r * r} = ${h}`,
@@ -414,7 +418,8 @@ export const generateVolumeCone = (options = {}) => {
     const h = (3 * V) / (Math.PI * r * r);
     return {
       instruction: 'Find the height of the cone. Give your answer to 3 significant figures',
-      questionMath: `V = ${V}\\text{ ${u}}^3`,
+      questionMath: `\\text{Volume} = ${V}\\text{ ${u}}^3`,
+      questionMathCompact: true,
       answer: `x = ${sf(h)}`,
       answerUnits: `\\text{${u}}`,
       workingOut: `\\frac{1}{3}\\pi r^2 h = ${V}${NL}h = (3 \\times ${V}) \\div (\\pi \\times ${r}^2)${NL}h = ${sf(h)} \\text{ (3 s.f.)}`,
@@ -463,7 +468,8 @@ export const generateSurfaceAreaSphere = (options = {}) => {
       const k = 4 * r * r;
       return {
         instruction: 'Find the radius of the sphere',
-        questionMath: `A = ${piTerm(k)}\\text{ ${u}}^2`,
+        questionMath: `\\text{Surface area} = ${piTerm(k)}\\text{ ${u}}^2`,
+        questionMathCompact: true,
         answer: `x = ${r}`,
         answerUnits: `\\text{${u}}`,
         workingOut: `4\\pi r^2 = ${piTerm(k)}${NL}r^2 = ${k} \\div 4 = ${r * r}${NL}r = ${r}`,
@@ -475,7 +481,8 @@ export const generateSurfaceAreaSphere = (options = {}) => {
     const r = Math.sqrt(A / (4 * Math.PI));
     return {
       instruction: 'Find the radius of the sphere. Give your answer to 3 significant figures',
-      questionMath: `A = ${A}\\text{ ${u}}^2`,
+      questionMath: `\\text{Surface area} = ${A}\\text{ ${u}}^2`,
+      questionMathCompact: true,
       answer: `x = ${sf(r)}`,
       answerUnits: `\\text{${u}}`,
       workingOut: `4\\pi r^2 = ${A}${NL}r^2 = ${A} \\div (4\\pi)${NL}r = ${sf(r)} \\text{ (3 s.f.)}`,
@@ -520,7 +527,8 @@ export const generateVolumeSphere = (options = {}) => {
       const num = 4 * r * r * r;
       return {
         instruction: 'Find the radius of the sphere',
-        questionMath: `V = ${piThirds(num)}\\text{ ${u}}^3`,
+        questionMath: `\\text{Volume} = ${piThirds(num)}\\text{ ${u}}^3`,
+        questionMathCompact: true,
         answer: `x = ${r}`,
         answerUnits: `\\text{${u}}`,
         workingOut: `\\frac{4}{3}\\pi r^3 = ${piThirds(num)}${NL}r^3 = ${num} \\div 4 = ${r * r * r}${NL}r = ${r}`,
@@ -533,7 +541,8 @@ export const generateVolumeSphere = (options = {}) => {
     const r = Math.cbrt((3 * V) / (4 * Math.PI));
     return {
       instruction: 'Find the radius of the sphere. Give your answer to 3 significant figures',
-      questionMath: `V = ${V}\\text{ ${u}}^3`,
+      questionMath: `\\text{Volume} = ${V}\\text{ ${u}}^3`,
+      questionMathCompact: true,
       answer: `x = ${sf(r)}`,
       answerUnits: `\\text{${u}}`,
       workingOut: `\\frac{4}{3}\\pi r^3 = ${V}${NL}r^3 = (3 \\times ${V}) \\div (4\\pi)${NL}r = ${sf(r)} \\text{ (3 s.f.)}`,
@@ -625,7 +634,8 @@ export const generateVolumePrism = (options = {}) => {
   fig[which] = 'x';
   return {
     instruction: 'Find the missing length',
-    questionMath: `V = ${V}\\text{ ${u}}^3`,
+    questionMath: `\\text{Volume} = ${V}\\text{ ${u}}^3`,
+    questionMathCompact: true,
     answer: `x = ${value}`,
     answerUnits: `\\text{${u}}`,
     // Substituting x in place shows the structure; a bare "V divided by the
@@ -722,7 +732,8 @@ export const generateVolumePyramid = (options = {}) => {
 
   return {
     instruction: 'Find the height of the pyramid',
-    questionMath: `V = ${V}\\text{ ${u}}^3`,
+    questionMath: `\\text{Volume} = ${V}\\text{ ${u}}^3`,
+    questionMathCompact: true,
     answer: `x = ${h}`,
     answerUnits: `\\text{${u}}`,
     workingOut: `\\frac{1}{3} \\times ${s}^2 \\times h = ${V}${NL}${s * s}h = ${3 * V}${NL}h = ${3 * V} \\div ${s * s} = ${h}`,

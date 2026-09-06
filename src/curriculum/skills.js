@@ -12,6 +12,7 @@ import * as factorising from '../generators/algebra/factorisingGenerators';
 import * as equations from '../generators/algebra/equationGenerators';
 import * as magicSquares from '../generators/puzzles/magicSquareGenerators';
 import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
+import * as arithmagon from '../generators/puzzles/arithmagonGenerators';
 import * as pythagoras from '../generators/geometry/pythagorasGenerators';
 import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
@@ -24,6 +25,8 @@ import * as area from '../generators/geometry/areaGenerators';
 import * as perim from '../generators/geometry/perimeterGenerators';
 import * as circleThm from '../generators/geometry/circleTheoremGenerators';
 import * as pct from '../generators/number/percentageGenerators';
+import * as ch6 from '../generators/number/chapter6Generators';
+import * as stats from '../generators/statistics/averagesGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -410,6 +413,18 @@ export const skills = {
     generate: (opts) => symbolPuzzles.generateSymbolPuzzle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'arithmagon': {
+    label: 'Arithmagons',
+    topic: 'Puzzles',
+    generate: (opts) => arithmagon.generateArithmagon(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'number-wall': {
+    label: 'Number walls',
+    topic: 'Puzzles',
+    generate: (opts) => arithmagon.generateNumberWall(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 
   // --- Haese 7: formulae and simultaneous equations -----------------------
   'formula-substitution': {
@@ -639,6 +654,62 @@ export const skills = {
     generate: (opts) => pct.generateIndexLaws(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+
+  // --- Haese 6C: zero and negative indices ---
+  'indices-zero-negative': {
+    label: 'Zero and negative indices',
+    topic: 'Indices',
+    generate: (opts) => ch6.generateIndicesZeroNegative(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 6D: standard form ---
+  'standard-form-write': {
+    label: 'Writing in standard form',
+    topic: 'Standard form',
+    generate: (opts) => ch6.generateStandardFormWrite(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'standard-form-calculate': {
+    label: 'Calculating in standard form',
+    topic: 'Standard form',
+    generate: (opts) => ch6.generateStandardFormCalculate(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 6E-6H: surds ---
+  'surds-simplify': {
+    label: 'Simplifying surds',
+    topic: 'Surds',
+    generate: (opts) => ch6.generateSurdsSimplify(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'rationalise-denominator': {
+    label: 'Rationalising the denominator',
+    topic: 'Surds',
+    generate: (opts) => ch6.generateRationaliseDenominator(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 13C-F, 17A: averages ---
+  'averages-from-list': {
+    label: 'Averages from a list',
+    topic: 'Statistics',
+    generate: (opts) => stats.generateAveragesFromList(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'averages-from-table': {
+    label: 'Averages from a frequency table',
+    topic: 'Statistics',
+    generate: (opts) => stats.generateAveragesFromTable(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'estimated-mean': {
+    label: 'Estimated mean of grouped data',
+    topic: 'Statistics',
+    generate: (opts) => stats.generateEstimatedMean(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 };
 
 export const skillIds = Object.keys(skills);
@@ -681,7 +752,7 @@ export const generateForSkill = (id, wanted = 'core') => {
  * Within a strand, topics run in Haese chapter order.
  */
 export const STRANDS = [
-  { name: 'Number', topics: ['Indices', 'Percentages'] },
+  { name: 'Number', topics: ['Indices', 'Standard form', 'Surds', 'Percentages'] },
   {
     name: 'Algebra',
     topics: [
@@ -695,9 +766,7 @@ export const STRANDS = [
   },
   { name: 'Geometry', topics: ['Angles', 'Pythagoras', 'Trigonometry', 'Circle theorems'] },
   { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Circles', 'Surface area', 'Volume'] },
-  // Listed with nothing in it yet so that whoever adds averages or probability
-  // has somewhere obvious to put them. Empty strands are dropped before render.
-  { name: 'Statistics and probability', topics: [] },
+  { name: 'Statistics', topics: ['Statistics'] },
   { name: 'Problem solving', topics: ['Problem solving', 'Puzzles'] },
 ];
 
@@ -711,32 +780,20 @@ const catalogueTopics = () => {
 };
 
 /**
- * Distinct topic names in strand order. Every topic in the catalogue appears
- * exactly once, whether or not STRANDS mentions it — an unlisted topic is
- * appended rather than dropped.
- */
-export const topics = () => {
-  const all = catalogueTopics();
-  const listed = STRANDS.flatMap((s) => s.topics);
-  return [
-    ...listed.filter((t) => all.includes(t)),
-    ...all.filter((t) => !listed.includes(t)),
-  ];
-};
-
-/**
- * The same topics grouped for the panel. Empty strands are dropped, and
- * anything not listed in STRANDS lands in "Other" at the end.
+ * Topics grouped for the panel. Anything not listed in STRANDS lands in
+ * "Other" at the end, so a topic added without a STRANDS entry doesn't
+ * silently disappear from the panel.
  */
 export const topicGroups = () => {
   const all = catalogueTopics();
   const listed = STRANDS.flatMap((s) => s.topics);
-  const groups = STRANDS
-    .map((s) => ({ name: s.name, topics: s.topics.filter((t) => all.includes(t)) }))
-    .filter((g) => g.topics.length > 0);
-  const leftover = all.filter((t) => !listed.includes(t));
-  return leftover.length ? [...groups, { name: 'Other', topics: leftover }] : groups;
+  const groups = STRANDS.map((s) => ({ name: s.name, topics: s.topics.filter((t) => all.includes(t)) }));
+  const rest = all.filter((t) => !listed.includes(t));
+  return rest.length ? [...groups, { name: 'Other', topics: rest }] : groups;
 };
+
+/** Every topic once, in panel order. */
+export const topics = () => topicGroups().flatMap((g) => g.topics);
 
 /** Skill ids whose topic matches `topicName`, in catalogue order. */
 export const skillsInTopic = (topicName) => skillIds.filter((id) => skills[id].topic === topicName);

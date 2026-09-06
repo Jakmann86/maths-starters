@@ -45,7 +45,7 @@ export const generatePythagorasHypotenuse = (options = {}) => {
   return {
     instruction: 'Find the length of the hypotenuse',
     answer,
-    answerUnits: 'cm',
+    answerUnits: '\\text{cm}',
     workingOut: steps.join(NL),
     visualization: { type: 'right-triangle', a: `${a} cm`, b: `${b} cm`, c: 'x', big: 1 },
     metadata: { topic: 'pythagoras-hypotenuse', difficulty },
@@ -93,7 +93,7 @@ export const generatePythagorasMissingSide = (options = {}) => {
   return {
     instruction: 'Find the length of the missing side',
     answer: `x = ${answerExpr}`,
-    answerUnits: 'cm',
+    answerUnits: '\\text{cm}',
     workingOut: steps.join(NL),
     visualization: {
       type: 'right-triangle',
@@ -137,7 +137,7 @@ export const generatePythagorasIsosceles = (options = {}) => {
   return {
     instruction: 'Find the height of the isosceles triangle',
     answer,
-    answerUnits: 'cm',
+    answerUnits: '\\text{cm}',
     workingOut: steps.join(NL),
     visualization: { type: 'isosceles-triangle', base: `${base} cm`, side: `${side} cm`, big: 1 },
     metadata: { topic: 'pythagoras-isosceles', difficulty },

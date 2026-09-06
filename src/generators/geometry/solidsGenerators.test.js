@@ -114,7 +114,7 @@ describe('volume-cylinder', () => {
       if (q.questionMath) {
         // stretch, reverse question
         const findH = fig.unknown === 'h';
-        const qmStr = q.questionMath.match(/V = (.+)\\text/)[1];
+        const qmStr = q.questionMath.match(/\\text{Volume} = (.+)\\text/)[1];
         const got = Number(q.answer.replace('x = ', ''));
         if (/\\pi/.test(qmStr)) {
           const k = parsePi(qmStr);
@@ -213,7 +213,7 @@ describe('volume-cone', () => {
 
       if (q.questionMath) {
         const r = numFrom(fig.r);
-        const qmStr = q.questionMath.match(/V = (.+)\\text/)[1];
+        const qmStr = q.questionMath.match(/\\text{Volume} = (.+)\\text/)[1];
         const got = Number(q.answer.replace('x = ', ''));
         if (/\\pi/.test(qmStr)) {
           const k = parsePi(qmStr);
@@ -261,7 +261,7 @@ describe('surface-area-sphere', () => {
       const fig = q.visualization;
 
       if (q.questionMath) {
-        const qmStr = q.questionMath.match(/A = (.+)\\text/)[1];
+        const qmStr = q.questionMath.match(/\\text{Surface area} = (.+)\\text/)[1];
         const got = Number(q.answer.replace('x = ', ''));
         if (/\\pi/.test(qmStr)) {
           const k = parsePi(qmStr);
@@ -306,7 +306,7 @@ describe('volume-sphere', () => {
       const fig = q.visualization;
 
       if (q.questionMath) {
-        const qmStr = q.questionMath.match(/V = (.+)\\text/)[1];
+        const qmStr = q.questionMath.match(/\\text{Volume} = (.+)\\text/)[1];
         const got = Number(q.answer.replace('x = ', ''));
         if (/\\pi/.test(qmStr)) {
           const fracMatch = qmStr.match(/^\\frac\{(\d+)\}\{3\}\\pi$/);

@@ -1195,5 +1195,90 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, W, 190, 'dg', fig.big, shown);
   }
 
+  if (fig.type === 'table') {
+    const rows = fig.rows;
+    if (!Array.isArray(rows) || !rows.length) return null;
+    const CH = 34;            // cell height
+    const CHAR = 9.5;         // approximate width of one character at .fig-label size
+    const PAD = 24;
+    // Each column is sized to its own longest entry, so "0 <= x < 20" gets the
+    // room it needs without padding out a column of single digits.
+    const widths = rows[0].map((_c, c) => {
+      const chars = Math.max(...rows.map((r) => String(r[c] ?? '').length));
+      return Math.max(46, chars * CHAR + PAD);
+    });
+    const x0 = widths.reduce((acc, w) => [...acc, acc[acc.length - 1] + w], [0]);
+    const W = x0[x0.length - 1];
+    const H = rows.length * CH;
+    const nodes = [];
+    // The header strip takes a light wash of the slot colour — the same
+    // treatment the cuboid's cross-section face gets, so the two read as the
+    // same idea.
+    if (fig.header === 'row') {
+      nodes.push(<rect key="hb" x={0} y={0} width={W} height={CH} fill={color} fillOpacity={0.12} stroke="none" />);
+    } else if (fig.header === 'column') {
+      nodes.push(<rect key="hb" x={0} y={0} width={widths[0]} height={H} fill={color} fillOpacity={0.12} stroke="none" />);
+    }
+    rows.forEach((row, r) => {
+      row.forEach((cell, c) => {
+        nodes.push(
+          <rect key={`c${r}-${c}`} x={x0[c]} y={r * CH} width={widths[c]} height={CH} fill="none" stroke="var(--ink)" strokeWidth={2} />
+        );
+        nodes.push(figLabel(`t${r}-${c}`, x0[c] + widths[c] / 2, r * CH + CH / 2 + 6, cell, 'middle'));
+      });
+    });
+    return svgWrap(nodes, W, H, 'tb', fig.big, shown);
+  }
+
+  if (fig.type === 'arithmagon') {
+    // Circles at the corners, a box on each edge. Fixed geometry, like every
+    // other figure here — only the labels change.
+    const A = [110, 34], B = [36, 166], C = [184, 166];
+    const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+    const edges = [[A, B], [B, C], [C, A]];
+    const [va, vb, vc] = fig.vertices ?? ['a', 'b', 'c'];
+    const nodes = [
+      <polygon key="t" points={`${A.join(',')} ${B.join(',')} ${C.join(',')}`} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+    ];
+    // Boxes over the edge midpoints, drawn after the triangle so they mask it.
+    edges.forEach(([p, q], i) => {
+      const [mx, my] = mid(p, q);
+      nodes.push(
+        <rect key={`eb${i}`} x={mx - 25} y={my - 18} width={50} height={36} rx={4} fill="var(--ground)" stroke="var(--ink)" strokeWidth={3} />
+      );
+      nodes.push(figLabel(`el${i}`, mx, my + 7, fig.edges[i], 'middle'));
+    });
+    // Circles last, so they sit over both.
+    [[A, va], [B, vb], [C, vc]].forEach(([p, label], i) => {
+      nodes.push(<circle key={`vc${i}`} cx={p[0]} cy={p[1]} r={27} fill="var(--ground)" stroke="var(--ink)" strokeWidth={3} />);
+      nodes.push(figLabel(`vl${i}`, p[0], p[1] + 7, label, 'middle', color));
+    });
+    return svgWrap(nodes, 220, 205, 'ag', fig.big, shown);
+  }
+
+  if (fig.type === 'number-wall') {
+    // rows[0] is the widest, at the bottom. An empty string is a blank brick.
+    const rows = fig.rows;
+    if (!Array.isArray(rows) || !rows.length) return null;
+    const W = 56, H = 34;
+    const base = rows[0].length;
+    const totalW = base * W;
+    const totalH = rows.length * H;
+    const unknown = fig.unknown ?? [];
+    const nodes = [];
+    rows.forEach((row, r) => {
+      const y = totalH - (r + 1) * H;      // row 0 sits at the bottom
+      const x0 = (totalW - row.length * W) / 2;
+      row.forEach((cell, c) => {
+        const isUnknown = unknown.some(([ur, uc]) => ur === r && uc === c);
+        nodes.push(
+          <rect key={`b${r}-${c}`} x={x0 + c * W} y={y} width={W} height={H} fill="none" stroke="var(--ink)" strokeWidth={2.5} />
+        );
+        if (cell) nodes.push(figLabel(`l${r}-${c}`, x0 + c * W + W / 2, y + H / 2 + 6, cell, 'middle', isUnknown ? color : 'var(--ink)'));
+      });
+    });
+    return svgWrap(nodes, totalW, totalH, 'nw', fig.big, shown);
+  }
+
   return null;
 }

@@ -22,12 +22,18 @@ function visualLength(str) {
     .length;
 }
 
-export function qSize(q, instr) {
+// `compact` is for the "given quantity" line of a reverse question (e.g.
+// "Volume = 1030 cm^3") — it names the given, it isn't the thing being
+// solved, so it should read smaller than the answer it leads to, not bigger.
+export function qSize(q, instr, compact) {
   const lines = String(q || '').split('\n').length;
   const longest = Math.max(...String(q || '').split('\n').map((l) => visualLength(l)), 1);
   const wordy = String(instr || '').length > 44;
   const h = lines >= 3 ? 10 : lines === 2 ? 15 : wordy ? 19 : 24;
   const w = Math.min(109 / Math.max(longest, 7), 14);
   const floor = lines >= 3 ? 28 : 30;
+  if (compact) {
+    return `clamp(${Math.round(floor * 0.7)}px,min(${(h * 0.6).toFixed(1)}cqh,${(w * 0.7).toFixed(1)}cqi),44px)`;
+  }
   return `clamp(${floor}px,min(${h}cqh,${w.toFixed(1)}cqi),76px)`;
 }
