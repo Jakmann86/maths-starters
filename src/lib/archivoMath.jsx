@@ -1,13 +1,18 @@
 // Parses one line of maths markup into Archivo-native React nodes.
-// Understands the original `~f{}{}` / `~r{}` shorthand plus the LaTeX
-// subset from SPEC.md §6: \frac{}{}, \sqrt{}, ^{}, _{}, \times, \div, \pm,
-// \le, \ge, \ne, \pi, \Delta, \text{}, \circ (degrees), and plain algebra.
+// Understands the `~f{}{}` shorthand plus the LaTeX subset from SPEC.md §6:
+// \frac{}{} (one level), \times, \div, \pm, \le, \ge, \ne, \pi, \Delta,
+// \text{}, \circ as a bare degree suffix (`30^\circ`), and plain algebra.
 // Hyphens before a digit or letter become U+2212.
 //
+// Square roots (`\sqrt{}`, `~r{}`) and every exponent/subscript other than
+// a bare degree suffix (`x^2`, `a^{m+n}`, `a_{n+1}`, ...) always fall back
+// to KaTeX for proper mathematical typesetting — see SPEC.md §6.
+//
 // Returns `null` — instead of rendering anything — when it meets a command
-// it doesn't know, a `\frac` (or `~f`) nested two or more levels deep, or an
-// indexed root (`\sqrt[n]{}`). The caller falls back to KaTeX for the whole
-// line in that case; this module never emits literal command text.
+// it doesn't know, a `\frac` (or `~f`) nested two or more levels deep, a
+// square root, or a non-degree exponent/subscript. The caller falls back to
+// KaTeX for the whole line in that case; this module never emits literal
+// command text.
 
 const SYMBOLS = {
   times: '×',
@@ -68,23 +73,8 @@ function parseSeq(s, kb, fracDepth) {
     }
 
     if (s.startsWith('~r{', i) || s.startsWith('\\sqrt', i)) {
-      const isShorthand = s[i] === '~';
-      const braceStart = isShorthand ? i + 2 : i + 5;
-      if (!isShorthand && s[braceStart] === '[') return null; // indexed root — no support
-      if (s[braceStart] !== '{') return null;
-      const g = matchBrace(s, braceStart);
-      if (!g) return null;
-      const inner = parseSeq(g[0], kb + 'r' + k, fracDepth);
-      if (inner === null) return null;
-      flush();
-      out.push(
-        <span key={kb + k++} className="msqrt">
-          {'√'}
-          <span className="msqrt-bar">{inner}</span>
-        </span>,
-      );
-      i = g[1];
-      continue;
+      // Square roots always fall back to KaTeX — see SPEC.md §6.
+      return null;
     }
 
     if (s.startsWith('\\text{', i)) {
@@ -96,29 +86,23 @@ function parseSeq(s, kb, fracDepth) {
       continue;
     }
 
-    if (s[i] === '^' || s[i] === '_') {
-      const isSup = s[i] === '^';
-      let arg, j;
-      if (s[i + 1] === '{') {
-        const g = matchBrace(s, i + 1);
-        if (!g) return null;
-        const inner = parseSeq(g[0], kb + (isSup ? 'S' : 's') + k, fracDepth);
-        if (inner === null) return null;
-        arg = inner; j = g[1];
-      } else if (s[i + 1] === '\\') {
-        const cmd = readCommand(s, i + 1);
-        if (!cmd || !Object.hasOwn(SYMBOLS, cmd[0])) return null;
-        arg = SYMBOLS[cmd[0]]; j = cmd[1];
-      } else if (i + 1 < s.length) {
-        arg = s[i + 1]; j = i + 2;
-      } else {
-        return null;
+    if (s[i] === '^' && s[i + 1] === '\\') {
+      // A bare degree suffix (`30^\circ`) is the one exponent form that
+      // stays native — it is a unit glyph, not a real exponent, and is used
+      // too widely across angle/circle-theorem/trig generators to push into
+      // KaTeX. Every other exponent or subscript falls back — see SPEC.md §6.
+      const cmd = readCommand(s, i + 1);
+      if (cmd && cmd[0] === 'circ') {
+        flush();
+        out.push(<sup key={kb + k++} className="msup">°</sup>);
+        i = cmd[1];
+        continue;
       }
-      flush();
-      const Tag = isSup ? 'sup' : 'sub';
-      out.push(<Tag key={kb + k++} className={isSup ? 'msup' : 'msub'}>{arg}</Tag>);
-      i = j;
-      continue;
+      return null;
+    }
+
+    if (s[i] === '^' || s[i] === '_') {
+      return null;
     }
 
     if (s[i] === '\\') {

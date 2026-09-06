@@ -202,27 +202,47 @@ Shuffle is per-session, not stored on the class.
 Hybrid, in one component. The custom Archivo parser handles the common cases;
 KaTeX covers what it can't.
 
-**Parser handles** — `\frac{}{}` (one level), `\sqrt{}`, `^{}`, `_{}`,
-`\times`, `\div`, `\pm`, `\le`, `\ge`, `\ne`, `\pi`, `\Delta`, `\text{}`,
-degrees, and plain algebra. Hyphens before a digit or letter become U+2212.
+**Parser handles** — `\frac{}{}` (one level), `\times`, `\div`, `\pm`, `\le`,
+`\ge`, `\ne`, `\pi`, `\Delta`, `\text{}`, a bare degree suffix (`30^\circ`),
+and plain algebra. Hyphens before a digit or letter become U+2212.
 
-**Falls back to KaTeX** when it meets an unknown `\command`, or a `\frac`
+**Falls back to KaTeX** when it meets an unknown `\command`, a `\frac`
 nested two or more levels deep — at 0.82em per level, nested fractions become
-unreadable at the back of a room. In practice this catches:
+unreadable at the back of a room — a square root, or any exponent/subscript
+other than the bare degree suffix above. Square roots and general exponents
+read better in real mathematical typesetting than the parser's glyph
+substitution can manage, so they fall back unconditionally rather than only
+when the parser is stuck. In practice this catches:
 
+- every surd, `\sqrt{}` and `\sqrt[3]{}` alike (chapter 6), including
+  surds combined with a fraction, `\frac{a\sqrt{b}}{c}`
+- every exponent and subscript except `^\circ`: `x^2`, `a^{m+n}`, `a_{n+1}`,
+  index-law working (chapter 6), standard form, Pythagoras, quadratics — `°`
+  written as `^\circ` is the one exception, since it is a unit glyph rather
+  than a true exponent and appears too widely across angle, circle-theorem
+  and trig generators to move
 - recurring decimal dots, `0.\dot{1}\dot{2}` (chapter 6 and your existing
   recurring-decimals generator)
 - column vectors, `\begin{pmatrix}` (chapter 24)
-- indexed surds, `\sqrt[3]{}` (chapter 6)
 - stacked algebraic fractions (chapter 16)
+
+Plain fractions with no root inside them — `\frac{1}{2} \times b \times h`,
+changing-the-subject answers like `x = \frac{a}{T} + b` — are unaffected and
+keep rendering natively; only the combination of a fraction with a root
+inside it falls back, and it does so via the square-root rule above rather
+than any special-casing of fractions.
 
 The parser returns `null` on anything it can't take, and the caller renders
 KaTeX for that expression only. KaTeX is dynamically imported so it costs
 nothing on boards that never hit a fallback.
 
-Those expressions render in KaTeX's serif rather than Archivo. That is a
-handful of questions across a year, and maths set in a serif is conventional
-enough that it won't read as a fault.
+Those expressions render in KaTeX's serif rather than Archivo. Once surds and
+general exponents are included, that is a substantial share of questions
+across a year — surds, index laws, standard form, Pythagoras, quadratics, and
+more — not the handful the fallback path was first built for. Maths set in a
+serif is conventional enough that it won't read as a fault, but a board that
+leans on those topics in one lesson will look mixed-typeface for most of its
+four boxes, not just one.
 
 ## 7. Screens
 
