@@ -607,7 +607,7 @@ export const skills = {
     difficulties: ['foundation', 'core'],
   },
 
-  // --- Haese 27A-B: circle theorems ---
+  // --- Haese 27A-B: circle theorems, plus tangent theorems not in that backlog ---
   'angle-in-semicircle': {
     label: 'The angle in a semi-circle',
     topic: 'Circle theorems',
@@ -624,6 +624,24 @@ export const skills = {
     label: 'Cyclic quadrilaterals',
     topic: 'Circle theorems',
     generate: (opts) => circleThm.generateCyclicQuadrilateral(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'angle-same-segment': {
+    label: 'Angles in the same segment',
+    topic: 'Circle theorems',
+    generate: (opts) => circleThm.generateAngleSameSegment(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'tangents-from-point': {
+    label: 'Tangents from an external point',
+    topic: 'Circle theorems',
+    generate: (opts) => circleThm.generateTangentsFromPoint(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'alternate-segment': {
+    label: 'The alternate segment theorem',
+    topic: 'Circle theorems',
+    generate: (opts) => circleThm.generateAlternateSegment(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 

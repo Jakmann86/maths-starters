@@ -43,8 +43,8 @@ function unitVec(dx, dy) {
 }
 
 // A small arc + label at `vertex`, spanning the angle between the rays to
-// p1 and p2 — the arc matches the existing right-angle marker's stroke
-// weight; the label always takes the slot colour, same as an 'x' side does.
+// p1 and p2 — the label always takes the slot colour, same as an 'x' side
+// does.
 function angleMarker(vertex, p1, p2, label, keyBase, color, opts = {}, r = 20) {
   const [vx, vy] = vertex;
   const u1 = unitVec(p1[0] - vx, p1[1] - vy);
@@ -150,16 +150,6 @@ const onCircle = (degrees, rotate = 0) => {
 const circleOutline = () => (
   <circle key="o" cx={CIRC.cx} cy={CIRC.cy} r={CIRC.r} fill="none" stroke="var(--ink)" strokeWidth={3} />
 );
-// A small square at `vertex`, in the corner between the rays to p1 and p2.
-const rightAngleAt = (vertex, p1, p2, key, size = 13) => {
-  const u1 = unitVec(p1[0] - vertex[0], p1[1] - vertex[1]);
-  const u2 = unitVec(p2[0] - vertex[0], p2[1] - vertex[1]);
-  const a = [vertex[0] + u1[0] * size, vertex[1] + u1[1] * size];
-  const b = [vertex[0] + (u1[0] + u2[0]) * size, vertex[1] + (u1[1] + u2[1]) * size];
-  const c = [vertex[0] + u2[0] * size, vertex[1] + u2[1] * size];
-  return <path key={key} d={`M ${a[0]} ${a[1]} L ${b[0]} ${b[1]} L ${c[0]} ${c[1]}`} fill="none" stroke="var(--ink)" strokeWidth={2} />;
-};
-
 export default function Figure({ fig, color, shown }) {
   if (!fig) return null;
 
@@ -689,7 +679,10 @@ export default function Figure({ fig, color, shown }) {
 
   if (fig.type === 'circle-semicircle') {
     // AB is a diameter through the centre, C is elsewhere on the circle, so
-    // angle ACB is a right angle. The two remaining angles sum to 90.
+    // angle ACB is a right angle and the two remaining angles sum to 90. That
+    // right angle is deliberately never marked on the figure — recalling it
+    // from "AB is a diameter" is the theorem being tested, not something the
+    // diagram should hand over.
     const rot = fig.rotate ?? 0;
     const A = onCircle(180, rot), B = onCircle(0, rot), C = onCircle(240, rot);
     const O = [CIRC.cx, CIRC.cy];
@@ -701,11 +694,40 @@ export default function Figure({ fig, color, shown }) {
       figLine('ac', A[0], A[1], C[0], C[1]),
       figLine('cb', C[0], C[1], B[0], B[1]),
       <circle key="ctr" cx={O[0]} cy={O[1]} r={4} fill="var(--ink)" />,
-      rightAngleAt(C, A, B, 'ra'),
     ];
     if (fig.angleA) nodes.push(...angleMarker(A, C, B, fig.angleA, 'sa', colA, {}, 22));
     if (fig.angleB) nodes.push(...angleMarker(B, C, A, fig.angleB, 'sb', colB, {}, 22));
     return svgWrap(nodes, 240, 240, 'csc', fig.big, shown);
+  }
+
+  if (fig.type === 'circle-semicircle-exterior') {
+    // Stretch case: AB is a diameter, extended past whichever end carries
+    // the given (`fig.given`) to D. The exterior angle at that end plus
+    // "angles on a straight line" recovers the interior angle there; the
+    // semicircle's hidden right angle at C closes the triangle so x, at the
+    // far end, comes out as two theorems chained rather than one algebraic
+    // equation. Own coordinate frame (not the shared CIRC) so the extension
+    // beyond the circle has room within the viewBox on every rotation.
+    const CX = 140, CY = 140, R = 88, EXT = 40;
+    const pt = (d) => [CX + R * Math.cos((d * Math.PI) / 180), CY + R * Math.sin((d * Math.PI) / 180)];
+    const rot = fig.rotate ?? 0;
+    const A = pt(180 + rot), B = pt(0 + rot), C = pt(240 + rot);
+    const O = [CX, CY];
+    const givenAtA = fig.given === 'A';
+    const G = givenAtA ? A : B;
+    const U = givenAtA ? B : A;
+    const D = [O[0] + (G[0] - O[0]) * ((R + EXT) / R), O[1] + (G[1] - O[1]) * ((R + EXT) / R)];
+    const nodes = [
+      <circle key="o" cx={CX} cy={CY} r={R} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      figLine('ab', A[0], A[1], B[0], B[1], { strokeWidth: 2 }),
+      figLine('gd', G[0], G[1], D[0], D[1], { strokeWidth: 2 }),
+      figLine('ac', A[0], A[1], C[0], C[1]),
+      figLine('cb', C[0], C[1], B[0], B[1]),
+      <circle key="ctr" cx={O[0]} cy={O[1]} r={4} fill="var(--ink)" />,
+    ];
+    nodes.push(...angleMarker(G, D, C, fig.exterior, 'ext', 'var(--ink)', {}, 22));
+    nodes.push(...angleMarker(U, C, G, 'x', 'unk', color, {}, 22));
+    return svgWrap(nodes, 280, 280, 'csce', fig.big, shown);
   }
 
   if (fig.type === 'circle-angle-centre') {
@@ -810,6 +832,127 @@ export default function Figure({ fig, color, shown }) {
     if (fig.unknown === 'B') nodes.push(...angleMarker(B, A, C, 'x', 'cqc-b', colB, {}, 20));
     else nodes.push(...angleMarker(D, C, A, 'x', 'cqc-d', colD, {}, 20));
     return svgWrap(nodes, 240, 240, 'cqc', fig.big, shown);
+  }
+
+  if (fig.type === 'circle-same-segment') {
+    // AB is a chord; C and D both sit on the same major arc, so angle ACB
+    // equals angle ADB (angles subtended by the same arc/in the same
+    // segment). Foundation/core label only angleC and angleD — the theorem
+    // alone. Stretch also labels angleA and/or angleB (angle BAD / angle
+    // ABD) to chain the theorem into a triangle angle sum in ABD or ABC;
+    // whichever of C/D isn't the Stretch source stays unlabelled, since its
+    // value is only an intermediate step.
+    const rot = fig.rotate ?? 0;
+    const A = onCircle(200, rot), B = onCircle(340, rot), C = onCircle(55, rot), D = onCircle(125, rot);
+    const col = (key) => (fig.unknown === key ? color : 'var(--ink)');
+    // At Stretch, angleA/angleB close a triangle ABC or ABD — whichever apex
+    // is `fig.target` — so they need that apex as their second ray, not a
+    // fixed one.
+    const T = fig.target === 'C' ? C : D;
+    const nodes = [
+      circleOutline(),
+      figLine('ab', A[0], A[1], B[0], B[1], { strokeWidth: 2 }),
+      figLine('ac', A[0], A[1], C[0], C[1]),
+      figLine('cb', C[0], C[1], B[0], B[1]),
+      figLine('ad', A[0], A[1], D[0], D[1]),
+      figLine('db', D[0], D[1], B[0], B[1]),
+    ];
+    if (fig.angleC) nodes.push(...angleMarker(C, A, B, fig.angleC, 'ssc', col('C'), {}, 20));
+    if (fig.angleD) nodes.push(...angleMarker(D, A, B, fig.angleD, 'ssd', col('D'), {}, 20));
+    if (fig.angleA) nodes.push(...angleMarker(A, B, T, fig.angleA, 'ssa', col('A'), {}, 20));
+    if (fig.angleB) nodes.push(...angleMarker(B, A, T, fig.angleB, 'ssb', col('B'), {}, 20));
+    return svgWrap(nodes, 240, 240, 'css', fig.big, shown);
+  }
+
+  if (fig.type === 'circle-tangent-kite') {
+    // PA and PB are tangents to the circle from external point P, touching
+    // at A and B; O is the centre. OA is perpendicular to PA and OB to PB —
+    // a tangent meets a radius at 90° — deliberately never marked, the same
+    // convention circle-semicircle uses for its hidden right angle, since
+    // recalling that fact is the theorem being tested. Those two right
+    // angles are what make angle AOB and angle APB add to 180° in
+    // quadrilateral OAPB. AB (the chord joining the two points of contact)
+    // plays no part in Foundation/Core, so it's only drawn at all for the
+    // Stretch chain, where it's the base of isosceles triangle OAB (OA = OB,
+    // both radii) and genuinely needs to be visible, not dashed — unlike
+    // cyclic-quadrilateral-centre's diagonal, it isn't standing in for a
+    // hidden construction line. `rotate` only ever lands the axis of
+    // symmetry on a cardinal direction here (up/right/down/left), so unlike
+    // the shared-CIRC figures the viewBox doesn't need to be a fixed square
+    // sized for the worst case of all four rotations at once — that would
+    // waste most of the box on the three directions P *isn't* pointing in.
+    // Instead the box is built tight around whichever direction P actually
+    // lands in for this question, computed from O at the local origin, so
+    // the kite fills it fully at every rotation. THETA is wide and R modest
+    // so P sits unmistakably clear of the circle (about three-quarters of a
+    // radius beyond it), not crowding the tangent points.
+    const R = 70, THETA = 55, PAD = 34;
+    const rot = fig.rotate ?? 0;
+    const axisRad = ((270 + rot) * Math.PI) / 180;
+    const ptLocal = (d) => [R * Math.cos((d * Math.PI) / 180), R * Math.sin((d * Math.PI) / 180)];
+    const opLen = R / Math.cos((THETA * Math.PI) / 180);
+    const aLocal = ptLocal(270 + rot - THETA), bLocal = ptLocal(270 + rot + THETA);
+    const pLocal = [opLen * Math.cos(axisRad), opLen * Math.sin(axisRad)];
+    const minX = Math.min(-R, pLocal[0]) - PAD, maxX = Math.max(R, pLocal[0]) + PAD;
+    const minY = Math.min(-R, pLocal[1]) - PAD, maxY = Math.max(R, pLocal[1]) + PAD;
+    const shift = ([x, y]) => [x - minX, y - minY];
+    const O = shift([0, 0]), A = shift(aLocal), B = shift(bLocal), P = shift(pLocal);
+    const col = (key) => (fig.unknown === key ? color : 'var(--ink)');
+    const nodes = [
+      <circle key="o" cx={O[0]} cy={O[1]} r={R} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      figLine('oa', O[0], O[1], A[0], A[1]),
+      figLine('ob', O[0], O[1], B[0], B[1]),
+      figLine('ap', A[0], A[1], P[0], P[1]),
+      figLine('bp', B[0], B[1], P[0], P[1]),
+      <circle key="ctr" cx={O[0]} cy={O[1]} r={4} fill="var(--ink)" />,
+    ];
+    if (fig.base) nodes.push(figLine('ab', A[0], A[1], B[0], B[1], { strokeWidth: 2 }));
+    // O and P sit on the same axis with A/B symmetric between them, so the
+    // centre and external wedges' bisectors point straight at each other —
+    // a bigger radius here (as elsewhere) pushes both labels toward that
+    // same midpoint and they collide. A small radius keeps each label
+    // hugging its own vertex instead.
+    if (fig.centre) nodes.push(...angleMarker(O, A, B, fig.centre, 'tkc', col('centre'), {}, 11));
+    if (fig.external) nodes.push(...angleMarker(P, A, B, fig.external, 'tke', col('external'), {}, 11));
+    if (fig.base) nodes.push(...angleMarker(A, O, B, fig.base, 'tka', col('base'), {}, 20));
+    return svgWrap(nodes, maxX - minX, maxY - minY, 'tk', fig.big, shown);
+  }
+
+  if (fig.type === 'circle-alternate-segment') {
+    // The tangent touches the circle at A; B and C are on the circle, so AB
+    // and AC are chords. The angle between the tangent and chord AB (at A,
+    // on the side nearer B) equals angle ACB — the angle in the alternate
+    // segment. Foundation/Core label only the tangent-chord angle and angle
+    // ACB — the theorem alone. Stretch instead labels the tangent-chord
+    // angle and angle ABC (a plain inscribed angle, not a tangent-chord
+    // one), and asks for angle BAC: the alternate-segment theorem hands
+    // over angle ACB, then the triangle's own angle sum closes it — angle
+    // ACB itself is never drawn at Stretch, only used in the working, the
+    // same convention the other composite Stretch cases use for their
+    // intermediate value. Own coordinate frame, the same reason
+    // circle-semicircle-exterior uses one — the tangent line needs room to
+    // extend past the circle on every rotation.
+    const CX = 140, CY = 140, R = 88, L = 75;
+    const rot = fig.rotate ?? 0;
+    const pt = (d) => [CX + R * Math.cos((d * Math.PI) / 180), CY + R * Math.sin((d * Math.PI) / 180)];
+    const A = pt(270 + rot), B = pt(190 + rot), C = pt(350 + rot);
+    const dirRad = (rot * Math.PI) / 180;
+    const dir = [Math.cos(dirRad), Math.sin(dirRad)];
+    const RR = [A[0] + L * dir[0], A[1] + L * dir[1]];
+    const LR = [A[0] - L * dir[0], A[1] - L * dir[1]];
+    const col = (key) => (fig.unknown === key ? color : 'var(--ink)');
+    const nodes = [
+      <circle key="o" cx={CX} cy={CY} r={R} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      figLine('tan', LR[0], LR[1], RR[0], RR[1], { strokeWidth: 2 }),
+      figLine('ab', A[0], A[1], B[0], B[1]),
+      figLine('bc', B[0], B[1], C[0], C[1]),
+      figLine('ca', C[0], C[1], A[0], A[1]),
+    ];
+    if (fig.tangentAngle) nodes.push(...angleMarker(A, LR, B, fig.tangentAngle, 'asat', col('tangent'), {}, 26));
+    if (fig.angleACB) nodes.push(...angleMarker(C, A, B, fig.angleACB, 'asac', col('ACB'), {}, 20));
+    if (fig.angleABC) nodes.push(...angleMarker(B, A, C, fig.angleABC, 'asab', col('ABC'), {}, 20));
+    if (fig.angleBAC) nodes.push(...angleMarker(A, B, C, fig.angleBAC, 'asaa', col('BAC'), {}, 16));
+    return svgWrap(nodes, 280, 280, 'asa', fig.big, shown);
   }
 
   if (fig.type === 'l-shape') {

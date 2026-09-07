@@ -1,8 +1,17 @@
 // src/generators/geometry/circleTheoremGenerators.js
 //
-// Haese Chapter 27: circle theorems. Three skills — angle in a semi-circle
-// (27A Example 1), angle at the centre (27A Example 2a), and cyclic
-// quadrilaterals (27B Example 3).
+// Haese Chapter 27: circle theorems. Four skills — angle in a semi-circle
+// (27A Example 1), angle at the centre (27A Example 2a), angles in the same
+// segment, and cyclic quadrilaterals (27B Example 3) — plus two tangent
+// theorems Haese's ch 27 backlog doesn't list at all (not drift to report;
+// this is new content, not a mismatch with an existing entry): tangents from
+// an external point, and the alternate segment theorem.
+//
+// Stretch never asks students to solve an equation built from two algebraic
+// angle expressions — that tests algebra, not the theorem. Instead every
+// Stretch question chains the topic's theorem into one further fact (angles
+// on a line, angle sum of a triangle, angles at a point), so the numbers
+// resolve in two theorem-driven steps.
 //
 // Every configuration is drawn in one of four orientations (`rotate`, added
 // to each figure point's angle in Figure.jsx), chosen at random per question
@@ -20,7 +29,6 @@ const alg = (c, d) => {
   if (d === 0) return `${head}^\\circ`;
   return `(${head} ${d < 0 ? '-' : '+'} ${Math.abs(d)})^\\circ`;
 };
-const nonZero = (lo, hi) => { let n = 0; while (n === 0) n = _.random(lo, hi); return n; };
 // Every configuration is drawn in one of four orientations. This is not
 // padding: a student who only ever meets the angle-at-centre theorem with the
 // centre angle pointing down stops recognising it when an exam rotates the
@@ -71,24 +79,20 @@ export const generateAngleInSemicircle = (options = {}) => {
     };
   }
 
-  // Both angles algebraic — Haese Example 1 exactly.
-  let x, c1, d1, c2, d2, A, B;
-  do {
-    x = _.random(5, 30);
-    c1 = _.random(1, 4);
-    d1 = nonZero(-20, 25);
-    c2 = _.random(1, 4);
-    d2 = 90 - c1 * x - d1 - c2 * x;
-    A = c1 * x + d1;
-    B = c2 * x + d2;
-  } while (A < 15 || A > 75 || B < 15 || B > 75 || Math.abs(d2) > 40);
-  const sumC = c1 + c2;
-  const sumD = d1 + d2;
+  // AB extended past whichever end is given (Haese doesn't cover this
+  // combination directly, but it's the standard exam chain: an exterior
+  // angle on the diameter feeds "angles on a straight line", and the
+  // semicircle's hidden right angle at C closes the triangle). Two theorems,
+  // not an equation with x on both sides.
+  const givenAtA = _.random(0, 1) === 1;
+  const x = _.random(10, 75);
+  const ext = x + 90; // the exterior angle at the given end
+  const interior = 180 - ext; // the interior angle there, via angles on a line
   return {
-    instruction: 'Form an equation and solve it to find x',
-    answer: `x = ${x}`,
-    workingOut: `\\text{the angle in a semi-circle is } 90^\\circ${NL}${sumC}x ${sumD < 0 ? '-' : '+'} ${Math.abs(sumD)} + 90 = 180${NL}${sumC}x = ${90 - sumD}${NL}x = ${x}`,
-    visualization: { type: 'circle-semicircle', angleA: alg(c1, d1), angleB: alg(c2, d2), unknown: 'both', rotate: spin(), big: 1 },
+    instruction: 'Find the size of angle x',
+    answer: `x = ${x}^\\circ`,
+    workingOut: `\\text{angles on a straight line add to } 180^\\circ${NL}\\text{interior angle} = 180 - ${ext} = ${interior}${NL}\\text{the angle in a semi-circle is } 90^\\circ${NL}x = 180 - 90 - ${interior}${NL}x = ${x}`,
+    visualization: { type: 'circle-semicircle-exterior', exterior: deg(ext), given: givenAtA ? 'A' : 'B', rotate: spin(), big: 1 },
     metadata: { topic: 'angle-in-semicircle', difficulty },
   };
 };
@@ -176,46 +180,255 @@ export const generateCyclicQuadrilateral = (options = {}) => {
     };
   }
 
-  // Half the time, chain the centre-angle theorem into the opposite-angles
-  // rule instead: the given is a centre angle on a diagonal, not a
-  // quadrilateral angle, so reaching x needs both theorems in sequence
-  // rather than the opposite-angles rule alone.
-  if (_.random(0, 1) === 1) {
-    const m = 2 * _.random(20, 85); // even, so m / 2 is a whole number
-    const askB = _.random(0, 1) === 1;
-    const abc = 180 - m / 2; // angle ABC: subtends the arc AC through D, i.e. 360 - m
-    const adc = m / 2; // angle ADC: subtends the arc AC through B, i.e. m
+  // Chain the centre-angle theorem into the opposite-angles rule: the given
+  // is a centre angle on a diagonal, not a quadrilateral angle, so reaching
+  // x needs both theorems in sequence — numeric throughout, no equation with
+  // x on both sides.
+  const m = 2 * _.random(20, 85); // even, so m / 2 is a whole number
+  const askB = _.random(0, 1) === 1;
+  const abc = 180 - m / 2; // angle ABC: subtends the arc AC through D, i.e. 360 - m
+  const adc = m / 2; // angle ADC: subtends the arc AC through B, i.e. m
+  return {
+    instruction: 'Find the size of angle x',
+    answer: `x = ${askB ? abc : adc}^\\circ`,
+    workingOut: askB
+      ? `\\text{the angle at the centre is twice the angle at the circumference}${NL}x = \\frac{360 - ${m}}{2}${NL}x = ${abc}`
+      : `\\text{the angle at the centre is twice the angle at the circumference}${NL}\\text{angle ABC} = \\frac{360 - ${m}}{2} = ${abc}${NL}\\text{opposite angles of a cyclic quadrilateral add to } 180^\\circ${NL}x = 180 - ${abc}${NL}x = ${adc}`,
+    visualization: { type: 'cyclic-quadrilateral-centre', centreAngle: deg(m), unknown: askB ? 'B' : 'D', rotate: spin(), big: 1 },
+    metadata: { topic: 'cyclic-quadrilateral', difficulty },
+  };
+};
+
+/* --------------------------------------------------- angles in the same segment */
+// AB is a chord; C and D sit on the same major arc, so angle ACB and angle
+// ADB — both subtended by arc AB — are equal. Not in the scheme's 27A skill
+// list, but the same lesson (Haese ch 27) covers it alongside the other two.
+
+export const generateAngleSameSegment = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  if (difficulty === 'foundation') {
+    const a = _.random(20, 140);
+    const giveC = _.random(0, 1) === 1;
     return {
       instruction: 'Find the size of angle x',
-      answer: `x = ${askB ? abc : adc}^\\circ`,
-      workingOut: askB
-        ? `\\text{the angle at the centre is twice the angle at the circumference}${NL}x = \\frac{360 - ${m}}{2}${NL}x = ${abc}`
-        : `\\text{the angle at the centre is twice the angle at the circumference}${NL}\\text{angle ABC} = \\frac{360 - ${m}}{2} = ${abc}${NL}\\text{opposite angles of a cyclic quadrilateral add to } 180^\\circ${NL}x = 180 - ${abc}${NL}x = ${adc}`,
-      visualization: { type: 'cyclic-quadrilateral-centre', centreAngle: deg(m), unknown: askB ? 'B' : 'D', rotate: spin(), big: 1 },
-      metadata: { topic: 'cyclic-quadrilateral', difficulty },
+      answer: `x = ${a}^\\circ`,
+      workingOut: `\\text{angles subtended by the same arc are equal}${NL}x = ${a}`,
+      visualization: {
+        type: 'circle-same-segment',
+        angleC: giveC ? deg(a) : 'x',
+        angleD: giveC ? 'x' : deg(a),
+        unknown: giveC ? 'D' : 'C',
+        rotate: spin(),
+        big: 1,
+      },
+      metadata: { topic: 'angle-same-segment', difficulty },
     };
   }
 
-  // Both of an opposite pair algebraic — Haese Example 3, which is
-  // (x + 15) and (x - 21) giving x = 93.
-  let x, c1, d1, c2, d2, A, C;
+  if (difficulty === 'core') {
+    const c = _.random(2, 5);
+    let x, a;
+    do {
+      x = _.random(5, 40);
+      a = c * x;
+    } while (a < 20 || a > 150);
+    const giveC = _.random(0, 1) === 1;
+    return {
+      instruction: 'Find the value of x',
+      answer: `x = ${x}`,
+      workingOut: `\\text{angles subtended by the same arc are equal}${NL}${c}x = ${a}${NL}x = ${x}`,
+      visualization: {
+        type: 'circle-same-segment',
+        angleC: giveC ? alg(c, 0) : deg(a),
+        angleD: giveC ? deg(a) : alg(c, 0),
+        unknown: giveC ? 'C' : 'D',
+        rotate: spin(),
+        big: 1,
+      },
+      metadata: { topic: 'angle-same-segment', difficulty },
+    };
+  }
+
+  // Chain the same-segment theorem into a triangle angle sum: the arc angle
+  // at one apex (C or D) transfers to the other apex (`target`), which
+  // closes a triangle with A and B — one more given angle there, at
+  // whichever of A/B isn't asked, and x falls out of the angle sum. Numeric
+  // throughout, two theorems, no algebra.
+  const source = _.random(0, 1) === 1 ? 'C' : 'D';
+  const target = source === 'C' ? 'D' : 'C';
+  const askAt = _.random(0, 1) === 1 ? 'A' : 'B';
+  const giveAt = askAt === 'A' ? 'B' : 'A';
+  let a, b, x;
   do {
-    x = _.random(20, 120);
-    c1 = _.random(1, 2);
-    d1 = nonZero(-30, 30);
-    c2 = _.random(1, 2);
-    d2 = 180 - c1 * x - d1 - c2 * x;
-    A = c1 * x + d1;
-    C = c2 * x + d2;
-  } while (A < 30 || A > 150 || C < 30 || C > 150 || Math.abs(d2) > 40);
-  const b = _.random(40, 140);
-  const sumC = c1 + c2;
-  const sumD = d1 + d2;
+    a = _.random(20, 90);
+    b = _.random(20, 120);
+    x = 180 - a - b;
+  } while (x < 10 || x > 140);
+  const targetLabel = target === 'D' ? 'ADB' : 'ACB';
   return {
-    instruction: 'Form an equation and solve it to find x',
-    answer: `x = ${x}`,
-    workingOut: `\\text{opposite angles of a cyclic quadrilateral add to } 180^\\circ${NL}${sumC}x ${sumD < 0 ? '-' : '+'} ${Math.abs(sumD)} = 180${NL}${sumC}x = ${180 - sumD}${NL}x = ${x}`,
-    visualization: { type: 'cyclic-quadrilateral', a: alg(c1, d1), b: deg(b), c: alg(c2, d2), d: null, unknown: ['a', 'c'], rotate: spin(), big: 1 },
-    metadata: { topic: 'cyclic-quadrilateral', difficulty },
+    instruction: 'Find the size of angle x',
+    answer: `x = ${x}^\\circ`,
+    workingOut: `\\text{angles subtended by the same arc are equal}${NL}\\text{angle ${targetLabel}} = ${a}${NL}\\text{angles in a triangle add to } 180^\\circ${NL}x = 180 - ${a} - ${b}${NL}x = ${x}`,
+    visualization: {
+      type: 'circle-same-segment',
+      [`angle${source}`]: deg(a),
+      [`angle${giveAt}`]: deg(b),
+      [`angle${askAt}`]: 'x',
+      unknown: askAt,
+      target,
+      rotate: spin(),
+      big: 1,
+    },
+    metadata: { topic: 'angle-same-segment', difficulty },
+  };
+};
+
+/* ----------------------------------------------- tangents from an external point */
+// PA and PB are tangents to the circle from P, touching at A and B; O is the
+// centre. A tangent meets a radius at 90°, so quadrilateral OAPB has two
+// right angles at A and B — the angle at O and the angle at P are the
+// remaining two, and they add to 180°.
+
+export const generateTangentsFromPoint = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  if (difficulty === 'foundation') {
+    const a = _.random(20, 160);
+    const giveCentre = _.random(0, 1) === 1;
+    const x = 180 - a;
+    return {
+      instruction: 'Find the size of angle x',
+      answer: `x = ${x}^\\circ`,
+      workingOut: `\\text{a tangent meets a radius at } 90^\\circ${NL}\\text{the angle at O and the angle at P add to } 180^\\circ${NL}x = 180 - ${a}${NL}x = ${x}`,
+      visualization: {
+        type: 'circle-tangent-kite',
+        centre: giveCentre ? deg(a) : 'x',
+        external: giveCentre ? 'x' : deg(a),
+        unknown: giveCentre ? 'external' : 'centre',
+        rotate: spin(),
+        big: 1,
+      },
+      metadata: { topic: 'tangents-from-point', difficulty },
+    };
+  }
+
+  if (difficulty === 'core') {
+    // One of the two is a multiple of x.
+    const c = _.random(2, 5);
+    let x, other;
+    do {
+      x = _.random(5, 60);
+      other = 180 - c * x;
+    } while (other < 20 || other > 160);
+    const algAtCentre = _.random(0, 1) === 1;
+    return {
+      instruction: 'Find the value of x',
+      answer: `x = ${x}`,
+      workingOut: `\\text{a tangent meets a radius at } 90^\\circ${NL}\\text{the angle at O and the angle at P add to } 180^\\circ${NL}${c}x + ${other} = 180${NL}${c}x = ${180 - other}${NL}x = ${x}`,
+      visualization: {
+        type: 'circle-tangent-kite',
+        centre: algAtCentre ? alg(c, 0) : deg(other),
+        external: algAtCentre ? deg(other) : alg(c, 0),
+        unknown: algAtCentre ? 'centre' : 'external',
+        rotate: spin(),
+        big: 1,
+      },
+      metadata: { topic: 'tangents-from-point', difficulty },
+    };
+  }
+
+  // Chain the kite's angle sum into isosceles triangle OAB (OA = OB, both
+  // radii): the given is the angle at P, not a base angle of that triangle,
+  // so reaching x needs both facts in sequence. m is even so x = m / 2 is a
+  // whole number throughout.
+  const m = 2 * _.random(10, 80);
+  const aob = 180 - m;
+  const x = m / 2;
+  return {
+    instruction: 'Find the size of angle x',
+    answer: `x = ${x}^\\circ`,
+    workingOut: `\\text{a tangent meets a radius at } 90^\\circ${NL}\\text{the angle at O and the angle at P add to } 180^\\circ${NL}\\text{angle AOB} = 180 - ${m} = ${aob}${NL}\\text{OA and OB are radii, so triangle OAB is isosceles}${NL}x = \\frac{180 - ${aob}}{2}${NL}x = ${x}`,
+    visualization: { type: 'circle-tangent-kite', external: deg(m), base: 'x', unknown: 'base', rotate: spin(), big: 1 },
+    metadata: { topic: 'tangents-from-point', difficulty },
+  };
+};
+
+/* -------------------------------------------------- the alternate segment theorem */
+// The tangent touches the circle at A; B and C are on the circle. The angle
+// between the tangent and chord AB equals angle ACB, the angle in the
+// alternate segment.
+
+export const generateAlternateSegment = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  if (difficulty === 'foundation') {
+    const a = _.random(20, 150);
+    const giveTangent = _.random(0, 1) === 1;
+    return {
+      instruction: 'Find the size of angle x',
+      answer: `x = ${a}^\\circ`,
+      workingOut: `\\text{the angle between a tangent and a chord equals the angle in the alternate segment}${NL}x = ${a}`,
+      visualization: {
+        type: 'circle-alternate-segment',
+        tangentAngle: giveTangent ? deg(a) : 'x',
+        angleACB: giveTangent ? 'x' : deg(a),
+        unknown: giveTangent ? 'ACB' : 'tangent',
+        rotate: spin(),
+        big: 1,
+      },
+      metadata: { topic: 'alternate-segment', difficulty },
+    };
+  }
+
+  if (difficulty === 'core') {
+    const c = _.random(2, 5);
+    let x, a;
+    do {
+      x = _.random(5, 40);
+      a = c * x;
+    } while (a < 20 || a > 150);
+    const giveTangent = _.random(0, 1) === 1;
+    return {
+      instruction: 'Find the value of x',
+      answer: `x = ${x}`,
+      workingOut: `\\text{the angle between a tangent and a chord equals the angle in the alternate segment}${NL}${c}x = ${a}${NL}x = ${x}`,
+      visualization: {
+        type: 'circle-alternate-segment',
+        tangentAngle: giveTangent ? deg(a) : alg(c, 0),
+        angleACB: giveTangent ? alg(c, 0) : deg(a),
+        unknown: giveTangent ? 'ACB' : 'tangent',
+        rotate: spin(),
+        big: 1,
+      },
+      metadata: { topic: 'alternate-segment', difficulty },
+    };
+  }
+
+  // Chain the alternate segment theorem into a triangle angle sum: the
+  // tangent-chord angle (p) hands over angle ACB via the theorem, and angle
+  // ABC (q) — a plain inscribed angle, not a tangent-chord one — is given
+  // directly, so x = angle BAC falls out of the triangle's angle sum.
+  // Numeric throughout, two theorems, no algebra.
+  let p, q, x;
+  do {
+    p = _.random(15, 80);
+    q = _.random(15, 120);
+    x = 180 - p - q;
+  } while (x < 10 || x > 140);
+  return {
+    instruction: 'Find the size of angle x',
+    answer: `x = ${x}^\\circ`,
+    workingOut: `\\text{the angle between a tangent and a chord equals the angle in the alternate segment}${NL}\\text{angle ACB} = ${p}${NL}\\text{angles in a triangle add to } 180^\\circ${NL}x = 180 - ${p} - ${q}${NL}x = ${x}`,
+    visualization: {
+      type: 'circle-alternate-segment',
+      tangentAngle: deg(p),
+      angleABC: deg(q),
+      angleBAC: 'x',
+      unknown: 'BAC',
+      rotate: spin(),
+      big: 1,
+    },
+    metadata: { topic: 'alternate-segment', difficulty },
   };
 };
