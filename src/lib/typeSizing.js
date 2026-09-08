@@ -9,7 +9,7 @@ export function iSize(instr) {
 }
 
 function visualLength(str) {
-  return str
+  const s = str
     .replace(/\\ldots/g, '…')
     .replace(/\\times/g, '×')
     .replace(/\\div/g, '÷')
@@ -19,7 +19,16 @@ function visualLength(str) {
     .replace(/\\text\{([^}]*)\}/g, '$1')
     .replace(/\\,|\\;|\\!/g, ' ')
     .replace(/\\ /g, ' ')
-    .length;
+    // A \frac{a}{b} stacks its numerator and denominator instead of laying
+    // them side by side, so its on-screen width is close to the wider of
+    // the two, not the length of the whole `\frac{a}{b}` source — counting
+    // the source literally (as the algebraic-fractions topic, chapter 16,
+    // does almost every question) makes a fraction-only line look far
+    // longer than it renders and sizes the question needlessly small.
+    .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => (
+      'x'.repeat(Math.max(num.length, den.length) + 1)
+    ));
+  return s.length;
 }
 
 // `compact` is for the "given quantity" line of a reverse question (e.g.

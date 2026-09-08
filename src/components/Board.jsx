@@ -17,11 +17,12 @@ const MIXED = ['foundation', 'core', 'core', 'stretch'];
 const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 
 // Most generator output (SPEC.md §6) only ever emits \times, \text{} and
-// ^{}, all of which the Archivo parser handles. Two deliberate exceptions
+// ^{}, all of which the Archivo parser handles. Three deliberate exceptions
 // fall back to KaTeX (DESIGN.md §6): solve-power-equations at stretch band
-// emits \sqrt[3]{}, and indices-zero-negative at core band emits
+// emits \sqrt[3]{}, indices-zero-negative at core band emits
 // \left(\frac{}{}\right) — \left/\right aren't in the Archivo subset (SPEC
-// §6). Anything else logging here is a parser bug.
+// §6) — and the algebraic fractions topic (chapter 16) stacks \frac with an
+// exponent in almost every band. Anything else logging here is a parser bug.
 function warnIfUnparseable(id, field, text) {
   if (!text) return;
   String(text).split('\n').forEach((line, i) => {

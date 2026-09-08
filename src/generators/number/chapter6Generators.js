@@ -39,6 +39,24 @@ export const generateIndicesZeroNegative = (options = {}) => {
   }
 
   if (difficulty === 'core') {
+    // A whole bracketed expression to the power 0 — Foundation's bare-variable
+    // ^0 doesn't test that the rule holds no matter how cluttered the base
+    // looks, only that it holds for a single letter.
+    if (_.random(0, 2) === 0) {
+      const v1 = _.sample(['a', 'b', 'm', 'n', 'p', 'x', 'y']);
+      let v2;
+      do { v2 = _.sample(['a', 'b', 'm', 'n', 'p', 'x', 'y']); } while (v2 === v1);
+      const c = _.random(2, 9);
+      const e1 = _.random(2, 4);
+      const e2 = _.random(2, 3);
+      return {
+        instruction: 'Evaluate',
+        questionMath: `(${c}${v1}^${e1}${v2}^${e2})^0`,
+        answer: '1',
+        workingOut: `a^0 = 1 \\text{ for any } a \\ne 0`,
+        metadata: { topic: 'indices-zero-negative', difficulty },
+      };
+    }
     // A fractional base with a negative index — the reciprocal flips, which is
     // the step students miss (Haese p129).
     const p = _.random(2, 9);
@@ -51,6 +69,21 @@ export const generateIndicesZeroNegative = (options = {}) => {
       questionMath: `\\left(\\frac{${p}}{${q}}\\right)^{-${n}}`,
       answer: frac(q ** n, p ** n),
       workingOut: `\\left(\\frac{${p}}{${q}}\\right)^{-${n}} = \\left(\\frac{${q}}{${p}}\\right)^{${n}}${NL}= ${frac(q ** n, p ** n)}`,
+      metadata: { topic: 'indices-zero-negative', difficulty },
+    };
+  }
+
+  // Stretch. One branch in three chains the negative-index law straight into
+  // the zero-index fact: same base, opposite exponents, so the multiplication
+  // law lands exactly on a^0 rather than stopping at a negative power.
+  if (_.random(0, 2) === 0) {
+    const base = _.random(2, 12);
+    const n = _.random(2, 9);
+    return {
+      instruction: 'Evaluate',
+      questionMath: `${base}^{${n}} \\times ${base}^{-${n}}`,
+      answer: '1',
+      workingOut: `${base}^{${n} + (-${n})} = ${base}^0${NL}= 1`,
       metadata: { topic: 'indices-zero-negative', difficulty },
     };
   }

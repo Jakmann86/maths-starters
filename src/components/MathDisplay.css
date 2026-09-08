@@ -4,7 +4,7 @@
   align-items: center;
   vertical-align: middle;
   margin: 0 0.16em;
-  font-size: 0.82em;
+  font-size: 0.94em;
   line-height: 1.08;
   transform: translateY(-0.08em);
 }
@@ -60,4 +60,19 @@
 
 .mkatex .katex {
   font-size: 1em;
+}
+
+/* We use displayMode: true for full-size (not \scriptstyle) fraction
+   numerators and denominators, but KaTeX pairs display mode with block
+   layout, centred text and a 1em top/bottom margin — all wrong for a line
+   sitting inline in a left-aligned question/answer/working column. Strip
+   that back to how the inline layout already behaves. */
+.mkatex .katex-display {
+  display: inline-block;
+  margin: 0;
+  text-align: left;
+}
+
+.mkatex .katex-display > .katex {
+  text-align: left;
 }

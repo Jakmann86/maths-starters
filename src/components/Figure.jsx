@@ -829,7 +829,13 @@ export default function Figure({ fig, color, shown }) {
       <circle key="ctr" cx={O[0]} cy={O[1]} r={4} fill="var(--ink)" />,
     ];
     nodes.push(...pointAngleMarker(O[0], O[1], 200 + rot, 320 + rot, 120, fig.centreAngle, 'cqc-o', 'var(--ink)'));
-    if (fig.unknown === 'B') nodes.push(...angleMarker(B, A, C, 'x', 'cqc-b', colB, {}, 20));
+    // A and B are only 20° apart, so chord BA is short (~30 units at this
+    // radius) — angleMarker's usual radius pushes the label past A into the
+    // cluster of lines meeting there (AB, AC, AD all converge on that one
+    // nearby point). A smaller radius keeps the label well inside segment
+    // BA instead of spilling past it. D has no such neighbour, so it keeps
+    // the normal radius.
+    if (fig.unknown === 'B') nodes.push(...angleMarker(B, A, C, 'x', 'cqc-b', colB, {}, 8));
     else nodes.push(...angleMarker(D, C, A, 'x', 'cqc-d', colD, {}, 20));
     return svgWrap(nodes, 240, 240, 'cqc', fig.big, shown);
   }
@@ -912,9 +918,14 @@ export default function Figure({ fig, color, shown }) {
     // a bigger radius here (as elsewhere) pushes both labels toward that
     // same midpoint and they collide. A small radius keeps each label
     // hugging its own vertex instead.
-    if (fig.centre) nodes.push(...angleMarker(O, A, B, fig.centre, 'tkc', col('centre'), {}, 11));
-    if (fig.external) nodes.push(...angleMarker(P, A, B, fig.external, 'tke', col('external'), {}, 11));
-    if (fig.base) nodes.push(...angleMarker(A, O, B, fig.base, 'tka', col('base'), {}, 20));
+    if (fig.centre) nodes.push(...angleMarker(O, A, B, fig.centre, 'tkc', col('centre'), {}, 8));
+    if (fig.external) nodes.push(...angleMarker(P, A, B, fig.external, 'tke', col('external'), {}, 8));
+    // Angle OAB is fixed by THETA at 90-55 = 35° regardless of what the
+    // label says (schematic geometry, SPEC #7) — a shallow angle with AB
+    // sitting close to the bisector. The usual small radius puts the label
+    // close enough to the AB line that it visually crosses it; a bigger
+    // radius here buys the vertical clearance that shallow angle needs.
+    if (fig.base) nodes.push(...angleMarker(A, O, B, fig.base, 'tka', col('base'), {}, 34));
     return svgWrap(nodes, maxX - minX, maxY - minY, 'tk', fig.big, shown);
   }
 

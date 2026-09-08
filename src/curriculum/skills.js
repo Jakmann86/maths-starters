@@ -10,6 +10,7 @@
 import * as expressions from '../generators/algebra/expressionsGenerators';
 import * as factorising from '../generators/algebra/factorisingGenerators';
 import * as equations from '../generators/algebra/equationGenerators';
+import * as algFrac from '../generators/algebra/algebraicFractionGenerators';
 import * as magicSquares from '../generators/puzzles/magicSquareGenerators';
 import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 import * as arithmagon from '../generators/puzzles/arithmagonGenerators';
@@ -168,6 +169,26 @@ export const skills = {
     label: 'Forming equations',
     topic: 'Equations',
     generate: (opts) => equations.generateFormingEquation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 16A-B: algebraic fractions ---
+  'simplify-algebraic-fractions': {
+    label: 'Simplifying algebraic fractions',
+    topic: 'Algebraic fractions',
+    generate: (opts) => algFrac.generateSimplifyAlgebraicFraction(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'simplify-fractions-factorising': {
+    label: 'Algebraic fractions: factorise and cancel',
+    topic: 'Algebraic fractions',
+    generate: (opts) => algFrac.generateSimplifyFractionsFactorising(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'multiply-divide-algebraic-fractions': {
+    label: 'Multiplying and dividing algebraic fractions',
+    topic: 'Algebraic fractions',
+    generate: (opts) => algFrac.generateMultiplyDivideFractions(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -778,6 +799,7 @@ export const STRANDS = [
       'Factorising',
       'Equations',
       'Formulae and simultaneous equations',
+      'Algebraic fractions',
       'Quadratic equations',
       'Sequences',
     ],

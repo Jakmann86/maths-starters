@@ -32,7 +32,13 @@ function KatexFallback({ tex }) {
       .then((katex) => {
         if (cancelled) return;
         try {
-          setHtml(katex.renderToString(tex, { throwOnError: false, displayMode: false }));
+          // displayMode: true — a text-style (inline) fraction sets its
+          // numerator and denominator in \scriptstyle, ~30% smaller than the
+          // surrounding text. On a whiteboard that reads as "the fraction is
+          // tiny" even when the container itself is sized generously. Display
+          // style keeps them full-size. MathDisplay.css neutralises the
+          // block/centred/margined layout KaTeX normally pairs this with.
+          setHtml(katex.renderToString(tex, { throwOnError: false, displayMode: true }));
         } catch {
           setFailed(true);
         }
