@@ -892,7 +892,20 @@ export default function Figure({ fig, color, shown }) {
     // the kite fills it fully at every rotation. THETA is wide and R modest
     // so P sits unmistakably clear of the circle (about three-quarters of a
     // radius beyond it), not crowding the tangent points.
-    const R = 70, THETA = 55, PAD = 34;
+    // PAD is generous enough for the point letters the length questions add
+    // outside A, B and P; the angle questions label nothing out there and
+    // simply get a little more air.
+    //
+    // The length layout needs a bigger circle. An angle label is short
+    // ('124°' is 48 units at the 20px .fig-label size); a length label is up
+    // to 72 ('100 cm'), and the radius label has nowhere to go but inside the
+    // circle, where a 72-unit box centred anywhere on OA crosses the outline
+    // at R = 70 no matter how it is pushed or anchored. R = 90 is the
+    // smallest value that clears it at all four rotations. The aspect ratio
+    // barely moves (272x339 against 232x284), so the figure still fills its
+    // slot the same way and the labels land at about 85% of the angle
+    // figure's on-screen size.
+    const R = fig.lengths === true ? 90 : 70, THETA = 55, PAD = 46;
     const rot = fig.rotate ?? 0;
     const axisRad = ((270 + rot) * Math.PI) / 180;
     const ptLocal = (d) => [R * Math.cos((d * Math.PI) / 180), R * Math.sin((d * Math.PI) / 180)];
@@ -907,11 +920,103 @@ export default function Figure({ fig, color, shown }) {
     const nodes = [
       <circle key="o" cx={O[0]} cy={O[1]} r={R} fill="none" stroke="var(--ink)" strokeWidth={3} />,
       figLine('oa', O[0], O[1], A[0], A[1]),
-      figLine('ob', O[0], O[1], B[0], B[1]),
+      // The B side is the whole kite. `single` drops it to triangle OAP,
+      // which is what a length question needs — tangents-are-equal plays no
+      // part there, and a second tangent would only invite the reader to
+      // look for a label on it. Spread in place rather than pushed after the
+      // array so the angle questions' node order is untouched.
+      ...(fig.single === true ? [] : [figLine('ob', O[0], O[1], B[0], B[1])]),
       figLine('ap', A[0], A[1], P[0], P[1]),
-      figLine('bp', B[0], B[1], P[0], P[1]),
+      ...(fig.single === true ? [] : [figLine('bp', B[0], B[1], P[0], P[1])]),
       <circle key="ctr" cx={O[0]} cy={O[1]} r={4} fill="var(--ink)" />,
     ];
+    if (fig.lengths === true) {
+      // `op` draws the line OP; `opLabel` is the text on it. Two fields
+      // rather than one so that `unknown` always names a label field and
+      // never a draw flag, as it does in every other branch.
+      if (fig.op) nodes.push(figLine('op', O[0], O[1], P[0], P[1], { strokeWidth: 2 }));
+
+      // A label centred on its own push vector still straddles the line it
+      // labels unless the push clears half the text width — which depends on
+      // how long the label happens to be. Anchoring by the push direction
+      // removes that dependence: pushed right, the text starts there; pushed
+      // left, it ends there.
+      const anchorFor = (nx) => (nx > 0.35 ? 'start' : nx < -0.35 ? 'end' : 'middle');
+      // Each length label sits on the outward normal of its own segment,
+      // pushed away from the third point of the triangle it belongs to. That
+      // is what keeps placement correct at all four rotations instead of
+      // hand-tuning an offset per label per rotation.
+      //
+      // The normal is the true perpendicular of the segment, with only its
+      // sign taken from the third point — not the direction from that point
+      // to the midpoint. OAP is a thin triangle (the angle at O is THETA,
+      // 55 deg, and the one at P is 35), so that direction runs close enough
+      // to along the segment that a 20-unit push leaves the label still lying
+      // across the line, and a half-width of 36 then reaches back over the
+      // vertex as well.
+      //
+      // `frac` moves the anchor off the midpoint along the segment, which OP
+      // needs: its midpoint is 78 units from O against a radius of 90, so a
+      // label there sits astride the circle outline whichever way it is
+      // pushed. `anchor` overrides anchorFor, which the radius label needs
+      // for the opposite reason — it is the one label boxed in by the circle
+      // on every side, so extending it in the push direction is exactly
+      // wrong and only centring it fits.
+      const away = (u, v, from, dist, frac = 0.5, anchor = null) => {
+        const m = [u[0] + (v[0] - u[0]) * frac, u[1] + (v[1] - u[1]) * frac];
+        const [px, py] = unitVec(-(v[1] - u[1]), v[0] - u[0]);
+        const sign = (m[0] - from[0]) * px + (m[1] - from[1]) * py < 0 ? -1 : 1;
+        const [nx, ny] = [px * sign, py * sign];
+        return [m[0] + nx * dist, m[1] + ny * dist + 6, anchor ?? anchorFor(nx)];
+      };
+      const outward = (pt, dist) => {
+        const [nx, ny] = unitVec(pt[0] - O[0], pt[1] - O[1]);
+        return [pt[0] + nx * dist, pt[1] + ny * dist + 6];
+      };
+      const centre = fig.single === true
+        ? [(O[0] + A[0] + P[0]) / 3, (O[1] + A[1] + P[1]) / 3]
+        : O;
+
+      // The O letter is pushed directly away from P, so it never lands inside
+      // the triangle or on the OP line at any rotation.
+      const [ox, oy] = unitVec(O[0] - P[0], O[1] - P[1]);
+      nodes.push(figLabel('po', O[0] + ox * 22, O[1] + oy * 22 + 6, 'O', 'middle'));
+      const la = outward(A, 18);
+      nodes.push(figLabel('pa', la[0], la[1], 'A', 'middle'));
+      const lp = outward(P, 16);
+      nodes.push(figLabel('pp', lp[0], lp[1], 'P', 'middle'));
+      if (fig.single !== true) {
+        const lb = outward(B, 18);
+        nodes.push(figLabel('pb', lb[0], lb[1], 'B', 'middle'));
+      }
+
+      // The three distances below are not free choices: each sits mid-band in
+      // the range that clears the circle, all three lines, the point letters
+      // and the other two labels at every rotation and every label length the
+      // generators produce. The radius label's floor is the highest of them
+      // because OA runs at 35 degrees to horizontal, so a centred 72-unit box
+      // needs 33 units of perpendicular clearance before it stops lying
+      // across the very line it labels.
+      if (fig.radius) {
+        const q = away(O, A, fig.single === true ? P : centre, 37, 0.35, 'middle');
+        nodes.push(figLabel('lr', q[0], q[1], fig.radius, q[2], col('radius')));
+      }
+      if (fig.tangent) {
+        const q = away(A, P, O, 30, 0.55);
+        nodes.push(figLabel('lt', q[0], q[1], fig.tangent, q[2], col('tangent')));
+      }
+      if (fig.opLabel) {
+        // Third side of triangle OAP, so the same rule applies — but taken
+        // most of the way out to P, past where OP leaves the circle, for
+        // the reason given on `frac` above. Note that this only
+        // works for the single-tangent case: on the full kite OP is the axis
+        // of symmetry, and at half its length there are about 42 units of
+        // clearance to each tangent while a "25 cm" label needs 50. That is
+        // why the length questions never use the kite.
+        const q = away(O, P, A, 30, 0.82);
+        nodes.push(figLabel('lop', q[0], q[1], fig.opLabel, q[2], col('opLabel')));
+      }
+    }
     if (fig.base) nodes.push(figLine('ab', A[0], A[1], B[0], B[1], { strokeWidth: 2 }));
     // O and P sit on the same axis with A/B symmetric between them, so the
     // centre and external wedges' bisectors point straight at each other —
