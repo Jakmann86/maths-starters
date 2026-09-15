@@ -966,6 +966,136 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, 280, 280, 'asa', fig.big, shown);
   }
 
+  if (fig.type === 'circle-chord') {
+    // The perpendicular from the centre of a circle to a chord bisects it.
+    //
+    // Unlike every other circle figure here this one carries length labels
+    // rather than angle labels, and figLabel only draws horizontal text — so
+    // there is no `rotate`. The chord is always drawn horizontal and above
+    // the centre, which is the same schematic fixity parallel-transversal
+    // uses: the picture never varies, only the labels do. A `below` variant
+    // was tried and dropped; with the chord under the centre the O letter,
+    // the M letter and the distance label all land in the same strip between
+    // the chord and the centre.
+    const CX = 120, CY = 122, R = 92, DY = 46;
+    const cy = CY - DY;
+    const half = Math.sqrt(R * R - DY * DY);
+    const A = [CX - half, cy], B = [CX + half, cy], M = [CX, cy], O = [CX, CY];
+    const col = (k) => (k === fig.unknown ? color : 'var(--ink)');
+    const nodes = [
+      <circle key="o" cx={CX} cy={CY} r={R} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      figLine('ab', A[0], A[1], B[0], B[1]),
+      // The perpendicular is a construction line, not an edge, so it is
+      // dashed and carries a right-angle mark — the detail that says which
+      // length the distance label actually measures.
+      figLine('om', O[0], O[1], M[0], M[1], { strokeDasharray: '6 6', strokeWidth: 2 }),
+      <circle key="ctr" cx={O[0]} cy={O[1]} r={4} fill="var(--ink)" />,
+      <path key="ra" d={`M ${M[0] + 13} ${M[1]} L ${M[0] + 13} ${M[1] + 13} L ${M[0]} ${M[1] + 13}`} fill="none" stroke="var(--ink)" strokeWidth={2} />,
+      // Point letters. circle-angle-centre already labels O; these questions
+      // need A, B and M as well, because the working refers to AM and AB by
+      // name and there is no other way to say which length is which.
+      // O sits below-*right* of the centre, not below-left: the radius label
+      // takes the whole below-left quadrant (see below), and at 20px a
+      // '100 cm' runs straight through an O placed on that side.
+      figLabel('lo', CX + 12, CY + 20, 'O', 'start'),
+      figLabel('la', A[0] - 8, A[1] + 6, 'A', 'end'),
+      figLabel('lb', B[0] + 8, B[1] + 6, 'B', 'start'),
+      figLabel('lm', M[0] - 8, M[1] + 20, 'M', 'end'),
+    ];
+    // The radius is drawn to A, the side away from the right-angle mark, so
+    // the mark, the M letter and the distance label each get a clear
+    // quadrant. 42% along and pushed out on the normal keeps it off both the
+    // M letter and the circle outline near A. The push has to clear half the
+    // label's own width, not just its height: OA runs at about 30deg, so a
+    // centred '100 cm' reaches 36 units sideways and dips back onto the line
+    // at anything under about 24. 34 sits mid-band — the placement stays
+    // clear from 24 up to 43, where the circle outline cuts in.
+    if (fig.r) {
+      nodes.push(figLine('oa', O[0], O[1], A[0], A[1], { strokeWidth: 2 }));
+      const m = [O[0] + (A[0] - O[0]) * 0.42, O[1] + (A[1] - O[1]) * 0.42];
+      const [ux, uy] = unitVec(A[1] - O[1], -(A[0] - O[0]));
+      nodes.push(figLabel('lr', m[0] + ux * 34, m[1] + uy * 34 + 6, fig.r, 'middle', col('r')));
+    }
+    if (fig.d) nodes.push(figLabel('ld', M[0] + 10, (O[1] + M[1]) / 2 + 6, fig.d, 'start', col('d')));
+    if (fig.chord) nodes.push(figLabel('lc', M[0], cy - 14, fig.chord, 'middle', col('chord')));
+    return svgWrap(nodes, 240, 244, 'cch', fig.big, shown);
+  }
+
+  if (fig.type === 'circle-parallel-chords') {
+    // Two parallel chords with the distance between them unknown. Sibling of
+    // circle-chord rather than a flag on it, the same call isosceles-angles
+    // made against isosceles-triangle: it draws two chords, two radii, two
+    // right-angle marks and a gap measure, and none of that belongs behind an
+    // if inside the single-chord branch.
+    //
+    // Two layouts, not one with nudges. When the chords straddle the centre
+    // the circle has an empty cap above and below, so the chord labels sit on
+    // the centre line and the gap measure goes out to the left. When both are
+    // on the same side they crowd into one cap and the only clear space is
+    // outside the circle, so the chord labels go out to the left instead and
+    // the gap label rides the perpendicular.
+    const same = fig.sameSide === true;
+    const CX = same ? 178 : 134, CY = 136, R = 100;
+    const y1 = CY - (same ? 76 : 58);
+    const y2 = same ? CY - 30 : CY + 50;
+    const halfAt = (y) => Math.sqrt(R * R - (y - CY) * (y - CY));
+    const h1 = halfAt(y1), h2 = halfAt(y2);
+    const col = (k) => (k === fig.unknown ? color : 'var(--ink)');
+    const top = Math.min(y1, y2, CY), bot = Math.max(y1, y2, CY);
+    const ra = (key, y, s) => (
+      <path key={key} d={`M ${CX - 12} ${y} L ${CX - 12} ${y + 12 * s} L ${CX} ${y + 12 * s}`} fill="none" stroke="var(--ink)" strokeWidth={2} />
+    );
+    const GX = CX - 58;
+    const nodes = [
+      <circle key="o" cx={CX} cy={CY} r={R} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+      figLine('c1', CX - h1, y1, CX + h1, y1),
+      figLine('c2', CX - h2, y2, CX + h2, y2),
+      // One perpendicular serves both chords: it is the same line, and it
+      // always runs as far as the centre so "from the centre" is visible.
+      figLine('perp', CX, top, CX, bot, { strokeDasharray: '6 6', strokeWidth: 2 }),
+      <circle key="ctr" cx={CX} cy={CY} r={4} fill="var(--ink)" />,
+      ra('ra1', y1, 1),
+      ra('ra2', y2, same ? 1 : -1),
+      // Both radii are drawn to the right, so O goes left of the centre —
+      // except in the same-side layout, where both of them leave upward and
+      // the left of the centre line is where the chord labels live instead.
+      same
+        ? figLabel('lo', CX + 12, CY + 20, 'O', 'start')
+        : figLabel('lo', CX - 12, CY + 20, 'O', 'end'),
+      figLine('r1', CX, CY, CX + h1, y1, { strokeWidth: 2 }),
+      figLine('r2', CX, CY, CX + h2, y2, { strokeWidth: 2 }),
+    ];
+    if (!same) {
+      // A measure line with end ticks, out where nothing else is drawn.
+      nodes.push(
+        figLine('g0', GX, y1, GX, y2, { strokeWidth: 2 }),
+        figLine('g1', GX - 6, y1, GX + 6, y1, { strokeWidth: 2 }),
+        figLine('g2', GX - 6, y2, GX + 6, y2, { strokeWidth: 2 }),
+      );
+    }
+    // Both radii are drawn and both labelled with the same value. The
+    // repetition is the cue that the two right-angled triangles share a
+    // hypotenuse — the same argument as drawing all three edges of a cube.
+    // The labels sit outside the circle on the outward continuation of each
+    // radius; .fig-svg has overflow: visible, so nothing out there is clipped.
+    if (fig.r) {
+      [[h1, y1, 'ra'], [h2, y2, 'rb']].forEach(([hh, yy, key]) => {
+        const [ux, uy] = unitVec(hh, yy - CY);
+        nodes.push(figLabel(key, CX + hh + ux * 20, yy + uy * 20 + 6, fig.r, 'start', col('r')));
+      });
+    }
+    if (same) {
+      if (fig.chord1) nodes.push(figLabel('l1', CX - h1 - 12, y1 + 6, fig.chord1, 'end', col('chord1')));
+      if (fig.chord2) nodes.push(figLabel('l2', CX - h2 - 12, y2 + 6, fig.chord2, 'end', col('chord2')));
+      if (fig.gap) nodes.push(figLabel('lg', CX - 20, (y1 + y2) / 2 + 10, fig.gap, 'end', col('gap')));
+    } else {
+      if (fig.chord1) nodes.push(figLabel('l1', CX, y1 - 12, fig.chord1, 'middle', col('chord1')));
+      if (fig.chord2) nodes.push(figLabel('l2', CX, y2 + 24, fig.chord2, 'middle', col('chord2')));
+      if (fig.gap) nodes.push(figLabel('lg', GX - 10, (y1 + y2) / 2 + 6, fig.gap, 'end', col('gap')));
+    }
+    return svgWrap(nodes, same ? 354 : 310, 272, 'cpc', fig.big, shown);
+  }
+
   if (fig.type === 'l-shape') {
     // Six sides, four labelled. The two unlabelled ones are the bottom
     // (= a + c) and the left (= b + d), and deriving them is the skill —
