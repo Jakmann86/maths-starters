@@ -22,7 +22,10 @@ const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 // emits \sqrt[3]{}, indices-zero-negative at core band emits
 // \left(\frac{}{}\right) — \left/\right aren't in the Archivo subset (SPEC
 // §6) — and the algebraic fractions topic (chapter 16) stacks \frac with an
-// exponent in almost every band. Anything else logging here is a parser bug.
+// exponent in almost every band. The two length-based circle theorems
+// (chord-perpendicular-bisector, tangent-length) join them: both work in
+// squares, so every band emits ^2 and falls back by design. Anything else
+// logging here is a parser bug.
 function warnIfUnparseable(id, field, text) {
   if (!text) return;
   String(text).split('\n').forEach((line, i) => {

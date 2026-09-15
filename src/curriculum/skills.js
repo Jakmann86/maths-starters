@@ -25,6 +25,7 @@ import * as solids from '../generators/geometry/solidsGenerators';
 import * as area from '../generators/geometry/areaGenerators';
 import * as perim from '../generators/geometry/perimeterGenerators';
 import * as circleThm from '../generators/geometry/circleTheoremGenerators';
+import * as circleLen from '../generators/geometry/circleLengthGenerators';
 import * as pct from '../generators/number/percentageGenerators';
 import * as ch6 from '../generators/number/chapter6Generators';
 import * as stats from '../generators/statistics/averagesGenerators';
@@ -663,6 +664,21 @@ export const skills = {
     label: 'The alternate segment theorem',
     topic: 'Circle theorems',
     generate: (opts) => circleThm.generateAlternateSegment(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // Last in the topic, so the six angle theorems come first: the cycle runs in
+  // catalogue order, and these two are the odd ones out — they answer in
+  // centimetres rather than degrees.
+  'chord-perpendicular-bisector': {
+    label: 'Chords: the perpendicular from the centre',
+    topic: 'Circle theorems',
+    generate: (opts) => circleLen.generateChordBisector(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'tangent-length': {
+    label: 'Tangent length from an external point',
+    topic: 'Circle theorems',
+    generate: (opts) => circleLen.generateTangentLength(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
