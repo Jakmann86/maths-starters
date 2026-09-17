@@ -29,6 +29,7 @@ import * as circleLen from '../generators/geometry/circleLengthGenerators';
 import * as pct from '../generators/number/percentageGenerators';
 import * as ch6 from '../generators/number/chapter6Generators';
 import * as stats from '../generators/statistics/averagesGenerators';
+import * as variation from '../generators/algebra/variationGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -163,9 +164,6 @@ export const skills = {
   },
 
   // --- Haese 3C-D: forming equations -----------------------------------------
-  // Returns `questionText`, not `questionMath` — Board.jsx's slotData only
-  // wires questionMath through to the slot's question field, so this skill
-  // will render with a blank question until that text path is added.
   'forming-equations': {
     label: 'Forming equations',
     topic: 'Equations',
@@ -418,6 +416,20 @@ export const skills = {
     label: 'Cubic sequences: find the nth term rule',
     topic: 'Sequences',
     generate: (opts) => cubicSeq.generateCubicNthTerm(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 30A-B: variation ---
+  'direct-variation': {
+    label: 'Direct variation',
+    topic: 'Variation',
+    generate: (opts) => variation.generateDirectVariation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'inverse-variation': {
+    label: 'Inverse variation',
+    topic: 'Variation',
+    generate: (opts) => variation.generateInverseVariation(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -818,6 +830,7 @@ export const STRANDS = [
       'Algebraic fractions',
       'Quadratic equations',
       'Sequences',
+      'Variation',
     ],
   },
   { name: 'Geometry', topics: ['Angles', 'Pythagoras', 'Trigonometry', 'Circle theorems'] },

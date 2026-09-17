@@ -24,8 +24,11 @@ const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 // §6) — and the algebraic fractions topic (chapter 16) stacks \frac with an
 // exponent in almost every band. The two length-based circle theorems
 // (chord-perpendicular-bisector, tangent-length) join them: both work in
-// squares, so every band emits ^2 and falls back by design. Anything else
-// logging here is a parser bug.
+// squares, so every band emits ^2 and falls back by design. Variation's Core
+// and Stretch bands join them too, emitting \sqrt{} and ^2 — Foundation of
+// inverse-variation is single-level \frac and renders natively, so this
+// topic looks mixed-typeface across a board by design, not by bug. Anything
+// else logging here is a parser bug.
 function warnIfUnparseable(id, field, text) {
   if (!text) return;
   String(text).split('\n').forEach((line, i) => {
