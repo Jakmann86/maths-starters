@@ -50,7 +50,7 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
           <div className="slot-figure-wrap">
             <Figure fig={fig} color={colorVar} shown={revealed} />
           </div>
-          <div className="slot-question" style={{ fontSize: qSize(q, instr, qCompact) }}>
+          <div className="slot-question" style={{ fontSize: qSize(q, instr, qCompact, Boolean(fig)) }}>
             <MathDisplay math={q} />
           </div>
         </div>

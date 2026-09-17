@@ -33,15 +33,25 @@ function visualLength(str) {
 
 // `compact` is for the "given quantity" line of a reverse question (e.g.
 // "Volume = 1030 cm^3") — it names the given, it isn't the thing being
-// solved, so it should read smaller than the answer it leads to, not bigger.
-export function qSize(q, instr, compact) {
+// solved, so it should read smaller than the figure and the answer it leads
+// to, not bigger. That only holds because every existing `compact` use
+// (solids-generators) shares its row with a figure: the figure carries the
+// visual weight, the compact line is a caption beside it.
+//
+// A skill with no `visualization` at all — Variation is the first — has no
+// figure to defer to. Its compact line is the only text in the row, doing
+// the job a normal (non-compact) question does everywhere else in the app —
+// and everywhere else, the question reads larger than the answer, not
+// smaller. So `hasFigure` says whether there's a figure for the compact line
+// to stay smaller than; without one, it sizes like any other question.
+export function qSize(q, instr, compact, hasFigure = true) {
   const lines = String(q || '').split('\n').length;
   const longest = Math.max(...String(q || '').split('\n').map((l) => visualLength(l)), 1);
   const wordy = String(instr || '').length > 44;
   const h = lines >= 3 ? 10 : lines === 2 ? 15 : wordy ? 19 : 24;
   const w = Math.min(109 / Math.max(longest, 7), 14);
   const floor = lines >= 3 ? 28 : 30;
-  if (compact) {
+  if (compact && hasFigure) {
     return `clamp(${Math.round(floor * 0.7)}px,min(${(h * 0.6).toFixed(1)}cqh,${(w * 0.7).toFixed(1)}cqi),44px)`;
   }
   return `clamp(${floor}px,min(${h}cqh,${w.toFixed(1)}cqi),76px)`;
