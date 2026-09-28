@@ -75,10 +75,10 @@ const closeEnough = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a),
 
 /** Every question must reduce to the same number as its own answer. */
 const checkAnswersItsOwnQuestion = (q) => {
-  // a^0 uses a letter placeholder base sometimes ('x^0', not just '3^0') —
-  // the law holds for any nonzero base, so the base itself carries no number
-  // to substitute back in. The dedicated foundation check below covers it.
-  if (/^[a-zA-Z]\^0$/.test(q.questionMath)) return;
+  // Anything to the power 0 uses a letter somewhere in the base sometimes
+  // ('x^0', or a bracketed '(3a^2b^3)^0') — the law holds for any nonzero
+  // base, so there's no number to substitute back in. Answer is always '1'.
+  if (/\^0$/.test(q.questionMath) && q.answer === '1') return;
   const got = evalLatex(q.questionMath);
   const want = evalLatex(q.answer);
   expect(closeEnough(got, want), `${q.questionMath} => ${got}, answer ${q.answer} => ${want}`).toBe(true);
@@ -110,19 +110,41 @@ describe('indices-zero-negative', () => {
       }
 
       if (difficulty === 'core') {
-        const m = q.questionMath.match(/^\\left\(\\frac\{(\d+)\}\{(\d+)\}\\right\)\^\{-\d+\}$/);
-        expect(m, q.questionMath).toBeTruthy();
-        expect(m[1]).not.toBe(m[2]);
-        // The reciprocal must actually have flipped: q^n / p^n (not p^n / q^n),
-        // occasionally reducing to a whole number when one divides the other.
-        expect(q.answer).toMatch(/^\d+$|^\\frac\{\d+\}\{\d+\}$/);
+        // Two shapes: a whole bracketed expression to the power 0, or a
+        // fractional base to a negative index (the reciprocal-flip case).
+        const isZero = /\^0$/.test(q.questionMath);
+        if (isZero) {
+          expect(q.questionMath).toMatch(/^\(\d+[a-z]\^\d[a-z]\^\d\)\^0$/);
+          expect(q.answer).toBe('1');
+        } else {
+          const m = q.questionMath.match(/^\\left\(\\frac\{(\d+)\}\{(\d+)\}\\right\)\^\{-\d+\}$/);
+          expect(m, q.questionMath).toBeTruthy();
+          expect(m[1]).not.toBe(m[2]);
+          // The reciprocal must actually have flipped: q^n / p^n (not p^n / q^n),
+          // occasionally reducing to a whole number when one divides the other.
+          expect(q.answer).toMatch(/^\d+$|^\\frac\{\d+\}\{\d+\}$/);
+        }
       }
 
       if (difficulty === 'stretch') {
-        expect(q.questionMath).toMatch(/^\d+\^\{\d+\} \\div \d+\^\{\d+\}$/);
-        // Landing on a negative power always gives a proper fraction (the
-        // numerator is 1, the denominator base^diff >= base >= 2).
-        expect(q.answer).toMatch(/^\\frac\{1\}\{\d+\}$/);
+        // Two shapes, each chaining two index laws rather than applying one:
+        // power-of-a-power straight into the negative-index rule (the outer
+        // power multiplies the exponent first, which only makes it more
+        // negative, then the reciprocal step applies), or the
+        // multiplication/division law landing on a negative power. Both give
+        // a proper fraction — neither shape resolves to a bare 1, which
+        // would read as easier than Core's fraction-reciprocal task rather
+        // than harder.
+        const isPowerOfPower = /^\(\d+\^\{\d\}\)\^\{-\d\}$/.test(q.questionMath);
+        if (isPowerOfPower) {
+          expect(q.questionMath).toMatch(/^\(\d+\^\{\d\}\)\^\{-\d\}$/);
+          expect(q.answer).toMatch(/^\\frac\{1\}\{\d+\}$/);
+        } else {
+          expect(q.questionMath).toMatch(/^\d+\^\{\d+\} \\div \d+\^\{\d+\}$/);
+          // Landing on a negative power always gives a proper fraction (the
+          // numerator is 1, the denominator base^diff >= base >= 2).
+          expect(q.answer).toMatch(/^\\frac\{1\}\{\d+\}$/);
+        }
       }
     }
     expect(distinct.size).toBeGreaterThan(1);
@@ -218,6 +240,11 @@ describe('rationalise-denominator', () => {
       // No rationalised answer still has a surd in its denominator.
       const asFrac = q.answer.match(/^\\frac\{([^{}]*)\}\{([^{}]*)\}$/);
       if (asFrac) expect(asFrac[2]).not.toMatch(/\\sqrt/);
+
+      // A coefficient of 1 is never written out — `\sqrt{14}`, not
+      // `1\sqrt{14}` — whether the surd stands alone or sits in a fraction's
+      // numerator.
+      expect(q.answer).not.toMatch(/(^|\{)1\\sqrt/);
 
       if (difficulty === 'stretch') {
         const d = q.questionMath.match(/\\sqrt\{(\d+)\}\}$/);

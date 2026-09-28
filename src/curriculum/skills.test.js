@@ -9,7 +9,11 @@ describe('skill catalogue', () => {
         expect(q, `${id} at ${band}`).not.toBeNull();
         expect(q.instruction).toBeTruthy();
         expect(q.answer).toBeTruthy();
-        expect(q.questionMath || q.questionText).toBeTruthy();
+        // A forward or reverse question can carry its numbers on the figure
+        // instead of in text (CLAUDE.md convention #2/#7) — every geometry
+        // generator does this, so a visualization satisfies the requirement
+        // just as questionMath/questionText would.
+        expect(q.questionMath || q.questionText || q.visualization).toBeTruthy();
         expect(q.metadata.topic).toBe(id);
       });
     });

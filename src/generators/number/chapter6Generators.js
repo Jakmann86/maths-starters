@@ -73,17 +73,27 @@ export const generateIndicesZeroNegative = (options = {}) => {
     };
   }
 
-  // Stretch. One branch in three chains the negative-index law straight into
-  // the zero-index fact: same base, opposite exponents, so the multiplication
-  // law lands exactly on a^0 rather than stopping at a negative power.
+  // Stretch. One branch in three chains the power-of-a-power law straight
+  // into the negative-index law: the outer power multiplies the inner
+  // exponent first (which only makes the index more negative, never zero),
+  // and only then does the reciprocal step apply. Two laws in sequence, not
+  // one — this is what actually sits above Core's single-step fraction
+  // reciprocal. An earlier draft used a^n * a^-n = a^0 = 1 here, but that
+  // resolves in one glance (the exponents visibly cancel) and reads easier
+  // than Core, not harder — the failure this replaces.
   if (_.random(0, 2) === 0) {
-    const base = _.random(2, 12);
-    const n = _.random(2, 9);
+    const m = _.random(2, 3);
+    const n = _.random(2, 3);
+    const mn = m * n;
+    // base is bounded from mn rather than rejection-sampled against it, so
+    // every (m, n) pair is usable — mn = 9 (m = n = 3) only leaves base = 2,
+    // but that is still a real question, not a skipped draw.
+    const base = _.random(2, Math.max(2, Math.floor(4000 ** (1 / mn))));
     return {
-      instruction: 'Evaluate',
-      questionMath: `${base}^{${n}} \\times ${base}^{-${n}}`,
-      answer: '1',
-      workingOut: `${base}^{${n} + (-${n})} = ${base}^0${NL}= 1`,
+      instruction: 'Evaluate, giving your answer as a fraction',
+      questionMath: `(${base}^{${m}})^{-${n}}`,
+      answer: frac(1, base ** mn),
+      workingOut: `(a^m)^{-n} = a^{-mn}${NL}(${base}^{${m}})^{-${n}} = ${base}^{-${mn}}${NL}= \\frac{1}{${base}^{${mn}}} = ${frac(1, base ** mn)}`,
       metadata: { topic: 'indices-zero-negative', difficulty },
     };
   }
@@ -296,7 +306,11 @@ export const generateRationaliseDenominator = (options = {}) => {
     const a = _.random(2, 15);
     const den = k * m;
     const g = gcd(a, den);
-    const answer = den / g === 1 ? `${a / g}\\sqrt{${m}}` : `\\frac{${a / g}\\sqrt{${m}}}{${den / g}}`;
+    // surd() (defined above for surds-simplify) drops a coefficient of 1 —
+    // `\sqrt{14}` rather than `1\sqrt{14}` — which the inline template this
+    // replaced didn't: a/g reduces to 1 whenever the original numerator a
+    // was itself a multiple of den, and did on a real board.
+    const answer = den / g === 1 ? surd(a / g, m) : `\\frac{${surd(a / g, m)}}{${den / g}}`;
     return {
       instruction: 'Write with a rational denominator',
       questionMath: `\\frac{${a}}{\\sqrt{${d}}}`,
@@ -317,7 +331,7 @@ export const generateRationaliseDenominator = (options = {}) => {
   } while ((gcd(a, b) > 1) !== wantCancel);
 
   const g = gcd(a, b);
-  const answer = b / g === 1 ? `${a / g}\\sqrt{${b}}` : `\\frac{${a / g}\\sqrt{${b}}}{${b / g}}`;
+  const answer = b / g === 1 ? surd(a / g, b) : `\\frac{${surd(a / g, b)}}{${b / g}}`;
   return {
     instruction: 'Write with a rational denominator',
     questionMath: `\\frac{${a}}{\\sqrt{${b}}}`,

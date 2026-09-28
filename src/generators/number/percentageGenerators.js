@@ -68,18 +68,47 @@ export const generatePercentageOfAmount = (options = {}) => {
   }
 
   // Reverse: the part and the percentage are given, the whole is wanted
-  // (Haese Exercise 10D).
+  // (Haese Exercise 10D). The word "original" is doing real work here — it
+  // is the one signal, in the abstract phrasing, that this isn't the same
+  // "work out p% of n" task Foundation and Core just asked, and a student
+  // skimming past it read the two as the same question. The money/population
+  // stories go further and name the payoff directly ("what was the full
+  // price"), the same fix percentage-change already uses for its own
+  // story-based questions below.
   let p, n, part;
   do {
     p = _.sample(FRIENDLY.concat([12, 16, 22, 35, 45, 55, 65, 85]));
     n = _.random(2, 200) * 10;
     part = (p * n) / 100;
   } while (!Number.isInteger(part));
+  const workingOut = `1\\% = ${part} \\div ${p} = ${dec(n, 2)}${NL}\\text{amount} = ${dec(n, 2)} \\times 100${NL}= ${n}`;
+  const style = changeStyle();
+
+  if (style === 'money') {
+    const item = _.sample(MONEY_ITEMS);
+    return {
+      instruction: 'Find the original price',
+      questionText: `${p}% of the price of ${item} is £${comma(part)}. What was the original price?`,
+      answer: `£${comma(n)}`,
+      workingOut,
+      metadata: { topic: 'percentage-of-amount', difficulty },
+    };
+  }
+  if (style === 'population') {
+    const place = _.sample(POPULATION_PLACES);
+    return {
+      instruction: 'Find the original population',
+      questionText: `${p}% of the population of ${place} is ${comma(part)}. What was the original population?`,
+      answer: comma(n),
+      workingOut,
+      metadata: { topic: 'percentage-of-amount', difficulty },
+    };
+  }
   return {
     instruction: 'Find the original amount',
-    questionMath: `${p}\\% \\text{ of an amount is } ${part}`,
+    questionMath: `${p}\\% \\text{ of the original amount is } ${part}`,
     answer: String(n),
-    workingOut: `1\\% = ${part} \\div ${p} = ${dec(n, 2)}${NL}\\text{amount} = ${dec(n, 2)} \\times 100${NL}= ${n}`,
+    workingOut,
     metadata: { topic: 'percentage-of-amount', difficulty },
   };
 };

@@ -70,10 +70,16 @@ function angleMarker(vertex, p1, p2, label, keyBase, color, opts = {}, r = 20) {
   // is a plain bisector push either way — no change from the original
   // behaviour for a caller that doesn't set them.
   const long = text.length > 4;
-  const { horizScale = 1, vShift = 0, longHorizScale = 0.35, longVShift = 0 } = opts;
+  const { horizScale = 1, vShift = 0, longHorizScale = 0.35, longVShift = 0, bisFrac = 0.5 } = opts;
   const hs = long ? longHorizScale : horizScale;
   const vs = long ? longVShift : vShift;
-  const labelDir = hs === 1 ? bis : unitVec(bis[0] * hs, bis[1]);
+  // bisFrac !== 0.5 replaces the plain bisector with a weighted blend of the
+  // two rays — used where a third ray (drawn elsewhere in the same figure)
+  // sits near the true bisector and would otherwise run straight through the
+  // label; weighting the label toward one ray moves it clear without moving
+  // the arc, which still spans the full angle.
+  const skewedBis = bisFrac === 0.5 ? bis : unitVec(u1[0] * (1 - bisFrac) + u2[0] * bisFrac, u1[1] * (1 - bisFrac) + u2[1] * bisFrac);
+  const labelDir = hs === 1 ? skewedBis : unitVec(skewedBis[0] * hs, skewedBis[1]);
   const labelR = r + 12 + Math.max(0, text.length - 1) * (long ? 4 : 6);
   const lx = vx + labelDir[0] * labelR - 2;
   const ly = vy + labelDir[1] * labelR + 3 + vs;
@@ -738,13 +744,20 @@ export default function Figure({ fig, color, shown }) {
     const O = [CIRC.cx, CIRC.cy];
     const colC = fig.unknown === 'centre' ? color : 'var(--ink)';
     const colP = fig.unknown === 'circumference' ? color : 'var(--ink)';
-    // A, B and P sit exactly 120deg apart (150, 30, 270), so the gap centred
-    // on local 90deg — the one the non-reflex centre-angle arc occupies — is
-    // the only one still clear once the reflex arc sweeps the other two. Pick
-    // whichever is free and turn it by `rot` with the rest of the figure,
-    // rather than a fixed screen-space offset that drifts onto a ray at some
-    // rotations (it used to sit almost on top of line OB at rotate=90).
-    const oGap = ((fig.reflex ? 90 : 210) + rot) * (Math.PI / 180);
+    // A, B and P sit exactly 120deg apart (150, 30, 270), and O sits inside
+    // triangle ABP (it's the circumcentre of an equilateral triangle, which
+    // coincides with the centroid) — so a ray from O clears every drawn line
+    // (OA, OB, PA, PB) at any radius only along local 90deg, which points at
+    // the midpoint of the one side that's never drawn, AB. Every other
+    // direction is safe only inside the triangle's inradius (~44 units)
+    // before it runs into PA or PB. Local 90 is exactly where the reflex
+    // centre-angle label sits below (it's the only radius-independent clear
+    // spot), so O keeps to 210 — inside the inradius, and clear of the
+    // number in both the reflex and non-reflex case — turned by `rot` with
+    // the rest of the figure, rather than a fixed screen-space offset that
+    // drifts onto a ray at some rotations (it used to sit almost on top of
+    // line OB at rotate=90).
+    const oGap = (210 + rot) * (Math.PI / 180);
     const oLabelPos = [O[0] + Math.cos(oGap) * 20, O[1] + Math.sin(oGap) * 20 + 5];
     const nodes = [
       circleOutline(),
@@ -766,11 +779,16 @@ export default function Figure({ fig, color, shown }) {
         // midpoint — which, for this fixed A/B/P configuration, is exactly
         // P's own direction from O (the reflex angle is defined to sweep
         // past P), the same spot the circumference angle's own label sits.
-        // Keep the arc pointAngleMarker drew, but move the label further
-        // round the same sweep, clear of both P's label and the OA line.
+        // Worse, that whole direction sits inside the triangle's inradius,
+        // so any offset from it still runs into PA or PB once the label is
+        // wide enough to need real space (a bug that reached every rotation,
+        // not just some). Keep the arc pointAngleMarker drew, but place the
+        // label at local 90deg instead — the one direction clear of every
+        // drawn line at any radius (see the comment above `oGap`) — rather
+        // than anywhere within the sweep itself.
         const text = plainAngleLabel(fig.centre);
-        const labelDeg = 150 + rot + 55;
-        const labelR = 40 + Math.max(0, text.length - 1) * 4;
+        const labelDeg = 90 + rot;
+        const labelR = 26 + 12 + Math.max(0, text.length - 1) * 6;
         const lx = O[0] + Math.cos((labelDeg * Math.PI) / 180) * labelR;
         const ly = O[1] + Math.sin((labelDeg * Math.PI) / 180) * labelR;
         nodes.push(marker[0], figLabel('ac-lbl', lx, ly + 5, text, 'middle', colC, 16));
@@ -815,6 +833,11 @@ export default function Figure({ fig, color, shown }) {
     // true bisector (not at its midpoint, local 260) — a vertex exactly at
     // that midpoint has its own interior-angle bisector run straight back
     // through O, landing its "x" label on top of the centre label.
+    //
+    // The diagonal AC itself is never drawn: the chain only needs angle AOC
+    // (radii OA/OC, already on the figure) and the quadrilateral's own angle
+    // at B or D, so a construction line for AC adds clutter without adding
+    // information the student needs.
     const rot = fig.rotate ?? 0;
     const A = onCircle(200, rot), B = onCircle(220, rot), C = onCircle(320, rot), D = onCircle(90, rot);
     const O = [CIRC.cx, CIRC.cy];
@@ -825,7 +848,6 @@ export default function Figure({ fig, color, shown }) {
       <polygon key="q" points={[A, B, C, D].map((p) => p.join(',')).join(' ')} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
       figLine('oa', O[0], O[1], A[0], A[1]),
       figLine('oc', O[0], O[1], C[0], C[1]),
-      figLine('ac', A[0], A[1], C[0], C[1], { strokeDasharray: '5 5', strokeWidth: 2 }),
       <circle key="ctr" cx={O[0]} cy={O[1]} r={4} fill="var(--ink)" />,
     ];
     nodes.push(...pointAngleMarker(O[0], O[1], 200 + rot, 320 + rot, 120, fig.centreAngle, 'cqc-o', 'var(--ink)'));
@@ -865,8 +887,14 @@ export default function Figure({ fig, color, shown }) {
     ];
     if (fig.angleC) nodes.push(...angleMarker(C, A, B, fig.angleC, 'ssc', col('C'), {}, 20));
     if (fig.angleD) nodes.push(...angleMarker(D, A, B, fig.angleD, 'ssd', col('D'), {}, 20));
-    if (fig.angleA) nodes.push(...angleMarker(A, B, T, fig.angleA, 'ssa', col('A'), {}, 20));
-    if (fig.angleB) nodes.push(...angleMarker(B, A, T, fig.angleB, 'ssb', col('B'), {}, 20));
+    // angleA/angleB (Stretch only) span from the chord AB to the target
+    // apex — a wedge that, for one of the two apex choices, sweeps straight
+    // over the other apex's own ray (C and D project in the same angular
+    // order from A or B as they sit on the arc). A plain bisector then lands
+    // the label right on that crossing ray. Weighting toward the target apex
+    // clears it in both cases without narrowing the drawn arc.
+    if (fig.angleA) nodes.push(...angleMarker(A, B, T, fig.angleA, 'ssa', col('A'), { bisFrac: 0.7 }, 20));
+    if (fig.angleB) nodes.push(...angleMarker(B, A, T, fig.angleB, 'ssb', col('B'), { bisFrac: 0.7 }, 20));
     return svgWrap(nodes, 240, 240, 'css', fig.big, shown);
   }
 
@@ -880,9 +908,10 @@ export default function Figure({ fig, color, shown }) {
     // quadrilateral OAPB. AB (the chord joining the two points of contact)
     // plays no part in Foundation/Core, so it's only drawn at all for the
     // Stretch chain, where it's the base of isosceles triangle OAB (OA = OB,
-    // both radii) and genuinely needs to be visible, not dashed — unlike
-    // cyclic-quadrilateral-centre's diagonal, it isn't standing in for a
-    // hidden construction line. `rotate` only ever lands the axis of
+    // both radii) and genuinely needs to be visible, not dashed: unlike a
+    // construction line the student never needs to see (cyclic-quadrilateral-
+    // centre's AC diagonal, not drawn at all), this one is itself a labelled
+    // side of the triangle being used. `rotate` only ever lands the axis of
     // symmetry on a cardinal direction here (up/right/down/left), so unlike
     // the shared-CIRC figures the viewBox doesn't need to be a fixed square
     // sized for the worst case of all four rotations at once — that would
