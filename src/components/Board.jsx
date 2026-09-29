@@ -27,7 +27,9 @@ const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 // squares, so every band emits ^2 and falls back by design. Variation's Core
 // and Stretch bands join them too, emitting \sqrt{} and ^2 — Foundation of
 // inverse-variation is single-level \frac and renders natively, so this
-// topic looks mixed-typeface across a board by design, not by bug. Anything
+// topic looks mixed-typeface across a board by design, not by bug.
+// distance-between-points works in AB^2 in every band, so its working falls
+// back too; the rest of Coordinate geometry renders natively. Anything
 // else logging here is a parser bug.
 function warnIfUnparseable(id, field, text) {
   if (!text) return;

@@ -30,6 +30,7 @@ import * as pct from '../generators/number/percentageGenerators';
 import * as ch6 from '../generators/number/chapter6Generators';
 import * as stats from '../generators/statistics/averagesGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
+import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -318,6 +319,50 @@ export const skills = {
     label: 'Polygon exterior angles',
     topic: 'Angles',
     generate: (opts) => angleFacts.generatePolygonExteriorAngles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 12, 14: coordinate geometry ---
+  'distance-between-points': {
+    label: 'Distance between two points',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generateDistanceBetweenPoints(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'midpoint-of-segment': {
+    label: 'Midpoint of a line segment',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generateMidpoint(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'gradient-of-segment': {
+    label: 'Gradient of a line segment',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generateGradientOfSegment(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'parallel-perpendicular-gradients': {
+    label: 'Parallel and perpendicular gradients',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generateParallelPerpendicular(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'equation-of-a-line': {
+    label: 'Equation of a line',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generateEquationOfALine(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'line-general-form': {
+    label: 'Straight lines in general form',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generateLineGeneralForm(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'point-on-line': {
+    label: 'A point on a line',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generatePointOnLine(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -777,6 +822,12 @@ export const skills = {
     generate: (opts) => stats.generateEstimatedMean(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'mean-missing-value': {
+    label: 'Finding a missing value from the mean',
+    topic: 'Statistics',
+    generate: (opts) => stats.generateMeanMissingValue(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 };
 
 export const skillIds = Object.keys(skills);
@@ -833,7 +884,7 @@ export const STRANDS = [
       'Variation',
     ],
   },
-  { name: 'Geometry', topics: ['Angles', 'Pythagoras', 'Trigonometry', 'Circle theorems'] },
+  { name: 'Geometry', topics: ['Angles', 'Coordinate geometry', 'Pythagoras', 'Trigonometry', 'Circle theorems'] },
   { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Circles', 'Surface area', 'Volume'] },
   { name: 'Statistics', topics: ['Statistics'] },
   { name: 'Problem solving', topics: ['Problem solving', 'Puzzles'] },
