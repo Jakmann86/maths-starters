@@ -1511,6 +1511,143 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(elements, 200, 200, 'pgi', fig.big, shown);
   }
 
+  if (fig.type === 'coordinate-grid') {
+    // THE ONE FIGURE IN THIS REPO DRAWN TO SCALE.
+    //
+    // Every other figure is schematic — CLAUDE.md 7: labels carry the truth
+    // and the shape stays legible, so a 20 x 3 x 2 cuboid is drawn as a
+    // readable box. That convention cannot apply here, because reading values
+    // off the picture IS the question. A grid whose squares lied would make
+    // "find the gradient of AB" unanswerable. Do not "fix" this to match the
+    // others.
+    const pts = fig.points || [];
+    const seg = fig.segment || null;
+    let x0; let x1; let y0; let y1;
+
+    if (pts.length || seg) {
+      // Bounds from the content, padded by a square, always including the
+      // origin so both axes are on screen.
+      const xs = [...pts.map((p) => p.x), ...(seg ? [seg[0][0], seg[1][0]] : []), 0];
+      const ys = [...pts.map((p) => p.y), ...(seg ? [seg[0][1], seg[1][1]] : []), 0];
+      x0 = Math.min(...xs) - 1; x1 = Math.max(...xs) + 1;
+      y0 = Math.min(...ys) - 1; y1 = Math.max(...ys) + 1;
+      while (x1 - x0 < 6) { x0 -= 1; x1 += 1; }
+      while (y1 - y0 < 6) { y0 -= 1; y1 += 1; }
+      // Square the window up. A 6-by-12 box is a legible graph and an
+      // illegible slot; the squares stay square either way, so only the
+      // window changes.
+      while (x1 - x0 < y1 - y0) { if ((x1 - x0) % 2) x1 += 1; else x0 -= 1; }
+      while (y1 - y0 < x1 - x0) { if ((y1 - y0) % 2) y1 += 1; else y0 -= 1; }
+    } else {
+      // A line alone: fix a square window around its intercept and CLIP the
+      // line to it. Growing the window to contain the whole line is what made
+      // a gradient of -2 come out three times taller than it was wide.
+      const { c } = fig.line;
+      x0 = -5; x1 = 5;
+      y0 = Math.round(c) - 5; y1 = Math.round(c) + 5;
+      if (y0 > -1) { y0 = -1; y1 = 9; }
+      if (y1 < 1) { y1 = 1; y0 = -9; }
+    }
+
+    const cell = 26;
+    // Asymmetric padding: the y numbers sit outside on the left, the x
+    // numbers below, and the axis letters need room beyond the ends.
+    const PL = 34; const PR = 32; const PT = 24; const PB = 30;
+    const W = (x1 - x0) * cell + PL + PR;
+    const H = (y1 - y0) * cell + PT + PB;
+    const X = (x) => PL + (x - x0) * cell;
+    const Y = (y) => PT + (y1 - y) * cell;
+
+    const nodes = [];
+    // Grid lines are var(--ink) at low opacity rather than a second colour —
+    // no component may hardcode a hex (CLAUDE.md 5).
+    for (let x = x0; x <= x1; x += 1) {
+      nodes.push(figLine(`gx${x}`, X(x), Y(y0), X(x), Y(y1), { strokeWidth: 1, strokeOpacity: 0.16 }));
+    }
+    for (let y = y0; y <= y1; y += 1) {
+      nodes.push(figLine(`gy${y}`, X(x0), Y(y), X(x1), Y(y), { strokeWidth: 1, strokeOpacity: 0.16 }));
+    }
+    nodes.push(figLine('ax', X(x0), Y(0), X(x1), Y(0), { strokeWidth: 2.5 }));
+    nodes.push(figLine('ay', X(0), Y(y0), X(0), Y(y1), { strokeWidth: 2.5 }));
+
+    // Axis numbers every square while the grid is small, every other once it
+    // is not, so they never collide at any span.
+    const stepX = x1 - x0 > 9 ? 2 : 1;
+    const stepY = y1 - y0 > 9 ? 2 : 1;
+    for (let x = Math.ceil(x0 / stepX) * stepX; x <= x1; x += stepX) {
+      if (x !== 0) nodes.push(figLabel(`nx${x}`, X(x), Y(0) + 17, String(x), 'middle', 'var(--ink)', 13));
+    }
+    for (let y = Math.ceil(y0 / stepY) * stepY; y <= y1; y += stepY) {
+      if (y !== 0) nodes.push(figLabel(`ny${y}`, X(0) - 7, Y(y) + 5, String(y), 'end', 'var(--ink)', 13));
+    }
+    // O only where the origin is a corner of the grid. With numbers running
+    // both sides of it, an O tucked under the axis reads as part of "-1".
+    if (x0 === 0 || y0 === 0) {
+      nodes.push(figLabel('lo', X(0) - 7, Y(0) + 17, 'O', 'end', 'var(--ink)', 14));
+    }
+    nodes.push(figLabel('lx', X(x1) + 12, Y(0) + 5, 'x', 'start', 'var(--ink)', 15));
+    nodes.push(figLabel('ly', X(0) + 9, Y(y1) - 6, 'y', 'start', 'var(--ink)', 15));
+
+    // The line or segment is the subject of the question, so it takes the
+    // slot colour, like every other `unknown` in this file.
+    if (fig.line) {
+      const { m, c } = fig.line;
+      const cand = [];
+      const add = (x, y) => {
+        if (x >= x0 - 1e-9 && x <= x1 + 1e-9 && y >= y0 - 1e-9 && y <= y1 + 1e-9) cand.push([x, y]);
+      };
+      add(x0, m * x0 + c); add(x1, m * x1 + c);
+      if (m !== 0) { add((y0 - c) / m, y0); add((y1 - c) / m, y1); }
+      let best = [cand[0], cand[0]]; let far = -1;
+      cand.forEach((a) => cand.forEach((b) => {
+        const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+        if (d > far) { far = d; best = [a, b]; }
+      }));
+      nodes.push(
+        <line
+          key="ln"
+          x1={X(best[0][0])}
+          y1={Y(best[0][1])}
+          x2={X(best[1][0])}
+          y2={Y(best[1][1])}
+          stroke={color}
+          strokeWidth={3}
+        />
+      );
+    }
+    if (seg) {
+      nodes.push(
+        <line
+          key="sg"
+          x1={X(seg[0][0])}
+          y1={Y(seg[0][1])}
+          x2={X(seg[1][0])}
+          y2={Y(seg[1][1])}
+          stroke={color}
+          strokeWidth={3}
+        />
+      );
+    }
+
+    const cx = pts.length ? pts.reduce((s, q) => s + q.x, 0) / pts.length : 0;
+    const cy = pts.length ? pts.reduce((s, q) => s + q.y, 0) / pts.length : 0;
+    pts.forEach((p, i) => {
+      nodes.push(<circle key={`pt${i}`} cx={X(p.x)} cy={Y(p.y)} r={5} fill="var(--ink)" />);
+      if (!p.label) return;
+      // Pushed away from the middle of the plotted set, not away from the
+      // origin: away from the origin puts the label of a lower-left point
+      // straight onto the segment leaving it.
+      const ux = p.x === cx ? 1 : Math.sign(p.x - cx);
+      const uy = p.y === cy ? 1 : Math.sign(p.y - cy);
+      nodes.push(figLabel(`pl${i}`, X(p.x) + ux * 11, Y(p.y) - uy * 11 + 5, p.label,
+        ux >= 0 ? 'start' : 'end', 'var(--ink)', 16));
+    });
+
+    // noShrink, like magic-square: the grid is what has to be read after the
+    // reveal, not decoration around an answer.
+    return svgWrap(nodes, W, H, 'cg', fig.big, shown, true);
+  }
+
   if (fig.type === 'branching-pattern') {
     // Each node at generation k grows `ratio` children at generation k+1
     // (Haese 26C: geometric growth shown as a tree, not literal dots, since
