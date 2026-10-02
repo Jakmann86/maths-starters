@@ -29,6 +29,7 @@ import * as circleLen from '../generators/geometry/circleLengthGenerators';
 import * as pct from '../generators/number/percentageGenerators';
 import * as ch6 from '../generators/number/chapter6Generators';
 import * as stats from '../generators/statistics/averagesGenerators';
+import * as displays from '../generators/statistics/dataDisplayGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 
@@ -826,6 +827,18 @@ export const skills = {
     label: 'Finding a missing value from the mean',
     topic: 'Statistics',
     generate: (opts) => stats.generateMeanMissingValue(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'modal-class': {
+    label: 'Modal class of grouped data',
+    topic: 'Statistics',
+    generate: (opts) => displays.generateModalClass(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'stem-and-leaf-averages': {
+    label: 'Averages from a stem-and-leaf plot',
+    topic: 'Statistics',
+    generate: (opts) => displays.generateStemAndLeafAverages(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 };
