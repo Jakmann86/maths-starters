@@ -1785,6 +1785,44 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, W, H, 'tb', fig.big, shown);
   }
 
+  if (fig.type === 'stem-leaf') {
+    // Its own branch rather than the `table` figure, which boxes every cell —
+    // a boxed stem-and-leaf looks wrong to anyone who has taught one. A single
+    // vertical rule, stems right-aligned against it, and leaves at a FIXED
+    // pitch so the rows line up into columns. That alignment is the point of
+    // the display: it is what makes the shape of the distribution visible.
+    const { rows } = fig;
+    if (!Array.isArray(rows) || !rows.length) return null;
+    const PITCH = 17, ROW = 26, LX = 58, TOP = 46;
+    const widest = Math.max(...rows.map((r) => r.leaves.length));
+    const keyText = `Key: ${fig.keyStem} | ${fig.keyLeaf} means ${fig.keyStem}${fig.keyLeaf}`;
+    // The key can be wider than the leaves: a tall, narrow plot has a short
+    // widest row and a full-length key underneath it.
+    const W = Math.max(LX + 14 + widest * PITCH + 18, LX - 36 + keyText.length * 7.6 + 10);
+    const H = TOP + rows.length * ROW + 40;
+
+    const nodes = [
+      figLabel('hs', LX - 10, TOP - 14, 'Stem', 'end', 'var(--ink)', 15),
+      figLabel('hl', LX + 14, TOP - 14, 'Leaf', 'start', 'var(--ink)', 15),
+      figLine('rule', LX, TOP - 6, LX, TOP + rows.length * ROW - 4, { strokeWidth: 2.5 }),
+      figLine('hdr', LX - 36, TOP - 8, LX + 14 + widest * PITCH, TOP - 8, { strokeWidth: 1.5 }),
+    ];
+    rows.forEach((r, i) => {
+      const y = TOP + i * ROW + 12;
+      nodes.push(figLabel(`s${i}`, LX - 10, y, String(r.stem), 'end'));
+      r.leaves.forEach((v, j) => {
+        nodes.push(figLabel(`l${i}-${j}`, LX + 14 + j * PITCH, y, String(v), 'start'));
+      });
+    });
+    // The key is not decoration: without it the plot does not say what 3 | 4
+    // stands for, and every question here depends on that.
+    nodes.push(figLabel('key', LX - 36, H - 14, keyText, 'start', 'var(--ink)', 14));
+
+    // noShrink, like magic-square: the plot is what has to be read after the
+    // reveal, not decoration around an answer.
+    return svgWrap(nodes, W, H, 'sl', fig.big, shown, true);
+  }
+
   if (fig.type === 'arithmagon') {
     // Circles at the corners, a box on each edge. Fixed geometry, like every
     // other figure here — only the labels change.
