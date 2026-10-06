@@ -184,7 +184,7 @@ export const generateFormulaDerivation = (options = {}) => {
     const count = _.random(4, 20);
     const total = initial + (isGain ? 1 : -1) * rate * count;
     return {
-      instruction: `A savings account starts with $${initial}. $${rate} is ${opWord} it, ${count} times. Write a formula for the final amount $A, then evaluate it.`,
+      instruction: `A savings account starts with $${initial}. $${rate} is ${opWord} it, ${count} times. Write a formula for the final amount A, then evaluate it.`,
       questionMath: null,
       answer: `A = ${total}`,
       workingOut: [`A = ${initial} ${opSign} ${rate} \\times ${count}`, `A = ${total}`].join(NL),
