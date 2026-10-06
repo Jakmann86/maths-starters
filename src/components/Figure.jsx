@@ -1829,6 +1829,133 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, W, H, 'sl', fig.big, shown, true);
   }
 
+  // A pie chart is the third figure in this file whose geometry carries data
+  // rather than labels (after `coordinate-grid` and `stem-leaf`), so §7's
+  // "labels change, shapes do not" is deliberately suspended here: the whole
+  // point of the question is that the sectors are in proportion. Angles are
+  // whole degrees summing to 360 by construction in the generator.
+  if (fig.type === 'pie-chart') {
+    const sectors = fig.sectors;
+    if (!Array.isArray(sectors) || !sectors.length) return null;
+    const R = 84;
+    const cx = 0, cy = 0;        // laid out about the origin, shifted at the end
+    const OUT = R * 1.22;        // ring the category names sit on
+    const IN = R * 0.66;         // ring the angle labels sit on
+    const CHAR = 12;             // approximate width of one character at .fig-label size (as `table`)
+    const ASCENT = 14, DESCENT = 5;
+    const rad = (d) => (d * Math.PI) / 180;
+
+    // Neighbouring sectors take different washes of the slot colour, so the
+    // divisions read as divisions before anyone has read a label. The lists
+    // are ordered so the first and last differ too — they are neighbours as
+    // well, round the back of the circle.
+    const WASH = { 1: [0.22], 2: [0.30, 0.10], 3: [0.32, 0.18, 0.08], 4: [0.32, 0.13, 0.24, 0.08] };
+    const washes = WASH[sectors.length] ?? sectors.map((_s, i) => 0.32 - i * 0.06);
+
+    // A name to the right of the circle has to run rightwards from its anchor
+    // or it laps back over the chart; one at the top or bottom is centred.
+    const anchorFor = (nx) => (nx > 0.25 ? 'start' : nx < -0.25 ? 'end' : 'middle');
+
+    const nodes = [];
+    // The circle's own extent, widened below by whatever the labels need. A
+    // fixed viewBox would have to budget for the longest category name in the
+    // file on every chart; measuring instead lets a Car/Bus/Walk chart draw
+    // its circle half again as large in the same slot.
+    const ext = { x0: -R - 2, x1: R + 2, y0: -R - 2, y1: R + 2 };
+    const grow = (x, y, text, anchor) => {
+      const w = String(text).length * CHAR;
+      const left = anchor === 'start' ? x : anchor === 'end' ? x - w : x - w / 2;
+      ext.x0 = Math.min(ext.x0, left);
+      ext.x1 = Math.max(ext.x1, left + w);
+      ext.y0 = Math.min(ext.y0, y - ASCENT);
+      ext.y1 = Math.max(ext.y1, y + DESCENT);
+    };
+
+    let from = -90;              // the first sector starts at 12 o'clock
+    sectors.forEach((s, i) => {
+      const to = from + s.angle;
+      const p0 = [cx + R * Math.cos(rad(from)), cy + R * Math.sin(rad(from))];
+      const p1 = [cx + R * Math.cos(rad(to)), cy + R * Math.sin(rad(to))];
+      nodes.push(
+        <path
+          key={`sec${i}`}
+          d={`M ${cx} ${cy} L ${p0[0].toFixed(2)} ${p0[1].toFixed(2)} A ${R} ${R} 0 ${s.angle > 180 ? 1 : 0} 1 ${p1[0].toFixed(2)} ${p1[1].toFixed(2)} Z`}
+          fill={color}
+          fillOpacity={washes[i]}
+          stroke="var(--ink)"
+          strokeWidth={3}
+          strokeLinejoin="round"
+        />
+      );
+      from = to;
+    });
+
+    // Angle markers at the centre, each inset from both of its radii.
+    //
+    // This deliberately does not reuse `pointAngleMarker`: that helper always
+    // spans its wedge's full size, which is right for the ray configurations
+    // it serves because those never tile a whole turn. A pie chart's sectors
+    // do, so full-span arcs join up into one unbroken circle with the radii
+    // crossing it, and the eye reads a hole in the middle rather than four
+    // angles. The gaps are what make them read as markers.
+    //
+    // The inset is held near-constant in pixels rather than proportional to
+    // the sector, so the gap looks the same everywhere; the cap at 0.22 of
+    // the angle keeps a 45° sector — the narrowest the generator allows —
+    // from shrinking to a dot.
+    const MARK = 26;
+    from = -90;
+    sectors.forEach((s, i) => {
+      const inset = Math.min(11.5, s.angle * 0.22);
+      const a0 = from + inset, a1 = from + s.angle - inset;
+      const A = [cx + MARK * Math.cos(rad(a0)), cy + MARK * Math.sin(rad(a0))];
+      const B = [cx + MARK * Math.cos(rad(a1)), cy + MARK * Math.sin(rad(a1))];
+      nodes.push(
+        <path
+          key={`arc${i}`}
+          d={`M ${A[0].toFixed(2)} ${A[1].toFixed(2)} A ${MARK} ${MARK} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${B[0].toFixed(2)} ${B[1].toFixed(2)}`}
+          fill="none"
+          stroke={fig.unknown != null && s.name === fig.unknown ? color : 'var(--ink)'}
+          strokeWidth={2.5}
+        />
+      );
+      from += s.angle;
+    });
+
+    // Labels after every sector and marker, so no fill, radius or arc lands
+    // on top of one.
+    from = -90;
+    sectors.forEach((s, i) => {
+      const mid = from + s.angle / 2;
+      const nx = Math.cos(rad(mid)), ny = Math.sin(rad(mid));
+      const isUnknown = fig.unknown != null && s.name === fig.unknown;
+      const tone = isUnknown ? color : 'var(--ink)';
+
+      // The angle (or '?') inside the sector. The generator's 45° floor on
+      // every sector is what guarantees there is room for it.
+      const ix = cx + IN * nx, iy = cy + IN * ny + 6;
+      nodes.push(figLabel(`pn${i}`, ix, iy, s.note, 'middle', tone));
+      grow(ix, iy, s.note, 'middle');
+
+      const anchor = anchorFor(nx);
+      const lx = cx + OUT * nx + (anchor === 'start' ? 4 : anchor === 'end' ? -4 : 0);
+      const ly = cy + OUT * ny + (anchor === 'middle' ? (ny < 0 ? -2 : 12) : 6);
+      nodes.push(figLabel(`pl${i}`, lx, ly, s.name, anchor, tone));
+      grow(lx, ly, s.name, anchor);
+      from = mid + s.angle / 2;
+    });
+
+    const PAD = 6;
+    const W = ext.x1 - ext.x0 + PAD * 2;
+    const H = ext.y1 - ext.y0 + PAD * 2;
+    // noShrink, like stem-leaf: after the reveal the chart is what the
+    // working is read off, so it keeps its size rather than giving way.
+    return svgWrap(
+      <g transform={`translate(${(PAD - ext.x0).toFixed(2)},${(PAD - ext.y0).toFixed(2)})`}>{nodes}</g>,
+      W.toFixed(2), H.toFixed(2), 'pie', fig.big, shown, true
+    );
+  }
+
   if (fig.type === 'arithmagon') {
     // Circles at the corners, a box on each edge. Fixed geometry, like every
     // other figure here — only the labels change.
