@@ -1758,7 +1758,9 @@ export default function Figure({ fig, color, shown }) {
     const rows = fig.rows;
     if (!Array.isArray(rows) || !rows.length) return null;
     const CH = 34;            // cell height
-    const CHAR = 9.5;         // approximate width of one character at .fig-label size
+    // Measured: bold Archivo at .fig-label size runs 10.3-13px a character
+    // ("Frequency" is 107px). 12 keeps a header off its cell borders.
+    const CHAR = 12;          // approximate width of one character at .fig-label size
     const PAD = 24;
     // Each column is sized to its own longest entry, so "0 <= x < 20" gets the
     // room it needs without padding out a column of single digits.
