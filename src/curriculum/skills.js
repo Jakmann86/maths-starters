@@ -30,6 +30,7 @@ import * as pct from '../generators/number/percentageGenerators';
 import * as ch6 from '../generators/number/chapter6Generators';
 import * as stats from '../generators/statistics/averagesGenerators';
 import * as displays from '../generators/statistics/dataDisplayGenerators';
+import * as pie from '../generators/statistics/pieChartGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 
@@ -839,6 +840,12 @@ export const skills = {
     label: 'Averages from a stem-and-leaf plot',
     topic: 'Statistics',
     generate: (opts) => displays.generateStemAndLeafAverages(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'pie-charts': {
+    label: 'Pie charts',
+    topic: 'Statistics',
+    generate: (opts) => pie.generatePieCharts(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 };
