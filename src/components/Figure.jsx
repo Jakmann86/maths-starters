@@ -7,13 +7,17 @@ import './Figure.css';
 function svgWrap(children, w, h, key, big, shown, noShrink = false) {
   const capShown = noShrink ? false : shown;
   const cap = capShown ? (big ? '41cqh' : '34cqh') : (big ? '64cqh' : '47cqh');
+  // `cap` is how big a figure may be; 100% (of .slot-figure-wrap, which
+  // stretches to the row) is how big it can be. Without the second, a long
+  // instruction or a short screen left a big figure taller than its row,
+  // and the row's overflow: hidden cut off the bottom side and its label.
   return (
     <svg
       key={key}
       className="fig-svg"
       viewBox={`0 0 ${w} ${h}`}
       preserveAspectRatio="xMidYMid meet"
-      style={{ width: big ? 'min(70cqi,580px)' : 'min(47cqi,346px)', maxHeight: cap }}
+      style={{ width: big ? 'min(70cqi,580px)' : 'min(47cqi,346px)', maxHeight: `min(${cap}, 100%)` }}
     >
       {children}
     </svg>

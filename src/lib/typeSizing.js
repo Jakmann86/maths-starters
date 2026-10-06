@@ -19,6 +19,10 @@ function visualLength(str) {
     .replace(/\\text\{([^}]*)\}/g, '$1')
     .replace(/\\,|\\;|\\!/g, ' ')
     .replace(/\\ /g, ' ')
+    // An index sits small and raised; its braces take no room. Dropped
+    // before the \frac rule below, which can't see past nested braces —
+    // \frac{2^{8}}{2^{7}} otherwise counted as its full source length.
+    .replace(/\^\{([^{}]*)\}/g, '^$1')
     // A \frac{a}{b} stacks its numerator and denominator instead of laying
     // them side by side, so its on-screen width is close to the wider of
     // the two, not the length of the whole `\frac{a}{b}` source — counting

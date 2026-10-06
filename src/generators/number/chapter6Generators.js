@@ -134,8 +134,10 @@ const plain = (num, exp) => {
   if (exp >= 0) return String(num) + '0'.repeat(exp);
   const s = String(num);
   const k = -exp;
-  return s.length > k ? `${s.slice(0, s.length - k)}.${s.slice(s.length - k)}`
-                      : `0.${'0'.repeat(k - s.length)}${s}`;
+  const out = s.length > k ? `${s.slice(0, s.length - k)}.${s.slice(s.length - k)}`
+                           : `0.${'0'.repeat(k - s.length)}${s}`;
+  // 4540 x 10^-1 is 454, not 454.0.
+  return out.replace(/\.?0+$/, '');
 };
 
 export const generateStandardFormWrite = (options = {}) => {
@@ -200,8 +202,12 @@ export const generateStandardFormCalculate = (options = {}) => {
   }
 
   // Adding: the powers have to be matched first, which multiplying never
-  // requires. This is the band that catches people.
-  const e = _.random(-5, 7);
+  // requires. This is the band that catches people. Half the time the powers
+  // are large (10^21, 10^-18), so writing both numbers out in full, adding,
+  // and converting back isn't a practical way round matching the powers.
+  const e = _.random(0, 1)
+    ? _.random(-5, 7)
+    : _.sample([_.random(12, 30), _.random(-30, -12)]);
   const gap = _.random(1, 3);
   const n1 = _.random(11, 89);             // n1 x 10^e
   const n2 = _.random(2, 9);               // n2 x 10^(e+gap)
@@ -293,8 +299,46 @@ export const generateSurdsSimplify = (options = {}) => {
   };
 };
 
+// A binomial denominator, b ± sqrt(c): multiply top and bottom by the
+// conjugate so the difference of two squares clears the root. The
+// denominator b^2 - c goes negative whenever c > b^2 (5 / (1 - sqrt 3)), and
+// that sign is part of what is being tested, so it is kept rather than
+// avoided.
+const rationaliseConjugate = (difficulty) => {
+  let a, b, c, D;
+  do {
+    a = _.random(1, 12);
+    b = _.random(1, 7);
+    c = _.sample(SQUAREFREE.filter((v) => v <= 15));
+    D = b * b - c;
+  } while (Math.abs(D) > 40);
+  const minus = _.random(0, 1) === 1;           // denominator b - sqrt(c)?
+  const conj = `${b} ${minus ? '+' : '-'} \\sqrt{${c}}`;
+
+  // a(b ∓ sqrt c) / D, reduced by the factor common to all three numbers.
+  const g = gcd(a, Math.abs(D));
+  let p = (a * b) / g, q = (minus ? a : -a) / g, r = D / g;
+  if (r < 0) { p = -p; q = -q; r = -r; }
+  const qs = (k) => surd(k, c);                  // k sqrt c, k > 0, 1 dropped
+  let num, lead = '';
+  if (p < 0 && q < 0) { lead = '-'; num = `${-p} + ${qs(-q)}`; }
+  else if (p < 0) num = `${qs(q)} - ${-p}`;
+  else num = `${p} ${q < 0 ? '-' : '+'} ${qs(Math.abs(q))}`;
+  const answer = r === 1 ? (lead ? `-${-p} - ${qs(-q)}` : num) : `${lead}\\frac{${num}}{${r}}`;
+
+  return {
+    instruction: 'Write with a rational denominator',
+    questionMath: `\\frac{${a}}{${b} ${minus ? '-' : '+'} \\sqrt{${c}}}`,
+    answer,
+    workingOut: `\\text{multiply top and bottom by } ${conj}${NL}= \\frac{${a === 1 ? '' : a}(${conj})}{${b}^2 - ${c}} = \\frac{${a === 1 ? '' : a}(${conj})}{${D}}${NL}= ${answer}`,
+    metadata: { topic: 'rationalise-denominator', difficulty },
+  };
+};
+
 export const generateRationaliseDenominator = (options = {}) => {
   const { difficulty = 'core' } = options;
+
+  if (difficulty === 'stretch' && _.random(0, 1)) return rationaliseConjugate(difficulty);
 
   if (difficulty === 'stretch') {
     // The denominator has to be simplified before it can be rationalised.

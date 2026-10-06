@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
 import TopicPanel from './TopicPanel.jsx';
-import { generateForSkill, getSkill, skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
+import { generateForSkill, getSkill, skillsInTopic, nextSkillInTopic, topics, strandOf, ALL_KATEX_STRANDS } from '../curriculum/skills.js';
 import { loadPool, savePool, togglePool, drawBoxTopics, pickSwapTopic } from '../curriculum/topicPool.js';
 import { parseArchivoLine } from '../lib/archivoMath.jsx';
+import { preloadKatex } from '../lib/katexLoader.js';
 import './Board.css';
 
 const SLOT_COLORS = ['var(--slot-1)', 'var(--slot-2)', 'var(--slot-3)', 'var(--slot-4)'];
@@ -29,8 +30,9 @@ const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 // inverse-variation is single-level \frac and renders natively, so this
 // topic looks mixed-typeface across a board by design, not by bug.
 // distance-between-points works in AB^2 in every band, so its working falls
-// back too; the rest of Coordinate geometry renders natively. Anything
-// else logging here is a parser bug.
+// back too; the rest of Coordinate geometry renders natively. The Number
+// strand (ALL_KATEX_STRANDS) skips the parser on purpose and isn't checked.
+// Anything else logging here is a parser bug.
 function warnIfUnparseable(id, field, text) {
   if (!text) return;
   String(text).split('\n').forEach((line, i) => {
@@ -44,15 +46,20 @@ function slotData(skillId, band) {
   const q = generateForSkill(skillId, band);
   if (!q) return { topic: '—', instr: '', q: '', a: '', w: '' };
 
-  warnIfUnparseable(skillId, 'questionMath', q.questionMath);
-  warnIfUnparseable(skillId, 'answer', q.answer);
-  warnIfUnparseable(skillId, 'workingOut', q.workingOut);
+  const allKatex = ALL_KATEX_STRANDS.includes(strandOf(getSkill(skillId)?.topic));
+  if (!allKatex) {
+    warnIfUnparseable(skillId, 'questionMath', q.questionMath);
+    warnIfUnparseable(skillId, 'answer', q.answer);
+    warnIfUnparseable(skillId, 'workingOut', q.workingOut);
+  }
 
   return {
     topic: getSkill(skillId)?.label ?? skillId,
     instr: q.instruction,
     q: q.questionMath != null ? q.questionMath : (q.questionText ?? ''),
+    qProse: q.questionMath == null && q.questionText != null,
     qCompact: q.questionMathCompact === true,
+    allKatex,
     a: q.answerUnits ? `${q.answer}\\text{ }${q.answerUnits}` : q.answer,
     w: q.workingOut,
     fig: q.visualization,
@@ -141,6 +148,9 @@ export default function Board() {
     savePool([]);
     return { ...s, pool: [] };
   });
+
+  // Fetch KaTeX up front rather than on the first surd — most boards hit it.
+  useEffect(() => { preloadKatex(); }, []);
 
   useEffect(() => {
     setState((s) => {

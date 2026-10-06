@@ -62,6 +62,14 @@
   font-size: 1em;
 }
 
+/* `.slot-question` and `.answer-value` are weight 800 for Archivo. KaTeX
+   has a bold face for \text{}, so without this "66% of 807" set its words
+   heavy and its numbers regular. */
+.mkatex {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 /* We use displayMode: true for full-size (not \scriptstyle) fraction
    numerators and denominators, but KaTeX pairs display mode with block
    layout, centred text and a 1em top/bottom margin — all wrong for a line
@@ -75,4 +83,22 @@
 
 .mkatex .katex-display > .katex {
   text-align: left;
+}
+
+/* KaTeX's fraction and root boxes reach above the line box they sit in, and
+   `.slot-row` clips — so a tall numerator (10 over root 50) lost its top.
+   A little padding gives the stack room without moving plain lines much. */
+.mkatex .katex-display {
+  padding: 0.12em 0;
+}
+
+/* Worded questions (questionText) in an all-KaTeX skill: set in KaTeX's own
+   serif at regular weight, so a percentages story reads like the maths
+   beside it rather than as a block of heavy display type. Unlike KaTeX's
+   \text{}, this still wraps. */
+.mprose {
+  font-family: KaTeX_Main, 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.3;
 }

@@ -13,13 +13,13 @@
 // Run: npx vitest run src/generators/number/percentageGenerators.test.js
 
 import { describe, expect, it } from 'vitest';
-import { generatePercentageOfAmount } from './percentageGenerators';
+import { generatePercentageOfAmount, generateIndexLaws } from './percentageGenerators';
 
 const BANDS = ['foundation', 'core', 'stretch'];
 const SAMPLES = 3000;
 
-/** "£12,345" / "12,345" / "12345" -> 12345. */
-const num = (s) => Number(String(s).replace(/[£,]/g, ''));
+/** "\\text{£12,345}" / "12,345" / "12345" -> 12345. */
+const num = (s) => Number(String(s).replace(/\\text\{([^}]*)\}/, '$1').replace(/[£,]/g, ''));
 
 describe('percentage-of-amount', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
@@ -57,11 +57,37 @@ describe('percentage-of-amount', () => {
 
       if (q.questionText) {
         expect(q.instruction).toMatch(/^Find the original (price|population)$/);
-        expect(q.answer).toMatch(q.instruction.includes('price') ? /^£[\d,]+$/ : /^[\d,]+$/);
+        expect(q.answer).toMatch(q.instruction.includes('price') ? /^\\text\{£[\d,]+\}$/ : /^\\text\{[\d,]+\}$/);
       } else {
         expect(q.instruction).toBe('Find the original amount');
       }
     }
     expect(distinct.size).toBeGreaterThan(1);
+  });
+});
+
+describe('index-laws foundation', () => {
+  it('is correct, and writes some divides as a fraction', () => {
+    const forms = { times: 0, div: 0, frac: 0 };
+    const distinct = new Set();
+    for (let i = 0; i < SAMPLES; i += 1) {
+      const q = generateIndexLaws({ difficulty: 'foundation' });
+      distinct.add(q.questionMath);
+      // Recover base and both indices from the question, in any of its three forms.
+      const t = q.questionMath.match(/^(\d+)\^\{(\d+)\} \\(times|div) (\d+)\^\{(\d+)\}$/);
+      const f = q.questionMath.match(/^\\frac\{(\d+)\^\{(\d+)\}\}\{(\d+)\^\{(\d+)\}\}$/);
+      expect(t || f, q.questionMath).toBeTruthy();
+      const [b1, m, op, b2, n] = t ? [t[1], t[2], t[3], t[4], t[5]] : [f[1], f[2], 'frac', f[3], f[4]];
+      expect(b1).toBe(b2);
+      forms[op] += 1;
+      const want = Number(b1) ** (op === 'times' ? Number(m) + Number(n) : Number(m) - Number(n));
+      expect(Number(q.answer), q.questionMath).toBe(want);
+      expect(Number.isInteger(want) && want >= Number(b1)).toBe(true);
+    }
+    // Half multiply; the divides split evenly between ÷ and a fraction.
+    expect(forms.times / SAMPLES).toBeGreaterThan(0.45);
+    expect(forms.frac / SAMPLES).toBeGreaterThan(0.2);
+    expect(forms.div / SAMPLES).toBeGreaterThan(0.2);
+    console.log('index-laws foundation forms', forms, 'distinct', distinct.size);
   });
 });

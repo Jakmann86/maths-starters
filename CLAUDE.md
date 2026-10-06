@@ -244,8 +244,9 @@ Metric units. IGCSE/GCSE grade descriptors.
 
 ## Stack
 
-React 18 + Vite, plain CSS with custom properties, KaTeX (dynamically
-imported, fallback only), lodash. **No Tailwind.** No other dependencies
+React 18 + Vite, plain CSS with custom properties, KaTeX (own chunk,
+preloaded on mount; a fallback everywhere except the Number strand, which
+renders wholly in KaTeX — SPEC.md §6), lodash. **No Tailwind.** No other dependencies
 without asking.
 
 ## Working style

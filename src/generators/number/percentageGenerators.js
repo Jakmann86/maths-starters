@@ -89,7 +89,7 @@ export const generatePercentageOfAmount = (options = {}) => {
     return {
       instruction: 'Find the original price',
       questionText: `${p}% of the price of ${item} is £${comma(part)}. What was the original price?`,
-      answer: `£${comma(n)}`,
+      answer: `\\text{£${comma(n)}}`,
       workingOut,
       metadata: { topic: 'percentage-of-amount', difficulty },
     };
@@ -99,7 +99,7 @@ export const generatePercentageOfAmount = (options = {}) => {
     return {
       instruction: 'Find the original population',
       questionText: `${p}% of the population of ${place} is ${comma(part)}. What was the original population?`,
-      answer: comma(n),
+      answer: `\\text{${comma(n)}}`,
       workingOut,
       metadata: { topic: 'percentage-of-amount', difficulty },
     };
@@ -194,7 +194,7 @@ export const generatePercentageChange = (options = {}) => {
       return {
         instruction: 'Work out the new value',
         questionText: `The value of ${item} was £${comma(n)}. It ${up ? 'increases' : 'decreases'} by ${p}%. What is its value now?`,
-        answer: `£${comma(out)}`,
+        answer: `\\text{£${comma(out)}}`,
         workingOut,
         metadata: { topic: 'percentage-change', difficulty },
       };
@@ -204,7 +204,7 @@ export const generatePercentageChange = (options = {}) => {
       return {
         instruction: 'Work out the new population',
         questionText: `The population of ${place} was ${comma(n)}. It ${up ? 'grows' : 'falls'} by ${p}%. What is the population now?`,
-        answer: comma(out),
+        answer: `\\text{${comma(out)}}`,
         workingOut,
         metadata: { topic: 'percentage-change', difficulty },
       };
@@ -239,7 +239,7 @@ export const generatePercentageChange = (options = {}) => {
       return {
         instruction: 'Work out the final value, to the nearest penny',
         questionText: `The value of ${item} was £${comma(n)}. In the first year it ${up1 ? 'increases' : 'decreases'} by ${pctStr(a)}%. In the second year it ${up2 ? 'increases' : 'decreases'} by ${pctStr(b)}%. What is its value now?`,
-        answer: `£${comma(dec(pence, 2))}`,
+        answer: `\\text{£${comma(dec(pence, 2))}}`,
         workingOut: `${stepsMath}${NL}\\approx ${dec(pence, 2)} \\text{ (nearest penny)}`,
         metadata: { topic: 'percentage-change', difficulty },
       };
@@ -250,7 +250,7 @@ export const generatePercentageChange = (options = {}) => {
       return {
         instruction: 'Work out the final population, to the nearest whole number',
         questionText: `The population of ${place} was ${comma(n)}. Over one year it ${up1 ? 'grows' : 'falls'} by ${pctStr(a)}%. Over the next year it ${up2 ? 'grows' : 'falls'} by ${pctStr(b)}%. What is the population now?`,
-        answer: comma(whole),
+        answer: `\\text{${comma(whole)}}`,
         workingOut: `${stepsMath}${NL}\\approx ${whole} \\text{ (nearest whole number)}`,
         metadata: { topic: 'percentage-change', difficulty },
       };
@@ -322,9 +322,14 @@ export const generateIndexLaws = (options = {}) => {
       if (multiply) { m = _.random(2, 9); n = _.random(2, 9); res = m + n; }
       else { m = _.random(4, 14); n = _.random(1, m - 1); res = m - n; }
     } while (base ** res > 100000 || res < 1);
+    // A divide is written as a fraction half the time — that is how it turns
+    // up in every later topic, and it has to be read as the same law.
+    const divide = _.random(0, 1)
+      ? `\\frac{${base}^{${m}}}{${base}^{${n}}}`
+      : `${base}^{${m}} \\div ${base}^{${n}}`;
     return {
       instruction: 'Simplify, giving your answer as a whole number',
-      questionMath: multiply ? `${base}^{${m}} \\times ${base}^{${n}}` : `${base}^{${m}} \\div ${base}^{${n}}`,
+      questionMath: multiply ? `${base}^{${m}} \\times ${base}^{${n}}` : divide,
       answer: String(base ** res),
       workingOut: `${base}^{${m} ${multiply ? '+' : '-'} ${n}} = ${base}^{${res}}${NL}= ${base ** res}`,
       metadata: { topic: 'index-laws', difficulty },

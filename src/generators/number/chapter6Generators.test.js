@@ -71,7 +71,21 @@ const evalLatex = (str) => {
   return Function(`"use strict"; return (${s});`)();
 };
 
-const closeEnough = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+// Relative, not floored at 1: standard form reaches 10^-30, where an
+// absolute 1e-9 tolerance would accept any two numbers at all.
+const closeEnough = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(Math.abs(a), Math.abs(b));
+
+/** "3.04 \\times 10^{-21}" -> [BigInt digits, exponent], held exactly. */
+const exactSf = (str) => {
+  const m = String(str).match(/^(\d+)(?:\.(\d+))? \\times 10\^\{(-?\d+)\}$/);
+  if (!m) return null;
+  const frac = m[2] ?? '';
+  return [BigInt(m[1] + frac), Number(m[3]) - frac.length];
+};
+const exactEqual = ([n1, e1], [n2, e2]) => {
+  const e = Math.min(e1, e2);
+  return n1 * 10n ** BigInt(e1 - e) === n2 * 10n ** BigInt(e2 - e);
+};
 
 /** Every question must reduce to the same number as its own answer. */
 const checkAnswersItsOwnQuestion = (q) => {
@@ -171,6 +185,9 @@ describe('standard-form-write', () => {
       expect(mantissa).toBeGreaterThanOrEqual(1);
       expect(mantissa).toBeLessThan(10);
 
+      // An ordinary number never ends in a redundant zero after the point.
+      if (difficulty === 'stretch') expect(q.answer, q.questionMath).not.toMatch(/\.\d*0$|\.$/);
+
       if (difficulty === 'foundation') expect(evalLatex(q.questionMath)).toBeGreaterThanOrEqual(1);
       if (difficulty === 'core') expect(evalLatex(q.questionMath)).toBeLessThan(1);
     }
@@ -181,6 +198,7 @@ describe('standard-form-write', () => {
 describe('standard-form-calculate', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
     const distinct = new Set();
+    let large = 0;
     for (let i = 0; i < SAMPLES; i += 1) {
       const q = generateStandardFormCalculate({ difficulty });
       checkNoForbiddenTokens(q);
@@ -195,12 +213,20 @@ describe('standard-form-calculate', () => {
 
       if (difficulty === 'stretch') {
         expect(q.questionMath).toMatch(/\\times 10\^\{-?\d+\}\) \+ \(/);
+        // Exact sum, since floats can't separate values near 10^-30.
+        const [t1, t2] = q.questionMath.match(/^\((.*)\) \+ \((.*)\)$/).slice(1).map(exactSf);
+        const e = Math.min(t1[1], t2[1]);
+        const sum = [t1[0] * 10n ** BigInt(t1[1] - e) + t2[0] * 10n ** BigInt(t2[1] - e), e];
+        expect(exactEqual(sum, exactSf(q.answer)), `${q.questionMath} = ${q.answer}`).toBe(true);
+        if (Math.abs(Number(m[2])) >= 12) large += 1;
         // No redundant "X x 10^E = X x 10^E" conversion line when both
         // terms already share a power.
         expect(q.workingOut).not.toMatch(/(\S.*) = \1(?!\S)/);
       }
     }
     expect(distinct.size).toBeGreaterThan(SAMPLES / 2);
+    // Roughly half of Stretch uses powers too large to write out in full.
+    if (difficulty === 'stretch') expect(large / SAMPLES).toBeGreaterThan(0.4);
   });
 });
 
@@ -231,6 +257,7 @@ describe('surds-simplify', () => {
 describe('rationalise-denominator', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
     const distinct = new Set();
+    let conjugates = 0, negatives = 0;
     for (let i = 0; i < SAMPLES; i += 1) {
       const q = generateRationaliseDenominator({ difficulty });
       checkNoForbiddenTokens(q);
@@ -238,13 +265,27 @@ describe('rationalise-denominator', () => {
       distinct.add(q.answer);
 
       // No rationalised answer still has a surd in its denominator.
-      const asFrac = q.answer.match(/^\\frac\{([^{}]*)\}\{([^{}]*)\}$/);
+      const asFrac = q.answer.match(/^-?\\frac\{([^{}]*)\}\{([^{}]*)\}$/);
       if (asFrac) expect(asFrac[2]).not.toMatch(/\\sqrt/);
 
       // A coefficient of 1 is never written out — `\sqrt{14}`, not
       // `1\sqrt{14}` — whether the surd stands alone or sits in a fraction's
       // numerator.
       expect(q.answer).not.toMatch(/(^|\{)1\\sqrt/);
+
+      const conj = q.questionMath.match(/^\\frac\{(\d+)\}\{(\d+) ([+-]) \\sqrt\{(\d+)\}\}$/);
+      if (difficulty === 'stretch' && conj) {
+        // b ± sqrt(c) denominator: the answer is already checked equal to the
+        // question; also check a fractional answer is fully reduced — no
+        // integer divides every numerator coefficient and the denominator.
+        conjugates += 1;
+        const [b, c] = [Number(conj[2]), Number(conj[4])];
+        if (b * b < c) negatives += 1;
+        const ints = [...q.answer.replace(/\\sqrt\{\d+\}/g, 's').matchAll(/\d+/g)].map((mm) => Number(mm[0]));
+        const sqrtCoeff = /(^|[^\d])\\sqrt/.test(q.answer) ? [1] : [];
+        if (asFrac) expect(ints.concat(sqrtCoeff).reduce(gcd), q.answer).toBe(1);
+        continue;
+      }
 
       if (difficulty === 'stretch') {
         const d = q.questionMath.match(/\\sqrt\{(\d+)\}\}$/);
@@ -267,5 +308,15 @@ describe('rationalise-denominator', () => {
       }
     }
     expect(distinct.size).toBeGreaterThan(1);
+    // Stretch splits evenly between a b ± sqrt(c) denominator and one that
+    // needs simplifying first; the conjugate kind includes negative b^2 - c.
+    if (difficulty === 'stretch') {
+      expect(conjugates / SAMPLES).toBeGreaterThan(0.45);
+      expect(conjugates / SAMPLES).toBeLessThan(0.55);
+      expect(negatives).toBeGreaterThan(conjugates / 10);
+      console.log(`rationalise stretch: ${conjugates} conjugate (${negatives} negative), distinct answers ${distinct.size}`);
+    } else {
+      expect(conjugates).toBe(0);
+    }
   });
 });

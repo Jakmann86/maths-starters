@@ -327,8 +327,9 @@
 
 .slot-figure-wrap {
   flex: 0 0 auto;
+  align-self: stretch;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   min-height: 0;
 }
 

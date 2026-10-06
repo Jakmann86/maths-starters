@@ -3,7 +3,7 @@ import Figure from './Figure.jsx';
 import { iSize, qSize } from '../lib/typeSizing.js';
 
 export default function Slot({ label, colorVar, data, revealed, onRegenSame, onRegen, onSwap }) {
-  const { topic, instr, q, qCompact, a, fig } = data;
+  const { topic, instr, q, qProse, qCompact, allKatex, a, fig } = data;
 
   return (
     <section className="slot" style={{ '--c': colorVar }}>
@@ -51,7 +51,9 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
             <Figure fig={fig} color={colorVar} shown={revealed} />
           </div>
           <div className="slot-question" style={{ fontSize: qSize(q, instr, qCompact, Boolean(fig)) }}>
-            <MathDisplay math={q} />
+            {qProse && allKatex
+              ? <span className="mprose">{q}</span>
+              : <MathDisplay math={q} allKatex={allKatex} />}
           </div>
         </div>
       </div>
@@ -67,7 +69,7 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
           (a fraction with a surd numerator, e.g. rationalise-denominator)
           against `.slot`'s overflow:hidden. */}
       <div className={`slot-answer${revealed ? ' is-revealed' : ''}`}>
-        <div className="answer-value"><MathDisplay math={a} /></div>
+        <div className="answer-value"><MathDisplay math={a} allKatex={allKatex} /></div>
       </div>
     </section>
   );

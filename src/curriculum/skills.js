@@ -925,6 +925,17 @@ export const topicGroups = () => {
   return rest.length ? [...groups, { name: 'Other', topics: rest }] : groups;
 };
 
+/** The strand a topic sits in ('Number', 'Algebra', ...), or null. */
+export const strandOf = (topicName) => STRANDS.find((s) => s.topics.includes(topicName))?.name ?? null;
+
+/**
+ * Strands whose questions render wholly in KaTeX, skipping the Archivo
+ * parser. Number is the one: surds, indices and standard form fall back to
+ * KaTeX anyway, and a board that set percentages in Archivo beside them
+ * switched typeface from box to box.
+ */
+export const ALL_KATEX_STRANDS = ['Number'];
+
 /** Every topic once, in panel order. */
 export const topics = () => topicGroups().flatMap((g) => g.topics);
 
