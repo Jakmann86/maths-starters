@@ -1956,6 +1956,56 @@ export default function Figure({ fig, color, shown }) {
     );
   }
 
+  // The fourth data display: drawn to the data, like `pie-chart`. A gridline
+  // at every whole unit so each bar ends exactly on one and can be read
+  // without estimating; the generators keep every frequency a whole number.
+  // Axis labels are every 2 units so they never crowd the scale.
+  if (fig.type === 'bar-chart') {
+    const bars = fig.bars;
+    if (!Array.isArray(bars) || !bars.length) return null;
+    const CHAR = 12;             // as `table`
+    const top = Math.max(...bars.map((b) => b.value));
+    const yMax = top + (top % 2 ? 1 : 2);   // even, with headroom above the tallest bar
+    // Short and wide: the slot's height is the binding limit, so a tall plot
+    // shrinks every label with it.
+    const unit = Math.min(20, 150 / yMax);
+    const PH = yMax * unit;
+    const longest = Math.max(...bars.map((b) => String(b.name).length));
+    const pitch = Math.max(58, longest * CHAR + 14);
+    const BW = Math.min(pitch - 16, 44);
+    const LEFT = 48, TOP = 36;
+    const PW = bars.length * pitch;
+    const xTitleW = String(fig.xTitle || '').length * CHAR;
+    const W = Math.max(LEFT + PW + 10, LEFT + PW / 2 + xTitleW / 2 + 6);
+    const H = TOP + PH + 70;
+    const y = (v) => TOP + PH - v * unit;
+    const lit = new Set(fig.highlight || []);
+
+    const nodes = [];
+    for (let v = 1; v <= yMax; v += 1) {
+      nodes.push(
+        <line key={`g${v}`} x1={LEFT} y1={y(v)} x2={LEFT + PW} y2={y(v)} stroke="var(--ink)" strokeOpacity={v % 2 ? 0.12 : 0.28} strokeWidth={1.5} />
+      );
+    }
+    bars.forEach((b, i) => {
+      const x = LEFT + i * pitch + (pitch - BW) / 2;
+      nodes.push(
+        <rect key={`b${i}`} x={x} y={y(b.value)} width={BW} height={b.value * unit} fill={color} fillOpacity={lit.has(b.name) ? 0.5 : 0.22} stroke="var(--ink)" strokeWidth={2.5} />
+      );
+      nodes.push(figLabel(`n${i}`, x + BW / 2, TOP + PH + 24, String(b.name), 'middle', lit.has(b.name) ? color : 'var(--ink)'));
+    });
+    for (let v = 0; v <= yMax; v += 2) {
+      nodes.push(figLabel(`y${v}`, LEFT - 8, y(v) + 7, String(v), 'end'));
+    }
+    nodes.push(figLine('ax', LEFT, TOP - 8, LEFT, TOP + PH));
+    nodes.push(figLine('ay', LEFT, TOP + PH, LEFT + PW, TOP + PH));
+    nodes.push(figLabel('yt', LEFT - 34, TOP - 16, fig.yTitle || 'Frequency', 'start', 'var(--ink)', 18));
+    if (fig.xTitle) nodes.push(figLabel('xt', LEFT + PW / 2, TOP + PH + 58, fig.xTitle, 'middle', 'var(--ink)', 18));
+
+    // noShrink, like pie-chart: the chart is what the working is read off.
+    return svgWrap(nodes, W, H, 'bar', fig.big, shown, true);
+  }
+
   if (fig.type === 'arithmagon') {
     // Circles at the corners, a box on each edge. Fixed geometry, like every
     // other figure here — only the labels change.
