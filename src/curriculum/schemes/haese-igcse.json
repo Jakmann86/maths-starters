@@ -40,7 +40,7 @@
     { "id": "4D", "ch": 4, "unit": "Lines, angles and polygons", "lesson": "Interior angles of a polygon", "page": 103, "skills": [], "status": "todo" },
     { "id": "4E", "ch": 4, "unit": "Lines, angles and polygons", "lesson": "Exterior angles of a polygon", "page": 106, "skills": [], "status": "todo" },
 
-    { "id": "5A", "ch": 5, "unit": "Graphs, charts and tables", "lesson": "Statistical graphs", "page": 112, "skills": [], "status": "todo" },
+    { "id": "5A", "ch": 5, "unit": "Graphs, charts and tables", "lesson": "Statistical graphs", "page": 112, "skills": ["pie-charts", "bar-charts"], "status": "ready" },
     { "id": "5B", "ch": 5, "unit": "Graphs, charts and tables", "lesson": "Graphs which compare data", "page": 116, "skills": [], "status": "todo" },
     { "id": "5C", "ch": 5, "unit": "Graphs, charts and tables", "lesson": "Using technology to graph data", "page": 119, "skills": [], "status": "skip" },
 
@@ -94,7 +94,7 @@
     { "id": "12F", "ch": 12, "unit": "Coordinate geometry", "lesson": "Using coordinate geometry", "page": 270, "skills": [], "status": "skip" },
 
     { "id": "13A", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Variables used in statistics", "page": 277, "skills": [], "status": "todo" },
-    { "id": "13B", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Organising and describing discrete data", "page": 278, "skills": [], "status": "todo" },
+    { "id": "13B", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Organising and describing discrete data", "page": 278, "skills": ["frequency-table-reading"], "status": "ready" },
     { "id": "13C", "ch": 13, "unit": "Analysis of discrete data", "lesson": "The centre of a discrete data set", "page": 282, "skills": ["averages-from-list"], "status": "ready" },
     { "id": "13D", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Measuring the spread of discrete data", "page": 285, "skills": ["averages-from-list"], "status": "ready" },
     { "id": "13E", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Data in frequency tables", "page": 288, "skills": ["averages-from-table"], "status": "ready" },

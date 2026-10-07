@@ -45,9 +45,10 @@ const uniqueMode = (xs) => {
 /* ------------------------------------------------------ averages from a list
  *
  * Foundation  order the list and read a value off it: mode or range
- * Core        calculate: mean or median, odd n, both landing whole
- * Stretch     the same two over an even n, where the mean gains a decimal and
- *             the median has to be averaged from the two middle values
+ * Core        all four from one data set, as parts (a)-(d): mean, mode,
+ *             median, range — odd n, every answer whole
+ * Stretch     mean or median over an even n, where the mean gains a decimal
+ *             and the median has to be averaged from the two middle values
  *
  * Previously Foundation asked all four measures and Core asked only mean and
  * median, so stepping the board up removed mode and range altogether, and the
@@ -56,6 +57,7 @@ const uniqueMode = (xs) => {
 
 export const generateAveragesFromList = (options = {}) => {
   const { difficulty = 'core' } = options;
+  if (difficulty === 'core') return allFourFromList();
   const even = difficulty === 'stretch';
   const measure = difficulty === 'foundation'
     ? _.sample(['mode', 'range'])
@@ -139,6 +141,41 @@ export const generateAveragesFromList = (options = {}) => {
     ].join(NL),
   };
 };
+
+/* Core: one list, four parts. The four answers are kept distinct from one
+   another, so a student who finds the median and writes it down as the mean
+   is visibly wrong rather than accidentally right. */
+function allFourFromList() {
+  for (;;) {
+    const n = _.sample([7, 9]);
+    const xs = _.times(n, () => _.random(1, 20));
+    const sorted = [...xs].sort((a, b) => a - b);
+    const total = _.sum(xs);
+    const mode = uniqueMode(xs);
+    if (mode === null || total % n !== 0) continue;
+    const mean = total / n;
+    const med = median(sorted);
+    const range = sorted[n - 1] - sorted[0];
+    if (range < 4 || new Set([mean, mode, med, range]).size !== 4) continue;
+
+    return {
+      instruction: 'Find (a) the mean (b) the mode (c) the median (d) the range',
+      questionMath: showList(xs),
+      answer: [
+        `\\text{(a) mean} = ${mean}, \\text{(b) mode} = ${mode}`,
+        `\\text{(c) median} = ${med}, \\text{(d) range} = ${range}`,
+      ].join(NL),
+      workingOut: [
+        `\\text{ordered: } ${showList(sorted)}`,
+        `\\text{(a) mean} = \\frac{${total}}{${n}} = ${mean}`,
+        `\\text{(b) mode} = ${mode}`,
+        `\\text{(c) median} = \\text{the } ${(n + 1) / 2}\\text{th value} = ${med}`,
+        `\\text{(d) range} = ${sorted[n - 1]} - ${sorted[0]} = ${range}`,
+      ].join(NL),
+      metadata: { topic: 'averages-from-list', difficulty: 'core' },
+    };
+  }
+}
 
 /* --------------------------------------------------- averages from a table */
 

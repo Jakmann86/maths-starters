@@ -38,7 +38,7 @@ const MAX_ANGLE = 200;
 
 // `clause` completes "How many ...?" and also "<n> of them ...", so it has to
 // work in both: "walk to school" / "18 of them walk to school".
-const CONTEXTS = [
+export const CONTEXTS = [
   {
     unit: 'students',
     col: 'Transport',

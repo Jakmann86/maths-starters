@@ -31,6 +31,8 @@ import * as ch6 from '../generators/number/chapter6Generators';
 import * as stats from '../generators/statistics/averagesGenerators';
 import * as displays from '../generators/statistics/dataDisplayGenerators';
 import * as pie from '../generators/statistics/pieChartGenerators';
+import * as bars from '../generators/statistics/barChartGenerators';
+import * as freqTable from '../generators/statistics/frequencyTableGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 
@@ -812,6 +814,12 @@ export const skills = {
     generate: (opts) => stats.generateAveragesFromList(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'frequency-table-reading': {
+    label: 'Reading a frequency table',
+    topic: 'Statistics',
+    generate: (opts) => freqTable.generateFrequencyTableReading(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'averages-from-table': {
     label: 'Averages from a frequency table',
     topic: 'Statistics',
@@ -846,6 +854,12 @@ export const skills = {
     label: 'Pie charts',
     topic: 'Statistics',
     generate: (opts) => pie.generatePieCharts(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'bar-charts': {
+    label: 'Bar charts',
+    topic: 'Statistics',
+    generate: (opts) => bars.generateBarCharts(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 };
