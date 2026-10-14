@@ -28,6 +28,7 @@ import * as circleThm from '../generators/geometry/circleTheoremGenerators';
 import * as circleLen from '../generators/geometry/circleLengthGenerators';
 import * as pct from '../generators/number/percentageGenerators';
 import * as ch6 from '../generators/number/chapter6Generators';
+import * as fracPow from '../generators/number/fractionalPowerGenerators';
 import * as stats from '../generators/statistics/averagesGenerators';
 import * as displays from '../generators/statistics/dataDisplayGenerators';
 import * as pie from '../generators/statistics/pieChartGenerators';
@@ -776,6 +777,14 @@ export const skills = {
     label: 'Zero and negative indices',
     topic: 'Indices',
     generate: (opts) => ch6.generateIndicesZeroNegative(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Fractional indices (beyond Haese 6C; Y9 do-nows) ---
+  'fractional-powers': {
+    label: 'Fractional powers',
+    topic: 'Indices',
+    generate: (opts) => fracPow.generateFractionalPowers(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
