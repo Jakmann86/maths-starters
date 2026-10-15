@@ -55,6 +55,7 @@ describe('averages-from-list core: four parts from one list', () => {
       expect(got).toEqual(want);
       expect(new Set(Object.values(got)).size).toBe(4);
       expect(q.instruction).toMatch(/\(a\) the mean \(b\) the mode \(c\) the median \(d\) the range/);
+      expect(q.answer.split('\n')).toHaveLength(4);
     }
     expect(distinct.size).toBeGreaterThan(SAMPLES * 0.9);
   });

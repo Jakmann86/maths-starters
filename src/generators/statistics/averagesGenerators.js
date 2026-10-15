@@ -159,11 +159,16 @@ function allFourFromList() {
     if (range < 4 || new Set([mean, mode, med, range]).size !== 4) continue;
 
     return {
+      // The answer takes one part per line. The instruction stays on one:
+      // listed vertically as well, it and the answer band squeezed the data
+      // list out of the box.
       instruction: 'Find (a) the mean (b) the mode (c) the median (d) the range',
       questionMath: showList(xs),
       answer: [
-        `\\text{(a) mean} = ${mean}, \\text{(b) mode} = ${mode}`,
-        `\\text{(c) median} = ${med}, \\text{(d) range} = ${range}`,
+        `\\text{(a) mean} = ${mean}`,
+        `\\text{(b) mode} = ${mode}`,
+        `\\text{(c) median} = ${med}`,
+        `\\text{(d) range} = ${range}`,
       ].join(NL),
       workingOut: [
         `\\text{ordered: } ${showList(sorted)}`,
