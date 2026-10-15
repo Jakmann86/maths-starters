@@ -346,8 +346,10 @@ export const generateEstimatedMean = (options = {}) => {
 
 /* ------------------------------------ working backwards from a given mean
  *
- * Foundation  a list with one value missing
- * Core        a frequency table with one frequency missing
+ * Foundation  a list with one value missing, whole-number mean
+ * Core        either a longer list whose mean is given to one decimal place,
+ *             so the total has to be multiplied out rather than seen, or a
+ *             frequency table with one frequency missing
  * Stretch     a grouped table with one frequency missing
  *
  * These three were previously the Stretch band of three different skills.
@@ -392,6 +394,8 @@ export const generateMeanMissingValue = (options = {}) => {
       };
     }
   }
+
+  if (difficulty === 'core' && _.random(0, 1) === 0) return meanMissingFromLongList();
 
   if (difficulty === 'core') {
     for (;;) {
@@ -456,3 +460,31 @@ export const generateMeanMissingValue = (options = {}) => {
     };
   }
 };
+
+/* Core's list half. The mean is never whole: 12.5 x 8 has to be worked out,
+   where Foundation's 9 x 5 is a times-table fact. n is 8 or 10, so a mean in
+   tenths still gives a whole-number total — n = 8 only allows .5 means, which
+   is the one-decimal mean a calculator-free class meets first. */
+function meanMissingFromLongList() {
+  for (;;) {
+    const n = _.sample([8, 10]);
+    const tenths = _.random(50, 200);
+    if (tenths % 10 === 0 || (tenths * n) % 10 !== 0) continue;
+    const total = (tenths * n) / 10;
+    const known = _.times(n - 1, () => _.random(1, 30));
+    const missing = total - _.sum(known);
+    if (missing < 1 || missing > 40) continue;
+    const mean = dp1(tenths);
+    return {
+      instruction: `The mean of these values is ${mean}. Find x`,
+      questionMath: showList(_.shuffle([...known, 'x'])),
+      answer: `x = ${missing}`,
+      workingOut: [
+        `\\text{total} = ${mean} \\times ${n} = ${total}`,
+        `\\text{known values add to } ${_.sum(known)}`,
+        `x = ${total} - ${_.sum(known)} = ${missing}`,
+      ].join(NL),
+      metadata: { topic: 'mean-missing-value', difficulty: 'core' },
+    };
+  }
+}
