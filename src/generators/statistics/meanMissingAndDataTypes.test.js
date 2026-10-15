@@ -95,7 +95,7 @@ describe('mean-missing-value', () => {
 describe('data-types', () => {
   const byIntro = Object.fromEntries(CONTEXTS.map((c) => [c.intro, c]));
   const want = (v, difficulty) => (
-    difficulty === 'foundation' && v.type !== 'qualitative' ? 'numerical' : v.type
+    difficulty === 'foundation' && v.type !== 'qualitative' ? 'quantitative' : v.type
   );
 
   BANDS.forEach((difficulty) => {
@@ -108,7 +108,7 @@ describe('data-types', () => {
         expect(intro, q.instruction).toBeDefined();
         const context = byIntro[intro];
         expect(q.instruction).toMatch(difficulty === 'foundation'
-          ? /qualitative or numerical$/
+          ? /qualitative or quantitative$/
           : /qualitative, discrete or continuous$/);
 
         const { rows } = q.visualization;
@@ -124,7 +124,7 @@ describe('data-types', () => {
         const expected = vars.map((v) => want(v, difficulty));
         // The answer band's counts agree with the table, recounted here.
         const counts = Object.fromEntries(
-          [...q.answer.matchAll(/(\d+) (qualitative|numerical|discrete|continuous)/g)]
+          [...q.answer.matchAll(/(\d+) (qualitative|quantitative|discrete|continuous)/g)]
             .map((m) => [m[2], Number(m[1])]),
         );
         expect(counts).toEqual(_.countBy(expected));

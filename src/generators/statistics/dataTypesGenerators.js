@@ -3,7 +3,7 @@
 // Haese 13A: variables used in statistics. A context, a table of variables
 // with an empty Type column, and the student classifies each one.
 //
-// Foundation  qualitative or numerical, four variables
+// Foundation  qualitative or quantitative, four variables
 // Core        qualitative, discrete or continuous, five variables, every one
 //             of them a plain case
 // Stretch     the same three labels over five variables, at least two of
@@ -116,7 +116,7 @@ export const CONTEXTS = [
 }));
 
 const label = (v, difficulty) => (
-  difficulty === 'foundation' && v.type !== 'qualitative' ? 'numerical' : v.type
+  difficulty === 'foundation' && v.type !== 'qualitative' ? 'quantitative' : v.type
 );
 
 /** Draw the variables for one table, or null if this context cannot meet the
@@ -138,7 +138,7 @@ function pick(context, difficulty) {
 }
 
 // "2 qualitative, 1 discrete, 2 continuous", in a fixed order.
-const summary = (labels) => ['qualitative', 'numerical', 'discrete', 'continuous']
+const summary = (labels) => ['qualitative', 'quantitative', 'discrete', 'continuous']
   .map((k) => [k, labels.filter((l) => l === k).length])
   .filter(([, n]) => n)
   .map(([k, n]) => `${n} ${k}`)
@@ -152,7 +152,7 @@ export const generateDataTypes = (options = {}) => {
     if (!vs) continue;
 
     const labels = difficulty === 'foundation'
-      ? 'qualitative or numerical'
+      ? 'qualitative or quantitative'
       : 'qualitative, discrete or continuous';
     const why = (v) => {
       if (v.type === 'qualitative') return 'a label, not a quantity';
