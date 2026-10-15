@@ -1978,6 +1978,80 @@ export default function Figure({ fig, color, shown }) {
     );
   }
 
+  // Two overlapping sets inside a universal rectangle — the layout both Haese
+  // (ch 2) and Rayner (ch 12) use. The four regions carry whatever the
+  // generator puts in them: counts, elements, or algebra. Geometry is fixed,
+  // so this stays a schematic figure under §7; only the labels change.
+  //
+  // `regions` values are a string or an array of strings, one per line, and
+  // every one of them is literal text — a minus sign here is U+2212, never a
+  // LaTeX '-', because figure labels never reach the renderer (§6).
+  if (fig.type === 'venn-two-set') {
+    const R = 68, CXA = -34, CXB = 34;
+    const LINE = 21;
+    const CHAR = 9.5, ASCENT = 14, DESCENT = 5;
+    const rect = { x0: -128, y0: -96, x1: 128, y1: 114 };
+
+    // Region text anchors. The two lunes keep a constant ~68 wide as the
+    // circles shrink together away from the axis, so a stacked label there is
+    // as safe at y = ±21 as it is on the centre line; the overlap does not,
+    // which is why the generator caps what goes in it.
+    const AT = { aOnly: [CXA - 34, 0], both: [0, 0], bOnly: [CXB + 34, 0], outside: [80, 86] };
+
+    const nodes = [
+      <rect key="u" x={rect.x0} y={rect.y0} width={rect.x1 - rect.x0} height={rect.y1 - rect.y0}
+        fill="none" stroke="var(--ink)" strokeWidth={3} />,
+    ];
+
+    // The two sets take different washes of the slot colour so the overlap
+    // reads as the overlap — it comes out darker than either on its own,
+    // which is the one place a pie-chart-style flat fill would mislead.
+    ['a', 'b'].forEach((k, i) => {
+      nodes.push(
+        <circle key={`c${k}`} cx={i ? CXB : CXA} cy={0} r={R}
+          fill={color} fillOpacity={0.16} stroke="var(--ink)" strokeWidth={3} />
+      );
+    });
+
+    nodes.push(figLabel('ul', rect.x1 + 7, rect.y0 + 16, fig.universe ?? 'U', 'start'));
+    nodes.push(figLabel('la', -76, rect.y0 + 24, fig.labels?.a ?? 'A', 'middle'));
+    nodes.push(figLabel('lb', 76, rect.y0 + 24, fig.labels?.b ?? 'B', 'middle'));
+
+    Object.entries(AT).forEach(([key, [x, y]]) => {
+      const raw = fig.regions?.[key];
+      if (raw == null || raw === '') return;
+      const lines = Array.isArray(raw) ? raw : [raw];
+      const tone = fig.unknown === key ? color : 'var(--ink)';
+      lines.forEach((line, i) => {
+        nodes.push(figLabel(`r${key}${i}`, x, y + (i - (lines.length - 1) / 2) * LINE + 6, line, 'middle', tone));
+      });
+    });
+
+    // The rectangle already bounds everything the branch draws except a long
+    // label, so the viewBox is the rectangle plus whatever overflows it.
+    const ext = { x0: rect.x0 - 2, x1: rect.x1 + 9 + (fig.universe ?? 'U').length * CHAR, y0: rect.y0 - 2, y1: rect.y1 + 2 };
+    Object.entries(AT).forEach(([key, [x, y]]) => {
+      const raw = fig.regions?.[key];
+      if (raw == null || raw === '') return;
+      const lines = Array.isArray(raw) ? raw : [raw];
+      lines.forEach((line, i) => {
+        const w = String(line).length * CHAR;
+        const ly = y + (i - (lines.length - 1) / 2) * LINE + 6;
+        ext.x0 = Math.min(ext.x0, x - w / 2);
+        ext.x1 = Math.max(ext.x1, x + w / 2);
+        ext.y0 = Math.min(ext.y0, ly - ASCENT);
+        ext.y1 = Math.max(ext.y1, ly + DESCENT);
+      });
+    });
+
+    const PAD = 6;
+    const W = ext.x1 - ext.x0 + PAD * 2, H = ext.y1 - ext.y0 + PAD * 2;
+    return svgWrap(
+      <g transform={`translate(${(PAD - ext.x0).toFixed(2)},${(PAD - ext.y0).toFixed(2)})`}>{nodes}</g>,
+      W.toFixed(2), H.toFixed(2), 'venn', fig.big, shown
+    );
+  }
+
   // The fourth data display: drawn to the data, like `pie-chart`. A gridline
   // at every whole unit so each bar ends exactly on one and can be read
   // without estimating; the generators keep every frequency a whole number.
