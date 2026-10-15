@@ -3,8 +3,8 @@
 // Haese 13A: variables used in statistics. A context, a table of variables
 // with an empty Type column, and the student classifies each one.
 //
-// Foundation  categorical or numerical, four variables
-// Core        categorical, discrete or continuous, five variables, every one
+// Foundation  qualitative or numerical, four variables
+// Core        qualitative, discrete or continuous, five variables, every one
 //             of them a plain case
 // Stretch     the same three labels over five variables, at least two of
 //             which are traps: a number that is only a label (shirt number,
@@ -22,7 +22,7 @@ import _ from 'lodash';
 
 const NL = '\n';
 
-// type: 'categorical' | 'discrete' | 'continuous'. trap: the obvious guess is
+// type: 'qualitative' | 'discrete' | 'continuous'. trap: the obvious guess is
 // wrong. A trap is never served below Stretch, because at Foundation and Core
 // a student who answers it "wrongly" has applied the rule they were taught.
 // Anything genuinely disputed between textbooks (age, money, pulse rate) is
@@ -31,10 +31,10 @@ export const CONTEXTS = [
   {
     intro: 'A football scout records these for a player.',
     vars: [
-      ['Nationality', 'categorical'],
-      ['Club', 'categorical'],
-      ['Preferred foot', 'categorical'],
-      ['Position', 'categorical'],
+      ['Nationality', 'qualitative'],
+      ['Club', 'qualitative'],
+      ['Preferred foot', 'qualitative'],
+      ['Position', 'qualitative'],
       ['Goals scored', 'discrete'],
       ['Appearances', 'discrete'],
       ['Red cards', 'discrete'],
@@ -43,23 +43,23 @@ export const CONTEXTS = [
       ['Mass', 'continuous'],
       ['Sprint speed', 'continuous'],
       ['Distance run in a match', 'continuous'],
-      ['Shirt number', 'categorical', true],
+      ['Shirt number', 'qualitative', true],
       ['Boot size', 'discrete', true],
     ],
   },
   {
     intro: 'A doctor records these for each patient.',
     vars: [
-      ['Blood group', 'categorical'],
-      ['Eye colour', 'categorical'],
-      ['Hair colour', 'categorical'],
+      ['Blood group', 'qualitative'],
+      ['Eye colour', 'qualitative'],
+      ['Hair colour', 'qualitative'],
       ['Number of visits this year', 'discrete'],
       ['Number of siblings', 'discrete'],
       ['Number of children', 'discrete'],
       ['Height', 'continuous'],
       ['Mass', 'continuous'],
       ['Body temperature', 'continuous'],
-      ['Patient ID number', 'categorical', true],
+      ['Patient ID number', 'qualitative', true],
       ['Shoe size', 'discrete', true],
       ['Number of hours slept', 'continuous', true],
     ],
@@ -67,16 +67,16 @@ export const CONTEXTS = [
   {
     intro: 'A school survey records these for each student.',
     vars: [
-      ['Favourite subject', 'categorical'],
-      ['Form group', 'categorical'],
-      ['Way of travelling to school', 'categorical'],
+      ['Favourite subject', 'qualitative'],
+      ['Form group', 'qualitative'],
+      ['Way of travelling to school', 'qualitative'],
       ['Number of pets', 'discrete'],
       ['Number of siblings', 'discrete'],
       ['Books read this term', 'discrete'],
       ['Time taken to get to school', 'continuous'],
       ['Hand span', 'continuous'],
       ['Height', 'continuous'],
-      ['House number', 'categorical', true],
+      ['House number', 'qualitative', true],
       ['Mark in a test out of 50', 'discrete', true],
       ['Number of hours of homework', 'continuous', true],
     ],
@@ -84,29 +84,29 @@ export const CONTEXTS = [
   {
     intro: 'A car park survey records these for each car.',
     vars: [
-      ['Colour', 'categorical'],
-      ['Make', 'categorical'],
-      ['Fuel type', 'categorical'],
+      ['Colour', 'qualitative'],
+      ['Make', 'qualitative'],
+      ['Fuel type', 'qualitative'],
       ['Number of passengers', 'discrete'],
       ['Number of doors', 'discrete'],
       ['Speed on entry', 'continuous'],
       ['Length', 'continuous'],
       ['Time parked', 'continuous'],
-      ['Registration number', 'categorical', true],
+      ['Registration number', 'qualitative', true],
       ['Litres of fuel in the tank', 'continuous', true],
     ],
   },
   {
     intro: 'A weather station records these each day.',
     vars: [
-      ['Wind direction', 'categorical'],
-      ['Type of cloud', 'categorical'],
+      ['Wind direction', 'qualitative'],
+      ['Type of cloud', 'qualitative'],
       ['Number of lightning strikes', 'discrete'],
       ['Number of people at the station', 'discrete'],
       ['Rainfall', 'continuous'],
       ['Temperature', 'continuous'],
       ['Wind speed', 'continuous'],
-      ['Station number', 'categorical', true],
+      ['Station number', 'qualitative', true],
       ['Number of hours of sunshine', 'continuous', true],
     ],
   },
@@ -116,7 +116,7 @@ export const CONTEXTS = [
 }));
 
 const label = (v, difficulty) => (
-  difficulty === 'foundation' && v.type !== 'categorical' ? 'numerical' : v.type
+  difficulty === 'foundation' && v.type !== 'qualitative' ? 'numerical' : v.type
 );
 
 /** Draw the variables for one table, or null if this context cannot meet the
@@ -137,8 +137,8 @@ function pick(context, difficulty) {
   return new Set(chosen.map((v) => v.type)).size === 3 ? _.shuffle(chosen) : null;
 }
 
-// "2 categorical, 1 discrete, 2 continuous", in a fixed order.
-const summary = (labels) => ['categorical', 'numerical', 'discrete', 'continuous']
+// "2 qualitative, 1 discrete, 2 continuous", in a fixed order.
+const summary = (labels) => ['qualitative', 'numerical', 'discrete', 'continuous']
   .map((k) => [k, labels.filter((l) => l === k).length])
   .filter(([, n]) => n)
   .map(([k, n]) => `${n} ${k}`)
@@ -152,10 +152,10 @@ export const generateDataTypes = (options = {}) => {
     if (!vs) continue;
 
     const labels = difficulty === 'foundation'
-      ? 'categorical or numerical'
-      : 'categorical, discrete or continuous';
+      ? 'qualitative or numerical'
+      : 'qualitative, discrete or continuous';
     const why = (v) => {
-      if (v.type === 'categorical') return 'a label, not a quantity';
+      if (v.type === 'qualitative') return 'a label, not a quantity';
       if (v.type === 'discrete') return 'counted, or comes in steps';
       return 'measured';
     };
