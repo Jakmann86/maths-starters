@@ -1757,6 +1757,11 @@ export default function Figure({ fig, color, shown }) {
   if (fig.type === 'table') {
     const rows = fig.rows;
     if (!Array.isArray(rows) || !rows.length) return null;
+    // `solution` is optional and shaped like `rows`: a cell left '' in `rows`
+    // is filled from it on reveal, in the slot colour — the magic-square
+    // convention, for a table the class completes (data-types).
+    const { solution } = fig;
+    const filled = (r, c) => (rows[r][c] === '' && solution ? solution[r]?.[c] ?? '' : '');
     const CH = 34;            // cell height
     // Measured: bold Archivo at .fig-label size runs 10.3-13px a character
     // ("Frequency" is 107px). 12 keeps a header off its cell borders.
@@ -1765,7 +1770,11 @@ export default function Figure({ fig, color, shown }) {
     // Each column is sized to its own longest entry, so "0 <= x < 20" gets the
     // room it needs without padding out a column of single digits.
     const widths = rows[0].map((_c, c) => {
-      const chars = Math.max(...rows.map((r) => String(r[c] ?? '').length));
+      // Sized to the solution as well, so a column does not widen on reveal.
+      const chars = Math.max(...rows.map((r, i) => Math.max(
+        String(r[c] ?? '').length,
+        String(solution?.[i]?.[c] ?? '').length,
+      )));
       return Math.max(46, chars * CHAR + PAD);
     });
     const x0 = widths.reduce((acc, w) => [...acc, acc[acc.length - 1] + w], [0]);
@@ -1785,10 +1794,16 @@ export default function Figure({ fig, color, shown }) {
         nodes.push(
           <rect key={`c${r}-${c}`} x={x0[c]} y={r * CH} width={widths[c]} height={CH} fill="none" stroke="var(--ink)" strokeWidth={2} />
         );
-        nodes.push(figLabel(`t${r}-${c}`, x0[c] + widths[c] / 2, r * CH + CH / 2 + 6, cell, 'middle'));
+        const fill = shown ? filled(r, c) : '';
+        nodes.push(figLabel(
+          `t${r}-${c}`, x0[c] + widths[c] / 2, r * CH + CH / 2 + 6,
+          fill || cell, 'middle', fill ? color : 'var(--ink)',
+        ));
       });
     });
-    return svgWrap(nodes, W, H, 'tb', fig.big, shown);
+    // A table with a solution is read after the reveal, so like the magic
+    // square it keeps its size rather than shrinking for the answer band.
+    return svgWrap(nodes, W, H, 'tb', fig.big, shown, Boolean(solution));
   }
 
   if (fig.type === 'stem-leaf') {

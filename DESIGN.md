@@ -107,6 +107,8 @@ polygon.
 `magic-square` is a grid, not a shape, and does not shrink on answer reveal
 (unlike the other figures) — the grid is what has to be read after the
 reveal.
+A `table` with a `solution` (cells left blank in `rows`, filled in the slot
+hue on reveal) follows the same rule, for the same reason.
 
 New figures follow the same construction — a `figNode` branch returning
 `svg([...], w, h, key, big, shown)`. Never introduce a charting or geometry
