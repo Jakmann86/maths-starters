@@ -35,6 +35,7 @@ import * as pie from '../generators/statistics/pieChartGenerators';
 import * as bars from '../generators/statistics/barChartGenerators';
 import * as freqTable from '../generators/statistics/frequencyTableGenerators';
 import * as dataTypes from '../generators/statistics/dataTypesGenerators';
+import * as sets from '../generators/number/setsGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 
@@ -817,6 +818,20 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 2D-2F, Rayner 12: Venn diagrams ---
+  'venn-counts': {
+    label: 'Venn diagrams: counting',
+    topic: 'Sets',
+    generate: (opts) => sets.generateVennCounts(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'venn-set-operations': {
+    label: 'Venn diagrams: set operations',
+    topic: 'Sets',
+    generate: (opts) => sets.generateVennSetOperations(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 13A: variables used in statistics ---
   'data-types': {
     label: 'Types of data',
@@ -922,7 +937,7 @@ export const generateForSkill = (id, wanted = 'core') => {
  * Within a strand, topics run in Haese chapter order.
  */
 export const STRANDS = [
-  { name: 'Number', topics: ['Indices', 'Standard form', 'Surds', 'Percentages'] },
+  { name: 'Number', topics: ['Sets', 'Indices', 'Standard form', 'Surds', 'Percentages'] },
   {
     name: 'Algebra',
     topics: [
