@@ -167,6 +167,40 @@ const onCircle = (degrees, rotate = 0) => {
 const circleOutline = () => (
   <circle key="o" cx={CIRC.cx} cy={CIRC.cy} r={CIRC.r} fill="none" stroke="var(--ink)" strokeWidth={3} />
 );
+// The text in a Venn diagram's regions, shared by the two- and three-set
+// branches. `regions` is drawn in ink, except the `unknown` region in the slot
+// colour. `solution` is the reveal, as `magic-square` does it: a region's
+// lines there are drawn in the slot colour only once the answer is shown, so
+// a "place the elements" question starts empty and fills on reveal. Both are
+// measured into `ext` whether drawn or not, so the reveal never reflows the
+// figure. Each value is a string or an array of lines.
+function vennRegionLabels(fig, AT, color, shown, ext) {
+  const LINE = 21, CHAR = 9.5, ASCENT = 14, DESCENT = 5;
+  const nodes = [];
+  const each = (source, fn) => Object.entries(AT).forEach(([key, [x, y]]) => {
+    const raw = source?.[key];
+    if (raw == null || raw === '') return;
+    const lines = Array.isArray(raw) ? raw : [raw];
+    lines.forEach((line, i) => fn(key, i, x, y + (i - (lines.length - 1) / 2) * LINE + 6, String(line)));
+  });
+  const measure = (key, i, x, ly, line) => {
+    const w = line.length * CHAR;
+    ext.x0 = Math.min(ext.x0, x - w / 2);
+    ext.x1 = Math.max(ext.x1, x + w / 2);
+    ext.y0 = Math.min(ext.y0, ly - ASCENT);
+    ext.y1 = Math.max(ext.y1, ly + DESCENT);
+  };
+  each(fig.regions, (key, i, x, ly, line) => {
+    nodes.push(figLabel(`r${key}${i}`, x, ly, line, 'middle', fig.unknown === key ? color : 'var(--ink)'));
+    measure(key, i, x, ly, line);
+  });
+  each(fig.solution, (key, i, x, ly, line) => {
+    if (shown) nodes.push(figLabel(`s${key}${i}`, x, ly, line, 'middle', color));
+    measure(key, i, x, ly, line);
+  });
+  return nodes;
+}
+
 export default function Figure({ fig, color, shown }) {
   if (!fig) return null;
 
@@ -1988,8 +2022,7 @@ export default function Figure({ fig, color, shown }) {
   // LaTeX '-', because figure labels never reach the renderer (§6).
   if (fig.type === 'venn-two-set') {
     const R = 68, CXA = -34, CXB = 34;
-    const LINE = 21;
-    const CHAR = 9.5, ASCENT = 14, DESCENT = 5;
+    const CHAR = 9.5;
     const rect = { x0: -128, y0: -96, x1: 128, y1: 114 };
 
     // Region text anchors. The two lunes keep a constant ~68 wide as the
@@ -2017,38 +2050,64 @@ export default function Figure({ fig, color, shown }) {
     nodes.push(figLabel('la', -76, rect.y0 + 24, fig.labels?.a ?? 'A', 'middle'));
     nodes.push(figLabel('lb', 76, rect.y0 + 24, fig.labels?.b ?? 'B', 'middle'));
 
-    Object.entries(AT).forEach(([key, [x, y]]) => {
-      const raw = fig.regions?.[key];
-      if (raw == null || raw === '') return;
-      const lines = Array.isArray(raw) ? raw : [raw];
-      const tone = fig.unknown === key ? color : 'var(--ink)';
-      lines.forEach((line, i) => {
-        nodes.push(figLabel(`r${key}${i}`, x, y + (i - (lines.length - 1) / 2) * LINE + 6, line, 'middle', tone));
-      });
-    });
-
-    // The rectangle already bounds everything the branch draws except a long
-    // label, so the viewBox is the rectangle plus whatever overflows it.
     const ext = { x0: rect.x0 - 2, x1: rect.x1 + 9 + (fig.universe ?? 'U').length * CHAR, y0: rect.y0 - 2, y1: rect.y1 + 2 };
-    Object.entries(AT).forEach(([key, [x, y]]) => {
-      const raw = fig.regions?.[key];
-      if (raw == null || raw === '') return;
-      const lines = Array.isArray(raw) ? raw : [raw];
-      lines.forEach((line, i) => {
-        const w = String(line).length * CHAR;
-        const ly = y + (i - (lines.length - 1) / 2) * LINE + 6;
-        ext.x0 = Math.min(ext.x0, x - w / 2);
-        ext.x1 = Math.max(ext.x1, x + w / 2);
-        ext.y0 = Math.min(ext.y0, ly - ASCENT);
-        ext.y1 = Math.max(ext.y1, ly + DESCENT);
-      });
-    });
+    nodes.push(...vennRegionLabels(fig, AT, color, shown, ext));
 
     const PAD = 6;
     const W = ext.x1 - ext.x0 + PAD * 2, H = ext.y1 - ext.y0 + PAD * 2;
     return svgWrap(
       <g transform={`translate(${(PAD - ext.x0).toFixed(2)},${(PAD - ext.y0).toFixed(2)})`}>{nodes}</g>,
-      W.toFixed(2), H.toFixed(2), 'venn', fig.big, shown
+      W.toFixed(2), H.toFixed(2), 'venn', fig.big, shown, Boolean(fig.solution)
+    );
+  }
+
+  // Three sets, centres on an equilateral triangle, inside the universal
+  // rectangle — Haese 2D's three-circle layout. Fixed geometry like
+  // `venn-two-set`, and the same region contract, keyed by membership:
+  // aOnly, bOnly, cOnly, ab, ac, bc (in exactly those two), abc, outside.
+  //
+  // The anchors were found by checking every line's box against the three
+  // circles, 3 units clear of each stroke, at 9.5 units a character. What
+  // each region holds at its anchor, which is what the generators cap to:
+  //   aOnly bOnly cOnly    two lines of "10, 11"
+  //   ab, abc              one line of "10, 11"
+  //   ac, bc               two lines of one element each
+  //   outside              three lines of "10, 11"
+  if (fig.type === 'venn-three-set') {
+    const R = 84;
+    const CENTRE = { a: [-40, -23], b: [40, -23], c: [0, 46] };
+    const CHAR = 9.5;
+    const rect = { x0: -150, y0: -132, x1: 160, y1: 168 };
+    const AT = {
+      aOnly: [-79, -48], bOnly: [79, -48], cOnly: [0, 89],
+      ab: [0, -58], ac: [-55, 27], bc: [55, 27], abc: [0, -3],
+      outside: [128, 132],
+    };
+
+    const nodes = [
+      <rect key="u" x={rect.x0} y={rect.y0} width={rect.x1 - rect.x0} height={rect.y1 - rect.y0}
+        fill="none" stroke="var(--ink)" strokeWidth={3} />,
+    ];
+    Object.entries(CENTRE).forEach(([k, [cx, cy]]) => {
+      nodes.push(
+        <circle key={`c${k}`} cx={cx} cy={cy} r={R}
+          fill={color} fillOpacity={0.16} stroke="var(--ink)" strokeWidth={3} />
+      );
+    });
+
+    nodes.push(figLabel('ul', rect.x1 + 7, rect.y0 + 16, fig.universe ?? 'U', 'start'));
+    nodes.push(figLabel('la', -112, -104, fig.labels?.a ?? 'A', 'middle'));
+    nodes.push(figLabel('lb', 112, -104, fig.labels?.b ?? 'B', 'middle'));
+    nodes.push(figLabel('lc', -76, 150, fig.labels?.c ?? 'C', 'middle'));
+
+    const ext = { x0: rect.x0 - 2, x1: rect.x1 + 9 + (fig.universe ?? 'U').length * CHAR, y0: rect.y0 - 2, y1: rect.y1 + 2 };
+    nodes.push(...vennRegionLabels(fig, AT, color, shown, ext));
+
+    const PAD = 6;
+    const W = ext.x1 - ext.x0 + PAD * 2, H = ext.y1 - ext.y0 + PAD * 2;
+    return svgWrap(
+      <g transform={`translate(${(PAD - ext.x0).toFixed(2)},${(PAD - ext.y0).toFixed(2)})`}>{nodes}</g>,
+      W.toFixed(2), H.toFixed(2), 'venn3', fig.big, shown, Boolean(fig.solution)
     );
   }
 
