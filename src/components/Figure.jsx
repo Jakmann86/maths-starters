@@ -4,7 +4,9 @@ import './Figure.css';
 // viewBox-relative coordinate system, so scaling this shared wrapper scales
 // both together for every figure type without touching any branch's own
 // coordinates.
-function svgWrap(children, w, h, key, big, shown, noShrink = false) {
+// `scale` widens one figure type's width cap past the shared one — the bar
+// chart, which is height-bound and needs the room to grow sideways.
+function svgWrap(children, w, h, key, big, shown, noShrink = false, scale = 1) {
   const capShown = noShrink ? false : shown;
   const cap = capShown ? (big ? '41cqh' : '34cqh') : (big ? '64cqh' : '47cqh');
   // `cap` is how big a figure may be; 100% (of .slot-figure-wrap, which
@@ -17,7 +19,12 @@ function svgWrap(children, w, h, key, big, shown, noShrink = false) {
       className="fig-svg"
       viewBox={`0 0 ${w} ${h}`}
       preserveAspectRatio="xMidYMid meet"
-      style={{ width: big ? 'min(70cqi,580px)' : 'min(47cqi,346px)', maxHeight: `min(${cap}, 100%)` }}
+      style={{
+        width: big
+          ? `min(${70 * scale}cqi,${580 * scale}px)`
+          : `min(${47 * scale}cqi,${346 * scale}px)`,
+        maxHeight: `min(${cap}, 100%)`,
+      }}
     >
       {children}
     </svg>
@@ -1982,17 +1989,19 @@ export default function Figure({ fig, color, shown }) {
     const top = Math.max(...bars.map((b) => b.value));
     const yMax = top + (top % 2 ? 1 : 2);   // even, with headroom above the tallest bar
     // Short and wide: the slot's height is the binding limit, so a tall plot
-    // shrinks every label with it.
-    const unit = Math.min(20, 150 / yMax);
+    // shrinks every label with it. The plot and its margins total about 214
+    // units against the slot's ~237px, so labels draw at about 1.1x; at the
+    // old 256 (a 150 plot) they drew a fifth smaller.
+    const unit = Math.min(20, 120 / yMax);
     const PH = yMax * unit;
     const longest = Math.max(...bars.map((b) => String(b.name).length));
-    const pitch = Math.max(58, longest * CHAR + 14);
+    const pitch = Math.max(62, longest * CHAR + 22);
     const BW = Math.min(pitch - 16, 44);
-    const LEFT = 48, TOP = 36;
+    const LEFT = 48, TOP = 32;
     const PW = bars.length * pitch;
     const xTitleW = String(fig.xTitle || '').length * CHAR;
     const W = Math.max(LEFT + PW + 10, LEFT + PW / 2 + xTitleW / 2 + 6);
-    const H = TOP + PH + 70;
+    const H = TOP + PH + 62;
     const y = (v) => TOP + PH - v * unit;
     const lit = new Set(fig.highlight || []);
 
@@ -2007,18 +2016,21 @@ export default function Figure({ fig, color, shown }) {
       nodes.push(
         <rect key={`b${i}`} x={x} y={y(b.value)} width={BW} height={b.value * unit} fill={color} fillOpacity={lit.has(b.name) ? 0.5 : 0.22} stroke="var(--ink)" strokeWidth={2.5} />
       );
-      nodes.push(figLabel(`n${i}`, x + BW / 2, TOP + PH + 24, String(b.name), 'middle', lit.has(b.name) ? color : 'var(--ink)'));
+      nodes.push(figLabel(`n${i}`, x + BW / 2, TOP + PH + 23, String(b.name), 'middle', lit.has(b.name) ? color : 'var(--ink)'));
     });
     for (let v = 0; v <= yMax; v += 2) {
-      nodes.push(figLabel(`y${v}`, LEFT - 8, y(v) + 7, String(v), 'end'));
+      // 17, not the default 20: with the shorter plot, scale numbers two
+      // units apart sat only 17-24 units apart and ran into one another. On
+      // screen this is the size they always were; the rest of the chart grew.
+      nodes.push(figLabel(`y${v}`, LEFT - 8, y(v) + 6, String(v), 'end', 'var(--ink)', 17));
     }
     nodes.push(figLine('ax', LEFT, TOP - 8, LEFT, TOP + PH));
     nodes.push(figLine('ay', LEFT, TOP + PH, LEFT + PW, TOP + PH));
-    nodes.push(figLabel('yt', LEFT - 34, TOP - 16, fig.yTitle || 'Frequency', 'start', 'var(--ink)', 18));
-    if (fig.xTitle) nodes.push(figLabel('xt', LEFT + PW / 2, TOP + PH + 58, fig.xTitle, 'middle', 'var(--ink)', 18));
+    nodes.push(figLabel('yt', LEFT - 34, TOP - 14, fig.yTitle || 'Frequency', 'start', 'var(--ink)', 18));
+    if (fig.xTitle) nodes.push(figLabel('xt', LEFT + PW / 2, TOP + PH + 54, fig.xTitle, 'middle', 'var(--ink)', 18));
 
     // noShrink, like pie-chart: the chart is what the working is read off.
-    return svgWrap(nodes, W, H, 'bar', fig.big, shown, true);
+    return svgWrap(nodes, W, H, 'bar', fig.big, shown, true, 1.2);
   }
 
   if (fig.type === 'arithmagon') {
