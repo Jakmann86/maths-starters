@@ -1,5 +1,5 @@
 // Substitute-the-answer-back checks for mean-missing-value (all bands, with
-// Core's new list half). Every answer is recomputed from the
+// Core's new list half) and data-types. Every answer is recomputed from the
 // printed instruction, list and figure — never from the generator's own
 // variables.
 //
@@ -8,6 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import _ from 'lodash';
 import { generateMeanMissingValue } from './averagesGenerators';
+import { generateDataTypes, CONTEXTS } from './dataTypesGenerators';
 import { parseArchivoLine } from '../../lib/archivoMath.jsx';
 
 const SAMPLES = 4000;
@@ -87,6 +88,64 @@ describe('mean-missing-value', () => {
         expect(lists).toBeLessThan(SAMPLES * 0.6);
       }
       expect(distinct.size).toBeGreaterThan(SAMPLES * 0.9);
+    });
+  });
+});
+
+describe('data-types', () => {
+  const byIntro = Object.fromEntries(CONTEXTS.map((c) => [c.intro, c]));
+  const want = (v, difficulty) => (
+    difficulty === 'foundation' && v.type !== 'categorical' ? 'numerical' : v.type
+  );
+
+  BANDS.forEach((difficulty) => {
+    it(`${difficulty}: every printed variable is labelled by the context's own classification`, () => {
+      const distinct = new Set();
+      for (let t = 0; t < SAMPLES; t += 1) {
+        const q = generateDataTypes({ difficulty });
+        parses(q);
+        const intro = Object.keys(byIntro).find((i) => q.instruction.startsWith(i));
+        expect(intro, q.instruction).toBeDefined();
+        const context = byIntro[intro];
+        expect(q.instruction).toMatch(difficulty === 'foundation'
+          ? /categorical or numerical$/
+          : /categorical, discrete or continuous$/);
+
+        const { rows } = q.visualization;
+        expect(rows[0]).toEqual(['Variable', 'Type']);
+        const names = rows.slice(1).map((r) => r[0]);
+        rows.slice(1).forEach((r) => expect(r[1]).toBe(''));
+        expect(names).toHaveLength(difficulty === 'foundation' ? 4 : 5);
+        expect(new Set(names).size).toBe(names.length);
+
+        const vars = names.map((nm) => context.vars.find((v) => v.name === nm));
+        vars.forEach((v, i) => expect(v, names[i]).toBeDefined());
+
+        const expected = vars.map((v) => want(v, difficulty));
+        // The answer band's counts agree with the table, recounted here.
+        const counts = Object.fromEntries(
+          [...q.answer.matchAll(/(\d+) (categorical|numerical|discrete|continuous)/g)]
+            .map((m) => [m[2], Number(m[1])]),
+        );
+        expect(counts).toEqual(_.countBy(expected));
+        // The reveal fills exactly the blank Type cells, row for row.
+        const { solution } = q.visualization;
+        expect(solution).toHaveLength(rows.length);
+        expect(solution[0]).toEqual(['', '']);
+        expect(solution.slice(1).map((r) => r[1])).toEqual(expected);
+        solution.slice(1).forEach((r) => expect(r[0]).toBe(''));
+
+        const traps = vars.filter((v) => v.trap).length;
+        if (difficulty === 'stretch') expect(traps).toBeGreaterThanOrEqual(2);
+        else expect(traps).toBe(0);
+        const kinds = new Set(vars.map((v) => want(v, difficulty)));
+        expect(kinds.size).toBe(difficulty === 'foundation' ? 2 : 3);
+
+        distinct.add(q.instruction + names.join('|'));
+      }
+      // eslint-disable-next-line no-console
+      console.log(`data-types ${difficulty}: ${distinct.size} distinct in ${SAMPLES}`);
+      expect(distinct.size).toBeGreaterThan(SAMPLES * 0.5);
     });
   });
 });

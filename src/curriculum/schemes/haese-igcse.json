@@ -93,7 +93,7 @@
     { "id": "12E", "ch": 12, "unit": "Coordinate geometry", "lesson": "Gradient of parallel and perpendicular lines", "page": 267, "skills": [], "status": "todo" },
     { "id": "12F", "ch": 12, "unit": "Coordinate geometry", "lesson": "Using coordinate geometry", "page": 270, "skills": [], "status": "skip" },
 
-    { "id": "13A", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Variables used in statistics", "page": 277, "skills": [], "status": "todo" },
+    { "id": "13A", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Variables used in statistics", "page": 277, "skills": ["data-types"], "status": "ready" },
     { "id": "13B", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Organising and describing discrete data", "page": 278, "skills": ["frequency-table-reading"], "status": "ready" },
     { "id": "13C", "ch": 13, "unit": "Analysis of discrete data", "lesson": "The centre of a discrete data set", "page": 282, "skills": ["averages-from-list"], "status": "ready" },
     { "id": "13D", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Measuring the spread of discrete data", "page": 285, "skills": ["averages-from-list"], "status": "ready" },

@@ -34,6 +34,7 @@ import * as displays from '../generators/statistics/dataDisplayGenerators';
 import * as pie from '../generators/statistics/pieChartGenerators';
 import * as bars from '../generators/statistics/barChartGenerators';
 import * as freqTable from '../generators/statistics/frequencyTableGenerators';
+import * as dataTypes from '../generators/statistics/dataTypesGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 
@@ -813,6 +814,14 @@ export const skills = {
     label: 'Rationalising the denominator',
     topic: 'Surds',
     generate: (opts) => ch6.generateRationaliseDenominator(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 13A: variables used in statistics ---
+  'data-types': {
+    label: 'Types of data',
+    topic: 'Statistics',
+    generate: (opts) => dataTypes.generateDataTypes(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
