@@ -50,10 +50,16 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
           <div className="slot-figure-wrap">
             <Figure fig={fig} color={colorVar} shown={revealed} />
           </div>
-          <div className="slot-question" style={{ fontSize: qSize(q, instr, qCompact, Boolean(fig)) }}>
-            {qProse && allKatex
-              ? <span className="mprose">{q}</span>
-              : <MathDisplay math={q} allKatex={allKatex} />}
+          {/* `.slot-question` is an inline-size container, so the font's cqi
+              term measures the width left beside the figure rather than the
+              whole slot (typeSizing.js). The size goes on the inner div: an
+              element cannot query its own container. */}
+          <div className="slot-question">
+            <div style={{ fontSize: qSize(q, instr, qCompact, Boolean(fig)) }}>
+              {qProse && allKatex
+                ? <span className="mprose">{q}</span>
+                : <MathDisplay math={q} allKatex={allKatex} />}
+            </div>
           </div>
         </div>
       </div>

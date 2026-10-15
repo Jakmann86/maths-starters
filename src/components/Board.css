@@ -336,6 +336,9 @@
 .slot-question {
   flex: 1 1 auto;
   min-width: 0;
+  /* The width left beside the figure, for qSize()'s cqi term. Inline-size
+     only: cqh still resolves against the slot. */
+  container-type: inline-size;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.25;

@@ -14,6 +14,8 @@ function visualLength(str) {
     .replace(/\\times/g, '×')
     .replace(/\\div/g, '÷')
     .replace(/\\pm/g, '±')
+    .replace(/\\cap/g, '∩').replace(/\\cup/g, '∪')
+    .replace(/\\[{}]/g, '{')
     .replace(/\\le/g, '≤').replace(/\\ge/g, '≥').replace(/\\ne/g, '≠')
     .replace(/\\circ/g, '°')
     .replace(/\\text\{([^}]*)\}/g, '$1')
@@ -53,7 +55,21 @@ export function qSize(q, instr, compact, hasFigure = true) {
   const longest = Math.max(...String(q || '').split('\n').map((l) => visualLength(l)), 1);
   const wordy = String(instr || '').length > 44;
   const h = lines >= 3 ? 10 : lines === 2 ? 15 : wordy ? 19 : 24;
-  const w = Math.min(109 / Math.max(longest, 7), 14);
+  // cqi here is the question's own box (`.slot-question` is an inline-size
+  // container), not the slot: beside a figure that is only the width left
+  // over. Without a figure the two are the same width (cqi measures inside
+  // the slot's padding), so those questions size exactly as before. Sized
+  // against the whole slot, a set expression beside a Venn diagram ran off
+  // the right edge on a 1366px screen.
+  //
+  // Beside a figure the box is narrow, so the whole-slot rule — which fills
+  // about two thirds of the width and caps at 14cqi for short lines — wastes
+  // most of it. There the width term aims at about nine tenths instead
+  // (0.6em a character — KaTeX digits run wide), and the 76px ceiling
+  // does the capping.
+  const w = hasFigure && !compact
+    ? 150 / Math.max(longest, 3)
+    : Math.min(109 / Math.max(longest, 7), 14);
   const floor = lines >= 3 ? 28 : 30;
   if (compact && hasFigure) {
     return `clamp(${Math.round(floor * 0.7)}px,min(${(h * 0.6).toFixed(1)}cqh,${(w * 0.7).toFixed(1)}cqi),44px)`;
