@@ -825,6 +825,12 @@ export const skills = {
     generate: (opts) => sets.generateVennCounts(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'venn-place-elements': {
+    label: 'Venn diagrams: placing elements',
+    topic: 'Sets',
+    generate: (opts) => sets.generateVennPlaceElements(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'venn-set-operations': {
     label: 'Venn diagrams: set operations',
     topic: 'Sets',

@@ -1,18 +1,25 @@
 // src/generators/number/setsGenerators.js
 //
 // Haese Chapter 2 (D Venn diagrams, E union and intersection, F problem
-// solving) and Rayner Chapter 12. Two skills, both drawn on the same
-// two-circle figure:
+// solving) and Rayner Chapter 12. Three skills, on the two-circle figure and,
+// at Stretch, the three-circle one:
 //
 //   venn-counts          numbers in the regions
 //     foundation  read and add                    "How many play rugby?"
 //     core        one region withheld, total given
 //     stretch     the regions are 16 - x, x, 11 - x   (Haese Example 12)
 //
+//   venn-place-elements  sort a universe into the regions (fills on reveal)
+//     foundation  A and B listed
+//     core        A and B described: "factors of 12", "prime numbers"
+//     stretch     three sets described, three circles
+//
 //   venn-set-operations  elements in the regions
 //     foundation  list A                          no symbol
 //     core        list A n B, A u B               one symbol
-//     stretch     list (A u B)', A' n B, ...      complement plus a symbol
+//     stretch     half two-set: (A u B)', A' n B, ...   complement plus a symbol
+//                 half three-set: (B n C) n A', (A u B) n C, ...
+//                                                 a bracket, then a second operation
 //
 // MINUS SIGNS. The figure carries "16 − x" with a literal U+2212, because
 // figure labels are plain SVG text and never reach the renderer (CLAUDE.md
@@ -179,6 +186,7 @@ const setTex = (xs) => `\\{${xs.join(', ')}\\}`;
 
 export const generateVennSetOperations = (options = {}) => {
   const { difficulty = 'core' } = options;
+  if (difficulty === 'stretch' && Math.random() < 0.5) return setOperationsThree();
   const [A, B] = _.sample(LETTER_PAIRS);
 
   // A universe of 1..n split four ways, every region occupied so that no
@@ -261,3 +269,250 @@ export const generateVennSetOperations = (options = {}) => {
     metadata: { topic: 'venn-set-operations', difficulty },
   };
 };
+
+/* ------------------------------------------------- three-set operations */
+
+const LETTER_TRIPLES = [['A', 'B', 'C'], ['P', 'Q', 'R'], ['X', 'Y', 'Z']];
+const KEYS3 = ['aOnly', 'bOnly', 'cOnly', 'ab', 'ac', 'bc', 'abc', 'outside'];
+// Which of the three sets each region of `venn-three-set` lies in.
+const MEMBERS3 = {
+  aOnly: 'a', bOnly: 'b', cOnly: 'c', ab: 'ab', ac: 'ac', bc: 'bc', abc: 'abc', outside: '',
+};
+
+// What each region holds at the figure's anchor (Figure.jsx), as elements per
+// line and lines. The overlaps of two are the tight ones.
+const LAYOUT3 = {
+  aOnly: [2, 2], bOnly: [2, 2], cOnly: [2, 2],
+  ab: [2, 1], abc: [2, 1], ac: [1, 2], bc: [1, 2],
+  outside: [2, 3],
+};
+const CAP3 = _.mapValues(LAYOUT3, ([per, lines]) => per * lines);
+const lines3 = (key, els) => _.chunk(els, LAYOUT3[key][0]).map((row) => row.join(', '));
+
+// Expressions as trees, so the LaTeX and the evaluation come from one place
+// and cannot disagree. x, y, z are the three sets in some order: the
+// generator permutes them, so "(B n C) n A'" and "(A n C) n B'" are one
+// template.
+const set = (k) => ({ k });
+const and = (l, r) => ({ op: 'cap', l, r });
+const or = (l, r) => ({ op: 'cup', l, r });
+const not = (e) => ({ op: 'not', e });
+
+const TEMPLATES3 = [
+  (x, y, z) => and(and(y, z), not(x)),       // (B n C) n A'
+  (x, y, z) => and(not(x), and(y, z)),       // A' n (B n C)
+  (x, y, z) => and(or(x, y), z),             // (A u B) n C
+  (x, y, z) => and(or(x, y), not(z)),        // (A u B) n C'
+  (x, y, z) => and(not(or(x, y)), z),        // (A u B)' n C
+  (x, y, z) => and(x, not(or(y, z))),        // A n (B u C)'
+  (x, y, z) => and(not(and(x, y)), z),       // (A n B)' n C
+  (x, y, z) => or(and(x, y), and(x, z)),     // (A n B) u (A n C)
+  (x, y, z) => or(and(x, y), z),             // (A n B) u C
+];
+
+const isLeaf = (e) => e.k != null;
+function tex3(e, names) {
+  if (isLeaf(e)) return names[e.k];
+  if (e.op === 'not') return isLeaf(e.e) ? `${names[e.e.k]}'` : `(${tex3(e.e, names)})'`;
+  const side = (c) => (isLeaf(c) || c.op === 'not' ? tex3(c, names) : `(${tex3(c, names)})`);
+  // The permutation can put a bracket's letters out of order; "Y n X" is
+  // the same set as "X n Y" and reads like a typo.
+  const [l, r] = isLeaf(e.l) && isLeaf(e.r) ? _.sortBy([e.l, e.r], (c) => names[c.k]) : [e.l, e.r];
+  return `${side(l)} \\${e.op} ${side(r)}`;
+}
+// The regions an expression covers.
+function regions3(e) {
+  if (isLeaf(e)) return KEYS3.filter((r) => MEMBERS3[r].includes(e.k));
+  if (e.op === 'not') return _.difference(KEYS3, regions3(e.e));
+  return e.op === 'cap' ? _.intersection(regions3(e.l), regions3(e.r)) : _.union(regions3(e.l), regions3(e.r));
+}
+
+// Fill a universe of 1..n into the eight regions at random, each region
+// within what the figure can hold.
+function fillThree(minEach) {
+  for (;;) {
+    const n = _.random(12, 16);
+    const sizes = _.mapValues(CAP3, (cap) => _.random(minEach, cap));
+    const inside = _.sum(KEYS3.filter((k) => k !== 'outside').map((k) => sizes[k]));
+    sizes.outside = n - inside;
+    if (sizes.outside < 1 || sizes.outside > CAP3.outside) continue;
+    const elements = _.shuffle(_.range(1, n + 1));
+    let i = 0;
+    const regions = {};
+    KEYS3.forEach((k) => { regions[k] = _.sortBy(elements.slice(i, i + sizes[k])); i += sizes[k]; });
+    return regions;
+  }
+}
+
+function setOperationsThree() {
+  const [A, B, C] = _.sample(LETTER_TRIPLES);
+  const names = { a: A, b: B, c: C };
+  // Every region occupied, so the drawn diagram never has an empty overlap
+  // that a student might read as a mistake.
+  const regions = fillThree(1);
+  const els = (keys) => _.sortBy(keys.flatMap((k) => regions[k]));
+
+  for (;;) {
+    const [x, y, z] = _.shuffle(['a', 'b', 'c']).map(set);
+    const e = _.sample(TEMPLATES3)(x, y, z);
+    const answer = els(regions3(e));
+    // Same ceiling as the two-set answers: past eight it stops being
+    // readable from the back of the room.
+    if (!answer.length || answer.length > 8) continue;
+
+    // Bracket first, then the outer operation. A complement is worked as
+    // "not in" rather than listed: (A n C)' runs to a dozen elements.
+    const listed = (p) => `${tex3(p, names)} = ${setTex(els(regions3(p)))}`;
+    let work;
+    if (e.op === 'cup') work = [listed(e.l), listed(e.r), '\\text{in either: }'];
+    else {
+      const [neg, pos] = e.l.op === 'not' ? [e.l, e.r] : e.r.op === 'not' ? [e.r, e.l] : [null, null];
+      work = neg
+        ? [listed(pos), listed(neg.e), `\\text{in the first, not the second: }`]
+        : [listed(e.l), listed(e.r), '\\text{in both: }'];
+    }
+
+    return {
+      instruction: 'List the elements of the set',
+      questionMath: tex3(e, names),
+      answer: setTex(answer),
+      workingOut: [...work, `= ${setTex(answer)}`].join(NL),
+      visualization: {
+        type: 'venn-three-set',
+        labels: { a: A, b: B, c: C },
+        regions: _.mapValues(regions, (v, k) => lines3(k, v)),
+        unknown: null,
+        universe: 'U',
+        big: true,
+      },
+      metadata: { topic: 'venn-set-operations', difficulty: 'stretch' },
+    };
+  }
+}
+
+/* ------------------------------------------------------ place elements */
+
+// Sets a class can list from a description. `test` is the definition; the
+// tex is what the question prints.
+export const PROPERTIES = [
+  { tex: 'even numbers', test: (k) => k % 2 === 0 },
+  { tex: 'odd numbers', test: (k) => k % 2 === 1 },
+  { tex: 'prime numbers', test: (k) => k > 1 && _.range(2, k).every((d) => k % d) },
+  { tex: 'square numbers', test: (k) => Number.isInteger(Math.sqrt(k)) },
+  ...[3, 4, 5].map((m) => ({ tex: `multiples of ${m}`, test: (k) => k % m === 0 })),
+  ...[12, 16, 18, 20, 24, 30].map((m) => ({ tex: `factors of ${m}`, test: (k) => m % k === 0 })),
+];
+
+// The two-set figure's capacities, as the set-operations skill uses them.
+const KEYS2 = ['aOnly', 'both', 'bOnly', 'outside'];
+
+const universeTex = (n) => `U = \\{1, 2, 3, \\ldots, ${n}\\}`;
+
+export const generateVennPlaceElements = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  if (difficulty === 'stretch') return placeThree();
+  return placeTwo(difficulty);
+};
+
+function placeTwo(difficulty) {
+  const [A, B] = _.sample(LETTER_PAIRS);
+  let n, setA, setB, describe;
+  for (;;) {
+    if (difficulty === 'foundation') {
+      // Listed sets: any subsets will do, so draw the regions directly.
+      n = _.random(8, 12);
+      const u = _.range(1, n + 1);
+      setA = _.sortBy(_.sampleSize(u, _.random(3, 6)));
+      setB = _.sortBy(_.sampleSize(u, _.random(3, 6)));
+      describe = null;
+    } else {
+      n = _.sample([10, 12, 15, 16, 20]);
+      const [pa, pb] = _.sampleSize(PROPERTIES, 2);
+      const u = _.range(1, n + 1);
+      setA = u.filter(pa.test);
+      setB = u.filter(pb.test);
+      describe = [pa.tex, pb.tex];
+    }
+    const regions = splitTwo(n, setA, setB);
+    // Every region occupied (so neither set sits inside the other and the
+    // overlap is real), and each within what the two-set figure holds.
+    if (KEYS2.some((k) => !regions[k].length || regions[k].length > CAP[k])) continue;
+
+    const q = describe
+      ? [universeTex(n), `${A} = \\text{${describe[0]}}`, `${B} = \\text{${describe[1]}}`]
+      : [universeTex(n), `${A} = ${setTex(setA)}`, `${B} = ${setTex(setB)}`];
+    const overlap = `${A} \\cap ${B} = ${setTex(regions.both)}`;
+    return {
+      instruction: 'Place each element of U in the Venn diagram',
+      questionMath: q.join(NL),
+      answer: overlap,
+      workingOut: (describe ? [`${A} = ${setTex(setA)}`, `${B} = ${setTex(setB)}`, overlap] : [overlap]).join(NL),
+      visualization: {
+        type: 'venn-two-set',
+        labels: { a: A, b: B },
+        regions: {},
+        solution: _.mapValues(regions, chunk),
+        unknown: null,
+        universe: 'U',
+        big: true,
+      },
+      metadata: { topic: 'venn-place-elements', difficulty },
+    };
+  }
+}
+
+function splitTwo(n, setA, setB) {
+  const regions = { aOnly: [], both: [], bOnly: [], outside: [] };
+  _.range(1, n + 1).forEach((k) => {
+    const inA = setA.includes(k), inB = setB.includes(k);
+    regions[inA && inB ? 'both' : inA ? 'aOnly' : inB ? 'bOnly' : 'outside'].push(k);
+  });
+  return regions;
+}
+
+function placeThree() {
+  const [A, B, C] = _.sample(LETTER_TRIPLES);
+  for (;;) {
+    const n = _.sample([10, 12, 15, 16, 20]);
+    const props = _.sampleSize(PROPERTIES, 3);
+    const u = _.range(1, n + 1);
+    const sets = props.map((p) => u.filter(p.test));
+    const regions = _.fromPairs(KEYS3.map((k) => [k, []]));
+    u.forEach((k) => {
+      const key = ['a', 'b', 'c'].filter((s, i) => sets[i].includes(k)).join('');
+      regions[key.length === 1 ? `${key}Only` : key || 'outside'].push(k);
+    });
+    if (KEYS3.some((k) => regions[k].length > CAP3[k])) continue;
+    // The centre has to hold something, and no more than two regions may be
+    // empty: a diagram that is mostly blank is three separate lists.
+    if (!regions.abc.length || KEYS3.filter((k) => !regions[k].length).length > 2) continue;
+
+    const centre = `${A} \\cap ${B} \\cap ${C} = ${setTex(regions.abc)}`;
+    return {
+      instruction: 'Place each element of U in the Venn diagram',
+      questionMath: [
+        universeTex(n),
+        `${A} = \\text{${props[0].tex}}`,
+        `${B} = \\text{${props[1].tex}}`,
+        `${C} = \\text{${props[2].tex}}`,
+      ].join(NL),
+      answer: centre,
+      workingOut: [
+        `${A} = ${setTex(sets[0])}`,
+        `${B} = ${setTex(sets[1])}`,
+        `${C} = ${setTex(sets[2])}`,
+        centre,
+      ].join(NL),
+      visualization: {
+        type: 'venn-three-set',
+        labels: { a: A, b: B, c: C },
+        regions: {},
+        solution: _.mapValues(regions, (v, k) => lines3(k, v)),
+        unknown: null,
+        universe: 'U',
+        big: true,
+      },
+      metadata: { topic: 'venn-place-elements', difficulty: 'stretch' },
+    };
+  }
+}
