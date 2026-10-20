@@ -883,6 +883,19 @@ export const skills = {
     generate: (opts) => displays.generateModalClass(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'table-averages': {
+    label: 'Mean, mode and median from a table',
+    topic: 'Statistics',
+    generate: (opts) => freqTable.generateTableAverages(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // --- Haese 17C: cumulative frequency, the table only ---
+  'cumulative-frequency-table': {
+    label: 'Cumulative frequency tables',
+    topic: 'Statistics',
+    generate: (opts) => freqTable.generateCumulativeFrequencyTable(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'stem-and-leaf-averages': {
     label: 'Averages from a stem-and-leaf plot',
     topic: 'Statistics',

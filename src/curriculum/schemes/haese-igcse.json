@@ -97,7 +97,7 @@
     { "id": "13B", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Organising and describing discrete data", "page": 278, "skills": ["frequency-table-reading"], "status": "ready" },
     { "id": "13C", "ch": 13, "unit": "Analysis of discrete data", "lesson": "The centre of a discrete data set", "page": 282, "skills": ["averages-from-list"], "status": "ready" },
     { "id": "13D", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Measuring the spread of discrete data", "page": 285, "skills": ["averages-from-list"], "status": "ready" },
-    { "id": "13E", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Data in frequency tables", "page": 288, "skills": ["averages-from-table"], "status": "ready" },
+    { "id": "13E", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Data in frequency tables", "page": 288, "skills": ["averages-from-table", "table-averages"], "status": "ready" },
     { "id": "13F", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Grouped discrete data", "page": 290, "skills": ["estimated-mean"], "status": "ready" },
     { "id": "13G", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Statistics from technology", "page": 292, "skills": [], "status": "skip" },
 
@@ -120,9 +120,9 @@
     { "id": "16C", "ch": 16, "unit": "Algebraic fractions", "lesson": "Adding and subtracting algebraic fractions", "page": 346, "skills": [], "status": "todo" },
     { "id": "16D", "ch": 16, "unit": "Algebraic fractions", "lesson": "More complicated fractions", "page": 348, "skills": [], "status": "todo" },
 
-    { "id": "17A", "ch": 17, "unit": "Continuous data", "lesson": "The mean of continuous data", "page": 354, "skills": ["estimated-mean"], "status": "ready" },
+    { "id": "17A", "ch": 17, "unit": "Continuous data", "lesson": "The mean of continuous data", "page": 354, "skills": ["estimated-mean", "table-averages"], "status": "ready" },
     { "id": "17B", "ch": 17, "unit": "Continuous data", "lesson": "Histograms", "page": 355, "skills": [], "status": "todo" },
-    { "id": "17C", "ch": 17, "unit": "Continuous data", "lesson": "Cumulative frequency", "page": 359, "skills": [], "status": "todo" },
+    { "id": "17C", "ch": 17, "unit": "Continuous data", "lesson": "Cumulative frequency", "page": 359, "skills": ["cumulative-frequency-table"], "status": "ready" },
 
     { "id": "18A", "ch": 18, "unit": "Similarity", "lesson": "Similarity", "page": 367, "skills": [], "status": "todo" },
     { "id": "18B", "ch": 18, "unit": "Similarity", "lesson": "Similar triangles", "page": 370, "skills": [], "status": "todo" },

@@ -1,5 +1,10 @@
 // src/generators/statistics/frequencyTableGenerators.js
 //
+// Three skills built on frequency tables:
+//   frequency-table-reading     Haese 13B (below)
+//   cumulative-frequency-table  Haese 17C, the table without the graph
+//   table-averages              mean, mode and median as three parts
+//
 // Haese 13B: reading a discrete frequency table that has a story behind it —
 // goals in a season, siblings in a class. The step every band turns on is
 // telling the value column from the frequency column.
@@ -217,4 +222,293 @@ function stretchBand() {
     visualization: tableFig(context, xs, shown),
     metadata: { topic: 'frequency-table-reading', difficulty: 'stretch' },
   };
+}
+
+/* ------------------------------------------------------- continuous data
+ *
+ * Grouped tables with a measured variable behind them, for the two skills
+ * below. Each context names its variable's letter, so a class reads
+ * "10 ≤ t < 20" rather than an anonymous x. Widths are even, so every
+ * midpoint is whole. A class list starts at the first multiple of its width
+ * at or above one of the context's `starts`, so 6-wide classes run 12, 18,
+ * 24 and never 20, 26, 32.
+ * `shows(n)` takes the number surveyed, or nothing when the table gives it.
+ */
+export const CONTINUOUS = [
+  {
+    col: 'Time (t min)', v: 't', widths: [4, 6, 10], starts: [0, 10, 20],
+    shows: (n) => `the time ${n ? `${n} ` : ''}students took to finish a puzzle`,
+  },
+  {
+    col: 'Distance (d m)', v: 'd', widths: [4, 6, 10], starts: [0, 10, 20],
+    shows: (n) => `how far ${n ? `${n} ` : ''}students threw a ball`,
+  },
+  {
+    col: 'Mass (m kg)', v: 'm', widths: [2, 4], starts: [0, 4, 8],
+    shows: (n) => `the masses of ${n ? `${n} ` : ''}parcels at a post office`,
+  },
+  {
+    col: 'Speed (v km/h)', v: 'v', widths: [10], starts: [10, 20],
+    shows: (n) => `the speeds of ${n ? `${n} ` : ''}cars passing a school`,
+  },
+  {
+    col: 'Height (h cm)', v: 'h', widths: [4, 6, 10], starts: [0, 10, 20],
+    shows: (n) => `the heights of ${n ? `${n} ` : ''}seedlings in a greenhouse`,
+  },
+];
+
+/** A context and 4-5 contiguous equal-width classes, each with a frequency
+ *  of 2-15. */
+export const continuousData = (context = _.sample(CONTINUOUS)) => {
+  const k = _.random(4, 5);
+  const width = _.sample(context.widths);
+  const start = Math.ceil(_.sample(context.starts) / width) * width;
+  const lows = _.times(k, (i) => start + i * width);
+  const highs = lows.map((lo) => lo + width);
+  const fs = _.times(k, () => _.random(2, 15));
+  return { context, lows, highs, mids: lows.map((lo) => lo + width / 2), fs };
+};
+
+const classOf = (v, lo, hi) => `${lo} ≤ ${v} < ${hi}`;           // figure: literal glyph
+const classTex = (v, lo, hi) => `${lo} \\le ${v} < ${hi}`;       // answer: through the renderer
+
+const runningTotals = (fs) => {
+  let running = 0;
+  return fs.map((f) => { running += f; return running; });
+};
+
+// One decimal place from tenths, so no float error creeps in.
+const dp1 = (tenths) => (tenths % 10 === 0 ? String(tenths / 10) : `${Math.floor(tenths / 10)}.${tenths % 10}`);
+
+/* ---------------------------------------------- cumulative frequency tables
+ *
+ * Haese 17C, the table only — no graph. The cumulative column is left blank
+ * and fills in on reveal, as the data-types table does.
+ *
+ *   foundation  a discrete table: keep a running total of the frequencies
+ *   core        a grouped continuous table: the same running total, read
+ *               against class intervals
+ *   stretch     both columns have gaps. Each row hides one cell or none, so
+ *               working down the table always closes: a missing cumulative
+ *               frequency is added on, a missing frequency is differenced
+ *               back from two cumulative ones
+ * ---------------------------------------------------------------------- */
+
+const CF = 'Cumulative frequency';
+
+export const generateCumulativeFrequencyTable = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  if (difficulty === 'foundation') return cumulativeDiscrete();
+  if (difficulty === 'stretch') return cumulativeGaps();
+  return cumulativeGrouped();
+};
+
+const cumulativeWorking = (fs, cfs) => cfs
+  .map((c, i) => (i === 0 ? `${c}` : `${cfs[i - 1]} + ${fs[i]} = ${c}`))
+  .join(NL);
+
+function cumulativeDiscrete() {
+  const { context, xs, fs } = discreteData();
+  const cfs = runningTotals(fs);
+  return {
+    instruction: `The table shows ${context.shows}. Complete the cumulative frequency column`,
+    answer: `\\text{cumulative: } ${cfs.join(', ')}`,
+    workingOut: cumulativeWorking(fs, cfs),
+    visualization: {
+      type: 'table',
+      header: 'row',
+      big: true,
+      rows: [[context.col, 'Frequency', CF], ...xs.map((x, i) => [String(x), String(fs[i]), ''])],
+      solution: [['', '', ''], ...cfs.map((c) => ['', '', String(c)])],
+    },
+    metadata: { topic: 'cumulative-frequency-table', difficulty: 'foundation' },
+  };
+}
+
+function cumulativeGrouped() {
+  const { context, lows, highs, fs } = continuousData();
+  const cfs = runningTotals(fs);
+  return {
+    instruction: `The table shows ${context.shows()}. Complete the cumulative frequency column`,
+    answer: `\\text{cumulative: } ${cfs.join(', ')}`,
+    workingOut: cumulativeWorking(fs, cfs),
+    visualization: {
+      type: 'table',
+      header: 'row',
+      big: true,
+      rows: [[context.col, 'Frequency', CF],
+        ...lows.map((lo, i) => [classOf(context.v, lo, highs[i]), String(fs[i]), ''])],
+      solution: [['', '', ''], ...cfs.map((c) => ['', '', String(c)])],
+    },
+    metadata: { topic: 'cumulative-frequency-table', difficulty: 'core' },
+  };
+}
+
+function cumulativeGaps() {
+  for (;;) {
+    const { context, lows, highs, fs } = continuousData();
+    const k = fs.length;
+    const cfs = runningTotals(fs);
+    // k - 1 rows lose one cell each; one row is left whole.
+    const whole = _.random(0, k - 1);
+    const hide = _.times(k, (i) => (i === whole ? null : _.sample(['f', 'cf'])));
+    // At least one frequency differenced back from two cumulative ones — a
+    // gap in the first row is only a copy — and at least one running total.
+    if (!hide.some((h, i) => h === 'f' && i > 0) || !hide.includes('cf')) continue;
+
+    const working = hide.map((h, i) => {
+      const prev = i === 0 ? null : cfs[i - 1];
+      if (h === 'f') {
+        return i === 0
+          ? `\\text{frequency} = ${fs[0]}`
+          : `\\text{frequency} = ${cfs[i]} - ${prev} = ${fs[i]}`;
+      }
+      if (h === 'cf') {
+        return i === 0
+          ? `\\text{cumulative} = ${cfs[0]}`
+          : `\\text{cumulative} = ${prev} + ${fs[i]} = ${cfs[i]}`;
+      }
+      return null;
+    }).filter(Boolean);
+
+    return {
+      instruction: `The table shows ${context.shows()}. Complete the table`,
+      answer: `\\text{frequencies: } ${fs.join(', ')}${NL}\\text{cumulative: } ${cfs.join(', ')}`,
+      workingOut: working.join(NL),
+      visualization: {
+        type: 'table',
+        header: 'row',
+        big: true,
+        rows: [[context.col, 'Frequency', CF], ...lows.map((lo, i) => [
+          classOf(context.v, lo, highs[i]),
+          hide[i] === 'f' ? '' : String(fs[i]),
+          hide[i] === 'cf' ? '' : String(cfs[i]),
+        ])],
+        solution: [['', '', ''], ...fs.map((f, i) => [
+          '',
+          hide[i] === 'f' ? String(f) : '',
+          hide[i] === 'cf' ? String(cfs[i]) : '',
+        ])],
+      },
+      metadata: { topic: 'cumulative-frequency-table', difficulty: 'stretch' },
+    };
+  }
+}
+
+/* --------------------------------------- mean, mode and median from a table
+ *
+ * Three parts from one table, as averages-from-list's Core asks four from a
+ * list. The three answers are kept distinct, so one written down for another
+ * is visibly wrong.
+ *
+ *   foundation  a discrete table: the mean (whole), the mode, the median
+ *   core        a grouped continuous table: an estimate of the mean, the
+ *               modal class, the class containing the median
+ *   stretch     the same, with one frequency withheld and the number
+ *               surveyed given in words, so it is recovered first
+ *
+ * Unequal class widths are deliberately not the Stretch step: with them the
+ * tallest frequency need not be the modal class (frequency density), which
+ * is the misconception modal-class leaves out too.
+ * ---------------------------------------------------------------------- */
+
+const THREE = 'Find (a) the mean (b) the mode (c) the median';
+const THREE_GROUPED = 'Find (a) an estimate of the mean (b) the modal class (c) the class containing the median';
+
+export const generateTableAverages = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  if (difficulty === 'foundation') return threeFromDiscrete();
+  return threeFromGrouped(difficulty);
+};
+
+function threeFromDiscrete() {
+  for (;;) {
+    const { context, xs, fs } = discreteData();
+    const n = _.sum(fs);
+    const sumFX = _.sum(xs.map((x, i) => x * fs[i]));
+    if (sumFX % n !== 0) continue;
+    const peak = Math.max(...fs);
+    if (fs.filter((f) => f === peak).length !== 1) continue;
+    const mode = xs[fs.indexOf(peak)];
+    const cfs = runningTotals(fs);
+    // The (n+1)/2 th value. For an even n the two middle values must share a
+    // row, or the median is a half and the band becomes Core's.
+    const lo = cfs.findIndex((c) => c >= Math.floor((n + 1) / 2));
+    const hi = cfs.findIndex((c) => c >= Math.ceil((n + 1) / 2));
+    if (lo !== hi) continue;
+    const med = xs[lo];
+    const mean = sumFX / n;
+    if (new Set([mean, mode, med]).size !== 3) continue;
+
+    return {
+      instruction: `The table shows ${context.shows}. ${THREE}`,
+      answer: [
+        `\\text{(a) mean} = ${mean}`,
+        `\\text{(b) mode} = ${mode}`,
+        `\\text{(c) median} = ${med}`,
+      ].join(NL),
+      workingOut: [
+        `\\text{sum of } fx = ${fxLine(xs, fs)} = ${sumFX}`,
+        `\\text{(a) mean} = \\frac{${sumFX}}{${n}} = ${mean}`,
+        `\\text{(b) the largest frequency is } ${peak}, \\text{ so mode} = ${mode}`,
+        `\\text{(c) } \\frac{n + 1}{2} = ${dp1((n + 1) * 5)}, \\text{ cumulative: } ${cfs.join(', ')}`,
+        `\\text{median} = ${med}`,
+      ].join(NL),
+      visualization: tableFig(context, xs, fs.map(String)),
+      metadata: { topic: 'table-averages', difficulty: 'foundation' },
+    };
+  }
+}
+
+function threeFromGrouped(difficulty) {
+  for (;;) {
+    const { context, lows, highs, mids, fs } = continuousData();
+    const n = _.sum(fs);
+    const sumFX = _.sum(mids.map((m, i) => m * fs[i]));
+    // The estimate is exact to one decimal place.
+    if ((sumFX * 10) % n !== 0) continue;
+    const peak = Math.max(...fs);
+    if (fs.filter((f) => f === peak).length !== 1) continue;
+    const modeIdx = fs.indexOf(peak);
+    const cfs = runningTotals(fs);
+    // The class holding the (n+1)/2 th value, kept a value clear of a class
+    // boundary as modal-class's Core does.
+    const pos = (n + 1) / 2;
+    const medIdx = cfs.findIndex((c) => c >= pos);
+    if (medIdx > 0 && cfs[medIdx - 1] === Math.floor(pos)) continue;
+    if (medIdx === modeIdx) continue;
+
+    const v = context.v;
+    const mean = dp1((sumFX * 10) / n);
+    const stretch = difficulty === 'stretch';
+    // Stretch withholds any frequency: every row's frequency feeds all three
+    // parts, so recovering it is never a wasted step.
+    const hide = stretch ? _.random(0, fs.length - 1) : null;
+    const shownFs = fs.map((f, i) => (i === hide ? '?' : String(f)));
+    const known = fs.filter((_f, i) => i !== hide);
+
+    return {
+      instruction: `The table shows ${context.shows(stretch ? n : null)}. ${THREE_GROUPED}`,
+      answer: [
+        `\\text{(a) estimated mean} = ${mean}`,
+        `\\text{(b) modal class: } ${classTex(v, lows[modeIdx], highs[modeIdx])}`,
+        `\\text{(c) median class: } ${classTex(v, lows[medIdx], highs[medIdx])}`,
+      ].join(NL),
+      workingOut: [
+        ...(stretch ? [`? = ${n} - (${known.join(' + ')}) = ${fs[hide]}`] : []),
+        `\\text{midpoints: } ${mids.join(', ')}`,
+        `\\text{(a) sum of } fx = ${sumFX}, \\text{ mean} = \\frac{${sumFX}}{${n}} = ${mean}`,
+        `\\text{(b) the largest frequency is } ${peak}`,
+        `\\text{(c) } \\frac{n + 1}{2} = ${dp1((n + 1) * 5)}, \\text{ cumulative: } ${cfs.join(', ')}`,
+      ].join(NL),
+      visualization: {
+        type: 'table',
+        header: 'row',
+        big: true,
+        rows: [[context.col, 'Frequency'],
+          ...lows.map((lo, i) => [classOf(v, lo, highs[i]), shownFs[i]])],
+      },
+      metadata: { topic: 'table-averages', difficulty },
+    };
+  }
 }
