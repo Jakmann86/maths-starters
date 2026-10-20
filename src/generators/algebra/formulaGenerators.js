@@ -184,8 +184,8 @@ export const generateFormulaDerivation = (options = {}) => {
     const count = _.random(4, 20);
     const total = initial + (isGain ? 1 : -1) * rate * count;
     return {
-      instruction: `A savings account starts with $${initial}. $${rate} is ${opWord} it, ${count} times. Write a formula for the final amount A, then evaluate it.`,
-      questionMath: null,
+      instruction: 'Write a formula for the final amount A, then work it out',
+      questionText: `A savings account starts with £${initial}. £${rate} is ${opWord} it ${count} times.`,
       answer: `A = ${total}`,
       workingOut: [`A = ${initial} ${opSign} ${rate} \\times ${count}`, `A = ${total}`].join(NL),
       visualization: null,
@@ -196,8 +196,8 @@ export const generateFormulaDerivation = (options = {}) => {
   if (difficulty === 'core') {
     const rate = _.random(5, 50);
     return {
-      instruction: `A savings account starts with $${initial}. $${rate} is ${opWord} it, n times. Write a formula for the final amount A in terms of n.`,
-      questionMath: null,
+      instruction: 'Write a formula for the final amount A in terms of n',
+      questionText: `A savings account starts with £${initial}. £${rate} is ${opWord} it n times.`,
       answer: `A = ${initial} ${opSign} ${rate}n`,
       workingOut: `A = ${initial} ${opSign} ${rate} \\times n = ${initial} ${opSign} ${rate}n`,
       visualization: null,
@@ -206,8 +206,8 @@ export const generateFormulaDerivation = (options = {}) => {
   }
 
   return {
-    instruction: `A savings account starts with $P. $x is ${opWord} it, n times. Write a formula for the final amount A in terms of P, x and n.`,
-    questionMath: null,
+    instruction: 'Write a formula for the final amount A in terms of P, x and n',
+    questionText: `A savings account starts with £P. £x is ${opWord} it n times.`,
     answer: `A = P ${opSign} xn`,
     workingOut: `A = P ${opSign} x \\times n = P ${opSign} xn`,
     visualization: null,
@@ -299,8 +299,8 @@ export const generateSimultaneousProblemSolving = (options = {}) => {
     const a = _.random(15, 60), b = _.random(5, a - 5);
     const sum = a + b, diff = a - b;
     return {
-      instruction: `Two numbers have a sum of ${sum} and a difference of ${diff}. Find the numbers.`,
-      questionMath: null,
+      instruction: 'Form two equations and solve',
+      questionText: `Two numbers have a sum of ${sum} and a difference of ${diff}. Find the numbers.`,
       answer: `${a} \\text{ and } ${b}`,
       workingOut: [`x + y = ${sum}`, `x - y = ${diff}`, `2x = ${sum + diff} \\ \\text{(adding)}`, `x = ${a}, \\ y = ${b}`].join(NL),
       visualization: null,
@@ -315,9 +315,9 @@ export const generateSimultaneousProblemSolving = (options = {}) => {
     const totalCoins = countA + countB;
     const totalValue = denomA * countA + denomB * countB;
     return {
-      instruction: `A jar has ${totalCoins} coins, all ${denomA}c or ${denomB}c. Their total value is ${totalValue}c. How many of each coin?`,
-      questionMath: null,
-      answer: `${countA} \\times ${denomA}c, \\ ${countB} \\times ${denomB}c`,
+      instruction: 'Form two equations and solve',
+      questionText: `A jar holds ${totalCoins} coins, all ${denomA}p or ${denomB}p. Their total value is ${totalValue}p. How many of each coin are there?`,
+      answer: `${countA} \\times ${denomA}\\text{p}, \\ ${countB} \\times ${denomB}\\text{p}`,
       workingOut: [`x + y = ${totalCoins}`, `${denomA}x + ${denomB}y = ${totalValue}`, `x = ${countA}, \\ y = ${countB}`].join(NL),
       visualization: null,
       metadata: { topic: 'simultaneous-problem-solving', difficulty, tags: ['algebra', 'simultaneous', 'problem-solving'] },
@@ -341,9 +341,9 @@ export const generateSimultaneousProblemSolving = (options = {}) => {
     const itemA = _.sample(['apples', 'pens', 'mangoes', 'notebooks']);
     const itemB = _.sample(['oranges', 'rulers', 'papayas', 'pencils'].filter((i) => i !== itemA));
     return {
-      instruction: `${qty1A} ${itemA} and ${qty1B} ${itemB} cost ${total1}c. ${qty2A} ${itemA} and ${qty2B} ${itemB} cost ${total2}c. Find the cost of each.`,
-      questionMath: null,
-      answer: `${itemA}: ${priceA}c, \\ ${itemB}: ${priceB}c`,
+      instruction: 'Form two equations and solve',
+      questionText: `${qty1A} ${itemA} and ${qty1B} ${itemB} cost ${total1}p. ${qty2A} ${itemA} and ${qty2B} ${itemB} cost ${total2}p. Find the cost of each.`,
+      answer: `\\text{${itemA}: } ${priceA}\\text{p}, \\ \\text{${itemB}: } ${priceB}\\text{p}`,
       workingOut: [`${qty1A}x + ${qty1B}y = ${total1}`, `${qty2A}x + ${qty2B}y = ${total2}`, `x = ${priceA}, \\ y = ${priceB}`].join(NL),
       visualization: null,
       metadata: { topic: 'simultaneous-problem-solving', difficulty, tags: ['algebra', 'simultaneous', 'problem-solving'] },
@@ -374,7 +374,7 @@ export const generateSimultaneousProblemSolving = (options = {}) => {
       `x + (x + ${diff}) = ${remainderSum}`,
       `x = ${x}^\\circ, \\ y = ${y}^\\circ`,
     ].join(NL),
-    visualization: { type: 'triangle', labels: ['x', 'y', `${given}^\\circ`], big: 1 },
+    visualization: { type: 'triangle', labels: ['x', 'y', `${given}^\\circ`], big: true },
     metadata: { topic: 'simultaneous-problem-solving', difficulty, tags: ['algebra', 'simultaneous', 'problem-solving', 'angles'] },
   };
 };
