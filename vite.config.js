@@ -8,4 +8,9 @@ export default defineConfig({
   server: {
     host: true,
   },
+  // The generator harnesses sample thousands of questions per band, and on
+  // the CI runner several sit near vitest's 5s default.
+  test: {
+    testTimeout: 60000,
+  },
 })
