@@ -2107,6 +2107,110 @@ export default function Figure({ fig, color, shown }) {
     );
   }
 
+  // A two-stage tree, Haese 25H-I. Schematic like every other figure: the
+  // branches sit at fixed angles whatever their probabilities say.
+  //
+  // `outcomes` is the pair of letters every node uses, first stage and second
+  // ([X, Y]). `probs` holds the six branch labels keyed by path — x, y for
+  // the first stage; xx, xy, yx, yy for the second (xy = the Y branch after
+  // X). A label is plain text: '4/9' is drawn as a stacked fraction, anything
+  // else ('0.3') as written. `solution` has the same keys and fills a branch
+  // left '' in `probs`, in the slot colour, on reveal — the magic-square
+  // convention.
+  //
+  // Labels are set in KaTeX_Main at regular weight, not Archivo: this figure
+  // only appears in the Probability strand, which renders wholly in KaTeX, so
+  // the fractions on the branches match the fractions in the answer. Each
+  // label sits near the far end of its branch (see below for which side).
+  if (fig.type === 'tree-diagram') {
+    const [X, Y] = fig.outcomes ?? ['A', 'B'];
+    const probs = fig.probs ?? {};
+    const sol = fig.solution ?? {};
+    // Wide and short on purpose. With the answer band reserved, a big figure
+    // gets about half a slot's height but 580px of width, so the tree is
+    // height-bound: every vertical unit spent on spacing is taken from the
+    // labels, while length along the branches is free. This puts a branch
+    // label at about 20px on a 1080p board.
+    //
+    // Every label sits outside its own fork, so it can only belong to one
+    // branch. The spacing follows from that. A stacked fraction reaches
+    // 0.9 SIZE either side of its centre, which sits 1.15 SIZE off its
+    // branch, T of the way along. The two forks' inner labels face each other
+    // across the middle, so the nodes sit 208 apart to fit both with room
+    // between; the top and bottom labels set the margins.
+    const SIZE = 32, LETTER = 36;
+    const ROOT = [16, 199];
+    const NODE = { x: [300, 95], y: [300, 303] };
+    const LEAF = { xx: [640, 63], xy: [640, 127], yx: [640, 271], yy: [640, 335] };
+    const GAP = 18;      // a branch stops this short of the letter it meets
+    // How far along its branch a label sits: second-stage labels near the
+    // leaves, first-stage ones a little short of the node letter.
+    const T = { 1: 0.72, 2: 0.85 };
+
+    const serif = (key, x, y, text, fill) => (
+      <text key={key} x={x} y={y} textAnchor="middle" className="fig-serif" fill={fill}
+        style={{ fontSize: SIZE }}>{text}</text>
+    );
+
+    // One probability, centred on (cx, cy).
+    const label = (key, cx, cy, text, fill) => {
+      const m = /^(\d+)\/(\d+)$/.exec(text);
+      if (!m) return [serif(key, cx, cy + SIZE * 0.35, text, fill)];
+      const w = Math.max(m[1].length, m[2].length) * SIZE * 0.5 + 8;
+      return [
+        serif(`${key}n`, cx, cy - SIZE * 0.2, m[1], fill),
+        <line key={`${key}b`} x1={cx - w / 2} y1={cy} x2={cx + w / 2} y2={cy} stroke={fill} strokeWidth={2} />,
+        serif(`${key}d`, cx, cy + SIZE * 0.9, m[2], fill),
+      ];
+    };
+
+    // `below`: which side of the branch the label goes.
+    const branch = (key, from, to, startGap, below) => {
+      const dx = to[0] - from[0], dy = to[1] - from[1];
+      const len = Math.hypot(dx, dy);
+      const ux = dx / len, uy = dy / len;
+      const A = [from[0] + ux * startGap, from[1] + uy * startGap];
+      const B = [to[0] - ux * GAP, to[1] - uy * GAP];
+      const nodes = [figLine(`l${key}`, A[0], A[1], B[0], B[1])];
+
+      const given = probs[key];
+      const filled = given === '' || given == null ? sol[key] : null;
+      const text = given || (shown && filled) || '';
+      if (text) {
+        const nx = below ? -uy : uy, ny = below ? ux : -ux;
+        const off = text.includes('/') ? SIZE * 1.15 : SIZE * 0.72;
+        const t = T[key.length];
+        const px = A[0] + (B[0] - A[0]) * t, py = A[1] + (B[1] - A[1]) * t;
+        nodes.push(...label(`p${key}`, px + nx * off, py + ny * off, text, filled ? color : 'var(--ink)'));
+      }
+      return nodes;
+    };
+
+    const nodes = [
+      ...branch('x', ROOT, NODE.x, 0, false),
+      ...branch('y', ROOT, NODE.y, 0, true),
+      ...branch('xx', NODE.x, LEAF.xx, GAP, false),
+      ...branch('xy', NODE.x, LEAF.xy, GAP, true),
+      ...branch('yx', NODE.y, LEAF.yx, GAP, false),
+      ...branch('yy', NODE.y, LEAF.yy, GAP, true),
+    ];
+    const letter = (key, [x, y], text) => (
+      <text key={key} x={x} y={y + LETTER * 0.34} textAnchor="middle" className="fig-serif" fill="var(--ink)"
+        style={{ fontSize: LETTER }}>{text}</text>
+    );
+    nodes.push(letter('nx', NODE.x, X), letter('ny', NODE.y, Y));
+    nodes.push(letter('lxx', LEAF.xx, X), letter('lxy', LEAF.xy, Y));
+    nodes.push(letter('lyx', LEAF.yx, X), letter('lyy', LEAF.yy, Y));
+
+    // The outer fractions reach to about y = 2 and y = 396.
+    //
+    // It never shrinks on reveal: the class checks its working against the
+    // branches after the answer is shown, as with the table and the magic
+    // square, and the 100% height cap already keeps the slot from
+    // overflowing when the answer band opens.
+    return svgWrap(nodes, 664, 398, 'tree', fig.big, shown, true, 1, true);
+  }
+
   // The fourth data display: drawn to the data, like `pie-chart`. A gridline
   // at every whole unit so each bar ends exactly on one and can be read
   // without estimating; the generators keep every frequency a whole number.

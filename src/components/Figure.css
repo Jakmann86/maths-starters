@@ -12,3 +12,12 @@
 .fig-label {
   font: 700 20px 'Archivo', system-ui, sans-serif;
 }
+
+/* The tree diagram's labels (Probability strand, which renders wholly in
+   KaTeX): KaTeX's own serif at regular weight, so the fractions on the
+   branches match the fractions in the answer. The font is already warm —
+   the board preloads KaTeX's main face on mount (katexLoader.js). */
+.fig-serif {
+  font-family: KaTeX_Main, 'Times New Roman', serif;
+  font-weight: 400;
+}
