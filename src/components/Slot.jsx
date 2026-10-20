@@ -1,9 +1,45 @@
+import { useLayoutEffect, useRef } from 'react';
 import MathDisplay from './MathDisplay.jsx';
 import Figure from './Figure.jsx';
 import { iSize, qSize } from '../lib/typeSizing.js';
 
+// qSize() estimates a question's width from its source, and KaTeX's serif
+// set runs wider than the estimate: on a 1366px board (or a 1920px one at
+// 125% scaling) the universal set and the three-set expressions ran off the
+// right edge. So the rendered question is measured, and if it is wider or
+// taller than its space its font is scaled down to fit. The scale goes in a
+// custom property rather than React state, so fitting never re-renders.
+function useFitToBox(innerRef, rowRef, content, revealed) {
+  useLayoutEffect(() => {
+    const inner = innerRef.current;
+    const row = rowRef.current;
+    if (!inner || !row) return undefined;
+    const fit = () => {
+      inner.style.setProperty('--fit', '1');
+      const box = inner.parentElement;
+      const s = Math.min(
+        1,
+        box.clientWidth / Math.max(inner.scrollWidth, 1),
+        row.clientHeight / Math.max(inner.scrollHeight, 1),
+      );
+      if (s < 1) inner.style.setProperty('--fit', String(Math.floor(s * 98) / 100));
+    };
+    fit();
+    // The row resizes with the screen and on reveal; the content changes
+    // when KaTeX arrives after the first paint.
+    const ro = new ResizeObserver(fit);
+    ro.observe(row);
+    const mo = new MutationObserver(fit);
+    mo.observe(inner, { childList: true, subtree: true, characterData: true });
+    return () => { ro.disconnect(); mo.disconnect(); };
+  }, [innerRef, rowRef, content, revealed]);
+}
+
 export default function Slot({ label, colorVar, data, revealed, onRegenSame, onRegen, onSwap }) {
   const { topic, instr, q, qProse, qCompact, allKatex, a, fig, parts } = data;
+  const rowRef = useRef(null);
+  const qRef = useRef(null);
+  useFitToBox(qRef, rowRef, parts ? null : q, revealed);
 
   return (
     <section className="slot" style={{ '--c': colorVar }}>
@@ -46,7 +82,7 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
 
       <div className="slot-body">
         <div className="slot-instr" style={{ fontSize: iSize(instr) }}>{instr}</div>
-        <div className="slot-row">
+        <div className="slot-row" ref={rowRef}>
           <div className="slot-figure-wrap">
             <Figure fig={fig} color={colorVar} shown={revealed} />
           </div>
@@ -62,7 +98,7 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
                 {parts.map((p) => <div key={p}>{p}</div>)}
               </div>
             ) : (
-              <div style={{ fontSize: qSize(q, instr, qCompact, Boolean(fig)) }}>
+              <div ref={qRef} style={{ fontSize: `calc(${qSize(q, instr, qCompact, Boolean(fig))} * var(--fit, 1))` }}>
                 {qProse && allKatex
                   ? <span className="mprose">{q}</span>
                   : <MathDisplay math={q} allKatex={allKatex} />}
