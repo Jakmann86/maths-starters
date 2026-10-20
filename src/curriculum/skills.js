@@ -968,7 +968,7 @@ export const generateForSkill = (id, wanted = 'core') => {
  * Within a strand, topics run in Haese chapter order.
  */
 export const STRANDS = [
-  { name: 'Number', topics: ['Sets', 'Indices', 'Standard form', 'Surds', 'Percentages'] },
+  { name: 'Number', topics: ['Indices', 'Standard form', 'Surds', 'Percentages'] },
   {
     name: 'Algebra',
     topics: [
@@ -985,6 +985,9 @@ export const STRANDS = [
   { name: 'Geometry', topics: ['Angles', 'Coordinate geometry', 'Pythagoras', 'Trigonometry', 'Circle theorems'] },
   { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Circles', 'Surface area', 'Volume'] },
   { name: 'Statistics', topics: ['Statistics'] },
+  // Sets sits with Probability rather than Number: in the scheme they are
+  // taught together (Venn diagrams lead into probability from a diagram).
+  { name: 'Probability', topics: ['Sets', 'Probability'] },
   { name: 'Problem solving', topics: ['Problem solving', 'Puzzles'] },
 ];
 
@@ -1015,11 +1018,14 @@ export const strandOf = (topicName) => STRANDS.find((s) => s.topics.includes(top
 
 /**
  * Strands whose questions render wholly in KaTeX, skipping the Archivo
- * parser. Number is the one: surds, indices and standard form fall back to
- * KaTeX anyway, and a board that set percentages in Archivo beside them
- * switched typeface from box to box.
+ * parser. Number: surds, indices and standard form fall back to KaTeX anyway,
+ * and a board that set percentages in Archivo beside them switched typeface
+ * from box to box. Probability: its worded questions read better in the
+ * regular-weight serif (.mprose) than in display Archivo, and its fractions
+ * match the KaTeX_Main labels on the tree-diagram figure. Sets moved here
+ * from Number, so it renders exactly as before.
  */
-export const ALL_KATEX_STRANDS = ['Number'];
+export const ALL_KATEX_STRANDS = ['Number', 'Probability'];
 
 /** Every topic once, in panel order. */
 export const topics = () => topicGroups().flatMap((g) => g.topics);
