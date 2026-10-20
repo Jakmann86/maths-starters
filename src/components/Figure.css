@@ -21,3 +21,10 @@
   font-family: KaTeX_Main, 'Times New Roman', serif;
   font-weight: 400;
 }
+
+/* Table cells (frequency tables and the like) at 600. .fig-label asks for
+   700, which Google Fonts doesn't serve here (400/600/800), so it renders at
+   800 — too heavy for small digits, where 6 and 8 close up and look alike. */
+.fig-table .fig-label {
+  font-weight: 600;
+}

@@ -1840,7 +1840,9 @@ export default function Figure({ fig, color, shown }) {
     });
     // A table with a solution is read after the reveal, so like the magic
     // square it keeps its size rather than shrinking for the answer band.
-    return svgWrap(nodes, W, H, 'tb', fig.big, shown, Boolean(solution));
+    // Cells are set lighter than other labels (.fig-table): a table's digits
+    // are small, and at the heavy weight 6 and 8 fill in and look alike.
+    return svgWrap([<g key="tg" className="fig-table">{nodes}</g>], W, H, 'tb', fig.big, shown, Boolean(solution));
   }
 
   if (fig.type === 'stem-leaf') {
