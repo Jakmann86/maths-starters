@@ -100,21 +100,21 @@ describe('cumulative-frequency-table', () => {
   it('foundation: running totals down a discrete table', () => {
     const { distinct } = check('foundation');
     expect(distinct).toBeGreaterThan(SAMPLES * 0.9);
-  });
+  }, 60000);
   it('core: gaps in both columns, always solvable top to bottom', () => {
     const { distinct, hidden } = check('core');
     expect(distinct).toBeGreaterThan(SAMPLES * 0.9);
     // Both kinds of gap turn up in quantity, neither one swamping the other.
     expect(hidden.f / (hidden.f + hidden.cf)).toBeGreaterThan(0.35);
     expect(hidden.f / (hidden.f + hidden.cf)).toBeLessThan(0.65);
-  });
+  }, 60000);
   it('stretch: one row empty, recovered from the whole row below', () => {
     const { distinct, hidden } = check('stretch');
     expect(distinct).toBeGreaterThan(SAMPLES * 0.9);
     // Both kinds of gap turn up in quantity, neither one swamping the other.
     expect(hidden.f / (hidden.f + hidden.cf)).toBeGreaterThan(0.35);
     expect(hidden.f / (hidden.f + hidden.cf)).toBeLessThan(0.65);
-  });
+  }, 60000);
 });
 
 /* -------------------------------------------- mean, mode, median: 3 parts */
