@@ -181,8 +181,8 @@
     { "id": "25E", "ch": 25, "unit": "Probability", "lesson": "Representing combined events", "page": 513, "skills": [], "status": "todo" },
     { "id": "25F", "ch": 25, "unit": "Probability", "lesson": "Theoretical probability", "page": 515, "skills": [], "status": "todo" },
     { "id": "25G", "ch": 25, "unit": "Probability", "lesson": "Compound events", "page": 519, "skills": [], "status": "todo" },
-    { "id": "25H", "ch": 25, "unit": "Probability", "lesson": "Using tree diagrams", "page": 522, "skills": [], "status": "todo" },
-    { "id": "25I", "ch": 25, "unit": "Probability", "lesson": "Sampling with and without replacement", "page": 524, "skills": [], "status": "todo" },
+    { "id": "25H", "ch": 25, "unit": "Probability", "lesson": "Using tree diagrams", "page": 522, "skills": ["tree-diagrams"], "status": "ready" },
+    { "id": "25I", "ch": 25, "unit": "Probability", "lesson": "Sampling with and without replacement", "page": 524, "skills": ["tree-diagrams"], "status": "ready" },
     { "id": "25J", "ch": 25, "unit": "Probability", "lesson": "Mutually exclusive and non-mutually exclusive events", "page": 527, "skills": [], "status": "todo" },
     { "id": "25K", "ch": 25, "unit": "Probability", "lesson": "Miscellaneous probability questions", "page": 528, "skills": [], "status": "skip" },
 
