@@ -411,8 +411,11 @@ function cumulativeGaps() {
  * is the misconception modal-class leaves out too.
  * ---------------------------------------------------------------------- */
 
-const THREE = 'Find (a) the mean (b) the mode (c) the median';
-const THREE_GROUPED = 'Find (a) an estimate of the mean (b) the modal class (c) the class containing the median';
+// The parts sit one per line beside the table, not run into the
+// instruction: the space beside a table is otherwise empty, and a three-line
+// instruction squeezed the table.
+const THREE = ['(a) the mean', '(b) the mode', '(c) the median'].join(NL);
+const THREE_GROUPED = ['(a) an estimate of the mean', '(b) the modal class', '(c) the median class'].join(NL);
 
 export const generateTableAverages = (options = {}) => {
   const { difficulty = 'core' } = options;
@@ -440,7 +443,8 @@ function threeFromDiscrete() {
     if (new Set([mean, mode, med]).size !== 3) continue;
 
     return {
-      instruction: `The table shows ${context.shows}. ${THREE}`,
+      instruction: `The table shows ${context.shows}. Find:`,
+      questionText: THREE,
       answer: [
         `\\text{(a) mean} = ${mean}`,
         `\\text{(b) mode} = ${mode}`,
@@ -487,7 +491,8 @@ function threeFromGrouped(difficulty) {
     const known = fs.filter((_f, i) => i !== hide);
 
     return {
-      instruction: `The table shows ${context.shows(stretch ? n : null)}. ${THREE_GROUPED}`,
+      instruction: `The table shows ${context.shows(stretch ? n : null)}. Find:`,
+      questionText: THREE_GROUPED,
       answer: [
         `\\text{(a) estimated mean} = ${mean}`,
         `\\text{(b) modal class: } ${classTex(v, lows[modeIdx], highs[modeIdx])}`,

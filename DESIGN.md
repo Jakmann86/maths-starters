@@ -13,7 +13,8 @@ The direction is Modernist: flat, hard-edged, high contrast, no ornament.
 --ground:   #f3f2f2   /* page */
 --surface:  #eae9e9   /* hover fill */
 --ink:      #201e1d   /* text, rules, borders */
---ink-70:   #4a4746   /* instruction text */
+--ink-instr: #2e2b2a  /* instruction text: dark enough to read on a
+                        whiteboard in daylight */
 --muted:    #605d5d   /* eyebrow labels, secondary */
 --hairline: #d7d3d3   /* secondary button borders */
 
@@ -71,7 +72,8 @@ Top to bottom, as a 4-row grid (`auto auto minmax(0,1fr) auto`):
    `--hairline` border.
 3. Instruction, then figure and question side by side. The figure is
    `flex: 0 0 auto`; the question takes the rest.
-4. The answer band — hidden at `opacity: 0` with no border and no padding;
+4. The answer band — hidden at `opacity: 0` with no border, no padding and
+   `max-height: 0`, so a hidden answer holds back no space from the figure;
    revealed at `opacity: 1` with a 2px `--ink` top rule. 180ms transition.
    Answer in the slot hue at 800. Working is not shown on the board.
 

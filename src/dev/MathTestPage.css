@@ -41,7 +41,7 @@
 .mt-source {
   width: 340px;
   font-size: 13px;
-  color: var(--ink-70);
+  color: var(--ink-instr);
 }
 
 .mt-source code {

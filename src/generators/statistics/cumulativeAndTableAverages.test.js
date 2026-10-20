@@ -112,7 +112,8 @@ describe('table-averages', () => {
       const q = generateTableAverages({ difficulty: 'foundation' });
       parses(q);
       distinct.add(JSON.stringify(q.visualization.rows));
-      expect(q.instruction).toMatch(/Find \(a\) the mean \(b\) the mode \(c\) the median$/);
+      expect(q.instruction).toMatch(/Find:$/);
+      expect(q.questionText).toBe('(a) the mean\n(b) the mode\n(c) the median');
       const body = q.visualization.rows.slice(1);
       const xs = body.map((r) => Number(r[0]));
       const fs = body.map((r) => Number(r[1]));
@@ -140,7 +141,8 @@ describe('table-averages', () => {
       const q = generateTableAverages({ difficulty: band });
       parses(q);
       distinct.add(q.instruction + JSON.stringify(q.visualization.rows));
-      expect(q.instruction).toMatch(/Find \(a\) an estimate of the mean \(b\) the modal class \(c\) the class containing the median$/);
+      expect(q.instruction).toMatch(/Find:$/);
+      expect(q.questionText).toBe('(a) an estimate of the mean\n(b) the modal class\n(c) the median class');
       const body = q.visualization.rows.slice(1);
       const cls = body.map((r) => readClass(r[0]));
       cls.forEach((c, i) => { if (i) expect(c.lo).toBe(cls[i - 1].hi); });

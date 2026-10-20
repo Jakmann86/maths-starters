@@ -313,7 +313,7 @@
 }
 
 .slot-instr {
-  color: var(--ink-70);
+  color: var(--ink-instr);
   line-height: 1.28;
 }
 
@@ -349,9 +349,15 @@
   padding: 0;
   opacity: 0;
   transition: opacity 0.18s;
+  /* Still mounted (see Slot.jsx), but takes no height until revealed: a
+     hidden three-line answer otherwise held back space the figure needed. */
+  max-height: 0;
+  overflow: hidden;
 }
 
 .slot-answer.is-revealed {
+  max-height: none;
+  overflow: visible;
   border-top: 2px solid var(--ink);
   padding: min(14px, 1.6vh) 0 min(6px, 0.8vh);
   opacity: 1;
