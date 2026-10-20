@@ -25,6 +25,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # A failing check stops the deploy: the live board is what a teacher
+      # opens in front of a class.
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
 
