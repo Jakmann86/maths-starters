@@ -131,8 +131,11 @@ output to match the board's internal field names.
 }
 ```
 
-`visualization` is a config object. The board's `figNode` maps `type` to an
-SVG branch. Generators never return JSX.
+`visualization` is a config object. `Figure.jsx` maps `type` to an SVG
+branch. Generators never return JSX.
+
+`workingOut` is not shown on the board. Generators still return it, and the
+verification tests read it.
 
 Multi-line questions use `\n` in `questionMath`.
 

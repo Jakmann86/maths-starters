@@ -23,8 +23,7 @@ const dims = (min, max) => {
   return [l, w, h];
 };
 
-// Exact-in-pi answers are the house convention for every curved solid at
-// foundation and core (Haese Ex 11A.2 Q2 and Rayner Ex 4.14 both ask for
+// An exact-in-pi answer (Haese Ex 11A.2 Q2 and Rayner Ex 4.14 both ask for
 // answers left in terms of pi). A coefficient of 1 prints as a bare \pi.
 const piTerm = (n) => (n === 1 ? '\\pi' : `${n}\\pi`);
 // Sphere volume is 4r^3/3, which is only a whole coefficient when r is a

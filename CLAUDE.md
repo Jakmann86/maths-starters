@@ -9,19 +9,28 @@ secondary classroom, displayed on an interactive whiteboard. Nothing else.
 
 Each box holds a **topic** (e.g. "Pythagoras", "Volume"), drawn at random from
 a pool the teacher has selected in the topic panel. The teacher's unit of
-choice is the topic, not the individual skill — there are roughly 30 topics
-against 150-odd skills, and a teacher thinks "we did Pythagoras this week".
+choice is the topic, not the individual skill — there are a couple of dozen
+topics against well over a hundred skills, and a teacher thinks "we did
+Pythagoras this week".
 
 Every box has three buttons:
 
 | Button | Action |
 |--------|--------|
-| new | Same skill, fresh numbers |
+| # | Same skill, fresh numbers |
 | ↻ | Next skill within the same topic, cycling in catalogue order |
 | ⇄ | Swap this box to a different topic from the pool |
 
+A fresh draw ("New four", or ⇄) always opens a topic on its first skill in
+catalogue order; the others are reached with ↻. That is deliberate: a long
+topic such as Sequences takes several presses to reach its later skills,
+which is the price of the teacher choosing topics rather than skills.
+
 Difficulty is a single board-wide band — Foundation, Core or Stretch — set by
-the header stepper. It applies to all four boxes at once.
+the header stepper. It applies to all four boxes at once. The stepper also
+has a fourth setting, Mixed, which ramps the four boxes from Foundation to
+Stretch. Mixed is provisional and will likely be replaced by difficulty set
+per question; leave it alone unless asked.
 
 ### Superseded: the recency model
 
@@ -65,15 +74,20 @@ The app is built and running. Roughly:
 ```
 src/
   components/    Board.jsx  Header.jsx  Slot.jsx  TopicPanel.jsx  Figure.jsx
+                 MathDisplay.jsx
   curriculum/    skills.js  topicPool.js  schemes/haese-igcse.json
-  generators/    algebra/  geometry/  puzzles/
-  lib/           archivoMath.jsx
+  generators/    algebra/  geometry/  number/  puzzles/  statistics/
+  lib/           archivoMath.jsx  katexLoader.js  typeSizing.js
+  dev/           MathTestPage.jsx (served by math-test.html, dev only)
 ```
 
 - `Board.jsx` orchestrates: draws four topics from the pool, holds the
   difficulty band, the timer, the reveal state, and the three per-box actions.
 - `Slot.jsx` renders one box; `Figure.jsx` maps a `visualization.type` to an
-  SVG branch; `archivoMath.jsx` is the maths renderer.
+  SVG branch; `MathDisplay.jsx` renders maths, through the Archivo parser in
+  `archivoMath.jsx` or KaTeX.
+- The board shows the question and, on reveal, the answer. It does not show
+  `workingOut`.
 - `topicPool.js` owns the localStorage-backed topic selection.
 - `skills.js` is the catalogue and the board's single entry point
   (`generateForSkill`).
@@ -164,9 +178,11 @@ bigger numbers" is not a band. Worked examples of the principle:
 - Volume of a cuboid: three lengths → cross-sectional area × length → volume
   given, find the missing length.
 
-Where π appears, Foundation and Core leave the answer exact (`45\pi`) so they
-stay calculator-free. This is the textbook's own convention, not a house
-invention.
+Where π appears, every band mixes the two answer forms at random: exact in π
+(`45\pi`) or to 3 significant figures, with the instruction always saying
+which. A class should not settle into only ever seeing one form, and the
+textbook prints both side by side. Rounding is presentation, not structure,
+so it never separates one band from another.
 
 ### 5. Styling is plain CSS with custom properties
 
@@ -178,16 +194,20 @@ and `var(--ink)` only.
 
 ### 6. Maths rendering is hybrid, and figures are not part of it
 
-Question, answer and working text go through the renderer: a custom Archivo
-parser first, with KaTeX as a fallback for what it cannot take. See
-`SPEC.md` §6 for the exact split. Anything falling back should do so
-deliberately — a console warning from a generator that only uses `\times`,
-`\frac` at one level, `\text{}` and `^` is a parser bug worth reporting.
+Question and answer text go through the renderer: a custom Archivo parser
+first, with KaTeX as a fallback for what it cannot take. See `SPEC.md` §6 for
+the exact split. Square roots and exponents fall back on purpose and the
+board does not warn about them. Any other console warning ("fell back to
+KaTeX") is either a parser gap or a generator using notation outside the
+subset — fix the generator rather than accepting the fallback.
 
 **Figure labels are different.** They are plain SVG `<text>`, drawn by
 `figLabel`, and never touch the renderer. So a figure label uses the literal
-character: `°` not `^\circ` (there is a `plainAngleLabel` helper for this),
-and `cm²` not `cm^2`. Passing LaTeX to a figure prints the backslashes.
+character: `cm²` not `cm^2`. Passing LaTeX to a figure prints the
+backslashes. The one exception is an angle label: generators write
+`'35^\circ'`, and `angleMarker` converts it to `35°` through
+`plainAngleLabel`. That only holds for labels drawn by `angleMarker`; any
+other label must already be plain.
 
 `answerUnits` does go through the renderer. It accepts either a plain string
 (`'cm'`, wrapped automatically) or LaTeX (`'\\text{cm}^3'`, passed through).
@@ -248,7 +268,7 @@ Metric units. IGCSE/GCSE grade descriptors.
 
 ## Stack
 
-React 18 + Vite, plain CSS with custom properties, KaTeX (own chunk,
+React 19 + Vite, plain CSS with custom properties, KaTeX (own chunk,
 preloaded on mount; a fallback everywhere except the Number strand, which
 renders wholly in KaTeX — SPEC.md §6), lodash. **No Tailwind.** No other dependencies
 without asking.

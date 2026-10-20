@@ -17,40 +17,36 @@ const BANDS = ['foundation', 'core', 'stretch'];
 const MIXED = ['foundation', 'core', 'core', 'stretch'];
 const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 
-// Most generator output (SPEC.md §6) only ever emits \times, \text{} and
-// ^{}, all of which the Archivo parser handles. Three deliberate exceptions
-// fall back to KaTeX (DESIGN.md §6): solve-power-equations at stretch band
-// emits \sqrt[3]{}, indices-zero-negative at core band emits
-// \left(\frac{}{}\right) — \left/\right aren't in the Archivo subset (SPEC
-// §6) — and the algebraic fractions topic (chapter 16) stacks \frac with an
-// exponent in almost every band. The two length-based circle theorems
-// (chord-perpendicular-bisector, tangent-length) join them: both work in
-// squares, so every band emits ^2 and falls back by design. Variation's Core
-// and Stretch bands join them too, emitting \sqrt{} and ^2 — Foundation of
-// inverse-variation is single-level \frac and renders natively, so this
-// topic looks mixed-typeface across a board by design, not by bug.
-// distance-between-points works in AB^2 in every band, so its working falls
-// back too; the rest of Coordinate geometry renders natively. The Number
-// strand (ALL_KATEX_STRANDS) skips the parser on purpose and isn't checked.
-// Anything else logging here is a parser bug.
+// A line the Archivo parser cannot take falls back to KaTeX (SPEC.md §6).
+// Square roots and every exponent or subscript except ^\circ fall back by
+// design, so they are skipped here; so is the all-KaTeX Number strand, which
+// never meets the parser. Anything else logging here is either a parser gap
+// or a generator using notation outside the subset.
+const DELIBERATE_FALLBACK = /\\sqrt|_|\^(?!\\circ)/;
+
 function warnIfUnparseable(id, field, text) {
   if (!text) return;
   String(text).split('\n').forEach((line, i) => {
+    if (DELIBERATE_FALLBACK.test(line)) return;
     if (parseArchivoLine(line, 'chk') === null) {
       console.warn(`[${id}] ${field}${i ? ` line ${i}` : ''} fell back to KaTeX: ${line}`);
     }
   });
 }
 
+// answerUnits is either LaTeX ('\\text{cm}^3', passed through) or a plain
+// word ('cm'), which is wrapped in \text{} so it does not render as the
+// italic product c·m.
+const unitsTex = (u) => (u.includes('\\') ? u : `\\text{${u}}`);
+
 function slotData(skillId, band) {
   const q = generateForSkill(skillId, band);
-  if (!q) return { topic: '—', instr: '', q: '', a: '', w: '' };
+  if (!q) return { topic: '—', instr: '', q: '', a: '' };
 
   const allKatex = ALL_KATEX_STRANDS.includes(strandOf(getSkill(skillId)?.topic));
   if (!allKatex) {
     warnIfUnparseable(skillId, 'questionMath', q.questionMath);
     warnIfUnparseable(skillId, 'answer', q.answer);
-    warnIfUnparseable(skillId, 'workingOut', q.workingOut);
   }
 
   return {
@@ -60,8 +56,7 @@ function slotData(skillId, band) {
     qProse: q.questionMath == null && q.questionText != null,
     qCompact: q.questionMathCompact === true,
     allKatex,
-    a: q.answerUnits ? `${q.answer}\\text{ }${q.answerUnits}` : q.answer,
-    w: q.workingOut,
+    a: q.answerUnits ? `${q.answer}\\text{ }${unitsTex(q.answerUnits)}` : q.answer,
     fig: q.visualization,
   };
 }
@@ -235,7 +230,7 @@ export default function Board() {
             key={i}
             label={boxes[i]?.topic ?? '—'}
             colorVar={colorVar}
-            data={boxes[i]?.data || { topic: '—', instr: '', q: '', a: '', w: '' }}
+            data={boxes[i]?.data || { topic: '—', instr: '', q: '', a: '' }}
             revealed={revealed}
             onRegenSame={() => regenSame(i)}
             onRegen={() => regenOne(i)}

@@ -14,7 +14,7 @@ The direction is Modernist: flat, hard-edged, high contrast, no ornament.
 --surface:  #eae9e9   /* hover fill */
 --ink:      #201e1d   /* text, rules, borders */
 --ink-70:   #4a4746   /* instruction text */
---muted:    #605d5d   /* eyebrow labels, working, secondary */
+--muted:    #605d5d   /* eyebrow labels, secondary */
 --hairline: #d7d3d3   /* secondary button borders */
 
 --slot-1: #ec3013                /* also the global accent */
@@ -58,8 +58,8 @@ Do not replace it with a fixed type scale. When adding a new figure type or a
 question shape with unusual dimensions, check it against those two functions
 rather than hardcoding a size.
 
-Fixed sizes that are safe: eyebrow 12px, topic name 14px, working 14px,
-header labels 10px.
+Fixed sizes that are safe: eyebrow 12px, topic name 14px, header labels
+10px.
 
 ## Slot anatomy
 
@@ -67,12 +67,13 @@ Top to bottom, as a 4-row grid (`auto auto minmax(0,1fr) auto`):
 
 1. A 10px full-bleed colour bar in the slot's hue.
 2. Eyebrow (slot name, uppercase, slot hue) · topic name (muted) · spacer ·
-   regenerate `↻` and swap `⇄` buttons, 34px, `--hairline` border.
+   new numbers `#`, next skill `↻` and swap topic `⇄` buttons, 34px,
+   `--hairline` border.
 3. Instruction, then figure and question side by side. The figure is
    `flex: 0 0 auto`; the question takes the rest.
 4. The answer band — hidden at `opacity: 0` with no border and no padding;
    revealed at `opacity: 1` with a 2px `--ink` top rule. 180ms transition.
-   Answer in the slot hue at 800; working beneath at 14px muted.
+   Answer in the slot hue at 800. Working is not shown on the board.
 
 Figures shrink when the answer is showing (`30cqh` from `46cqh`) so the slot
 never overflows on reveal.
