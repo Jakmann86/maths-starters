@@ -10,12 +10,22 @@ import _ from 'lodash';
 
 const STORAGE_KEY = 'maths-starters:topic-pool';
 
+// Topics that have been renamed or split, mapped to what replaced them. A
+// pool saved before the change still names the old topic, and a box drawn
+// from a name the catalogue no longer has would have no skills to show.
+const RENAMED = {
+  Statistics: ['Representing data', 'Averages'],
+};
+
+/** A saved pool with renamed topics replaced by their successors. */
+export const migratePool = (pool) => [...new Set(pool.flatMap((t) => RENAMED[t] ?? [t]))];
+
 /** Loads the selected topic pool. Returns [] if empty, missing, or unavailable. */
 export const loadPool = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? migratePool(parsed) : [];
   } catch {
     return [];
   }

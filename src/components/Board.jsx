@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
 import TopicPanel from './TopicPanel.jsx';
-import { generateForSkill, getSkill, skillsInTopic, nextSkillInTopic, topics, strandOf, ALL_KATEX_STRANDS } from '../curriculum/skills.js';
+import { generateForSkill, getSkill, skillsInTopic, nextSkillInTopic, topics, isAllKatex } from '../curriculum/skills.js';
 import { loadPool, savePool, togglePool, drawBoxTopics, pickSwapTopic } from '../curriculum/topicPool.js';
 import { parseArchivoLine } from '../lib/archivoMath.jsx';
 import { preloadKatex } from '../lib/katexLoader.js';
@@ -21,8 +21,8 @@ const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 
 // A line the Archivo parser cannot take falls back to KaTeX (SPEC.md §6).
 // Square roots and every exponent or subscript except ^\circ fall back by
-// design, so they are skipped here; so is the all-KaTeX Number strand, which
-// never meets the parser. Anything else logging here is either a parser gap
+// design, so they are skipped here; so are the all-KaTeX topics (isAllKatex),
+// which never meet the parser. Anything else logging here is either a parser gap
 // or a generator using notation outside the subset.
 const DELIBERATE_FALLBACK = /\\sqrt|_|\^(?!\\circ)/;
 
@@ -45,7 +45,7 @@ function slotData(skillId, band) {
   const q = generateForSkill(skillId, band);
   if (!q) return { topic: '—', instr: '', q: '', a: '' };
 
-  const allKatex = ALL_KATEX_STRANDS.includes(strandOf(getSkill(skillId)?.topic));
+  const allKatex = isAllKatex(getSkill(skillId)?.topic);
   if (!allKatex) {
     warnIfUnparseable(skillId, 'questionMath', q.questionMath);
     warnIfUnparseable(skillId, 'answer', q.answer);

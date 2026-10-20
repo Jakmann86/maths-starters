@@ -245,12 +245,14 @@ preloads it (and warms its main, maths-italic and delimiter fonts) on mount,
 so once it has arrived each KaTeX line renders synchronously rather than
 flashing its source first (`src/lib/katexLoader.js`).
 
-**The Number and Probability strands skip the parser entirely.** Every
-question and answer line in Indices, Standard form, Surds, Percentages, Sets
-and Probability renders in KaTeX (`ALL_KATEX_STRANDS` in `skills.js`), and a
-worded `questionText` there is set in KaTeX's serif at regular weight
-(`.mprose`) rather than Archivo 800. Most of the Number strand fell back
-anyway, and the rest switched typeface from box to box. Money and population answers wrap in `\text{}` (`\text{£1,450}`)
+**The Number strand and the Sets and Probability topics skip the parser
+entirely.** Every question and answer line in Indices, Standard form, Surds,
+Percentages, Sets and Probability renders in KaTeX (`isAllKatex` in
+`skills.js`), and a worded `questionText` there is set in KaTeX's serif at
+regular weight (`.mprose`) rather than Archivo 800. Most of the Number strand
+fell back anyway, and the rest switched typeface from box to box. The rule is
+per topic because the Statistics and probability strand holds both kinds:
+Averages and Representing data stay in Archivo. Money and population answers wrap in `\text{}` (`\text{£1,450}`)
 so KaTeX doesn't space the comma as punctuation.
 
 Those expressions render in KaTeX's serif rather than Archivo. Once surds and

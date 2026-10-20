@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { drawBoxTopics, togglePool, pickSwapTopic } from './topicPool.js';
+import { drawBoxTopics, togglePool, pickSwapTopic, migratePool } from './topicPool.js';
 import { topics } from './skills.js';
 
 describe('drawBoxTopics', () => {
@@ -96,5 +96,18 @@ describe('togglePool', () => {
     const copy = [...pool];
     togglePool(pool, 'Pythagoras');
     expect(pool).toEqual(copy);
+  });
+});
+
+describe('migratePool', () => {
+  it('replaces a renamed topic with its successors, once each', () => {
+    expect(migratePool(['Pythagoras', 'Statistics'])).toEqual(['Pythagoras', 'Representing data', 'Averages']);
+    expect(migratePool(['Averages', 'Statistics'])).toEqual(['Averages', 'Representing data']);
+  });
+
+  it('leaves only topics the catalogue knows', () => {
+    // Guards RENAMED itself: a successor misspelt there would drop silently.
+    const all = topics();
+    migratePool(['Statistics']).forEach((t) => expect(all).toContain(t));
   });
 });

@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateTreeDiagrams } from './treeDiagramGenerators';
 import { checkTree } from './treeDiagramGenerators.check';
-import { generateForSkill, strandOf, getSkill, ALL_KATEX_STRANDS } from '../../curriculum/skills';
+import { generateForSkill, strandOf, getSkill, isAllKatex } from '../../curriculum/skills';
 
 const SAMPLES = 6000;
 const BANDS = ['foundation', 'core', 'stretch'];
@@ -55,9 +55,9 @@ describe('tree-diagrams', () => {
     expect([...seen.stretch]).toEqual(['without']);
   });
 
-  it('is served by the catalogue, in the all-KaTeX Probability strand', () => {
-    expect(strandOf(getSkill('tree-diagrams').topic)).toBe('Probability');
-    expect(ALL_KATEX_STRANDS).toContain('Probability');
+  it('is served by the catalogue, in the all-KaTeX Probability topic', () => {
+    expect(strandOf(getSkill('tree-diagrams').topic)).toBe('Statistics and probability');
+    expect(isAllKatex(getSkill('tree-diagrams').topic)).toBe(true);
     BANDS.forEach((band) => checkTree(generateForSkill('tree-diagrams', band), band));
   });
 });

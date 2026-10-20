@@ -85,7 +85,7 @@ replace it with a fixed scale.
 **Maths rendering is hybrid.** A custom parser handles the common cases in
 Archivo; KaTeX is dynamically imported for what it can't take — surds,
 exponents, recurring decimal dots, stacked algebraic fractions. The Number
-strand renders wholly in KaTeX.
+strand and the Sets and Probability topics render wholly in KaTeX.
 
 **No Tailwind.** Plain CSS with custom properties.
 

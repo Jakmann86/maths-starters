@@ -872,7 +872,7 @@ export const skills = {
   // --- Haese 13A: variables used in statistics ---
   'data-types': {
     label: 'Types of data',
-    topic: 'Statistics',
+    topic: 'Representing data',
     generate: (opts) => dataTypes.generateDataTypes(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -880,68 +880,68 @@ export const skills = {
   // --- Haese 13C-F, 17A: averages ---
   'averages-from-list': {
     label: 'Averages from a list',
-    topic: 'Statistics',
+    topic: 'Averages',
     generate: (opts) => stats.generateAveragesFromList(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'frequency-table-reading': {
     label: 'Reading a frequency table',
-    topic: 'Statistics',
+    topic: 'Representing data',
     generate: (opts) => freqTable.generateFrequencyTableReading(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'averages-from-table': {
     label: 'Averages from a frequency table',
-    topic: 'Statistics',
+    topic: 'Averages',
     generate: (opts) => stats.generateAveragesFromTable(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'estimated-mean': {
     label: 'Estimated mean of grouped data',
-    topic: 'Statistics',
+    topic: 'Averages',
     generate: (opts) => stats.generateEstimatedMean(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'mean-missing-value': {
     label: 'Finding a missing value from the mean',
-    topic: 'Statistics',
+    topic: 'Averages',
     generate: (opts) => stats.generateMeanMissingValue(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'modal-class': {
     label: 'Modal class of grouped data',
-    topic: 'Statistics',
+    topic: 'Averages',
     generate: (opts) => displays.generateModalClass(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'table-averages': {
     label: 'Mean, mode and median from a table',
-    topic: 'Statistics',
+    topic: 'Averages',
     generate: (opts) => freqTable.generateTableAverages(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   // --- Haese 17C: cumulative frequency, the table only ---
   'cumulative-frequency-table': {
     label: 'Cumulative frequency tables',
-    topic: 'Statistics',
+    topic: 'Representing data',
     generate: (opts) => freqTable.generateCumulativeFrequencyTable(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'stem-and-leaf-averages': {
     label: 'Averages from a stem-and-leaf plot',
-    topic: 'Statistics',
+    topic: 'Averages',
     generate: (opts) => displays.generateStemAndLeafAverages(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'pie-charts': {
     label: 'Pie charts',
-    topic: 'Statistics',
+    topic: 'Representing data',
     generate: (opts) => pie.generatePieCharts(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'bar-charts': {
     label: 'Bar charts',
-    topic: 'Statistics',
+    topic: 'Representing data',
     generate: (opts) => bars.generateBarCharts(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -1003,10 +1003,9 @@ export const STRANDS = [
   },
   { name: 'Geometry', topics: ['Angles', 'Coordinate geometry', 'Pythagoras', 'Trigonometry', 'Circle theorems'] },
   { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Circles', 'Surface area', 'Volume'] },
-  { name: 'Statistics', topics: ['Statistics'] },
-  // Sets sits with Probability rather than Number: in the scheme they are
-  // taught together (Venn diagrams lead into probability from a diagram).
-  { name: 'Probability', topics: ['Sets', 'Probability'] },
+  // Sets sits here rather than in Number: Venn diagrams lead into
+  // probability from a diagram, and the scheme teaches them together.
+  { name: 'Statistics and probability', topics: ['Sets', 'Representing data', 'Averages', 'Probability'] },
   { name: 'Problem solving', topics: ['Problem solving', 'Puzzles'] },
 ];
 
@@ -1036,15 +1035,21 @@ export const topicGroups = () => {
 export const strandOf = (topicName) => STRANDS.find((s) => s.topics.includes(topicName))?.name ?? null;
 
 /**
- * Strands whose questions render wholly in KaTeX, skipping the Archivo
- * parser. Number: surds, indices and standard form fall back to KaTeX anyway,
- * and a board that set percentages in Archivo beside them switched typeface
- * from box to box. Probability: its worded questions read better in the
- * regular-weight serif (.mprose) than in display Archivo, and its fractions
- * match the KaTeX_Main labels on the tree-diagram figure. Sets moved here
- * from Number, so it renders exactly as before.
+ * Topics whose questions render wholly in KaTeX, skipping the Archivo parser.
+ * The Number strand, whole: surds, indices and standard form fall back to
+ * KaTeX anyway, and a board that set percentages in Archivo beside them
+ * switched typeface from box to box. Sets and Probability: their worded
+ * questions read better in the regular-weight serif (.mprose) than in display
+ * Archivo, and Probability's fractions match the KaTeX_Main labels on the
+ * tree-diagram figure. Decided per topic rather than per strand because
+ * Statistics and probability holds both kinds: Averages and Representing data
+ * stay in Archivo.
  */
-export const ALL_KATEX_STRANDS = ['Number', 'Probability'];
+export const ALL_KATEX_STRANDS = ['Number'];
+export const ALL_KATEX_TOPICS = ['Sets', 'Probability'];
+export const isAllKatex = (topicName) => (
+  ALL_KATEX_STRANDS.includes(strandOf(topicName)) || ALL_KATEX_TOPICS.includes(topicName)
+);
 
 /** Every topic once, in panel order. */
 export const topics = () => topicGroups().flatMap((g) => g.topics);
