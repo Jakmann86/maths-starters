@@ -118,6 +118,10 @@ output to match the board's internal field names.
   instruction: 'Factorise',            // plain text, imperative
   questionMath: 'x^2 + 7x + 12',       // LaTeX, no delimiters
   questionText: undefined,             // instead of questionMath, for prose
+  questionParts: undefined,            // ['(a) the mean', '(b) the mode'] —
+                                        // the parts of a multi-part question,
+                                        // listed beside the figure in the
+                                        // instruction's regular type
   questionMathCompact: undefined,      // true → render questionMath smaller
                                         // (the "given" line of a reverse
                                         // question, e.g. "Volume = 1030 cm^3",

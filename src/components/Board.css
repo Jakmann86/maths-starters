@@ -333,6 +333,14 @@
   min-height: 0;
 }
 
+.slot-parts {
+  /* The instruction's type, not the question's heavy display weight. */
+  color: var(--ink-instr);
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.4;
+}
+
 .slot-question {
   flex: 1 1 auto;
   min-width: 0;

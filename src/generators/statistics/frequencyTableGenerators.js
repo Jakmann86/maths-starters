@@ -285,12 +285,13 @@ const runningTotals = (fs) => {
  * and fills in on reveal, as the data-types table does.
  *
  *   foundation  a discrete table: keep a running total of the frequencies
- *   core        a grouped continuous table: the same running total, read
- *               against class intervals
- *   stretch     both columns have gaps. Each row hides one cell or none, so
- *               working down the table always closes: a missing cumulative
- *               frequency is added on, a missing frequency is differenced
- *               back from two cumulative ones
+ *   core        a grouped table with gaps in both columns. Each row hides
+ *               one cell or none, so working down the table always closes:
+ *               a missing cumulative frequency is added on, a missing
+ *               frequency is differenced back from two cumulative ones
+ *   stretch     as core, but one row hides both cells. Working down stalls
+ *               there; its cumulative frequency comes back up from the whole
+ *               row below it (cumulative minus frequency)
  * ---------------------------------------------------------------------- */
 
 const CF = 'Cumulative frequency';
@@ -298,8 +299,7 @@ const CF = 'Cumulative frequency';
 export const generateCumulativeFrequencyTable = (options = {}) => {
   const { difficulty = 'core' } = options;
   if (difficulty === 'foundation') return cumulativeDiscrete();
-  if (difficulty === 'stretch') return cumulativeGaps();
-  return cumulativeGrouped();
+  return cumulativeGaps(difficulty);
 };
 
 const cumulativeWorking = (fs, cfs) => cfs
@@ -324,51 +324,44 @@ function cumulativeDiscrete() {
   };
 }
 
-function cumulativeGrouped() {
-  const { context, lows, highs, fs } = continuousData();
-  const cfs = runningTotals(fs);
-  return {
-    instruction: `The table shows ${context.shows()}. Complete the cumulative frequency column`,
-    answer: `\\text{cumulative: } ${cfs.join(', ')}`,
-    workingOut: cumulativeWorking(fs, cfs),
-    visualization: {
-      type: 'table',
-      header: 'row',
-      big: true,
-      rows: [[context.col, 'Frequency', CF],
-        ...lows.map((lo, i) => [classOf(context.v, lo, highs[i]), String(fs[i]), ''])],
-      solution: [['', '', ''], ...cfs.map((c) => ['', '', String(c)])],
-    },
-    metadata: { topic: 'cumulative-frequency-table', difficulty: 'core' },
-  };
-}
-
-function cumulativeGaps() {
+function cumulativeGaps(difficulty) {
+  const stretch = difficulty === 'stretch';
   for (;;) {
     const { context, lows, highs, fs } = continuousData();
     const k = fs.length;
     const cfs = runningTotals(fs);
-    // k - 1 rows lose one cell each; one row is left whole.
-    const whole = _.random(0, k - 1);
-    const hide = _.times(k, (i) => (i === whole ? null : _.sample(['f', 'cf'])));
+    // Core: k - 1 rows lose one cell each; one row is left whole. Stretch
+    // also empties a row completely, with the whole row directly below it.
+    const both = stretch ? _.random(0, k - 2) : null;
+    const whole = stretch ? both + 1 : _.random(0, k - 1);
+    const hide = _.times(k, (i) => {
+      if (i === whole) return null;
+      if (i === both) return 'both';
+      return _.sample(['f', 'cf']);
+    });
     // At least one frequency differenced back from two cumulative ones — a
     // gap in the first row is only a copy — and at least one running total.
     if (!hide.some((h, i) => h === 'f' && i > 0) || !hide.includes('cf')) continue;
 
-    const working = hide.map((h, i) => {
+    const working = hide.flatMap((h, i) => {
       const prev = i === 0 ? null : cfs[i - 1];
-      if (h === 'f') {
-        return i === 0
-          ? `\\text{frequency} = ${fs[0]}`
-          : `\\text{frequency} = ${cfs[i]} - ${prev} = ${fs[i]}`;
-      }
+      const freq = i === 0
+        ? `\\text{frequency} = ${fs[0]}`
+        : `\\text{frequency} = ${cfs[i]} - ${prev} = ${fs[i]}`;
+      if (h === 'f') return [freq];
       if (h === 'cf') {
-        return i === 0
+        return [i === 0
           ? `\\text{cumulative} = ${cfs[0]}`
-          : `\\text{cumulative} = ${prev} + ${fs[i]} = ${cfs[i]}`;
+          : `\\text{cumulative} = ${prev} + ${fs[i]} = ${cfs[i]}`];
       }
-      return null;
-    }).filter(Boolean);
+      if (h === 'both') {
+        // Back up from the whole row below, then down as usual.
+        return [`\\text{cumulative} = ${cfs[i + 1]} - ${fs[i + 1]} = ${cfs[i]}`, freq];
+      }
+      return [];
+    });
+    const gapF = (h) => h === 'f' || h === 'both';
+    const gapCF = (h) => h === 'cf' || h === 'both';
 
     return {
       instruction: `The table shows ${context.shows()}. Complete the table`,
@@ -380,16 +373,16 @@ function cumulativeGaps() {
         big: true,
         rows: [[context.col, 'Frequency', CF], ...lows.map((lo, i) => [
           classOf(context.v, lo, highs[i]),
-          hide[i] === 'f' ? '' : String(fs[i]),
-          hide[i] === 'cf' ? '' : String(cfs[i]),
+          gapF(hide[i]) ? '' : String(fs[i]),
+          gapCF(hide[i]) ? '' : String(cfs[i]),
         ])],
         solution: [['', '', ''], ...fs.map((f, i) => [
           '',
-          hide[i] === 'f' ? String(f) : '',
-          hide[i] === 'cf' ? String(cfs[i]) : '',
+          gapF(hide[i]) ? String(f) : '',
+          gapCF(hide[i]) ? String(cfs[i]) : '',
         ])],
       },
-      metadata: { topic: 'cumulative-frequency-table', difficulty: 'stretch' },
+      metadata: { topic: 'cumulative-frequency-table', difficulty },
     };
   }
 }
@@ -411,11 +404,11 @@ function cumulativeGaps() {
  * is the misconception modal-class leaves out too.
  * ---------------------------------------------------------------------- */
 
-// The parts sit one per line beside the table, not run into the
-// instruction: the space beside a table is otherwise empty, and a three-line
-// instruction squeezed the table.
-const THREE = ['(a) the mean', '(b) the mode', '(c) the median'].join(NL);
-const THREE_GROUPED = ['(a) an estimate of the mean', '(b) the modal class', '(c) the median class'].join(NL);
+// The parts go beside the table as questionParts, one per line in the
+// instruction's regular type. Listed under the instruction they took the
+// height the table needed once the three-line answer was showing.
+const THREE = ['(a) the mean', '(b) the mode', '(c) the median'];
+const THREE_GROUPED = ['(a) an estimate of the mean', '(b) the modal class', '(c) the median class'];
 
 export const generateTableAverages = (options = {}) => {
   const { difficulty = 'core' } = options;
@@ -444,7 +437,7 @@ function threeFromDiscrete() {
 
     return {
       instruction: `The table shows ${context.shows}. Find:`,
-      questionText: THREE,
+      questionParts: THREE,
       answer: [
         `\\text{(a) mean} = ${mean}`,
         `\\text{(b) mode} = ${mode}`,
@@ -457,7 +450,9 @@ function threeFromDiscrete() {
         `\\text{(c) } \\frac{n + 1}{2} = ${dp1((n + 1) * 5)}, \\text{ cumulative: } ${cfs.join(', ')}`,
         `\\text{median} = ${med}`,
       ].join(NL),
-      visualization: tableFig(context, xs, fs.map(String)),
+      // Standard size, not big: the parts and a three-line answer share
+      // the box with it.
+      visualization: { ...tableFig(context, xs, fs.map(String)), big: false },
       metadata: { topic: 'table-averages', difficulty: 'foundation' },
     };
   }
@@ -492,7 +487,7 @@ function threeFromGrouped(difficulty) {
 
     return {
       instruction: `The table shows ${context.shows(stretch ? n : null)}. Find:`,
-      questionText: THREE_GROUPED,
+      questionParts: THREE_GROUPED,
       answer: [
         `\\text{(a) estimated mean} = ${mean}`,
         `\\text{(b) modal class: } ${classTex(v, lows[modeIdx], highs[modeIdx])}`,
@@ -508,7 +503,6 @@ function threeFromGrouped(difficulty) {
       visualization: {
         type: 'table',
         header: 'row',
-        big: true,
         rows: [[context.col, 'Frequency'],
           ...lows.map((lo, i) => [classOf(v, lo, highs[i]), shownFs[i]])],
       },

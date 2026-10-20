@@ -3,7 +3,7 @@ import Figure from './Figure.jsx';
 import { iSize, qSize } from '../lib/typeSizing.js';
 
 export default function Slot({ label, colorVar, data, revealed, onRegenSame, onRegen, onSwap }) {
-  const { topic, instr, q, qProse, qCompact, allKatex, a, fig } = data;
+  const { topic, instr, q, qProse, qCompact, allKatex, a, fig, parts } = data;
 
   return (
     <section className="slot" style={{ '--c': colorVar }}>
@@ -54,12 +54,20 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
               term measures the width left beside the figure rather than the
               whole slot (typeSizing.js). The size goes on the inner div: an
               element cannot query its own container. */}
-          <div className="slot-question">
-            <div style={{ fontSize: qSize(q, instr, qCompact, Boolean(fig)) }}>
-              {qProse && allKatex
-                ? <span className="mprose">{q}</span>
-                : <MathDisplay math={q} allKatex={allKatex} />}
-            </div>
+          {/* Parts take the instruction's size, set here on the container
+              so cqi measures the slot, as it does for the instruction. */}
+          <div className="slot-question" style={parts ? { fontSize: iSize(instr) } : undefined}>
+            {parts ? (
+              <div className="slot-parts">
+                {parts.map((p) => <div key={p}>{p}</div>)}
+              </div>
+            ) : (
+              <div style={{ fontSize: qSize(q, instr, qCompact, Boolean(fig)) }}>
+                {qProse && allKatex
+                  ? <span className="mprose">{q}</span>
+                  : <MathDisplay math={q} allKatex={allKatex} />}
+              </div>
+            )}
           </div>
         </div>
       </div>

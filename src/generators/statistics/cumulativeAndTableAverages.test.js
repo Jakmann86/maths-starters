@@ -42,21 +42,28 @@ describe('cumulative-frequency-table', () => {
       const sol = fig.solution.slice(1);
       expect(sol).toHaveLength(body.length);
 
-      // Rebuild both columns from the printed cells alone, top to bottom.
-      const fs = [];
-      const cfs = [];
+      // Rebuild both columns from the printed cells alone, by propagating
+      // the two relations cf[i] = cf[i-1] + f[i] up and down until nothing
+      // changes. Every cell must be reached.
+      const fs = body.map((r) => num(r[1]));
+      const cfs = body.map((r) => num(r[2]));
+      const cfAt = (i) => (i < 0 ? 0 : cfs[i]);
+      for (let changed = true; changed;) {
+        changed = false;
+        body.forEach((_r, i) => {
+          if (fs[i] === null && cfs[i] !== null && cfAt(i - 1) !== null) { fs[i] = cfs[i] - cfAt(i - 1); changed = true; }
+          if (cfs[i] === null && fs[i] !== null && cfAt(i - 1) !== null) { cfs[i] = cfAt(i - 1) + fs[i]; changed = true; }
+          if (i > 0 && cfs[i - 1] === null && fs[i] !== null && cfs[i] !== null) { cfs[i - 1] = cfs[i] - fs[i]; changed = true; }
+        });
+      }
       body.forEach((r, i) => {
-        const f = num(r[1]);
-        const cf = num(r[2]);
-        const prev = i ? cfs[i - 1] : 0;
-        expect(f !== null || cf !== null).toBe(true);
-        fs.push(f ?? cf - prev);
-        cfs.push(cf ?? prev + f);
-        if (f === null) hidden.f += 1;
-        if (cf === null) hidden.cf += 1;
+        expect(fs[i], JSON.stringify(body)).not.toBeNull();
+        expect(cfs[i], JSON.stringify(body)).not.toBeNull();
+        if (r[1] === '') hidden.f += 1;
+        if (r[2] === '') hidden.cf += 1;
         // A blank is filled on reveal; a printed cell is not.
-        expect(sol[i][1]).toBe(f === null ? String(fs[i]) : '');
-        expect(sol[i][2]).toBe(cf === null ? String(cfs[i]) : '');
+        expect(sol[i][1]).toBe(r[1] === '' ? String(fs[i]) : '');
+        expect(sol[i][2]).toBe(r[2] === '' ? String(cfs[i]) : '');
       });
       fs.forEach((f) => expect(f).toBeGreaterThanOrEqual(1));
       cfs.forEach((c, i) => expect(c).toBe(_.sum(fs.slice(0, i + 1))));
@@ -70,13 +77,21 @@ describe('cumulative-frequency-table', () => {
         cls.forEach((c, i) => { if (i) expect(c.lo).toBe(cls[i - 1].hi); });
         expect(new Set(cls.map((c) => c.hi - c.lo)).size).toBe(1);
       }
-      if (band === 'stretch') {
+      if (band === 'foundation') {
+        expect(body.every((r) => r[1] !== '' && r[2] === '')).toBe(true);
+      } else {
         const fGaps = body.map((r, i) => (r[1] === '' ? i : -1)).filter((i) => i >= 0);
         expect(fGaps.some((i) => i > 0)).toBe(true);
         expect(body.some((r) => r[2] === '')).toBe(true);
-        expect(body.filter((r) => r[1] !== '' && r[2] !== '')).toHaveLength(1);
-      } else {
-        expect(body.every((r) => r[1] !== '' && r[2] === '')).toBe(true);
+        const empty = body.filter((r) => r[1] === '' && r[2] === '');
+        const full = body.filter((r) => r[1] !== '' && r[2] !== '');
+        expect(full).toHaveLength(1);
+        expect(empty).toHaveLength(band === 'stretch' ? 1 : 0);
+        // Stretch's empty row cannot be reached working downwards alone.
+        if (band === 'stretch') {
+          const e = body.indexOf(empty[0]);
+          expect(body[e + 1]).toBe(full[0]);
+        }
       }
     }
     return { distinct: distinct.size, hidden };
@@ -86,11 +101,14 @@ describe('cumulative-frequency-table', () => {
     const { distinct } = check('foundation');
     expect(distinct).toBeGreaterThan(SAMPLES * 0.9);
   });
-  it('core: running totals down a grouped table', () => {
-    const { distinct } = check('core');
+  it('core: gaps in both columns, always solvable top to bottom', () => {
+    const { distinct, hidden } = check('core');
     expect(distinct).toBeGreaterThan(SAMPLES * 0.9);
+    // Both kinds of gap turn up in quantity, neither one swamping the other.
+    expect(hidden.f / (hidden.f + hidden.cf)).toBeGreaterThan(0.35);
+    expect(hidden.f / (hidden.f + hidden.cf)).toBeLessThan(0.65);
   });
-  it('stretch: gaps in both columns, always solvable top to bottom', () => {
+  it('stretch: one row empty, recovered from the whole row below', () => {
     const { distinct, hidden } = check('stretch');
     expect(distinct).toBeGreaterThan(SAMPLES * 0.9);
     // Both kinds of gap turn up in quantity, neither one swamping the other.
@@ -113,7 +131,7 @@ describe('table-averages', () => {
       parses(q);
       distinct.add(JSON.stringify(q.visualization.rows));
       expect(q.instruction).toMatch(/Find:$/);
-      expect(q.questionText).toBe('(a) the mean\n(b) the mode\n(c) the median');
+      expect(q.questionParts).toEqual(['(a) the mean', '(b) the mode', '(c) the median']);
       const body = q.visualization.rows.slice(1);
       const xs = body.map((r) => Number(r[0]));
       const fs = body.map((r) => Number(r[1]));
@@ -142,7 +160,7 @@ describe('table-averages', () => {
       parses(q);
       distinct.add(q.instruction + JSON.stringify(q.visualization.rows));
       expect(q.instruction).toMatch(/Find:$/);
-      expect(q.questionText).toBe('(a) an estimate of the mean\n(b) the modal class\n(c) the median class');
+      expect(q.questionParts).toEqual(['(a) an estimate of the mean', '(b) the modal class', '(c) the median class']);
       const body = q.visualization.rows.slice(1);
       const cls = body.map((r) => readClass(r[0]));
       cls.forEach((c, i) => { if (i) expect(c.lo).toBe(cls[i - 1].hi); });
