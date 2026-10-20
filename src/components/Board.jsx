@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
 import TopicPanel from './TopicPanel.jsx';
@@ -15,6 +15,8 @@ const BANDS = ['foundation', 'core', 'stretch'];
 // hard one. Fixed rather than random: a teacher should be able to say "box 4
 // is the stretch" and be right every time.
 const MIXED = ['foundation', 'core', 'core', 'stretch'];
+// The board opens on Core (an index into DIFF).
+const INITIAL_DIFF = 1;
 const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 
 // A line the Archivo parser cannot take falls back to KaTeX (SPEC.md §6).
@@ -84,74 +86,77 @@ export default function Board() {
     boxes: [],
     pool: [],
     revealed: false,
-    diff: 1,
+    diff: INITIAL_DIFF,
     seconds: 300,
     running: false,
   });
   const [panelOpen, setPanelOpen] = useState(false);
 
-  const regenAll = useCallback(() => setState((s) => ({
-    ...s,
-    revealed: false,
-    boxes: drawBoxes(s.pool, s.diff),
-  })), []);
+  const { boxes, revealed, diff, seconds, running, pool } = state;
 
-  const regenOne = (i) => setState((s) => {
-    const boxes = s.boxes.slice();
+  // Questions are generated here in the handlers, from the current state,
+  // never inside a setState updater: React runs updaters twice in development
+  // (StrictMode), which generated every question twice. An updater only
+  // merges in what the handler has already built.
+  const setBox = (i, box) => setState((s) => {
+    const next = s.boxes.slice();
+    next[i] = box;
+    return { ...s, boxes: next };
+  });
+
+  const regenAll = useCallback(() => {
+    const fresh = drawBoxes(pool, diff);
+    setState((s) => ({ ...s, revealed: false, boxes: fresh }));
+  }, [pool, diff]);
+
+  const regenOne = (i) => {
     const { topic, skillId: current } = boxes[i];
     const skillId = nextSkillInTopic(topic, current);
-    boxes[i] = { topic, skillId, data: slotData(skillId, bandFor(s.diff, i)) };
-    return { ...s, boxes };
-  });
+    setBox(i, { topic, skillId, data: slotData(skillId, bandFor(diff, i)) });
+  };
 
-  const regenSame = (i) => setState((s) => {
-    const boxes = s.boxes.slice();
+  const regenSame = (i) => {
     const { topic, skillId } = boxes[i];
-    boxes[i] = { topic, skillId, data: slotData(skillId, bandFor(s.diff, i)) };
-    return { ...s, boxes };
-  });
+    setBox(i, { topic, skillId, data: slotData(skillId, bandFor(diff, i)) });
+  };
 
-  const swapOne = (i) => setState((s) => {
-    const boxes = s.boxes.slice();
+  const swapOne = (i) => {
     const otherTopics = boxes.filter((_b, idx) => idx !== i).map((b) => b.topic);
-    const topic = pickSwapTopic(s.pool, topics(), boxes[i].topic, otherTopics);
+    const topic = pickSwapTopic(pool, topics(), boxes[i].topic, otherTopics);
     const skillId = skillsInTopic(topic)[0];
-    boxes[i] = { topic, skillId, data: slotData(skillId, bandFor(s.diff, i)) };
-    return { ...s, boxes };
-  });
+    setBox(i, { topic, skillId, data: slotData(skillId, bandFor(diff, i)) });
+  };
 
-  const setDiff = (delta) => setState((s) => {
-    const diff = Math.min(DIFF.length - 1, Math.max(0, s.diff + delta));
-    return { ...s, diff, revealed: false, boxes: refreshBoxes(s.boxes, diff) };
-  });
+  const setDiff = (delta) => {
+    const next = Math.min(DIFF.length - 1, Math.max(0, diff + delta));
+    const fresh = refreshBoxes(boxes, next);
+    setState((s) => ({ ...s, diff: next, revealed: false, boxes: fresh }));
+  };
 
   // Toggling only changes the pool; it takes effect on the next fresh draw
   // ("New four", or a future mount) rather than immediately reshuffling the
   // board while the teacher is still adjusting the set. The panel stays open
   // on tap so multiple topics can be toggled in one visit.
-  const toggleTopic = (topicName) => setState((s) => {
-    const pool = togglePool(s.pool, topicName);
-    savePool(pool);
-    return { ...s, pool };
-  });
-  const selectAllTopics = () => setState((s) => {
-    const pool = topics();
-    savePool(pool);
-    return { ...s, pool };
-  });
-  const selectNoneTopics = () => setState((s) => {
-    savePool([]);
-    return { ...s, pool: [] };
-  });
+  const changePool = (next) => {
+    savePool(next);
+    setState((s) => ({ ...s, pool: next }));
+  };
+  const toggleTopic = (topicName) => changePool(togglePool(pool, topicName));
+  const selectAllTopics = () => changePool(topics());
+  const selectNoneTopics = () => changePool([]);
 
   // Fetch KaTeX up front rather than on the first surd — most boards hit it.
   useEffect(() => { preloadKatex(); }, []);
 
+  // StrictMode also mounts effects twice in development. The ref keeps the
+  // first board from being thrown away and drawn again.
+  const drawn = useRef(false);
   useEffect(() => {
-    setState((s) => {
-      const pool = loadPool();
-      return { ...s, pool, boxes: drawBoxes(pool, s.diff) };
-    });
+    if (drawn.current) return;
+    drawn.current = true;
+    const saved = loadPool();
+    const first = drawBoxes(saved, INITIAL_DIFF);
+    setState((s) => ({ ...s, pool: saved, boxes: first }));
   }, []);
 
   useEffect(() => {
@@ -175,7 +180,6 @@ export default function Board() {
     return () => document.removeEventListener('keydown', handler);
   }, [panelOpen, regenAll]);
 
-  const { boxes, revealed, diff, seconds, running, pool } = state;
   const total = topics().length;
   const poolSummary = (pool.length === 0 || pool.length === total)
     ? 'All topics'

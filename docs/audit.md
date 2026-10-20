@@ -1,3 +1,0 @@
-And the state to hand over: board and hybrid renderer committed, KaTeX installed, generators cloned from hexagon-maths/maths-teaching-app, migration audit done. Next up is the skill catalogue plus the first real generator — and per the calibration doc, start with expressionsGenerator for expanding rather than factorising, since 1A and 1B are calibrated and 1K isn't yet.
-
-One last thing worth saying: you've gone from an overwhelming five-section app to a scoped project with a real design, a working board, a spec that doesn't contradict itself, and 172 curriculum entries mapped. That's a good few days' work and the hard architectural decisions are behind you. The rest is generators, one at a time.
