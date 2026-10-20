@@ -21,6 +21,18 @@
 //                 half three-set: (B n C) n A', (A u B) n C, ...
 //                                                 a bracket, then a second operation
 //
+//   venn-notation        U, A and B described in words ("square numbers",
+//                        "factors of 12"); list a set or find n( ). The
+//                        diagram fills on reveal.
+//     foundation  n(A), n(B), list A n B          one set, or the overlap
+//     core        n(A n B), n(A u B), n(A'), list A u B
+//     stretch     n(A' n B), n((A u B)'), list A n B', ...  complement plus a symbol
+//
+//   venn-probability     the same set-up, a number picked at random from U
+//     foundation  P(A), P(B)
+//     core        P(A n B), P(A u B), P(A')
+//     stretch     P(A n B'), P((A u B)'), P((A n B)'), ...
+//
 // MINUS SIGNS. The figure carries "16 − x" with a literal U+2212, because
 // figure labels are plain SVG text and never reach the renderer (CLAUDE.md
 // §6). The working carries "16 - x" with an ASCII hyphen, because that text
@@ -28,6 +40,7 @@
 // into U+2212 itself (SPEC §6). The two are deliberately different.
 
 import _ from 'lodash';
+import { gcd } from '../shared';
 
 const NL = '\n';
 const MINUS = '−';
@@ -426,17 +439,12 @@ function placeTwo(difficulty) {
       setB = _.sortBy(_.sampleSize(u, _.random(3, 6)));
       describe = null;
     } else {
-      n = _.sample([10, 12, 15, 16, 20]);
-      const [pa, pb] = _.sampleSize(PROPERTIES, 2);
-      const u = _.range(1, n + 1);
-      setA = u.filter(pa.test);
-      setB = u.filter(pb.test);
-      describe = [pa.tex, pb.tex];
+      ({ n, setA, setB, describe } = describedPair());
     }
     const regions = splitTwo(n, setA, setB);
     // Every region occupied (so neither set sits inside the other and the
     // overlap is real), and each within what the two-set figure holds.
-    if (KEYS2.some((k) => !regions[k].length || regions[k].length > CAP[k])) continue;
+    if (!fitsTwo(regions)) continue;
 
     const q = describe
       ? [universeTex(n), `${A} = \\text{${describe[0]}}`, `${B} = \\text{${describe[1]}}`]
@@ -460,6 +468,16 @@ function placeTwo(difficulty) {
     };
   }
 }
+
+// Two described sets over U = {1, ..., n}.
+function describedPair() {
+  const n = _.sample([10, 12, 15, 16, 20]);
+  const [pa, pb] = _.sampleSize(PROPERTIES, 2);
+  const u = _.range(1, n + 1);
+  return { n, setA: u.filter(pa.test), setB: u.filter(pb.test), describe: [pa.tex, pb.tex] };
+}
+
+const fitsTwo = (regions) => KEYS2.every((k) => regions[k].length && regions[k].length <= CAP[k]);
 
 function splitTwo(n, setA, setB) {
   const regions = { aOnly: [], both: [], bOnly: [], outside: [] };
@@ -516,3 +534,114 @@ function placeThree() {
     };
   }
 }
+
+/* ------------------------------------------- notation and probability
+ *
+ * Both skills share placing-elements' Core set-up: U = {1, ..., n} and two
+ * sets described in words, with an empty diagram that fills on reveal. The
+ * question is the last line of questionMath, so the description and the
+ * thing asked for are read together. Expressions reuse the three-set trees
+ * (tex3), evaluated here on element lists.
+ * ---------------------------------------------------------------------- */
+
+function evalTwo(e, sets, u) {
+  if (isLeaf(e)) return sets[e.k];
+  if (e.op === 'not') return _.difference(u, evalTwo(e.e, sets, u));
+  const l = evalTwo(e.l, sets, u), r = evalTwo(e.r, sets, u);
+  return _.sortBy(e.op === 'cap' ? _.intersection(l, r) : _.union(l, r));
+}
+
+const A2 = set('a'), B2 = set('b');
+// Each band's expressions; `list` ones are asked as a list of elements,
+// the rest as n( ) or P( ).
+const NOTATION = {
+  foundation: { count: [A2, B2], list: [and(A2, B2)] },
+  core: { count: [and(A2, B2), or(A2, B2), not(A2), not(B2)], list: [or(A2, B2)] },
+  stretch: {
+    count: [and(not(A2), B2), and(A2, not(B2)), not(or(A2, B2)), or(not(A2), B2)],
+    list: [and(A2, not(B2)), and(not(A2), B2), not(or(A2, B2))],
+  },
+};
+const PROBABILITY = {
+  foundation: [A2, B2],
+  core: [and(A2, B2), or(A2, B2), not(A2), not(B2)],
+  stretch: [and(A2, not(B2)), and(not(A2), B2), not(or(A2, B2)), not(and(A2, B2))],
+};
+
+// The described set-up, drawn until every region is occupied and fits.
+function describedSetup(pairs = LETTER_PAIRS) {
+  const [A, B] = _.sample(pairs);
+  for (;;) {
+    const { n, setA, setB, describe } = describedPair();
+    const regions = splitTwo(n, setA, setB);
+    if (!fitsTwo(regions)) continue;
+    return {
+      A, B, n, regions,
+      names: { a: A, b: B },
+      sets: { a: setA, b: setB },
+      u: _.range(1, n + 1),
+      lines: [universeTex(n), `${A} = \\text{${describe[0]}}`, `${B} = \\text{${describe[1]}}`],
+      working: [`${A} = ${setTex(setA)}`, `${B} = ${setTex(setB)}`],
+      figure: {
+        type: 'venn-two-set',
+        labels: { a: A, b: B },
+        regions: {},
+        solution: _.mapValues(regions, chunk),
+        unknown: null,
+        universe: 'U',
+        big: true,
+      },
+    };
+  }
+}
+
+export const generateVennNotation = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const band = NOTATION[difficulty] ?? NOTATION.core;
+  for (;;) {
+    const s = describedSetup();
+    const list = Math.random() < 0.4;
+    const e = _.sample(list ? band.list : band.count);
+    const els = evalTwo(e, s.sets, s.u);
+    // No empty answers, and a list short enough to read from the back.
+    if (!els.length || (list && els.length > 8)) continue;
+    const tex = tex3(e, s.names);
+    const asked = list ? tex : `n(${tex})`;
+    const answer = list ? `${tex} = ${setTex(els)}` : `${asked} = ${els.length}`;
+    return {
+      instruction: list
+        ? 'Sort U into the Venn diagram, then list the elements of the set'
+        : 'Sort U into the Venn diagram, then find',
+      questionMath: [...s.lines, asked].join(NL),
+      answer,
+      workingOut: [...s.working, ...(list ? [] : [`${tex} = ${setTex(els)}`]), answer].join(NL),
+      visualization: s.figure,
+      metadata: { topic: 'venn-notation', difficulty },
+    };
+  }
+};
+
+export const generateVennProbability = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const band = PROBABILITY[difficulty] ?? PROBABILITY.core;
+  for (;;) {
+    // Not P and Q: "P(P n Q)" reads as a misprint.
+    const s = describedSetup(LETTER_PAIRS.filter(([a]) => a !== 'P'));
+    const e = _.sample(band);
+    const els = evalTwo(e, s.sets, s.u);
+    if (!els.length) continue;
+    const tex = tex3(e, s.names);
+    const k = els.length;
+    const g = gcd(k, s.n);
+    const frac = `\\frac{${k}}{${s.n}}`;
+    const answer = `P(${tex}) = ${frac}${g > 1 ? ` = \\frac{${k / g}}{${s.n / g}}` : ''}`;
+    return {
+      instruction: 'A number is picked at random from U. Find',
+      questionMath: [...s.lines, `P(${tex})`].join(NL),
+      answer,
+      workingOut: [...s.working, `${tex} = ${setTex(els)}`, answer].join(NL),
+      visualization: s.figure,
+      metadata: { topic: 'venn-probability', difficulty },
+    };
+  }
+};

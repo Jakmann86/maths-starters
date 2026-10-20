@@ -10,7 +10,7 @@
 
 import { describe, expect, it } from 'vitest';
 import _ from 'lodash';
-import { generateVennCounts, generateVennSetOperations, generateVennPlaceElements, COUNT_CONTEXTS } from './setsGenerators';
+import { generateVennCounts, generateVennSetOperations, generateVennPlaceElements, generateVennNotation, generateVennProbability, COUNT_CONTEXTS } from './setsGenerators';
 
 const SAMPLES = 5000;
 const BANDS = ['foundation', 'core', 'stretch'];
@@ -291,6 +291,100 @@ describe('venn-place-elements', () => {
       }
       process.stdout.write(`venn-place-elements ${difficulty}: ${questions.size} distinct questions\n`);
       expect(questions.size).toBeGreaterThan(difficulty === 'foundation' ? SAMPLES * 0.8 : 40);
+    });
+  });
+});
+
+/* Notation and probability: the sets are read from their descriptions, the
+   expression from the last line, and the answer recomputed from those. The
+   revealed diagram has to agree with the descriptions too. */
+const readDescribed = (q) => {
+  const lines = q.questionMath.split('\n');
+  expect(lines).toHaveLength(4);
+  const n = Number(lines[0].match(/^U = \\\{1, 2, 3, \\ldots, (\d+)\\\}$/)[1]);
+  const sets = {};
+  lines.slice(1, 3).forEach((line) => {
+    const m = line.match(/^([A-Z]) = \\text\{(.*)\}$/);
+    expect(m, line).not.toBeNull();
+    sets[m[1]] = described(m[2], n);
+  });
+  const fig = q.visualization;
+  const [a, b] = Object.keys(sets);
+  expect(Object.values(fig.labels)).toEqual([a, b]);
+  expect(fig.regions).toEqual({});
+  checkFigure({ ...fig, regions: fig.solution });
+  const els = _.mapValues(fig.solution, (ls) => readLines(ls, [2, Infinity]));
+  expect(_.sortBy([...els.aOnly, ...els.both])).toEqual(sets[a]);
+  expect(_.sortBy([...els.bOnly, ...els.both])).toEqual(sets[b]);
+  expect(_.sortBy(Object.values(els).flat())).toEqual(_.range(1, n + 1));
+  return { n, sets, last: lines[3], universe: _.range(1, n + 1) };
+};
+
+// What each band may ask: complements only from Core, a complement with an
+// operation only at Stretch.
+const shapeOf = (tex) => ({ ops: (tex.match(/\\cap|\\cup/g) || []).length, comp: tex.includes("'") });
+const bandShape = (difficulty, { ops, comp }) => {
+  if (difficulty === 'foundation') expect(comp).toBe(false);
+  if (difficulty === 'core') expect(ops + (comp ? 1 : 0)).toBe(1);
+  if (difficulty === 'stretch') { expect(comp).toBe(true); expect(ops).toBe(1); }
+};
+
+describe('venn-notation', () => {
+  BANDS.forEach((difficulty) => {
+    it(`${difficulty}: the list or count follows from the described sets`, () => {
+      const questions = new Set();
+      const kinds = { list: 0, count: 0 };
+      for (let t = 0; t < SAMPLES; t += 1) {
+        const q = generateVennNotation({ difficulty });
+        const { sets, last, universe } = readDescribed(q);
+        const counted = last.match(/^n\((.*)\)$/);
+        const expr = counted ? counted[1] : last;
+        const want = evaluate(expr, sets, universe);
+        expect(want.length).toBeGreaterThan(0);
+        bandShape(difficulty, shapeOf(expr));
+        if (counted) {
+          kinds.count += 1;
+          expect(q.instruction).toBe('Sort U into the Venn diagram, then find');
+          expect(q.answer).toBe(`${last} = ${want.length}`);
+        } else {
+          kinds.list += 1;
+          expect(q.instruction).toBe('Sort U into the Venn diagram, then list the elements of the set');
+          expect(q.answer).toBe(`${expr} = \\{${want.join(', ')}\\}`);
+          expect(want.length).toBeLessThanOrEqual(8);
+        }
+        expect(q.workingOut.split('\n').pop()).toBe(q.answer);
+        questions.add(q.questionMath.replace(/^[A-Z] = /gm, '').replace(/[A-Z](?=[ ')])/g, 'L'));
+      }
+      process.stdout.write(`venn-notation ${difficulty}: ${questions.size} distinct, ${JSON.stringify(kinds)}\n`);
+      expect(kinds.list / SAMPLES).toBeGreaterThan(0.3);
+      expect(kinds.count / SAMPLES).toBeGreaterThan(0.5);
+      expect(questions.size).toBeGreaterThan(200);
+    });
+  });
+});
+
+describe('venn-probability', () => {
+  const gcdOf = (a, b) => (b ? gcdOf(b, a % b) : a);
+  BANDS.forEach((difficulty) => {
+    it(`${difficulty}: the probability is the count over n(U)`, () => {
+      const questions = new Set();
+      for (let t = 0; t < SAMPLES; t += 1) {
+        const q = generateVennProbability({ difficulty });
+        expect(q.instruction).toBe('A number is picked at random from U. Find');
+        const { n, sets, last, universe } = readDescribed(q);
+        expect(Object.keys(sets)).not.toContain('P');
+        const expr = last.match(/^P\((.*)\)$/)[1];
+        bandShape(difficulty, shapeOf(expr));
+        const k = evaluate(expr, sets, universe).length;
+        expect(k).toBeGreaterThan(0);
+        const g = gcdOf(k, n);
+        const simplest = g > 1 ? ` = \\frac{${k / g}}{${n / g}}` : '';
+        expect(q.answer).toBe(`${last} = \\frac{${k}}{${n}}${simplest}`);
+        expect(q.workingOut.split('\n').pop()).toBe(q.answer);
+        questions.add(q.questionMath.replace(/^[A-Z] = /gm, '').replace(/[A-Z](?=[ ')])/g, 'L'));
+      }
+      process.stdout.write(`venn-probability ${difficulty}: ${questions.size} distinct\n`);
+      expect(questions.size).toBeGreaterThan(difficulty === 'foundation' ? 100 : 200);
     });
   });
 });

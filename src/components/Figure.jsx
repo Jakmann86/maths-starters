@@ -6,9 +6,13 @@ import './Figure.css';
 // coordinates.
 // `scale` widens one figure type's width cap past the shared one — the bar
 // chart, which is height-bound and needs the room to grow sideways.
-function svgWrap(children, w, h, key, big, shown, noShrink = false, scale = 1) {
+function svgWrap(children, w, h, key, big, shown, noShrink = false, scale = 1, hug = false) {
   const capShown = noShrink ? false : shown;
   const cap = capShown ? (big ? '41cqh' : '34cqh') : (big ? '64cqh' : '47cqh');
+  // A drawing capped by height is letterboxed inside a wider box, and the
+  // spare width sits between it and the question. `hug` narrows the box to
+  // the drawing, so the question beside it gets that width back.
+  const hugW = hug ? `,calc(${cap} * ${(Number(w) / Number(h)).toFixed(3)})` : '';
   // `cap` is how big a figure may be; 100% (of .slot-figure-wrap, which
   // stretches to the row) is how big it can be. Without the second, a long
   // instruction or a short screen left a big figure taller than its row,
@@ -21,9 +25,11 @@ function svgWrap(children, w, h, key, big, shown, noShrink = false, scale = 1) {
       preserveAspectRatio="xMidYMid meet"
       style={{
         width: big
-          ? `min(${70 * scale}cqi,${580 * scale}px)`
-          : `min(${47 * scale}cqi,${346 * scale}px)`,
+          ? `min(${70 * scale}cqi,${580 * scale}px${hugW})`
+          : `min(${47 * scale}cqi,${346 * scale}px${hugW})`,
         maxHeight: `min(${cap}, 100%)`,
+        // Without the letterbox there is no margin left before the question.
+        ...(hug ? { marginRight: '3cqi' } : {}),
       }}
     >
       {children}
@@ -2047,7 +2053,7 @@ export default function Figure({ fig, color, shown }) {
     const W = ext.x1 - ext.x0 + PAD * 2, H = ext.y1 - ext.y0 + PAD * 2;
     return svgWrap(
       <g transform={`translate(${(PAD - ext.x0).toFixed(2)},${(PAD - ext.y0).toFixed(2)})`}>{nodes}</g>,
-      W.toFixed(2), H.toFixed(2), 'venn', fig.big, shown, Boolean(fig.solution)
+      W.toFixed(2), H.toFixed(2), 'venn', fig.big, shown, Boolean(fig.solution), 1, true
     );
   }
 
@@ -2097,7 +2103,7 @@ export default function Figure({ fig, color, shown }) {
     const W = ext.x1 - ext.x0 + PAD * 2, H = ext.y1 - ext.y0 + PAD * 2;
     return svgWrap(
       <g transform={`translate(${(PAD - ext.x0).toFixed(2)},${(PAD - ext.y0).toFixed(2)})`}>{nodes}</g>,
-      W.toFixed(2), H.toFixed(2), 'venn3', fig.big, shown, Boolean(fig.solution)
+      W.toFixed(2), H.toFixed(2), 'venn3', fig.big, shown, Boolean(fig.solution), 1, true
     );
   }
 

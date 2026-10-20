@@ -837,6 +837,18 @@ export const skills = {
     generate: (opts) => sets.generateVennSetOperations(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'venn-notation': {
+    label: 'Venn diagrams: set notation',
+    topic: 'Sets',
+    generate: (opts) => sets.generateVennNotation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'venn-probability': {
+    label: 'Venn diagrams: probability',
+    topic: 'Sets',
+    generate: (opts) => sets.generateVennProbability(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 
   // --- Haese 13A: variables used in statistics ---
   'data-types': {
