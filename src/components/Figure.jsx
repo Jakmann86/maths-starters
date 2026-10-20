@@ -2171,7 +2171,8 @@ export default function Figure({ fig, color, shown }) {
       const ux = dx / len, uy = dy / len;
       const A = [from[0] + ux * startGap, from[1] + uy * startGap];
       const B = [to[0] - ux * GAP, to[1] - uy * GAP];
-      const nodes = [figLine(`l${key}`, A[0], A[1], B[0], B[1])];
+      // `b` for branch: `l` is taken by the leaf letters (lxx, ...).
+      const nodes = [figLine(`b${key}`, A[0], A[1], B[0], B[1])];
 
       const given = probs[key];
       const filled = given === '' || given == null ? sol[key] : null;
