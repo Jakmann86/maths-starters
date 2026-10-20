@@ -2205,10 +2205,12 @@ export default function Figure({ fig, color, shown }) {
 
     // The outer fractions reach to about y = 2 and y = 396.
     //
-    // It never shrinks on reveal: the class checks its working against the
-    // branches after the answer is shown, as with the table and the magic
-    // square, and the 100% height cap already keeps the slot from
-    // overflowing when the answer band opens.
+    // noShrink, as with the table and the magic square: the class checks its
+    // working against the branches after the answer is shown. The 100%
+    // height cap still applies, so a tall answer (a stacked fraction) costs
+    // the tree about a third of its height on reveal and the branch labels
+    // drop to about 14px at 1080p. Accepted for now (20 Oct 2026); the
+    // alternatives were the answer beside the question, or a slash fraction.
     return svgWrap(nodes, 664, 398, 'tree', fig.big, shown, true, 1, true);
   }
 
