@@ -93,31 +93,6 @@
   padding-top: 4px;
 }
 
-.topic-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 6px;
-  border: 0;
-  border-bottom: 1px solid var(--hairline);
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-size: 15px;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-}
-
-.topic-row:hover {
-  background: var(--surface);
-}
-
-.topic-row.is-selected {
-  color: var(--ink);
-  font-weight: 600;
-}
-
 .topic-tick {
   width: 20px;
   height: 20px;

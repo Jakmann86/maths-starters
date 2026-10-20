@@ -373,32 +373,6 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
-  // --- Haese 26C: geometric sequences ---
-  'sequences-geometric-nth-term': {
-    label: 'Geometric sequences: find the nth term rule',
-    topic: 'Sequences',
-    generate: (opts) => sequences.generateSequenceFindNthTermGeometric(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
-  'sequences-geometric-use-nth-term': {
-    label: 'Geometric sequences: use the nth term rule',
-    topic: 'Sequences',
-    generate: (opts) => sequences.generateSequenceUseNthTermGeometric(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
-  'sequences-geometric-is-term': {
-    label: 'Geometric sequences: is it a term?',
-    topic: 'Sequences',
-    generate: (opts) => sequences.generateSequenceIsInSequenceGeometric(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
-  'sequences-geometric-pattern': {
-    label: 'Geometric sequences: branching pattern',
-    topic: 'Sequences',
-    generate: (opts) => sequences.generateSequencePatternGeometric(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
-
   // --- Haese 26B: arithmetic sequences ---
   'sequences-arithmetic-nth-term': {
     label: 'Arithmetic sequences: find the nth term rule',
@@ -422,6 +396,32 @@ export const skills = {
     label: 'Arithmetic sequences: growing pattern',
     topic: 'Sequences',
     generate: (opts) => sequences.generateSequencePatternArithmetic(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 26C: geometric sequences ---
+  'sequences-geometric-nth-term': {
+    label: 'Geometric sequences: find the nth term rule',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequenceFindNthTermGeometric(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-geometric-use-nth-term': {
+    label: 'Geometric sequences: use the nth term rule',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequenceUseNthTermGeometric(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-geometric-is-term': {
+    label: 'Geometric sequences: is it a term?',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequenceIsInSequenceGeometric(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-geometric-pattern': {
+    label: 'Geometric sequences: branching pattern',
+    topic: 'Sequences',
+    generate: (opts) => sequences.generateSequencePatternGeometric(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -458,16 +458,16 @@ export const skills = {
     generate: (opts) => cubicSeq.generateDifferenceMethod(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'sequences-cubic-use-nth-term': {
-    label: 'Cubic sequences: use the nth term rule',
-    topic: 'Sequences',
-    generate: (opts) => cubicSeq.generateCubicUseNthTerm(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
   'sequences-cubic-nth-term': {
     label: 'Cubic sequences: find the nth term rule',
     topic: 'Sequences',
     generate: (opts) => cubicSeq.generateCubicNthTerm(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sequences-cubic-use-nth-term': {
+    label: 'Cubic sequences: use the nth term rule',
+    topic: 'Sequences',
+    generate: (opts) => cubicSeq.generateCubicUseNthTerm(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 

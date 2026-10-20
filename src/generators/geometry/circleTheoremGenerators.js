@@ -56,7 +56,7 @@ export const generateAngleInSemicircle = (options = {}) => {
         angleB: atA ? deg(a) : 'x',
         unknown: atA ? 'A' : 'B',
         rotate: spin(),
-        big: 1,
+        big: true,
       },
       metadata: { topic: 'angle-in-semicircle', difficulty },
     };
@@ -74,7 +74,7 @@ export const generateAngleInSemicircle = (options = {}) => {
       instruction: 'Find the value of x',
       answer: `x = ${x}`,
       workingOut: `\\text{the angle in a semi-circle is } 90^\\circ${NL}${c}x + ${a} + 90 = 180${NL}${c}x = ${90 - a}${NL}x = ${x}`,
-      visualization: { type: 'circle-semicircle', angleA: deg(a), angleB: alg(c, 0), unknown: 'B', rotate: spin(), big: 1 },
+      visualization: { type: 'circle-semicircle', angleA: deg(a), angleB: alg(c, 0), unknown: 'B', rotate: spin(), big: true },
       metadata: { topic: 'angle-in-semicircle', difficulty },
     };
   }
@@ -92,7 +92,7 @@ export const generateAngleInSemicircle = (options = {}) => {
     instruction: 'Find the size of angle x',
     answer: `x = ${x}^\\circ`,
     workingOut: `\\text{angles on a straight line add to } 180^\\circ${NL}\\text{interior angle} = 180 - ${ext} = ${interior}${NL}\\text{the angle in a semi-circle is } 90^\\circ${NL}x = 180 - 90 - ${interior}${NL}x = ${x}`,
-    visualization: { type: 'circle-semicircle-exterior', exterior: deg(ext), given: givenAtA ? 'A' : 'B', rotate: spin(), big: 1 },
+    visualization: { type: 'circle-semicircle-exterior', exterior: deg(ext), given: givenAtA ? 'A' : 'B', rotate: spin(), big: true },
     metadata: { topic: 'angle-in-semicircle', difficulty },
   };
 };
@@ -109,7 +109,7 @@ export const generateAngleAtCentre = (options = {}) => {
       instruction: 'Find the size of angle x',
       answer: `x = ${x}^\\circ`,
       workingOut: `\\text{the angle at the centre is twice the angle at the circumference}${NL}2x = ${2 * x}${NL}x = ${x}`,
-      visualization: { type: 'circle-angle-centre', centre: deg(2 * x), circumference: 'x', unknown: 'circumference', rotate: spin(), big: 1 },
+      visualization: { type: 'circle-angle-centre', centre: deg(2 * x), circumference: 'x', unknown: 'circumference', rotate: spin(), big: true },
       metadata: { topic: 'angle-at-centre', difficulty },
     };
   }
@@ -121,7 +121,7 @@ export const generateAngleAtCentre = (options = {}) => {
       instruction: 'Find the size of angle x',
       answer: `x = ${2 * a}^\\circ`,
       workingOut: `\\text{the angle at the centre is twice the angle at the circumference}${NL}x = 2 \\times ${a}${NL}x = ${2 * a}`,
-      visualization: { type: 'circle-angle-centre', centre: 'x', circumference: deg(a), unknown: 'centre', rotate: spin(), big: 1 },
+      visualization: { type: 'circle-angle-centre', centre: 'x', circumference: deg(a), unknown: 'centre', rotate: spin(), big: true },
       metadata: { topic: 'angle-at-centre', difficulty },
     };
   }
@@ -134,7 +134,7 @@ export const generateAngleAtCentre = (options = {}) => {
     instruction: 'Find the size of angle x',
     answer: `x = ${x}^\\circ`,
     workingOut: `\\text{angles at a point add to } 360^\\circ${NL}\\text{obtuse angle at centre} = 360 - ${reflex} = ${2 * x}${NL}2x = ${2 * x}${NL}x = ${x}`,
-    visualization: { type: 'circle-angle-centre', centre: deg(reflex), circumference: 'x', reflex: true, unknown: 'circumference', rotate: spin(), big: 1 },
+    visualization: { type: 'circle-angle-centre', centre: deg(reflex), circumference: 'x', reflex: true, unknown: 'circumference', rotate: spin(), big: true },
     metadata: { topic: 'angle-at-centre', difficulty },
   };
 };
@@ -157,7 +157,7 @@ export const generateCyclicQuadrilateral = (options = {}) => {
       instruction: 'Find the size of angle x',
       answer: `x = ${swap ? a : 180 - a}^\\circ`,
       workingOut: `\\text{opposite angles of a cyclic quadrilateral add to } 180^\\circ${NL}x = 180 - ${swap ? 180 - a : a}${NL}x = ${swap ? a : 180 - a}`,
-      visualization: { type: 'cyclic-quadrilateral', ...labels, rotate: spin(), big: 1 },
+      visualization: { type: 'cyclic-quadrilateral', ...labels, rotate: spin(), big: true },
       metadata: { topic: 'cyclic-quadrilateral', difficulty },
     };
   }
@@ -175,7 +175,7 @@ export const generateCyclicQuadrilateral = (options = {}) => {
       instruction: 'Find the value of x',
       answer: `x = ${x}`,
       workingOut: `\\text{opposite angles of a cyclic quadrilateral add to } 180^\\circ${NL}${c}x + ${opp} = 180${NL}${c}x = ${c * x}${NL}x = ${x}`,
-      visualization: { type: 'cyclic-quadrilateral', a: alg(c, 0), b: deg(b), c: deg(opp), d: null, unknown: ['a'], rotate: spin(), big: 1 },
+      visualization: { type: 'cyclic-quadrilateral', a: alg(c, 0), b: deg(b), c: deg(opp), d: null, unknown: ['a'], rotate: spin(), big: true },
       metadata: { topic: 'cyclic-quadrilateral', difficulty },
     };
   }
@@ -194,7 +194,7 @@ export const generateCyclicQuadrilateral = (options = {}) => {
     workingOut: askB
       ? `\\text{the angle at the centre is twice the angle at the circumference}${NL}x = \\frac{360 - ${m}}{2}${NL}x = ${abc}`
       : `\\text{the angle at the centre is twice the angle at the circumference}${NL}\\text{angle ABC} = \\frac{360 - ${m}}{2} = ${abc}${NL}\\text{opposite angles of a cyclic quadrilateral add to } 180^\\circ${NL}x = 180 - ${abc}${NL}x = ${adc}`,
-    visualization: { type: 'cyclic-quadrilateral-centre', centreAngle: deg(m), unknown: askB ? 'B' : 'D', rotate: spin(), big: 1 },
+    visualization: { type: 'cyclic-quadrilateral-centre', centreAngle: deg(m), unknown: askB ? 'B' : 'D', rotate: spin(), big: true },
     metadata: { topic: 'cyclic-quadrilateral', difficulty },
   };
 };
@@ -220,7 +220,7 @@ export const generateAngleSameSegment = (options = {}) => {
         angleD: giveC ? 'x' : deg(a),
         unknown: giveC ? 'D' : 'C',
         rotate: spin(),
-        big: 1,
+        big: true,
       },
       metadata: { topic: 'angle-same-segment', difficulty },
     };
@@ -244,7 +244,7 @@ export const generateAngleSameSegment = (options = {}) => {
         angleD: giveC ? deg(a) : alg(c, 0),
         unknown: giveC ? 'C' : 'D',
         rotate: spin(),
-        big: 1,
+        big: true,
       },
       metadata: { topic: 'angle-same-segment', difficulty },
     };
@@ -278,7 +278,7 @@ export const generateAngleSameSegment = (options = {}) => {
       unknown: askAt,
       target,
       rotate: spin(),
-      big: 1,
+      big: true,
     },
     metadata: { topic: 'angle-same-segment', difficulty },
   };
@@ -307,7 +307,7 @@ export const generateTangentsFromPoint = (options = {}) => {
         external: giveCentre ? 'x' : deg(a),
         unknown: giveCentre ? 'external' : 'centre',
         rotate: spin(),
-        big: 1,
+        big: true,
       },
       metadata: { topic: 'tangents-from-point', difficulty },
     };
@@ -332,7 +332,7 @@ export const generateTangentsFromPoint = (options = {}) => {
         external: algAtCentre ? deg(other) : alg(c, 0),
         unknown: algAtCentre ? 'centre' : 'external',
         rotate: spin(),
-        big: 1,
+        big: true,
       },
       metadata: { topic: 'tangents-from-point', difficulty },
     };
@@ -349,7 +349,7 @@ export const generateTangentsFromPoint = (options = {}) => {
     instruction: 'Find the size of angle x',
     answer: `x = ${x}^\\circ`,
     workingOut: `\\text{a tangent meets a radius at } 90^\\circ${NL}\\text{the angle at O and the angle at P add to } 180^\\circ${NL}\\text{angle AOB} = 180 - ${m} = ${aob}${NL}\\text{OA and OB are radii, so triangle OAB is isosceles}${NL}x = \\frac{180 - ${aob}}{2}${NL}x = ${x}`,
-    visualization: { type: 'circle-tangent-kite', external: deg(m), base: 'x', unknown: 'base', rotate: spin(), big: 1 },
+    visualization: { type: 'circle-tangent-kite', external: deg(m), base: 'x', unknown: 'base', rotate: spin(), big: true },
     metadata: { topic: 'tangents-from-point', difficulty },
   };
 };
@@ -375,7 +375,7 @@ export const generateAlternateSegment = (options = {}) => {
         angleACB: giveTangent ? 'x' : deg(a),
         unknown: giveTangent ? 'ACB' : 'tangent',
         rotate: spin(),
-        big: 1,
+        big: true,
       },
       metadata: { topic: 'alternate-segment', difficulty },
     };
@@ -399,7 +399,7 @@ export const generateAlternateSegment = (options = {}) => {
         angleACB: giveTangent ? alg(c, 0) : deg(a),
         unknown: giveTangent ? 'ACB' : 'tangent',
         rotate: spin(),
-        big: 1,
+        big: true,
       },
       metadata: { topic: 'alternate-segment', difficulty },
     };
@@ -427,7 +427,7 @@ export const generateAlternateSegment = (options = {}) => {
       angleBAC: 'x',
       unknown: 'BAC',
       rotate: spin(),
-      big: 1,
+      big: true,
     },
     metadata: { topic: 'alternate-segment', difficulty },
   };

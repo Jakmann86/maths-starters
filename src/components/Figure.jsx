@@ -1300,16 +1300,6 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, 262, 175, 'ls', fig.big, shown);
   }
 
-  if (fig.type === 'trapezium') {
-    return svgWrap([
-      <polygon key="p" points="48,24 148,24 180,124 16,124" fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
-      figLine('h', 98, 24, 98, 124, { strokeDasharray: '6 6', strokeWidth: 2 }),
-      figLabel('a', 98, 16, fig.a),
-      figLabel('b', 98, 144, fig.b),
-      figLabel('hh', 106, 80, fig.h, 'start', color),
-    ], 196, 152, 'tz', fig.big, shown);
-  }
-
   if (fig.type === 'rectangle') {
     const L = 30, R = 200, T = 25, B = 125;
     const unknown = fig.unknown ?? null;

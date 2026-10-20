@@ -17,6 +17,7 @@
 //               asked is given in words, so it has to be recovered first
 
 import _ from 'lodash';
+import { dp1 } from '../shared';
 
 const NL = '\n';
 
@@ -234,7 +235,7 @@ function stretchBand() {
  * 24 and never 20, 26, 32.
  * `shows(n)` takes the number surveyed, or nothing when the table gives it.
  */
-export const CONTINUOUS = [
+const CONTINUOUS = [
   {
     col: 'Time (t min)', v: 't', widths: [4, 6, 10], starts: [0, 10, 20],
     shows: (n) => `the time ${n ? `${n} ` : ''}students took to finish a puzzle`,
@@ -259,7 +260,7 @@ export const CONTINUOUS = [
 
 /** A context and 4-5 contiguous equal-width classes, each with a frequency
  *  of 2-15. */
-export const continuousData = (context = _.sample(CONTINUOUS)) => {
+const continuousData = (context = _.sample(CONTINUOUS)) => {
   const k = _.random(4, 5);
   const width = _.sample(context.widths);
   const start = Math.ceil(_.sample(context.starts) / width) * width;
@@ -277,8 +278,6 @@ const runningTotals = (fs) => {
   return fs.map((f) => { running += f; return running; });
 };
 
-// One decimal place from tenths, so no float error creeps in.
-const dp1 = (tenths) => (tenths % 10 === 0 ? String(tenths / 10) : `${Math.floor(tenths / 10)}.${tenths % 10}`);
 
 /* ---------------------------------------------- cumulative frequency tables
  *

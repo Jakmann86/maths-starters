@@ -19,6 +19,7 @@
 // final answer alone does not.
 
 import _ from 'lodash';
+import { gcd } from '../shared';
 
 const NL = '\n';
 
@@ -26,7 +27,6 @@ const NL = '\n';
  * Rendering helpers
  * ------------------------------------------------------------------ */
 
-const gcd = (a, b) => (b ? gcd(b, Math.abs(a % b)) : Math.abs(a));
 
 /** `c x^2 y` from a coefficient and a { var: exponent } map. */
 function monomial(coef, powers) {

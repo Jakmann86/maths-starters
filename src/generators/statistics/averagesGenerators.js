@@ -5,6 +5,7 @@
 // given mean to a missing value.
 
 import _ from 'lodash';
+import { median, dp1 } from '../shared';
 
 const NL = '\n';
 
@@ -13,24 +14,6 @@ const NL = '\n';
 // thin space — the whole topic rendered in serif and warnIfUnparseable logged
 // on all of it.
 const showList = (xs) => xs.join(', ');
-
-// Haese p283: the median is the (n+1)/2 th ordered value, so for an even n it
-// is the average of the two middle values.
-const median = (sorted) => {
-  const n = sorted.length;
-  const mid = (n + 1) / 2;
-  return n % 2 ? sorted[mid - 1] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
-};
-
-// One decimal place, from integers, so no float error creeps in. The sign is
-// taken off the front first: Math.trunc(-5 / 10) is 0, which printed -0.5 as
-// "0.5". Unreachable while every data value is positive, and a silent wrong
-// answer the moment one is not.
-const dp1 = (tenths) => {
-  const sign = tenths < 0 ? '-' : '';
-  const a = Math.abs(tenths);
-  return a % 10 === 0 ? `${sign}${a / 10}` : `${sign}${Math.floor(a / 10)}.${a % 10}`;
-};
 
 // A list with exactly one most-common value, so "the mode" is never ambiguous.
 // Haese calls a two-mode set bimodal and says not to use the mode at all, so a

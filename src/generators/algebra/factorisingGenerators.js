@@ -15,6 +15,7 @@
 //   generateFactoriseGrouping         Haese 1J   four terms, group in pairs
 
 import _ from 'lodash';
+import { gcd } from '../shared';
 
 // ---------------------------------------------------------------------------
 // formatting helpers  (LaTeX subset the Archivo parser handles; see DESIGN.md)
@@ -45,13 +46,6 @@ const joinTerms = (lead, ...rest) =>
 const bracket = (coeff, constant) => {
   const lead = coeff === 1 ? 'x' : coeff === -1 ? '-x' : `${coeff}x`;
   return `(${joinTerms(lead, laterTerm(constant))})`;
-};
-
-const gcd = (a, b) => {
-  a = Math.abs(a);
-  b = Math.abs(b);
-  while (b) [a, b] = [b, a % b];
-  return a;
 };
 
 const randNonZero = (min, max) => {

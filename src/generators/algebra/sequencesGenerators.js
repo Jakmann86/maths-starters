@@ -195,7 +195,7 @@ export const generateSequencePatternGeometric = (options = {}) => {
     answer,
     workingOut: `\\text{generations shown: } ${generationCounts.join(', ')}` + NL +
       `\\text{each node branches into } ${r} \\text{ more}`,
-    visualization: { type: 'branching-pattern', ratio: r, generations: 3, counts: generationCounts, big: 1 },
+    visualization: { type: 'branching-pattern', ratio: r, generations: 3, counts: generationCounts, big: true },
     metadata: { topic: 'sequences-geometric-pattern', difficulty },
   };
 };
@@ -369,7 +369,7 @@ export const generateSequencePatternArithmetic = (options = {}) => {
     questionMath: `\\text{${instruction}}`,
     answer,
     workingOut: `\\text{terms shown: } ${shownCounts.join(', ')}`,
-    visualization: { type: 'growing-pattern', motif, step, startCount, counts: shownCounts, big: 1 },
+    visualization: { type: 'growing-pattern', motif, step, startCount, counts: shownCounts, big: true },
     metadata: { topic: 'sequences-arithmetic-pattern', difficulty },
   };
 };
@@ -575,7 +575,7 @@ export const generateSequencePatternQuadratic = (options = {}) => {
     questionMath: `\\text{${instruction}}`,
     answer,
     workingOut: `\\text{terms shown: } ${shownCounts.join(', ')}`,
-    visualization: { type: 'dot-grid-pattern', extraDots: c, counts: shownCounts, big: 1 },
+    visualization: { type: 'dot-grid-pattern', extraDots: c, counts: shownCounts, big: true },
     metadata: { topic: 'sequences-quadratic-pattern', difficulty },
   };
 };

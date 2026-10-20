@@ -11,6 +11,7 @@
 // Bands are foundation / core / stretch. Pure functions: no React, no state.
 
 import _ from 'lodash';
+import { gcd } from '../shared';
 
 // ---------------------------------------------------------------------------
 // Term algebra
@@ -145,7 +146,6 @@ const PAIRS = [
 ];
 
 const pm = () => _.sample([1, -1]);
-const gcd = (a, b) => (b ? gcd(b, a % b) : Math.abs(a));
 
 /** Haese never leaves a common factor inside a bracket: (4a + 2)(2a + 4) is out. */
 const coprime = (terms) =>

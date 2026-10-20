@@ -27,10 +27,10 @@
 // a second line of questionMath instead, as formulaGenerators already does.
 
 import _ from 'lodash';
+import { gcd, pythagoreanTriples } from '../shared';
 
 const NL = '\n';
 
-const gcd = (a, b) => (b ? gcd(b, Math.abs(a % b)) : Math.abs(a));
 
 /** A signed fraction in lowest terms, as LaTeX. Whole numbers stay whole. */
 function frac(num, den) {
@@ -77,20 +77,7 @@ const br = (v) => (v < 0 ? `(${v})` : String(v));
 /** A number for plain-text instruction: a true minus sign, as the parser gives questionMath. */
 const txt = (v) => String(v).replace('-', '−');
 
-/** Pythagorean triples by Euclid's formula, never a hardcoded list. */
-function buildTriples(limit) {
-  const out = [];
-  for (let m = 2; m * m <= limit; m += 1) {
-    for (let n = 1; n < m; n += 1) {
-      if ((m - n) % 2 === 0 || gcd(m, n) !== 1) continue;
-      for (let k = 1; k * (m * m + n * n) <= limit; k += 1) {
-        out.push([k * (m * m - n * n), k * (2 * m * n), k * (m * m + n * n)]);
-      }
-    }
-  }
-  return out;
-}
-const TRIPLES = buildTriples(70);
+const TRIPLES = pythagoreanTriples(70);
 
 /** sqrt(n) in exact simplified form. */
 function surd(n) {
@@ -108,7 +95,7 @@ const gridOf = (a, b, labels = ['A', 'B']) => ({
   points: [{ x: a[0], y: a[1], label: labels[0] }, { x: b[0], y: b[1], label: labels[1] }],
   segment: [a, b],
   // The grid is the whole question at Foundation, like a circle theorem.
-  big: 1,
+  big: true,
 });
 
 /**
@@ -421,7 +408,7 @@ export const generateEquationOfALine = (options = {}) => {
         `c = ${c}`,
         lineEquation(num, den, c),
       ].join(NL),
-      visualization: { type: 'coordinate-grid', line: { m: num / den, c }, big: 1 },
+      visualization: { type: 'coordinate-grid', line: { m: num / den, c }, big: true },
       metadata: { topic: 'equation-of-a-line', difficulty },
     };
   }

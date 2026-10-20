@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { pythagoreanTriples } from '../shared';
 
 const NL = '\n';
 
@@ -70,23 +71,12 @@ export const ask = (what, m) => (m === EXACT
 export const closing = (k, m, sym) => (m === EXACT ? '' : `${NL}${sym} = ${sf(k * Math.PI)} \\text{ (3 s.f.)}`);
 export const val = (k, m) => (m === EXACT ? piTerm(k) : sf(k * Math.PI));
 
-// Pythagorean triples generated, never listed: Euclid's formula over a real
-// range of (m, n, k), then filtered to sane classroom sizes. The two legs
-// become r and h in random order, so the slant height is always a whole
-// number without any hardcoded (3,4,5)-style bank.
+// Pythagorean triples generated, never listed (shared.js), filtered to sane
+// classroom sizes. The two legs become r and h in random order, so the slant
+// height is always a whole number.
+const TRIPLES = pythagoreanTriples(65).filter(([a, b]) => a <= 60 && b <= 60);
 const triple = () => {
-  const options = [];
-  for (let m = 2; m <= 13; m++) {
-    for (let n = 1; n < m; n++) {
-      for (let k = 1; k <= 7; k++) {
-        const a = (m * m - n * n) * k;
-        const b = 2 * m * n * k;
-        const c = (m * m + n * n) * k;
-        if (a >= 3 && b >= 3 && a <= 60 && b <= 60 && c <= 65) options.push([a, b, c]);
-      }
-    }
-  }
-  const [a, b, c] = _.sample(options);
+  const [a, b, c] = _.sample(TRIPLES);
   return _.random(0, 1) ? [a, b, c] : [b, a, c];
 };
 

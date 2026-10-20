@@ -25,11 +25,10 @@
 // the given first and hope the root comes out whole.
 
 import _ from 'lodash';
+import { lcm } from '../shared';
 
 const NL = '\n';
 
-const gcd = (a, b) => (b ? gcd(b, a % b) : Math.abs(a));
-const lcm = (a, b) => (a * b) / gcd(a, b);
 
 // Dependent and independent letters, in pairs that read like the textbook's.
 // Deliberately never 'k', which is the proportionality constant throughout.

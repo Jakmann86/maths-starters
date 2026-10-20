@@ -17,20 +17,11 @@
 // are plain SVG text and never touch the renderer (CLAUDE.md 6).
 
 import _ from 'lodash';
+import { dp1, median } from '../shared';
 
 const NL = '\n';
 
-const dp1 = (tenths) => {
-  const sign = tenths < 0 ? '-' : '';
-  const a = Math.abs(tenths);
-  return a % 10 === 0 ? `${sign}${a / 10}` : `${sign}${Math.floor(a / 10)}.${a % 10}`;
-};
 
-/** The median of an ascending list, averaging the middle pair when n is even. */
-const median = (sorted) => {
-  const n = sorted.length;
-  return n % 2 ? sorted[(n - 1) / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
-};
 
 /* ------------------------------------------------------------- modal class
  *

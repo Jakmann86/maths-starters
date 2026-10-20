@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { gcd } from '../shared';
 
 const NL = '\n';
 const frac = (n, d) => {
@@ -244,7 +245,6 @@ const SQUAREFREE = _.range(2, 61).filter((n) => {
   for (let d = 2; d * d <= n; d++) if (n % (d * d) === 0) return false;
   return Math.sqrt(n) % 1 !== 0;
 });
-const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
 
 const SIMPLIFIABLE = _.range(8, 601).filter((n) => {
   const [k, m] = simplifySurd(n);

@@ -1,10 +1,6 @@
 // src/generators/puzzles/magicSquareGenerators.js
 //
-// Magic squares — retrieval-pool puzzle. Rewritten to SPEC §3 from the old
-// magicSquareGenerator.js (singular): that file exported no generateMagicSquare
-// (the name skills.js calls), emitted a 2D { grid, fullGrid, size } visualization
-// the board can't read, and carried a base square that wasn't actually magic on
-// its diagonal. All fixed here. Replace/delete the singular file — MIGRATION #4.
+// Magic squares — retrieval-pool puzzle.
 //
 // The board's Figure `magic-square` branch reads a flat, row-major contract:
 //   { type: 'magic-square', n, cells, solution, big }
@@ -65,7 +61,7 @@ const build = (fullGrid, magicSum, hidden, n, difficulty) => {
     instruction: 'Complete the magic square',
     answer: `\\text{Each line totals } ${magicSum}`,
     workingOut: `\\text{Rows, columns and diagonals all sum to } ${magicSum}`,
-    visualization: { type: 'magic-square', n, cells, solution, big: 1 },
+    visualization: { type: 'magic-square', n, cells, solution, big: true },
     metadata: { topic: 'magic-square', difficulty },
   };
 };

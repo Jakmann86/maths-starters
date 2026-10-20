@@ -87,7 +87,7 @@ export const generateAnglesOnALine = (options = {}) => {
       wrap: false,
       labels,
       unknownIndex,
-      big: 1,
+      big: true,
     },
     metadata: { topic: 'angles-on-a-line', difficulty },
   };
@@ -115,7 +115,7 @@ export const generateAnglesAtAPoint = (options = {}) => {
         `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = 360`,
         `x = ${x}`,
       ].join(NL),
-      visualization: { type: 'angle-rays', rays: rayAngles(vs), gapDegrees: vs, wrap: true, labels: exprs, big: 1 },
+      visualization: { type: 'angle-rays', rays: rayAngles(vs), gapDegrees: vs, wrap: true, labels: exprs, big: true },
       metadata: { topic: 'angles-at-a-point', difficulty },
     };
   }
@@ -142,7 +142,7 @@ export const generateAnglesAtAPoint = (options = {}) => {
       `x = 360^\\circ - ${sumOthers}^\\circ`,
       `x = ${found}^\\circ`,
     ].join(NL),
-    visualization: { type: 'angle-rays', rays: rayAngles(vs), gapDegrees: vs, wrap: true, labels, unknownIndex, big: 1 },
+    visualization: { type: 'angle-rays', rays: rayAngles(vs), gapDegrees: vs, wrap: true, labels, unknownIndex, big: true },
     metadata: { topic: 'angles-at-a-point', difficulty },
   };
 };
@@ -193,7 +193,7 @@ export const generateVerticallyOpposite = (options = {}) => {
         `${m1 - m2}x = ${c2 - c1}`,
         `x = ${x}`,
       ].join(NL),
-      visualization: { type: 'angle-rays', rays, gapDegrees, wrap: true, labels, big: 1 },
+      visualization: { type: 'angle-rays', rays, gapDegrees, wrap: true, labels, big: true },
       metadata: { topic: 'vertically-opposite', difficulty },
     };
   }
@@ -212,7 +212,7 @@ export const generateVerticallyOpposite = (options = {}) => {
     instruction: 'Find the size of angle x',
     answer: `x = ${found}^\\circ`,
     workingOut: steps.join(NL),
-    visualization: { type: 'angle-rays', rays, gapDegrees, wrap: true, labels, unknownIndex: targetIndex, big: 1 },
+    visualization: { type: 'angle-rays', rays, gapDegrees, wrap: true, labels, unknownIndex: targetIndex, big: true },
     metadata: { topic: 'vertically-opposite', difficulty },
   };
 };
@@ -240,7 +240,7 @@ export const generateTriangleAngleSum = (options = {}) => {
         `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = 180`,
         `x = ${x}`,
       ].join(NL),
-      visualization: { type: 'triangle', labels: exprs, big: 1 },
+      visualization: { type: 'triangle', labels: exprs, big: true },
       metadata: { topic: 'triangle-angle-sum', difficulty },
     };
   }
@@ -269,7 +269,7 @@ export const generateTriangleAngleSum = (options = {}) => {
       `x = 180^\\circ - ${others[0]}^\\circ - ${others[1]}^\\circ`,
       `x = ${found}^\\circ`,
     ].join(NL),
-    visualization: { type: 'triangle', labels, unknownIndex, obtuseIndex: obtuseIdx >= 0 ? obtuseIdx : undefined, big: 1 },
+    visualization: { type: 'triangle', labels, unknownIndex, obtuseIndex: obtuseIdx >= 0 ? obtuseIdx : undefined, big: true },
     metadata: { topic: 'triangle-angle-sum', difficulty },
   };
 };
@@ -303,7 +303,7 @@ export const generateTriangleExteriorAngle = (options = {}) => {
         `${m3}x ${c3 >= 0 ? '+' : '-'} ${Math.abs(c3)} = ${m1 + m2}x ${cSum >= 0 ? '+' : '-'} ${Math.abs(cSum)}`,
         `x = ${x}`,
       ].join(NL),
-      visualization: { type: 'triangle', labels: [expr1, '', expr2], exteriorLabel: expr3, big: 1 },
+      visualization: { type: 'triangle', labels: [expr1, '', expr2], exteriorLabel: expr3, big: true },
       metadata: { topic: 'triangle-exterior-angle', difficulty },
     };
   }
@@ -323,7 +323,7 @@ export const generateTriangleExteriorAngle = (options = {}) => {
         `x = ${a}^\\circ + ${c}^\\circ \\text{ (exterior angle = sum of interior opposite angles)}`,
         `x = ${ext}^\\circ`,
       ].join(NL),
-      visualization: { type: 'triangle', labels: [`${a}^\\circ`, '', `${c}^\\circ`], exteriorLabel: 'x', exteriorUnknown: true, big: 1 },
+      visualization: { type: 'triangle', labels: [`${a}^\\circ`, '', `${c}^\\circ`], exteriorLabel: 'x', exteriorUnknown: true, big: true },
       metadata: { topic: 'triangle-exterior-angle', difficulty },
     };
   }
@@ -340,7 +340,7 @@ export const generateTriangleExteriorAngle = (options = {}) => {
       `x = ${ext}^\\circ - ${given}^\\circ`,
       `x = ${found}^\\circ`,
     ].join(NL),
-    visualization: { type: 'triangle', labels, exteriorLabel: `${ext}^\\circ`, unknownIndex: hideA ? 0 : 2, big: 1 },
+    visualization: { type: 'triangle', labels, exteriorLabel: `${ext}^\\circ`, unknownIndex: hideA ? 0 : 2, big: true },
     metadata: { topic: 'triangle-exterior-angle', difficulty },
   };
 };
@@ -372,7 +372,7 @@ export const generateIsoscelesBaseAngles = (options = {}) => {
         `${baseExpr} = ${base}`,
         `x = ${x}`,
       ].join(NL),
-      visualization: { type: 'isosceles-angles', apexLabel: `${apex}^\\circ`, baseLabel: baseExpr, big: 1 },
+      visualization: { type: 'isosceles-angles', apexLabel: `${apex}^\\circ`, baseLabel: baseExpr, big: true },
       metadata: { topic: 'isosceles-base-angles', difficulty },
     };
   }
@@ -387,7 +387,7 @@ export const generateIsoscelesBaseAngles = (options = {}) => {
         `x = 180^\\circ - 2 \\times ${base}^\\circ \\text{ (base angles of an isosceles triangle are equal)}`,
         `x = ${apex}^\\circ`,
       ].join(NL),
-      visualization: { type: 'isosceles-angles', apexLabel: 'x', baseLabel: `${base}^\\circ`, unknownIsApex: true, big: 1 },
+      visualization: { type: 'isosceles-angles', apexLabel: 'x', baseLabel: `${base}^\\circ`, unknownIsApex: true, big: true },
       metadata: { topic: 'isosceles-base-angles', difficulty },
     };
   }
@@ -401,7 +401,7 @@ export const generateIsoscelesBaseAngles = (options = {}) => {
       `x = \\frac{180^\\circ - ${apex}^\\circ}{2} \\text{ (base angles of an isosceles triangle are equal)}`,
       `x = ${base}^\\circ`,
     ].join(NL),
-    visualization: { type: 'isosceles-angles', apexLabel: `${apex}^\\circ`, baseLabel: 'x', unknownIsApex: false, big: 1 },
+    visualization: { type: 'isosceles-angles', apexLabel: `${apex}^\\circ`, baseLabel: 'x', unknownIsApex: false, big: true },
     metadata: { topic: 'isosceles-base-angles', difficulty },
   };
 };
@@ -454,7 +454,7 @@ export const generateAnglesProblemSolving = (options = {}) => {
           `${expr} = ${total}^\\circ`,
           `x = ${x}`,
         ].join(NL),
-        visualization: { type: 'triangle', labels: ['', '', `${apex}^\\circ`], exteriorLabel: expr, exteriorUnknown: true, isosceles: true, big: 1 },
+        visualization: { type: 'triangle', labels: ['', '', `${apex}^\\circ`], exteriorLabel: expr, exteriorUnknown: true, isosceles: true, big: true },
         metadata: { topic: 'angles-problem-solving', difficulty },
       };
     }
@@ -474,7 +474,7 @@ export const generateAnglesProblemSolving = (options = {}) => {
         `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = ${p}`,
         `x = ${x}`,
       ].join(NL),
-      visualization: { type: 'triangle', labels: [exprs[0], '', exprs[1]], exteriorLabel: `${p}^\\circ`, big: 1 },
+      visualization: { type: 'triangle', labels: [exprs[0], '', exprs[1]], exteriorLabel: `${p}^\\circ`, big: true },
       metadata: { topic: 'angles-problem-solving', difficulty },
     };
   }
@@ -492,7 +492,7 @@ export const generateAnglesProblemSolving = (options = {}) => {
         `x = ${apex}^\\circ + ${base}^\\circ \\text{ (exterior angle = sum of interior opposite angles)}`,
         `x = ${exterior}^\\circ`,
       ].join(NL),
-      visualization: { type: 'triangle', labels: ['', '', `${apex}^\\circ`], exteriorLabel: 'x', exteriorUnknown: true, isosceles: true, big: 1 },
+      visualization: { type: 'triangle', labels: ['', '', `${apex}^\\circ`], exteriorLabel: 'x', exteriorUnknown: true, isosceles: true, big: true },
       metadata: { topic: 'angles-problem-solving', difficulty },
     };
   }
@@ -514,7 +514,7 @@ export const generateAnglesProblemSolving = (options = {}) => {
       `x = 180^\\circ - ${ib}^\\circ - ${q}^\\circ \\text{ (angle sum of a triangle)}`,
       `x = ${thirdInterior}^\\circ`,
     ].join(NL),
-    visualization: { type: 'triangle', labels: [`${q}^\\circ`, '', 'x'], unknownIndex: 2, exteriorLabel: `${p}^\\circ`, big: 1 },
+    visualization: { type: 'triangle', labels: [`${q}^\\circ`, '', 'x'], unknownIndex: 2, exteriorLabel: `${p}^\\circ`, big: true },
     metadata: { topic: 'angles-problem-solving', difficulty },
   };
 };
@@ -579,7 +579,7 @@ const buildParallelAngle = (relationship, options = {}) => {
       type: 'parallel-transversal',
       given: { position: givenPos, label: `${givenValue}^\\circ` },
       unknown: { position: unknownPos, label: unknownLabel },
-      big: 1,
+      big: true,
     },
     metadata: { topic, difficulty, tags: ['angles', relationship] },
   };
@@ -622,7 +622,7 @@ export const generatePolygonInteriorAngles = (options = {}) => {
         questionMath: `${angle}^\\circ`,
         answer: `n = ${n}`,
         workingOut: `\\frac{180(n-2)}{n} = ${angle}` + NL + `n = ${n}`,
-        visualization: { type: 'polygon', n, angleLabel: `${angle}^\\circ`, big: 1 },
+        visualization: { type: 'polygon', n, angleLabel: `${angle}^\\circ`, big: true },
         metadata: { topic: 'polygon-interior-angles', difficulty, tags: ['angles', 'polygon', 'interior'] },
       };
     }
@@ -661,7 +661,7 @@ export const generatePolygonInteriorAngles = (options = {}) => {
     questionMath: null,
     answer: `${angle}^\\circ`,
     workingOut: `\\frac{180(${n}-2)}{${n}} = \\frac{${180 * (n - 2)}}{${n}} = ${angle}^\\circ`,
-    visualization: { type: 'polygon', n, angleLabel: 'x', big: 1 },
+    visualization: { type: 'polygon', n, angleLabel: 'x', big: true },
     metadata: { topic: 'polygon-interior-angles', difficulty, tags: ['angles', 'polygon', 'interior'] },
   };
 };
@@ -690,7 +690,7 @@ export const generatePolygonExteriorAngles = (options = {}) => {
       workingOut:
         `\\text{exterior angles of any polygon sum to } 360^\\circ` + NL +
         `x = 360 - (${knownAngles.join(' + ')}) = ${missing}^\\circ`,
-      visualization: { type: 'polygon', n, exterior: true, angleLabel: 'x', big: 1 },
+      visualization: { type: 'polygon', n, exterior: true, angleLabel: 'x', big: true },
       metadata: { topic: 'polygon-exterior-angles', difficulty, tags: ['angles', 'polygon', 'exterior'] },
     };
   }
@@ -703,7 +703,7 @@ export const generatePolygonExteriorAngles = (options = {}) => {
     questionMath: null,
     answer: `${angle}^\\circ`,
     workingOut: `360 \\div ${n} = ${angle}^\\circ`,
-    visualization: { type: 'polygon', n, exterior: true, angleLabel: 'x', big: 1 },
+    visualization: { type: 'polygon', n, exterior: true, angleLabel: 'x', big: true },
     metadata: { topic: 'polygon-exterior-angles', difficulty, tags: ['angles', 'polygon', 'exterior'] },
   };
 };

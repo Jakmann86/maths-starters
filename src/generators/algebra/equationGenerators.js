@@ -14,6 +14,7 @@
 // fractional answers from Core upward.
 
 import _ from 'lodash';
+import { gcd, lcm } from '../shared';
 
 // Line-break token for multi-line workingOut. The renderer (MathText / the
 // design export's mathBlock) splits on a real newline character, so this is an
@@ -25,14 +26,7 @@ const NL = '\n';
 // helpers
 // ---------------------------------------------------------------------------
 
-const gcd = (a, b) => {
-  a = Math.abs(a);
-  b = Math.abs(b);
-  while (b) [a, b] = [b, a % b];
-  return a || 1;
-};
 
-const lcm = (a, b) => (a * b) / gcd(a, b);
 
 const randNonZero = (min, max) => {
   let n = 0;

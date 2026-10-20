@@ -394,7 +394,7 @@ function setOperationsThree() {
 
 // Sets a class can list from a description. `test` is the definition; the
 // tex is what the question prints.
-export const PROPERTIES = [
+const PROPERTIES = [
   { tex: 'even numbers', test: (k) => k % 2 === 0 },
   { tex: 'odd numbers', test: (k) => k % 2 === 1 },
   { tex: 'prime numbers', test: (k) => k > 1 && _.range(2, k).every((d) => k % d) },

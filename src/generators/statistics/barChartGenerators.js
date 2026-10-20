@@ -13,13 +13,11 @@
 import _ from 'lodash';
 import { CONTEXTS } from './pieChartGenerators';
 import { DISCRETE, discreteData } from './frequencyTableGenerators';
+import { gcd, dp1 } from '../shared';
 
 const NL = '\n';
 
-const gcd = (a, b) => (b ? gcd(b, a % b) : a);
 
-// One decimal place, from integers (as averagesGenerators' dp1).
-const dp1 = (tenths) => (tenths % 10 === 0 ? `${tenths / 10}` : `${Math.floor(tenths / 10)}.${tenths % 10}`);
 
 /** 4 or 5 categories with distinct heights, so no two bars can be confused
  *  and no comparison comes out as zero. */

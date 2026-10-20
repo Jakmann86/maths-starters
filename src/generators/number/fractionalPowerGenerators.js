@@ -18,10 +18,10 @@
 // See the handoff note about Board.jsx's stale comment on this.
 
 import _ from 'lodash';
+import { gcd } from '../shared';
 
 const NL = '\n';
 
-const gcd = (a, b) => (b ? gcd(b, a % b) : a);
 
 // Letters a student meets as an unknown. 'n' is deliberately absent: it reads
 // as the root index everywhere else in this file.

@@ -1,10 +1,10 @@
 import _ from 'lodash';
+import { gcd } from '../shared';
 
 const NL = '\n';
 
 // A quadratic's roots are printed the way Haese prints them: "x = -7 or 4".
 const roots = (p, q) => (p === q ? `x = ${p}` : `x = ${p} \\text{ or } ${q}`);
-function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
 const frac = (n, d) => {
   const g = gcd(Math.abs(n), d);
   const [nn, dd] = [n / g, d / g];

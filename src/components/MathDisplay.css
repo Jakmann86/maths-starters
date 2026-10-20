@@ -20,25 +20,10 @@
   margin: 0.08em 0;
 }
 
-.msqrt {
-  white-space: nowrap;
-}
-
-.msqrt-bar {
-  border-top: 0.08em solid currentColor;
-  padding: 0 0.12em;
-}
-
 .msup {
   font-size: 0.58em;
   line-height: 0;
   vertical-align: super;
-}
-
-.msub {
-  font-size: 0.58em;
-  line-height: 0;
-  vertical-align: sub;
 }
 
 .mtext {

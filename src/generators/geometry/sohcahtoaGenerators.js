@@ -83,7 +83,7 @@ export const generateSohcahtoaFindSide = (options = {}) => {
       unknown: unknownLetter,
       angleAt,
       angleLabel: `${angle}^\\circ`,
-      big: 1,
+      big: true,
     },
     metadata: { topic: 'sohcahtoa-find-side', difficulty },
   };
@@ -152,7 +152,7 @@ export const generateSohcahtoaFindAngle = (options = {}) => {
       unknown: '',
       angleAt,
       angleLabel: 'x',
-      big: 1,
+      big: true,
     },
     metadata: { topic: 'sohcahtoa-find-angle', difficulty },
   };

@@ -15,9 +15,12 @@
 //   Stretch     non-triple legs         3 s.f. decimal
 
 import _ from 'lodash';
+import { pythagoreanTriples } from '../shared';
 
 const NL = '\n';
-const TRIPLES = [[3, 4, 5], [6, 8, 10], [5, 12, 13], [9, 12, 15], [8, 15, 17], [12, 16, 20], [7, 24, 25], [10, 24, 26], [20, 21, 29]];
+// Foundation's triples, generated rather than listed (CLAUDE.md §8), with a
+// hypotenuse small enough to square in your head.
+const TRIPLES = pythagoreanTriples(30);
 const toSig3 = (n) => n.toPrecision(3); // string, so a significant trailing zero survives (12.0, not 12)
 const isSquare = (n) => Number.isInteger(Math.sqrt(n));
 
@@ -47,7 +50,7 @@ export const generatePythagorasHypotenuse = (options = {}) => {
     answer,
     answerUnits: '\\text{cm}',
     workingOut: steps.join(NL),
-    visualization: { type: 'right-triangle', a: `${a} cm`, b: `${b} cm`, c: 'x', big: 1 },
+    visualization: { type: 'right-triangle', a: `${a} cm`, b: `${b} cm`, c: 'x', big: true },
     metadata: { topic: 'pythagoras-hypotenuse', difficulty },
   };
 };
@@ -101,7 +104,7 @@ export const generatePythagorasMissingSide = (options = {}) => {
       b: unknown === 'b' ? 'x' : `${bVal} cm`,
       c: `${c} cm`,
       unknown,
-      big: 1,
+      big: true,
     },
     metadata: { topic: 'pythagoras-missing-side', difficulty },
   };
@@ -139,7 +142,7 @@ export const generatePythagorasIsosceles = (options = {}) => {
     answer,
     answerUnits: '\\text{cm}',
     workingOut: steps.join(NL),
-    visualization: { type: 'isosceles-triangle', base: `${base} cm`, side: `${side} cm`, big: 1 },
+    visualization: { type: 'isosceles-triangle', base: `${base} cm`, side: `${side} cm`, big: true },
     metadata: { topic: 'pythagoras-isosceles', difficulty },
   };
 };

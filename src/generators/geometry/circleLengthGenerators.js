@@ -16,10 +16,10 @@
 // Triples are generated with Euclid's formula and filtered, never listed.
 
 import _ from 'lodash';
+import { pythagoreanTriples } from '../shared';
 
 const NL = '\n';
 
-const gcd = (a, b) => (b ? gcd(b, a % b) : Math.abs(a));
 
 /**
  * Every Pythagorean triple with hypotenuse at most `limit`, grouped by
@@ -27,22 +27,10 @@ const gcd = (a, b) => (b ? gcd(b, a % b) : Math.abs(a));
  */
 function buildTriples(limit) {
   const byHyp = new Map();
-  for (let m = 2; m * m <= limit; m += 1) {
-    for (let n = 1; n < m; n += 1) {
-      if ((m - n) % 2 === 0) continue;
-      if (gcd(m, n) !== 1) continue;
-      const a = m * m - n * n;
-      const b = 2 * m * n;
-      const c = m * m + n * n;
-      for (let k = 1; k * c <= limit; k += 1) {
-        const hyp = k * c;
-        const legs = [Math.min(k * a, k * b), Math.max(k * a, k * b)];
-        if (!byHyp.has(hyp)) byHyp.set(hyp, []);
-        const list = byHyp.get(hyp);
-        if (!list.some((p) => p[0] === legs[0] && p[1] === legs[1])) list.push(legs);
-      }
-    }
-  }
+  pythagoreanTriples(limit).forEach(([a, b, c]) => {
+    if (!byHyp.has(c)) byHyp.set(c, []);
+    byHyp.get(c).push([Math.min(a, b), Math.max(a, b)]);
+  });
   return byHyp;
 }
 
