@@ -17,6 +17,7 @@ function visualLength(str) {
     .replace(/\\cap/g, '∩').replace(/\\cup/g, '∪')
     .replace(/\\[{}]/g, '{')
     .replace(/\\le/g, '≤').replace(/\\ge/g, '≥').replace(/\\ne/g, '≠')
+    .replace(/\\approx/g, '≈').replace(/\\quad/g, '  ')
     .replace(/\\circ/g, '°')
     .replace(/\\text\{([^}]*)\}/g, '$1')
     .replace(/\\,|\\;|\\!/g, ' ')

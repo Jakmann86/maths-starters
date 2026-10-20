@@ -206,8 +206,8 @@ Hybrid, in one component. The custom Archivo parser handles the common cases;
 KaTeX covers what it can't.
 
 **Parser handles** — `\frac{}{}` (one level), `\times`, `\div`, `\pm`, `\le`,
-`\ge`, `\ne`, `\pi`, `\Delta`, `\text{}`, a bare degree suffix (`30^\circ`),
-and plain algebra. Hyphens before a digit or letter become U+2212.
+`\ge`, `\ne`, `\approx`, `\pi`, `\Delta`, `\ldots`, `\text{}`, a bare degree
+suffix (`30^\circ`), the spaces `\ ` and `\quad`, and plain algebra. Hyphens before a digit or letter become U+2212.
 
 **Falls back to KaTeX** when it meets an unknown `\command`, a `\frac`
 nested two or more levels deep — at 0.82em per level, nested fractions become

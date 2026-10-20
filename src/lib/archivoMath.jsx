@@ -1,7 +1,8 @@
 // Parses one line of maths markup into Archivo-native React nodes.
 // Understands the `~f{}{}` shorthand plus the LaTeX subset from SPEC.md §6:
-// \frac{}{} (one level), \times, \div, \pm, \le, \ge, \ne, \pi, \Delta,
-// \text{}, \circ as a bare degree suffix (`30^\circ`), and plain algebra.
+// \frac{}{} (one level), \times, \div, \pm, \le, \ge, \ne, \approx, \pi,
+// \Delta, \ldots, \text{}, \circ as a bare degree suffix (`30^\circ`), the
+// spaces `\ ` and `\quad`, and plain algebra.
 // Hyphens before a digit or letter become U+2212.
 //
 // Square roots (`\sqrt{}`, `~r{}`) and every exponent/subscript other than
@@ -21,6 +22,9 @@ const SYMBOLS = {
   le: '≤',
   ge: '≥',
   ne: '≠',
+  approx: '≈',
+  ldots: '…',
+  quad: '\u2003',
   pi: 'π',
   circ: '°',
   Delta: 'Δ',
@@ -103,6 +107,12 @@ function parseSeq(s, kb, fracDepth) {
 
     if (s[i] === '^' || s[i] === '_') {
       return null;
+    }
+
+    if (s[i] === '\\' && s[i + 1] === ' ') {
+      buf += ' ';
+      i += 2;
+      continue;
     }
 
     if (s[i] === '\\') {
