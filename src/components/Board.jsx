@@ -134,10 +134,10 @@ export default function Board() {
     setState((s) => ({ ...s, diff: next, revealed: false, boxes: fresh }));
   };
 
-  // Toggling only changes the pool; it takes effect on the next fresh draw
-  // ("New four", or a future mount) rather than immediately reshuffling the
-  // board while the teacher is still adjusting the set. The panel stays open
-  // on tap so multiple topics can be toggled in one visit.
+  // Toggling only changes the pool; the board is redrawn when the panel
+  // closes (closePool), not on every tap while the teacher is still adjusting
+  // the set. The panel stays open on tap so multiple topics can be toggled in
+  // one visit.
   const changePool = (next) => {
     savePool(next);
     setState((s) => ({ ...s, pool: next }));
@@ -145,6 +145,20 @@ export default function Board() {
   const toggleTopic = (topicName) => changePool(togglePool(pool, topicName));
   const selectAllTopics = () => changePool(topics());
   const selectNoneTopics = () => changePool([]);
+
+  // Done draws a fresh four if the selection changed. Leaving the old boxes up
+  // until "New four" showed topics the teacher had just unticked, which read
+  // as the panel not taking.
+  const poolAtOpen = useRef(pool);
+  const openPool = () => {
+    poolAtOpen.current = pool;
+    setPanelOpen(true);
+  };
+  const closePool = () => {
+    setPanelOpen(false);
+    const was = poolAtOpen.current;
+    if (was.length !== pool.length || !pool.every((t) => was.includes(t))) regenAll();
+  };
 
   // Fetch KaTeX up front rather than on the first surd — most boards hit it.
   useEffect(() => { preloadKatex(); }, []);
@@ -211,7 +225,7 @@ export default function Board() {
     <div className="board">
       <Header
         poolSummary={poolSummary}
-        onOpenPool={() => setPanelOpen(true)}
+        onOpenPool={openPool}
         diffLabel={DIFF[diff]}
         onDiffUp={() => setDiff(1)}
         onDiffDown={() => setDiff(-1)}
@@ -250,7 +264,7 @@ export default function Board() {
         onToggle={toggleTopic}
         onSelectAll={selectAllTopics}
         onSelectNone={selectNoneTopics}
-        onClose={() => setPanelOpen(false)}
+        onClose={closePool}
       />
     </div>
   );
