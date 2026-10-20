@@ -36,6 +36,7 @@ import * as bars from '../generators/statistics/barChartGenerators';
 import * as freqTable from '../generators/statistics/frequencyTableGenerators';
 import * as dataTypes from '../generators/statistics/dataTypesGenerators';
 import * as sets from '../generators/number/setsGenerators';
+import * as probability from '../generators/number/probabilityGenerators';
 import * as trees from '../generators/number/treeDiagramGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
@@ -851,9 +852,16 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 25A, 25F: one draw ---
+  // Ahead of tree-diagrams in the same topic, so ↻ steps from one draw to two.
+  'simple-probability': {
+    label: 'Simple probability',
+    topic: 'Probability',
+    generate: (opts) => probability.generateSimpleProbability(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 25H-I: tree diagrams ---
-  // Simple probability (25A, `simple-probability`) belongs ahead of this in
-  // the same topic, so ↻ steps from one draw to two.
   'tree-diagrams': {
     label: 'Tree diagrams',
     topic: 'Probability',
