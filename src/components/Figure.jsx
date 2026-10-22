@@ -54,6 +54,10 @@ function figLabel(key, x, y, text, anchor = 'middle', color = 'var(--ink)', font
 // degree command swapped for the literal symbol before it can be drawn.
 const plainAngleLabel = (label) => String(label).replace(/\^?\\circ/g, '°');
 
+// An axis value as printed: up to two decimal places with no float noise
+// (1.4 + 0.05 x 3 is 1.5500000000000003), and no trailing zeros.
+const fmtAxis = (v) => String(Number(v.toFixed(2)));
+
 function unitVec(dx, dy) {
   const len = Math.hypot(dx, dy) || 1;
   return [dx / len, dy / len];
@@ -2214,6 +2218,137 @@ export default function Figure({ fig, color, shown }) {
     // drop to about 14px at 1080p. Accepted for now (20 Oct 2026); the
     // alternatives were the answer beside the question, or a slash fraction.
     return svgWrap(nodes, 664, 398, 'tree', fig.big, shown, true, 1, true);
+  }
+
+  // A scatter graph, Haese 22A-B. Drawn to the data, like `coordinate-grid`
+  // and the other data displays (CLAUDE.md 7): the pattern of the points IS
+  // the question, and a line of best fit is read off it.
+  //
+  // Unlike `coordinate-grid`, the axes do not pass through the origin. Each
+  // starts at its own `min` — heights from 1.4 m, sales from £40 — as a
+  // scatter graph in the textbook does.
+  //
+  //   xAxis, yAxis  { min, max, step, every, title }: a gridline at every
+  //                 `step`, a number on every `every`-th one. Sized so the
+  //                 two run to at most 12 and 8 cells.
+  //   points        [{ x, y, name? }], drawn as crosses. A name is written
+  //                 beside its point.
+  //   line          [[x1, y1], [x2, y2]]: a line of best fit, drawn in the
+  //                 slot colour and clipped to the plot.
+  //   reading       { x, y, from: 'x' | 'y' }: on reveal, dashed lines from
+  //                 the given axis to the line and across to the other.
+  //   highlight     a point's name: on reveal its cross and name take the slot
+  //                 colour (the answer to "which point does not fit?").
+  //
+  // Labels are horizontal, as `figLabel` draws them, so the y title sits
+  // above its axis rather than running up beside it, as `bar-chart` does.
+  if (fig.type === 'scatter') {
+    const { xAxis: xa, yAxis: ya } = fig;
+    const pts = fig.points || [];
+    // Wide and short: in a slot this figure is bound by height, so every unit
+    // of plot height costs text size. At 156 high the numbers draw at about
+    // 17px on a 1080p board, and still about 11px at 1366 x 768.
+    const FS = 17;               // tick numbers, titles and names
+    const CHAR = 10.5;           // a tick number's width per character at FS
+    const PW = 400, PH = 156;    // the plot, to scale within each axis
+    const yNums = [];
+    for (let v = ya.min; v <= ya.max + 1e-9; v += ya.step * (ya.every || 1)) yNums.push(fmtAxis(v));
+    const LEFT = Math.max(...yNums.map((s) => s.length)) * CHAR + 16;
+    const TOP = 34, BOTTOM = 58, RIGHT = 18;
+    const W = LEFT + PW + RIGHT;
+    const H = TOP + PH + BOTTOM;
+    const X = (x) => LEFT + ((x - xa.min) / (xa.max - xa.min)) * PW;
+    const Y = (y) => TOP + PH - ((y - ya.min) / (ya.max - ya.min)) * PH;
+
+    const nodes = [];
+    const nx = Math.round((xa.max - xa.min) / xa.step);
+    const ny = Math.round((ya.max - ya.min) / ya.step);
+    for (let i = 0; i <= nx; i += 1) {
+      const v = xa.min + i * xa.step;
+      const major = i % (xa.every || 1) === 0;
+      nodes.push(figLine(`gx${i}`, X(v), TOP, X(v), TOP + PH, { strokeWidth: 1, strokeOpacity: major ? 0.26 : 0.12 }));
+      if (major) nodes.push(figLabel(`nx${i}`, X(v), TOP + PH + 21, fmtAxis(v), 'middle', 'var(--ink)', FS));
+    }
+    for (let j = 0; j <= ny; j += 1) {
+      const v = ya.min + j * ya.step;
+      const major = j % (ya.every || 1) === 0;
+      nodes.push(figLine(`gy${j}`, LEFT, Y(v), LEFT + PW, Y(v), { strokeWidth: 1, strokeOpacity: major ? 0.26 : 0.12 }));
+      if (major) nodes.push(figLabel(`ny${j}`, LEFT - 7, Y(v) + 6, fmtAxis(v), 'end', 'var(--ink)', FS));
+    }
+    nodes.push(figLine('ax', LEFT, TOP + PH, LEFT + PW, TOP + PH, { strokeWidth: 2.5 }));
+    nodes.push(figLine('ay', LEFT, TOP - 6, LEFT, TOP + PH, { strokeWidth: 2.5 }));
+    if (xa.title) nodes.push(figLabel('xt', LEFT + PW / 2, TOP + PH + 50, xa.title, 'middle', 'var(--ink)', FS));
+    if (ya.title) nodes.push(figLabel('yt', 4, TOP - 14, ya.title, 'start', 'var(--ink)', FS));
+
+    // The line of best fit, clipped to the plot box.
+    if (fig.line) {
+      const [[x1, y1], [x2, y2]] = fig.line;
+      const m = (y2 - y1) / (x2 - x1);
+      const at = (x) => y1 + m * (x - x1);
+      const cand = [];
+      const keep = (x, y) => {
+        if (x >= xa.min - 1e-9 && x <= xa.max + 1e-9 && y >= ya.min - 1e-9 && y <= ya.max + 1e-9) cand.push([x, y]);
+      };
+      keep(xa.min, at(xa.min)); keep(xa.max, at(xa.max));
+      if (m !== 0) { keep(x1 + (ya.min - y1) / m, ya.min); keep(x1 + (ya.max - y1) / m, ya.max); }
+      cand.sort((a, b) => a[0] - b[0]);
+      if (cand.length >= 2) {
+        const [a, b] = [cand[0], cand[cand.length - 1]];
+        nodes.push(<line key="lobf" x1={X(a[0])} y1={Y(a[1])} x2={X(b[0])} y2={Y(b[1])} stroke={color} strokeWidth={3} />);
+      }
+    }
+
+    // Reading lines, on reveal: up from the x axis and across, or across
+    // from the y axis and down.
+    if (shown && fig.reading) {
+      const { x, y } = fig.reading;
+      const dash = { stroke: color, strokeWidth: 2.5, strokeDasharray: '7 5' };
+      nodes.push(<line key="rv" x1={X(x)} y1={TOP + PH} x2={X(x)} y2={Y(y)} {...dash} />);
+      nodes.push(<line key="rh" x1={LEFT} y1={Y(y)} x2={X(x)} y2={Y(y)} {...dash} />);
+    }
+
+    // Point names are placed one at a time, each beside its own cross on
+    // whichever side (right, left, above, below) overlaps least with every
+    // cross and every name already placed, and stays inside the figure.
+    const R = 5.5;
+    const crossBox = (p) => [X(p.x) - R - 2, Y(p.y) - R - 2, X(p.x) + R + 2, Y(p.y) + R + 2];
+    const overlap = (a, b) => Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0]))
+      * Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
+    const taken = pts.map(crossBox);
+    const NAME_CHAR = 10.2, NAME_H = 13;
+    const placeName = (p) => {
+      const [cx, cy] = [X(p.x), Y(p.y)];
+      const w = p.name.length * NAME_CHAR;
+      const sides = [
+        { anchor: 'start', x: cx + 9, y: cy + 6, box: [cx + 8, cy - 7, cx + 10 + w, cy + 7] },
+        { anchor: 'end', x: cx - 9, y: cy + 6, box: [cx - 10 - w, cy - 7, cx - 8, cy + 7] },
+        { anchor: 'middle', x: cx, y: cy - 10, box: [cx - w / 2, cy - 10 - NAME_H, cx + w / 2, cy - 9] },
+        { anchor: 'middle', x: cx, y: cy + 10 + NAME_H, box: [cx - w / 2, cy + 9, cx + w / 2, cy + 11 + NAME_H] },
+      ];
+      const cost = (sd) => taken.reduce((acc, b) => acc + overlap(sd.box, b), 0)
+        + (sd.box[0] < LEFT + 2 || sd.box[2] > W - 2 || sd.box[1] < 2 || sd.box[3] > TOP + PH - 2 ? 1e6 : 0);
+      const best = sides.reduce((a, b) => (cost(b) < cost(a) ? b : a));
+      taken.push(best.box);
+      return best;
+    };
+
+    pts.forEach((p, i) => {
+      const lit = shown && fig.highlight != null && p.name === fig.highlight;
+      const ink = lit ? color : 'var(--ink)';
+      const [cx, cy] = [X(p.x), Y(p.y)];
+      nodes.push(<line key={`pa${i}`} x1={cx - R} y1={cy - R} x2={cx + R} y2={cy + R} stroke={ink} strokeWidth={lit ? 3.5 : 2.5} />);
+      nodes.push(<line key={`pb${i}`} x1={cx - R} y1={cy + R} x2={cx + R} y2={cy - R} stroke={ink} strokeWidth={lit ? 3.5 : 2.5} />);
+    });
+    pts.forEach((p, i) => {
+      if (!p.name) return;
+      const lit = shown && fig.highlight != null && p.name === fig.highlight;
+      const at = placeName(p);
+      nodes.push(figLabel(`pn${i}`, at.x, at.y, p.name, at.anchor, lit ? color : 'var(--ink)', 16));
+    });
+
+    // noShrink: the graph is what the answer is read off, as with the bar
+    // chart. hug: it is height-bound in a slot, so the box narrows to it.
+    return svgWrap(nodes, W, H, 'scatter', fig.big, shown, true, 1, true);
   }
 
   // The fourth data display: drawn to the data, like `pie-chart`. A gridline
