@@ -156,8 +156,8 @@
     { "id": "21I", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "Using technology", "page": 446, "skills": [], "status": "skip" },
     { "id": "21J", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "Problem solving", "page": 447, "skills": [], "status": "skip" },
 
-    { "id": "22A", "ch": 22, "unit": "Two variable analysis", "lesson": "Correlation", "page": 456, "skills": [], "status": "todo" },
-    { "id": "22B", "ch": 22, "unit": "Two variable analysis", "lesson": "Line of best fit by eye", "page": 459, "skills": [], "status": "todo" },
+    { "id": "22A", "ch": 22, "unit": "Two variable analysis", "lesson": "Correlation", "page": 456, "skills": ["scatter-correlation"], "status": "ready" },
+    { "id": "22B", "ch": 22, "unit": "Two variable analysis", "lesson": "Line of best fit by eye", "page": 459, "skills": ["line-of-best-fit"], "status": "ready" },
     { "id": "22C", "ch": 22, "unit": "Two variable analysis", "lesson": "Linear regression", "page": 461, "skills": [], "status": "skip" },
 
     { "id": "23A", "ch": 23, "unit": "Further functions", "lesson": "Cubic functions", "page": 469, "skills": [], "status": "todo" },

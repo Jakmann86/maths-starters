@@ -40,6 +40,7 @@ import * as probability from '../generators/number/probabilityGenerators';
 import * as trees from '../generators/number/treeDiagramGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
+import * as scatter from '../generators/statistics/scatterGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -945,6 +946,19 @@ export const skills = {
     generate: (opts) => bars.generateBarCharts(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  // --- Haese 22A-B, Rayner 14.5: scatter graphs ---
+  'scatter-correlation': {
+    label: 'Scatter graphs: correlation',
+    topic: 'Scatter graphs',
+    generate: (opts) => scatter.generateScatterCorrelation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'line-of-best-fit': {
+    label: 'Line of best fit',
+    topic: 'Scatter graphs',
+    generate: (opts) => scatter.generateLineOfBestFit(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 };
 
 export const skillIds = Object.keys(skills);
@@ -1005,7 +1019,7 @@ export const STRANDS = [
   { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Circles', 'Surface area', 'Volume'] },
   // Sets sits here rather than in Number: Venn diagrams lead into
   // probability from a diagram, and the scheme teaches them together.
-  { name: 'Statistics and probability', topics: ['Sets', 'Representing data', 'Averages', 'Probability'] },
+  { name: 'Statistics and probability', topics: ['Sets', 'Representing data', 'Averages', 'Spread', 'Scatter graphs', 'Probability'] },
   { name: 'Problem solving', topics: ['Problem solving', 'Puzzles'] },
 ];
 
