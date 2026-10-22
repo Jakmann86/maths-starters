@@ -41,6 +41,7 @@ import * as trees from '../generators/number/treeDiagramGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
+import * as spread from '../generators/statistics/spreadGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -944,6 +945,19 @@ export const skills = {
     label: 'Bar charts',
     topic: 'Representing data',
     generate: (opts) => bars.generateBarCharts(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // --- Haese 13D-E, 13G: spread ---
+  'quartiles-iqr': {
+    label: 'Quartiles and the interquartile range',
+    topic: 'Spread',
+    generate: (opts) => spread.generateQuartilesIqr(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'compare-distributions': {
+    label: 'Comparing two data sets',
+    topic: 'Spread',
+    generate: (opts) => spread.generateCompareDistributions(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   // --- Haese 22A-B, Rayner 14.5: scatter graphs ---

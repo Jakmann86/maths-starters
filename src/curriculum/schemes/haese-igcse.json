@@ -96,8 +96,8 @@
     { "id": "13A", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Variables used in statistics", "page": 277, "skills": ["data-types"], "status": "ready" },
     { "id": "13B", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Organising and describing discrete data", "page": 278, "skills": ["frequency-table-reading"], "status": "ready" },
     { "id": "13C", "ch": 13, "unit": "Analysis of discrete data", "lesson": "The centre of a discrete data set", "page": 282, "skills": ["averages-from-list"], "status": "ready" },
-    { "id": "13D", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Measuring the spread of discrete data", "page": 285, "skills": ["averages-from-list"], "status": "ready" },
-    { "id": "13E", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Data in frequency tables", "page": 288, "skills": ["averages-from-table", "table-averages"], "status": "ready" },
+    { "id": "13D", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Measuring the spread of discrete data", "page": 285, "skills": ["averages-from-list", "quartiles-iqr", "compare-distributions"], "status": "ready" },
+    { "id": "13E", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Data in frequency tables", "page": 288, "skills": ["averages-from-table", "table-averages", "quartiles-iqr"], "status": "ready" },
     { "id": "13F", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Grouped discrete data", "page": 290, "skills": ["estimated-mean"], "status": "ready" },
     { "id": "13G", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Statistics from technology", "page": 292, "skills": [], "status": "skip" },
 
