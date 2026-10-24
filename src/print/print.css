@@ -1,0 +1,341 @@
+/* The print screen and the printed page. Sizes are in mm and pt, not the
+   board's cqh/cqi: paper has a fixed size, and the board's container units
+   would resolve against nothing here. */
+
+/* — on screen: an overlay with the controls and a preview of every page — */
+
+.print-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: auto;
+  background: var(--surface);
+}
+
+.print-controls {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 18px;
+  padding: 14px 24px;
+  background: var(--ground);
+  border-bottom: 2px solid var(--ink);
+}
+
+.print-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.print-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.print-seg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.print-value {
+  min-width: 84px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.print-btn {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 2px solid var(--hairline);
+  background: transparent;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.print-btn:hover {
+  border-color: var(--ink);
+}
+
+.print-btn.is-on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.print-btn--primary {
+  border-color: var(--slot-1);
+  background: var(--slot-1);
+  color: var(--ground);
+  font-weight: 800;
+}
+
+.print-title-input {
+  min-height: 44px;
+  width: 220px;
+  padding: 0 10px;
+  border: 2px solid var(--hairline);
+  background: var(--ground);
+  font: 600 15px 'Archivo', system-ui, sans-serif;
+}
+
+.print-spacer {
+  flex: 1;
+}
+
+.print-pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+}
+
+/* — the page itself, the same on screen and on paper — */
+
+.print-page {
+  width: 210mm;
+  height: 297mm;
+  overflow: hidden;
+  background: white;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  /* The sheet's own text (title, name line, instructions) in Archivo, as
+     the board's interface is; questions and answers are KaTeX. */
+  font-family: 'Archivo', system-ui, sans-serif;
+}
+
+.print-page--full {
+  padding: 12mm 12mm 10mm;
+}
+
+.print-page--half {
+  padding: 0 12mm;
+}
+
+.print-page--half .print-sheet {
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 9mm 0 7mm;
+}
+
+.print-cut {
+  flex: 0 0 auto;
+  margin: 0 -12mm;
+  border-top: 1px dashed var(--muted);
+}
+
+.print-sheet {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  --fig-h: 36mm;
+}
+
+.print-sheet--half {
+  --fig-h: 30mm;
+}
+
+.print-sheet-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8mm;
+  padding-bottom: 2.5mm;
+  margin-bottom: 3mm;
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.print-sheet-title {
+  font-size: 15pt;
+  font-weight: 800;
+}
+
+.print-sheet-part {
+  font-weight: 400;
+  font-size: 11pt;
+  color: var(--muted);
+}
+
+.print-field {
+  display: flex;
+  align-items: baseline;
+  gap: 2mm;
+  font-size: 10pt;
+}
+
+.print-line {
+  display: inline-block;
+  width: 48mm;
+  border-bottom: 1px solid var(--ink);
+}
+
+.print-line--short {
+  width: 24mm;
+}
+
+.print-letter {
+  min-width: 8mm;
+  padding: 0.5mm 2mm;
+  border: 1.5px solid var(--ink);
+  text-align: center;
+  font-size: 12pt;
+  font-weight: 800;
+}
+
+.print-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+  column-gap: 8mm;
+  row-gap: 3mm;
+}
+
+/* — one question — */
+
+.pq {
+  display: flex;
+  gap: 2.5mm;
+  min-height: 0;
+  overflow: hidden;
+  padding-top: 2mm;
+  /* Room for a root sign or a KaTeX box that overhangs its line by a pixel
+     or two, which overflow: hidden would otherwise clip — at the right edge,
+     and at the bottom, where the answer sits flush. */
+  padding-right: 1mm;
+  padding-bottom: 1.5mm;
+  border-top: 1px solid var(--hairline);
+}
+
+.pq-num {
+  flex: 0 0 auto;
+  font-size: 11pt;
+  font-weight: 800;
+}
+
+.pq-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5mm;
+}
+
+.pq-instr {
+  font-size: calc(9.5pt * var(--fit, 1));
+  line-height: 1.3;
+}
+
+.pq-q,
+.pq-parts {
+  font-size: calc(11.5pt * var(--fit, 1));
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.pq-parts {
+  font-size: calc(10pt * var(--fit, 1));
+}
+
+/* Figure first, question beside it; wraps underneath when the figure is
+   too wide to leave the question 34mm. */
+.pq-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2mm 4mm;
+}
+
+.pq-row > .pq-q,
+.pq-row > .pq-parts {
+  flex: 1 1 34mm;
+  min-width: 0;
+}
+
+.pq-fig {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* The figure's own inline sizing is in the board's container units; on
+   paper it is sized by height instead, and its width follows its viewBox. */
+.pq-fig .fig-svg {
+  width: auto !important;
+  height: calc(var(--fig-h) * var(--fit, 1)) !important;
+  max-height: calc(var(--fig-h) * var(--fit, 1)) !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+.pq-space {
+  flex: 1 1 auto;
+  min-height: 2mm;
+}
+
+.pq-answer {
+  display: flex;
+  justify-content: flex-end;
+  font-size: calc(11pt * var(--fit, 1));
+  font-weight: 600;
+}
+
+.pq-answer-line {
+  width: 32mm;
+  height: 5mm;
+  border-bottom: 1px solid var(--ink);
+}
+
+/* — on paper — */
+
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    background: white;
+  }
+
+  #root,
+  .print-controls {
+    display: none !important;
+  }
+
+  .print-overlay {
+    position: static;
+    overflow: visible;
+    background: white;
+  }
+
+  .print-pages {
+    display: block;
+    padding: 0;
+  }
+
+  .print-page {
+    border: 0;
+    break-after: page;
+  }
+
+  /* Colour on paper as on screen: browsers drop it by default. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

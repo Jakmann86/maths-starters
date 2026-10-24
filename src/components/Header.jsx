@@ -3,7 +3,7 @@ export default function Header({
   diffLabel, onDiffUp, onDiffDown,
   clock, clockExpired, onClockChange, onClockFocus,
   onAddMinute, onSubMinute, timerRunning, onToggleTimer,
-  onRegenAll, revealed, onToggleReveal, onFullscreen,
+  onRegenAll, revealed, onToggleReveal, onFullscreen, onPrint,
 }) {
   return (
     <header className="board-header">
@@ -54,6 +54,8 @@ export default function Header({
         <button type="button" className={`reveal-btn${revealed ? ' is-revealed' : ''}`} onClick={onToggleReveal}>
           {revealed ? 'Hide answers' : 'Show answers'}
         </button>
+
+        <button type="button" className="new-four-btn" onClick={onPrint}>Print</button>
 
         <button type="button" className="fullscreen-btn" title="Full screen" onClick={onFullscreen}>⛶</button>
       </div>

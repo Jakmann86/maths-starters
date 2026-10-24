@@ -2,9 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
 import TopicPanel from './TopicPanel.jsx';
-import { generateForSkill, getSkill, skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
+import PrintSheet from '../print/PrintSheet.jsx';
+import { generateForSkill, skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
 import { loadPool, savePool, togglePool, drawBoxTopics, pickSwapTopic } from '../curriculum/topicPool.js';
 import { preloadKatex } from '../lib/katexLoader.js';
+import { questionView } from '../lib/questionView.js';
 import './Board.css';
 
 const SLOT_COLORS = ['var(--slot-1)', 'var(--slot-2)', 'var(--slot-3)', 'var(--slot-4)'];
@@ -18,25 +20,8 @@ const MIXED = ['foundation', 'core', 'core', 'stretch'];
 const INITIAL_DIFF = 1;
 const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 
-// answerUnits is either LaTeX ('\\text{cm}^3', passed through) or a plain
-// word ('cm'), which is wrapped in \text{} so it does not render as the
-// italic product c·m.
-const unitsTex = (u) => (u.includes('\\') ? u : `\\text{${u}}`);
-
 function slotData(skillId, band) {
-  const q = generateForSkill(skillId, band);
-  if (!q) return { topic: '—', instr: '', q: '', a: '' };
-
-  return {
-    topic: getSkill(skillId)?.label ?? skillId,
-    instr: q.instruction,
-    q: q.questionMath != null ? q.questionMath : (q.questionText ?? ''),
-    qProse: q.questionMath == null && q.questionText != null,
-    parts: q.questionParts ?? null,
-    qCompact: q.questionMathCompact === true,
-    a: q.answerUnits ? `${q.answer}\\text{ }${unitsTex(q.answerUnits)}` : q.answer,
-    fig: q.visualization,
-  };
+  return questionView(generateForSkill(skillId, band), skillId);
 }
 
 // A fresh draw: 4 topics at random from the pool (SPEC.md "Design revision:
@@ -67,6 +52,8 @@ export default function Board() {
     running: false,
   });
   const [panelOpen, setPanelOpen] = useState(false);
+  const [printOpen, setPrintOpen] = useState(false);
+  const closePrint = useCallback(() => setPrintOpen(false), []);
 
   const { boxes, revealed, diff, seconds, running, pool } = state;
 
@@ -158,7 +145,7 @@ export default function Board() {
 
   useEffect(() => {
     const handler = (e) => {
-      if (panelOpen) return;
+      if (panelOpen || printOpen) return;
       if (e.target && e.target.tagName === 'INPUT') return;
       if (e.code === 'Space') {
         e.preventDefault();
@@ -168,7 +155,7 @@ export default function Board() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [panelOpen, regenAll]);
+  }, [panelOpen, printOpen, regenAll]);
 
   const total = topics().length;
   const poolSummary = (pool.length === 0 || pool.length === total)
@@ -216,6 +203,7 @@ export default function Board() {
         revealed={revealed}
         onToggleReveal={() => setState((s) => ({ ...s, revealed: !s.revealed }))}
         onFullscreen={handleFullscreen}
+        onPrint={() => setPrintOpen(true)}
       />
 
       <main className="board-main">
@@ -240,6 +228,14 @@ export default function Board() {
         onSelectAll={selectAllTopics}
         onSelectNone={selectNoneTopics}
         onClose={closePool}
+      />
+
+      {/* What is printed is what is on the board: each box's skill at that
+          box's band, with fresh numbers. */}
+      <PrintSheet
+        open={printOpen}
+        boxes={boxes.map((b, i) => ({ skillId: b.skillId, band: bandFor(diff, i) }))}
+        onClose={closePrint}
       />
     </div>
   );
