@@ -267,6 +267,11 @@ function compareOutlier() {
     // The trap has to be real: the steady player has the larger range and
     // the clearly smaller IQR.
     if (!(rx > ry + 2 && iy - ix >= 3)) continue;
+    // And it is that one score that does it: without it, the steady player's
+    // range is no longer the larger. (Rarely, the other player's scores
+    // bunch so tightly that it would be larger even then, and "one score
+    // widens the range" would not be the whole story.)
+    if (range(steady) > ry) continue;
     if (_.isEqual(xs, _.sortBy(xs)) || _.isEqual(ys, _.sortBy(ys))) continue;
     // The steady player (a) goes in either row.
     const [a, b] = labels(ctx);
