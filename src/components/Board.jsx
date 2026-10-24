@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
 import TopicPanel from './TopicPanel.jsx';
+import PrintSheet from '../print/PrintSheet.jsx';
 import { generateForSkill, skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
 import { loadPool, savePool, togglePool, drawBoxTopics, pickSwapTopic } from '../curriculum/topicPool.js';
 import { preloadKatex } from '../lib/katexLoader.js';
@@ -51,6 +52,8 @@ export default function Board() {
     running: false,
   });
   const [panelOpen, setPanelOpen] = useState(false);
+  const [printOpen, setPrintOpen] = useState(false);
+  const closePrint = useCallback(() => setPrintOpen(false), []);
 
   const { boxes, revealed, diff, seconds, running, pool } = state;
 
@@ -142,7 +145,7 @@ export default function Board() {
 
   useEffect(() => {
     const handler = (e) => {
-      if (panelOpen) return;
+      if (panelOpen || printOpen) return;
       if (e.target && e.target.tagName === 'INPUT') return;
       if (e.code === 'Space') {
         e.preventDefault();
@@ -152,7 +155,7 @@ export default function Board() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [panelOpen, regenAll]);
+  }, [panelOpen, printOpen, regenAll]);
 
   const total = topics().length;
   const poolSummary = (pool.length === 0 || pool.length === total)
@@ -200,6 +203,7 @@ export default function Board() {
         revealed={revealed}
         onToggleReveal={() => setState((s) => ({ ...s, revealed: !s.revealed }))}
         onFullscreen={handleFullscreen}
+        onPrint={() => setPrintOpen(true)}
       />
 
       <main className="board-main">
@@ -224,6 +228,14 @@ export default function Board() {
         onSelectAll={selectAllTopics}
         onSelectNone={selectNoneTopics}
         onClose={closePool}
+      />
+
+      {/* What is printed is what is on the board: each box's skill at that
+          box's band, with fresh numbers. */}
+      <PrintSheet
+        open={printOpen}
+        boxes={boxes.map((b, i) => ({ skillId: b.skillId, band: bandFor(diff, i) }))}
+        onClose={closePrint}
       />
     </div>
   );

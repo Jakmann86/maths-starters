@@ -51,9 +51,16 @@ where their class is.
 ## What this is not
 
 This is a deliberate reduction of a larger five-section teaching app. Do not
-add Diagnostic, Learn, Examples or Challenge sections. Do not add PDF
-worksheet generation, JSXGraph, user accounts, or a backend. If a feature
-request would pull any of those back in, say so rather than building it.
+add Diagnostic, Learn, Examples or Challenge sections. Do not add a PDF
+library (jsPDF and the like), JSXGraph, user accounts, or a backend. If a
+feature request would pull any of those back in, say so rather than building
+it.
+
+Printing is the one exception, and it is deliberately narrow: the board can
+print what is on it as an exit ticket, practice or homework sheet, through
+the browser's own Print / Save as PDF (`src/print`, SPEC.md §7.4). No new
+dependency, no separate worksheet engine: the same generators, `Figure.jsx`
+and `MathDisplay.jsx`, laid out on A4 with print CSS.
 
 ## Commands
 
@@ -77,8 +84,10 @@ src/
                  MathDisplay.jsx
   curriculum/    skills.js  topicPool.js  schemes/haese-igcse.json
   generators/    algebra/  geometry/  number/  puzzles/  statistics/
-  lib/           katexLoader.js  typeSizing.js
-  dev/           MathTestPage.jsx (served by math-test.html, dev only)
+  lib/           katexLoader.js  typeSizing.js  questionView.js
+  print/         PrintSheet.jsx  buildSheets.js  print.css
+  dev/           MathTestPage.jsx (math-test.html), PrintTestPage.jsx
+                 (print-test.html) — dev only
 ```
 
 - `Board.jsx` orchestrates: draws four topics from the pool, holds the

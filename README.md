@@ -91,7 +91,8 @@ stay in Archivo. KaTeX is its own chunk, preloaded on mount.
 ## Out of scope
 
 Accounts, a backend, sharing between teachers, student-facing mode, answer
-capture, analytics, printing, PDF export.
+capture, analytics, a PDF library. (The board itself can be printed as an
+exit ticket, practice or homework sheet, through the browser.)
 
 ## Questions come from generators, not textbooks
 

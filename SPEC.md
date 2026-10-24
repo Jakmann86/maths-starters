@@ -277,6 +277,32 @@ Create, rename, delete. Set scheme and difficulty band. Each class carries its
 own ticks, so two classes on the same scheme sit at different points in it and
 get genuinely different boards.
 
+### 7.4 Print — over the board
+
+The header's Print button opens a print screen over the board. It prints
+what the board holds: each box's skill at that box's band (so Mixed carries
+over), with fresh numbers. Nothing is chosen afresh.
+
+| Sheet | Layout | Questions |
+|---|---|---|
+| Exit ticket | two sheets per A4, cut apart | one per box |
+| Practice | one sheet per A4 | two per box |
+| Homework | one sheet per A4, with a date line | three per box, over two pages |
+
+- **Versions**: 1–5. Every version has the same skills in the same order,
+  with its own numbers, and is lettered A–E on the sheet. With one version an
+  exit-ticket page prints the same sheet twice; with more, each half is a
+  different version, and an odd count finishes on A.
+- **Answers**: printed in place, in the first slot colour, with figure
+  solutions filled — a teacher copy is the same sheet with its answers.
+- It prints through the browser (`window.print()`), so Save as PDF comes for
+  free. No PDF library.
+
+On paper each question is a fixed cell. A question too big for its cell is
+shrunk, text and figure together, in 5% steps to no less than 65%. The
+dev page `print-test.html` draws every skill at every band in both layouts,
+so overflow is measured rather than spotted.
+
 ## 8. Persistence
 
 localStorage throughout. Classes and schemes under stable keys; the four
@@ -290,8 +316,9 @@ every one of them.
 ## 9. Out of scope
 
 Accounts, a backend, sharing between teachers, student-facing mode, answer
-capture, analytics, printing, PDF export, and the four other lesson sections
-from the original app.
+capture, analytics, a PDF library or worksheet engine, and the four other
+lesson sections from the original app. Printing the board through the
+browser is in scope (§7.4).
 
 Calculator / non-calculator filtering is deferred — the catalogue may carry
 the tag, but there is no UI for it and nothing filters on it yet.
