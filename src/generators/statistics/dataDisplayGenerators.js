@@ -12,7 +12,7 @@
 //
 // Both answer with something that is not a number: a class interval, or a
 // value read off a plot. A class interval goes through the renderer, so it
-// uses `\le`, which is in the Archivo subset. The class intervals printed
+// uses `\le`. The class intervals printed
 // INSIDE the table use the literal character instead, because figure labels
 // are plain SVG text and never touch the renderer (CLAUDE.md 6).
 

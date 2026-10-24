@@ -77,15 +77,14 @@ src/
                  MathDisplay.jsx
   curriculum/    skills.js  topicPool.js  schemes/haese-igcse.json
   generators/    algebra/  geometry/  number/  puzzles/  statistics/
-  lib/           archivoMath.jsx  katexLoader.js  typeSizing.js
+  lib/           katexLoader.js  typeSizing.js
   dev/           MathTestPage.jsx (served by math-test.html, dev only)
 ```
 
 - `Board.jsx` orchestrates: draws four topics from the pool, holds the
   difficulty band, the timer, the reveal state, and the three per-box actions.
 - `Slot.jsx` renders one box; `Figure.jsx` maps a `visualization.type` to an
-  SVG branch; `MathDisplay.jsx` renders maths, through the Archivo parser in
-  `archivoMath.jsx` or KaTeX.
+  SVG branch; `MathDisplay.jsx` renders maths in KaTeX.
 - The board shows the question and, on reveal, the answer. It does not show
   `workingOut`.
 - `topicPool.js` owns the localStorage-backed topic selection.
@@ -192,17 +191,17 @@ serves four differently-coloured slots. Tokens live in `:root`. Never hardcode
 a hex value in a component — inside `Figure.jsx` that means the `color` prop
 and `var(--ink)` only.
 
-### 6. Maths rendering is hybrid, and figures are not part of it
+### 6. Maths renders in KaTeX, and figures are not part of it
 
-Question and answer text go through the renderer: a custom Archivo parser
-first, with KaTeX as a fallback for what it cannot take. See `SPEC.md` §6 for
-the exact split. Square roots and exponents fall back on purpose and the
-board does not warn about them. Any other console warning ("fell back to
-KaTeX") is either a parser gap or a generator using notation outside the
-subset — fix the generator rather than accepting the fallback.
+Every question and answer line goes through KaTeX, in every topic; only the
+instruction and the interface stay in Archivo. See `SPEC.md` §6. A KaTeX
+console warning (a character it has no metrics for, such as a literal `●`
+or `²`) is a generator bug: use KaTeX's own commands and LaTeX exponents.
 
 **Figure labels are different.** They are plain SVG `<text>`, drawn by
-`figLabel`, and never touch the renderer. So a figure label uses the literal
+`figLabel`, and never touch the renderer. They are set in KaTeX's fonts to
+match: a lone letter becomes maths italic and `°` a raised `∘`
+(`labelRuns`). So a figure label uses the literal
 character: `cm²` not `cm^2`. Passing LaTeX to a figure prints the
 backslashes. The one exception is an angle label: generators write
 `'35^\circ'`, and `angleMarker` converts it to `35°` through
@@ -269,8 +268,7 @@ Metric units. IGCSE/GCSE grade descriptors.
 ## Stack
 
 React 19 + Vite, plain CSS with custom properties, KaTeX (own chunk,
-preloaded on mount; a fallback everywhere except the Number strand and the
-Sets and Probability topics, which render wholly in KaTeX — SPEC.md §6), lodash. **No Tailwind.** No other dependencies
+preloaded on mount; renders every question and answer — SPEC.md §6), lodash. **No Tailwind.** No other dependencies
 without asking.
 
 ## Working style

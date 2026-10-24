@@ -41,10 +41,46 @@ function figLine(key, x1, y1, x2, y2, extra) {
   return <line key={key} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--ink)" strokeWidth={3} strokeLinecap="square" {...extra} />;
 }
 
+// A lone letter is a variable or a point (x, 2x, h, A, "0 ≤ x < 20") unless it
+// follows a number or a letter and a space, or a degree sign, where it is a
+// unit ("5 m", "x m", "°C").
+const LABEL_TOKEN = /(?<![A-Za-z°]|[A-Za-z\d] )[A-Za-z](?![A-Za-z])|°/g;
+
+// Sets each variable in maths italic (.fig-var), as KaTeX does in the
+// question. KaTeX_Main has no ° glyph, so a degree sign is drawn as KaTeX
+// draws ^\circ: a raised ∘ (.fig-deg), with the text after it dropped back
+// to the baseline. The dy values are in each tspan's own em, and .fig-deg is
+// 0.7em, so both move by 0.35 of the label size.
+function labelRuns(text) {
+  if (typeof text !== 'string') return text;
+  const out = [];
+  let last = 0;
+  let raised = false;
+  const plain = (str, key) => {
+    if (!str) return;
+    out.push(raised ? <tspan key={key} dy="0.35em">{str}</tspan> : str);
+    raised = false;
+  };
+  for (const m of text.matchAll(LABEL_TOKEN)) {
+    plain(text.slice(last, m.index), `t${m.index}`);
+    if (m[0] === '°') {
+      out.push(<tspan key={m.index} className="fig-deg" dy={raised ? 0 : '-0.5em'}>∘</tspan>);
+      raised = true;
+    } else {
+      out.push(<tspan key={m.index} className="fig-var" dy={raised ? '0.35em' : undefined}>{m[0]}</tspan>);
+      raised = false;
+    }
+    last = m.index + 1;
+  }
+  if (!out.length) return text;
+  plain(text.slice(last), 'end');
+  return out;
+}
+
 function figLabel(key, x, y, text, anchor = 'middle', color = 'var(--ink)', fontSize) {
   return (
     <text key={key} x={x} y={y} textAnchor={anchor} className="fig-label" fill={color} style={fontSize ? { fontSize } : undefined}>
-      {text}
+      {labelRuns(text)}
     </text>
   );
 }
@@ -1804,8 +1840,9 @@ export default function Figure({ fig, color, shown }) {
     const { solution } = fig;
     const filled = (r, c) => (rows[r][c] === '' && solution ? solution[r]?.[c] ?? '' : '');
     const CH = 34;            // cell height
-    // Measured: bold Archivo at .fig-label size runs 10.3-13px a character
-    // ("Frequency" is 107px). 12 keeps a header off its cell borders.
+    // Measured for bold Archivo at .fig-label size, 10.3-13px a character
+    // ("Frequency" was 107px); KaTeX_Main runs narrower, so 12 still keeps a
+    // header off its cell borders.
     const CHAR = 12;          // approximate width of one character at .fig-label size
     const PAD = 24;
     // Each column is sized to its own longest entry, so "0 <= x < 20" gets the
@@ -2124,10 +2161,9 @@ export default function Figure({ fig, color, shown }) {
   // left '' in `probs`, in the slot colour, on reveal — the magic-square
   // convention.
   //
-  // Labels are set in KaTeX_Main at regular weight, not Archivo: this figure
-  // only appears in the Probability strand, which renders wholly in KaTeX, so
-  // the fractions on the branches match the fractions in the answer. Each
-  // label sits near the far end of its branch (see below for which side).
+  // Labels are set in KaTeX_Main like every figure label, so the fractions on
+  // the branches match the fractions in the answer. Each label sits near the
+  // far end of its branch (see below for which side).
   if (fig.type === 'tree-diagram') {
     const [X, Y] = fig.outcomes ?? ['A', 'B'];
     const probs = fig.probs ?? {};
@@ -2154,7 +2190,7 @@ export default function Figure({ fig, color, shown }) {
     const T = { 1: 0.72, 2: 0.85 };
 
     const serif = (key, x, y, text, fill) => (
-      <text key={key} x={x} y={y} textAnchor="middle" className="fig-serif" fill={fill}
+      <text key={key} x={x} y={y} textAnchor="middle" className="fig-label" fill={fill}
         style={{ fontSize: SIZE }}>{text}</text>
     );
 
@@ -2202,7 +2238,7 @@ export default function Figure({ fig, color, shown }) {
       ...branch('yy', NODE.y, LEAF.yy, GAP, true),
     ];
     const letter = (key, [x, y], text) => (
-      <text key={key} x={x} y={y + LETTER * 0.34} textAnchor="middle" className="fig-serif" fill="var(--ink)"
+      <text key={key} x={x} y={y + LETTER * 0.34} textAnchor="middle" className="fig-label" fill="var(--ink)"
         style={{ fontSize: LETTER }}>{text}</text>
     );
     nodes.push(letter('nx', NODE.x, X), letter('ny', NODE.y, Y));

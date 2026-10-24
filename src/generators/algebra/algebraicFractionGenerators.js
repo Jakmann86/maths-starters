@@ -6,12 +6,6 @@
 //   16A.2  generateSimplifyFractionsFactorising  factorise first, then cancel
 //   16B    generateMultiplyDivideFractions       multiply and divide
 //
-// All three emit stacked fractions, and every band except 16A.2 Foundation
-// carries an exponent, so these route through the KaTeX fallback rather than
-// the Archivo parser (SPEC.md 6 names "stacked algebraic fractions (chapter
-// 16)" as a deliberate fallback). Board.jsx's warnIfUnparseable comment needs
-// a third exception line for this topic or the console fills with noise.
-//
 // Every line of workingOut is an expression equal to the question, so the
 // verification harness can evaluate the question, the answer and every
 // working line at the same randomised variable assignment and require them

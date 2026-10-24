@@ -7,13 +7,17 @@
 import { describe, expect, it } from 'vitest';
 import _ from 'lodash';
 import { generateCumulativeFrequencyTable, generateTableAverages } from './frequencyTableGenerators';
-import { parseArchivoLine } from '../../lib/archivoMath.jsx';
+import katex from 'katex';
+
+const rendersInKatex = (line) => {
+  expect(() => katex.renderToString(line, { throwOnError: true }), line).not.toThrow();
+};
 
 const SAMPLES = 4000;
 
 const parses = (q) => {
   [q.answer, q.workingOut, q.questionMath].filter(Boolean).join('\n').split('\n')
-    .forEach((line) => expect(parseArchivoLine(line, 'k'), line).not.toBeNull());
+    .forEach(rendersInKatex);
   expect([q.instruction, q.answer, q.workingOut].join(' ')).not.toMatch(/\\n|undefined|NaN|null/);
 };
 

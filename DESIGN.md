@@ -41,9 +41,12 @@ way.
 divisions, primary buttons, the answer rule). 2px solid `--hairline` for
 secondary controls. 1px `--hairline` for list separators inside the panel.
 
-**Archivo only**, at three weights: 400 body, 600 semantic emphasis, 800
-display. Question text, answers, eyebrow labels and primary buttons are all
-800. Letter-spacing `-0.02em` on large display text, `+0.16em` to `+0.18em` on
+**Archivo for the interface, KaTeX's serif for the maths.** Archivo at three
+weights: 400 body and instructions, 600 semantic emphasis, 800 display
+(eyebrow labels, primary buttons, the timer). Questions, answers and figure
+labels are set in KaTeX_Main at regular weight, with variables in KaTeX_Math
+italic: heavy Archivo closed up 6, 8 and 9 from the back of the room.
+Letter-spacing `-0.02em` on large display text, `+0.16em` to `+0.18em` on
 uppercase eyebrow labels.
 
 **Sentence case** everywhere except eyebrow labels, which are uppercase.
@@ -91,19 +94,14 @@ There is no toolbar iconography apart from the fullscreen glyph.
 
 ## Maths rendering
 
-A custom renderer, not KaTeX — so everything stays in Archivo. Current syntax:
-`~f{num}{den}` fractions, `~r{x}` roots, `^{n}` powers, `\n` for line breaks.
-Hyphens before digits or letters are rewritten to proper minus signs (U+2212).
-
-**Planned change:** extend the parser to accept a LaTeX subset (`\frac{}{}`,
-`\sqrt{}`, `^{}`, `_{}`, `\times`, `\div`, `\text{}`) so the existing
-generators migrate without rewriting their output strings. Keep the Archivo
-rendering; only the input grammar widens.
+KaTeX for every question and answer line — see SPEC.md §6. The instruction
+above it stays in Archivo.
 
 ## Figures
 
 Inline SVG, no library. 3px `--ink` strokes, square linecaps, round linejoins,
-labels in Archivo 700 at 20px. The unknown side is labelled in the slot hue;
+labels in KaTeX_Main 400 at 20px, a lone variable letter in KaTeX_Math
+italic. The unknown side is labelled in the slot hue;
 everything else in ink. Currently: right triangle, circle, trapezium, regular
 polygon.
 

@@ -9,7 +9,11 @@
 
 import { describe, expect, it } from 'vitest';
 import { generatePieCharts } from './pieChartGenerators';
-import { parseArchivoLine } from '../../lib/archivoMath.jsx';
+import katex from 'katex';
+
+const rendersInKatex = (line) => {
+  expect(() => katex.renderToString(line, { throwOnError: true }), line).not.toThrow();
+};
 
 const SAMPLES = 5000;
 
@@ -53,9 +57,9 @@ const checkText = (q) => {
   const all = [q.instruction, q.workingOut, q.answer, q.answerUnits].filter(Boolean).join(' ');
   expect(all).not.toMatch(/\\n|,\\ |\\sum/);
   expect(q.questionMath).toBeUndefined();
-  q.workingOut.split('\n').forEach((line) => expect(parseArchivoLine(line, 'w')).not.toBeNull());
+  q.workingOut.split('\n').forEach(rendersInKatex);
   const a = q.answerUnits ? `${q.answer}\\text{ }${q.answerUnits}` : q.answer;
-  expect(parseArchivoLine(a, 'a')).not.toBeNull();
+  rendersInKatex(a);
 };
 
 // Recompute the answer from what is on the board. Returns [answer, variant].

@@ -1,15 +1,10 @@
 import { useEffect, useState } from 'react';
 import './MathDisplay.css';
-import { parseArchivoLine } from '../lib/archivoMath.jsx';
 import { loadKatex, loadedKatex } from '../lib/katexLoader.js';
 
-// Hybrid maths renderer — see DESIGN.md §"Maths rendering" and SPEC.md §6.
-// The Archivo parser (src/lib/archivoMath.js) handles the common cases and
-// keeps everything in the display typeface. When it returns null for a
-// line — an unknown \command, a \frac nested two or more levels deep, or an
-// indexed root — that line falls back to KaTeX. `allKatex` skips the parser
-// altogether: the Number strand renders every line in KaTeX, so a board of
-// surds and percentages doesn't switch typeface from box to box.
+// Maths renderer — see DESIGN.md §"Maths rendering" and SPEC.md §6. Every
+// question and answer line is set in KaTeX, so the board's maths reads in one
+// typeface whatever the topic.
 //
 // displayMode: true — a text-style (inline) fraction sets its numerator and
 // denominator in \scriptstyle, ~30% smaller than the surrounding text. On a
@@ -25,7 +20,7 @@ function toHtml(katex, tex) {
   }
 }
 
-function KatexFallback({ tex }) {
+function KatexLine({ tex }) {
   const [state, setState] = useState(() => (
     loadedKatex() ? { tex, html: toHtml(loadedKatex(), tex) } : { tex, html: undefined }
   ));
@@ -48,17 +43,11 @@ function KatexFallback({ tex }) {
   return <span className="mkatex" dangerouslySetInnerHTML={{ __html: current.html }} />;
 }
 
-function renderLine(text, keyBase, allKatex) {
-  const nodes = allKatex ? null : parseArchivoLine(text, keyBase);
-  if (nodes === null) return <KatexFallback key={keyBase} tex={text} />;
-  return nodes;
-}
-
-export default function MathDisplay({ math, allKatex = false }) {
+export default function MathDisplay({ math }) {
   const raw = String(math == null ? '' : math);
   const lines = raw.split('\n');
-  if (lines.length === 1) return renderLine(lines[0], 'm', allKatex);
+  if (lines.length === 1) return <KatexLine tex={lines[0]} />;
   return lines.map((l, i) => (
-    <div key={'L' + i} className="mline">{renderLine(l, 'm' + i, allKatex)}</div>
+    <div key={'L' + i} className="mline"><KatexLine tex={l} /></div>
   ));
 }

@@ -8,6 +8,14 @@ export function iSize(instr) {
     : 'clamp(19px,min(7cqh,3.6cqi),32px)';
 }
 
+// A worded question (questionText) is a sentence to read, not an expression
+// to take in at a glance, so it is set a step above the instruction rather
+// than at display size, in the regular-weight serif (.mprose). cqh resolves
+// against the slot: `.slot-question` is an inline-size container only.
+export function pSize() {
+  return 'clamp(20px,6.2cqh,30px)';
+}
+
 function visualLength(str) {
   const s = str
     .replace(/\\ldots/g, '…')

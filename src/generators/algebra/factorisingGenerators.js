@@ -18,7 +18,7 @@ import _ from 'lodash';
 import { gcd } from '../shared';
 
 // ---------------------------------------------------------------------------
-// formatting helpers  (LaTeX subset the Archivo parser handles; see DESIGN.md)
+// formatting helpers
 // ---------------------------------------------------------------------------
 
 // The leading term of an expression, e.g. "x^2", "2x^2", "-x^2".

@@ -401,8 +401,7 @@ export const generateIndexLaws = (options = {}) => {
   }
 
   // A quotient inside the brackets: the division law simplifies it first,
-  // then the power-of-a-power law raises what's left. \left( \right) isn't
-  // one the Archivo parser takes, so this falls back to KaTeX deliberately —
+  // then the power-of-a-power law raises what's left. \left( \right), since
   // plain parentheses around a \frac render undersized against its height.
   let inner, inner2, outer, res;
   do {

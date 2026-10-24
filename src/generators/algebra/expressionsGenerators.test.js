@@ -9,6 +9,7 @@
 // Needs: npm i -D vitest
 
 import { describe, expect, it } from 'vitest';
+import katex from 'katex';
 import {
   generateExpandSingleBrackets,
   generateExpandDoubleBrackets,
@@ -74,10 +75,9 @@ describe.each(Object.entries(generators))('%s', (topic, generate) => {
     // The band reported is the one the generator actually served, which may be
     // lower than the one asked for when a skill declares fewer bands.
     expect(BANDS).toContain(q.metadata.difficulty);
-    // Nothing here should reach for KaTeX: SPEC §6 says the Archivo parser
-    // takes \times, \text{} and ^{}, and falls back on anything else.
-    const commands = (q.questionMath + q.answer + q.workingOut).match(/\\[a-z]+/g) || [];
-    commands.forEach((c) => expect(['\\times', '\\text']).toContain(c));
+    [q.questionMath, q.answer, q.workingOut].join('\n').split('\n').forEach((line) => {
+      expect(() => katex.renderToString(line, { throwOnError: true }), line).not.toThrow();
+    });
   });
 
   it('defaults to core and tolerates an unknown band', () => {

@@ -2,9 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
 import TopicPanel from './TopicPanel.jsx';
-import { generateForSkill, getSkill, skillsInTopic, nextSkillInTopic, topics, isAllKatex } from '../curriculum/skills.js';
+import { generateForSkill, getSkill, skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
 import { loadPool, savePool, togglePool, drawBoxTopics, pickSwapTopic } from '../curriculum/topicPool.js';
-import { parseArchivoLine } from '../lib/archivoMath.jsx';
 import { preloadKatex } from '../lib/katexLoader.js';
 import './Board.css';
 
@@ -19,23 +18,6 @@ const MIXED = ['foundation', 'core', 'core', 'stretch'];
 const INITIAL_DIFF = 1;
 const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 
-// A line the Archivo parser cannot take falls back to KaTeX (SPEC.md §6).
-// Square roots and every exponent or subscript except ^\circ fall back by
-// design, so they are skipped here; so are the all-KaTeX topics (isAllKatex),
-// which never meet the parser. Anything else logging here is either a parser gap
-// or a generator using notation outside the subset.
-const DELIBERATE_FALLBACK = /\\sqrt|_|\^(?!\\circ)/;
-
-function warnIfUnparseable(id, field, text) {
-  if (!text) return;
-  String(text).split('\n').forEach((line, i) => {
-    if (DELIBERATE_FALLBACK.test(line)) return;
-    if (parseArchivoLine(line, 'chk') === null) {
-      console.warn(`[${id}] ${field}${i ? ` line ${i}` : ''} fell back to KaTeX: ${line}`);
-    }
-  });
-}
-
 // answerUnits is either LaTeX ('\\text{cm}^3', passed through) or a plain
 // word ('cm'), which is wrapped in \text{} so it does not render as the
 // italic product c·m.
@@ -45,12 +27,6 @@ function slotData(skillId, band) {
   const q = generateForSkill(skillId, band);
   if (!q) return { topic: '—', instr: '', q: '', a: '' };
 
-  const allKatex = isAllKatex(getSkill(skillId)?.topic);
-  if (!allKatex) {
-    warnIfUnparseable(skillId, 'questionMath', q.questionMath);
-    warnIfUnparseable(skillId, 'answer', q.answer);
-  }
-
   return {
     topic: getSkill(skillId)?.label ?? skillId,
     instr: q.instruction,
@@ -58,7 +34,6 @@ function slotData(skillId, band) {
     qProse: q.questionMath == null && q.questionText != null,
     parts: q.questionParts ?? null,
     qCompact: q.questionMathCompact === true,
-    allKatex,
     a: q.answerUnits ? `${q.answer}\\text{ }${unitsTex(q.answerUnits)}` : q.answer,
     fig: q.visualization,
   };

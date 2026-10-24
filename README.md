@@ -51,7 +51,7 @@ src/
     topicPool.js           the teacher's topic selection
     schemes/*.json         textbook backlog; pure data, not used by the app
   generators/              pure functions returning question data
-  lib/                     Archivo maths parser, KaTeX loader, type sizing
+  lib/                     KaTeX loader, type sizing
 reference/                 design export; read-only, nothing builds from it
 ```
 
@@ -82,10 +82,9 @@ question sizes are `clamp()` values built from line count and line length in
 `cqh`/`cqi` units. That's why the board never scrolls at any resolution. Don't
 replace it with a fixed scale.
 
-**Maths rendering is hybrid.** A custom parser handles the common cases in
-Archivo; KaTeX is dynamically imported for what it can't take — surds,
-exponents, recurring decimal dots, stacked algebraic fractions. The Number
-strand and the Sets and Probability topics render wholly in KaTeX.
+**Maths renders in KaTeX.** Every question and answer line is set in KaTeX's
+serif, and figure labels in the same face; the interface and the instruction
+stay in Archivo. KaTeX is its own chunk, preloaded on mount.
 
 **No Tailwind.** Plain CSS with custom properties.
 

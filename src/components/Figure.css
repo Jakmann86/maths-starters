@@ -10,21 +10,22 @@
 }
 
 .fig-label {
-  font: 700 20px 'Archivo', system-ui, sans-serif;
+  /* KaTeX's own serif at regular weight, so a label reads in the same
+     typeface as the question and answer beside it. Its open counters keep
+     6, 8 and 9 apart from the back of a room where heavy Archivo closed
+     them up. Already warm: the board preloads KaTeX's faces on mount
+     (katexLoader.js). */
+  font: 400 20px KaTeX_Main, 'Times New Roman', serif;
 }
 
-/* The tree diagram's labels (Probability strand, which renders wholly in
-   KaTeX): KaTeX's own serif at regular weight, so the fractions on the
-   branches match the fractions in the answer. The font is already warm —
-   the board preloads KaTeX's main face on mount (katexLoader.js). */
-.fig-serif {
-  font-family: KaTeX_Main, 'Times New Roman', serif;
-  font-weight: 400;
+/* A lone letter in a label (x, h, A) is a variable or a point, set in
+   KaTeX's maths italic as it is in the question. */
+.fig-var {
+  font-family: KaTeX_Math, 'Times New Roman', serif;
+  font-style: italic;
 }
 
-/* Table cells (frequency tables and the like) at 600. .fig-label asks for
-   700, which Google Fonts doesn't serve here (400/600/800), so it renders at
-   800 — too heavy for small digits, where 6 and 8 close up and look alike. */
-.fig-table .fig-label {
-  font-weight: 600;
+/* A degree sign, drawn as KaTeX's raised ∘ (see labelRuns in Figure.jsx). */
+.fig-deg {
+  font-size: 0.7em;
 }

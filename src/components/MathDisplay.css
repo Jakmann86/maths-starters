@@ -1,35 +1,3 @@
-.mfrac {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  vertical-align: middle;
-  margin: 0 0.16em;
-  font-size: 0.94em;
-  line-height: 1.08;
-  transform: translateY(-0.08em);
-}
-
-.mfrac-part {
-  padding: 0 0.22em;
-}
-
-.mfrac-bar {
-  align-self: stretch;
-  height: 0.1em;
-  background: currentColor;
-  margin: 0.08em 0;
-}
-
-.msup {
-  font-size: 0.58em;
-  line-height: 0;
-  vertical-align: super;
-}
-
-.mtext {
-  white-space: pre;
-}
-
 .mline {
   padding: 0.06em 0;
 }
@@ -47,9 +15,8 @@
   font-size: 1em;
 }
 
-/* `.slot-question` and `.answer-value` are weight 800 for Archivo. KaTeX
-   has a bold face for \text{}, so without this "66% of 807" set its words
-   heavy and its numbers regular. */
+/* KaTeX has a bold face for \text{}, so if a parent ever sets a heavy
+   weight, "66% of 807" would set its words heavy and its numbers regular. */
 .mkatex {
   font-weight: 400;
   letter-spacing: 0;
@@ -77,10 +44,9 @@
   padding: 0.12em 0;
 }
 
-/* Worded questions (questionText) in an all-KaTeX skill: set in KaTeX's own
-   serif at regular weight, so a percentages story reads like the maths
-   beside it rather than as a block of heavy display type. Unlike KaTeX's
-   \text{}, this still wraps. */
+/* Worded questions (questionText): set in KaTeX's own serif at regular
+   weight, so a story reads like the maths beside it rather than as a block
+   of heavy display type. Unlike KaTeX's \text{}, this still wraps. */
 .mprose {
   font-family: KaTeX_Main, 'Times New Roman', serif;
   font-weight: 400;

@@ -35,11 +35,6 @@ export const generateSequenceFindNthTermGeometric = (options = {}) => {
   const a = difficulty === 'core' ? _.random(2, 12) : _.random(2, 9);
 
   const terms = [1, 2, 3, 4].map((k) => nthTerm(a, r, k));
-  // Plain ", " and "..." here, not "\ " / "\ldots" — the Archivo parser
-  // (src/lib/archivoMath.jsx) doesn't know either LaTeX spacing command and
-  // silently falls back to KaTeX for the whole line when it meets one,
-  // which is a visual style mismatch against the rest of the board, not
-  // just a missed optimisation.
   const termsStr = terms.join(', ');
 
   return {
@@ -509,10 +504,6 @@ export const generateSequenceIsInSequenceQuadratic = (options = {}) => {
       const nSquared = (target - c) / a;
       workingLines = [
         `n^2 = (${target} ${c >= 0 ? '-' : '+'} ${Math.abs(c)}) \\div ${a} = ${nSquared.toFixed(2)}`,
-        // "≈" is a literal character here, not "\approx" — the Archivo parser
-        // (src/lib/archivoMath.jsx) doesn't know that command either, same
-        // silent-KaTeX-fallback issue as "\ "/"\ldots"/"\quad" elsewhere in
-        // this file.
         `n = \\sqrt{${nSquared.toFixed(2)}} ≈ ${Math.sqrt(nSquared).toFixed(2)}`,
         '\\text{not a whole number, so no}',
       ];

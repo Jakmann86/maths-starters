@@ -11,7 +11,11 @@ import { generateAveragesFromList } from './averagesGenerators';
 import { generateFrequencyTableReading } from './frequencyTableGenerators';
 import { generateBarCharts } from './barChartGenerators';
 import { CONTEXTS } from './pieChartGenerators';
-import { parseArchivoLine } from '../../lib/archivoMath.jsx';
+import katex from 'katex';
+
+const rendersInKatex = (line) => {
+  expect(() => katex.renderToString(line, { throwOnError: true }), line).not.toThrow();
+};
 
 const SAMPLES = 4000;
 const BANDS = ['foundation', 'core', 'stretch'];
@@ -19,7 +23,7 @@ const BANDS = ['foundation', 'core', 'stretch'];
 const parses = (q) => {
   const a = q.answerUnits ? `${q.answer}\\text{ }${q.answerUnits}` : q.answer;
   [a, q.workingOut, q.questionMath].filter(Boolean).join('\n').split('\n')
-    .forEach((line) => expect(parseArchivoLine(line, 'k'), line).not.toBeNull());
+    .forEach(rendersInKatex);
   expect([q.instruction, q.answer, q.workingOut].join(' ')).not.toMatch(/\\n|undefined|NaN/);
 };
 

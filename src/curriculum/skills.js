@@ -1062,23 +1062,6 @@ export const topicGroups = () => {
 /** The strand a topic sits in ('Number', 'Algebra', ...), or null. */
 export const strandOf = (topicName) => STRANDS.find((s) => s.topics.includes(topicName))?.name ?? null;
 
-/**
- * Topics whose questions render wholly in KaTeX, skipping the Archivo parser.
- * The Number strand, whole: surds, indices and standard form fall back to
- * KaTeX anyway, and a board that set percentages in Archivo beside them
- * switched typeface from box to box. Sets and Probability: their worded
- * questions read better in the regular-weight serif (.mprose) than in display
- * Archivo, and Probability's fractions match the KaTeX_Main labels on the
- * tree-diagram figure. Decided per topic rather than per strand because
- * Statistics and probability holds both kinds: Averages and Representing data
- * stay in Archivo.
- */
-export const ALL_KATEX_STRANDS = ['Number'];
-export const ALL_KATEX_TOPICS = ['Sets', 'Probability'];
-export const isAllKatex = (topicName) => (
-  ALL_KATEX_STRANDS.includes(strandOf(topicName)) || ALL_KATEX_TOPICS.includes(topicName)
-);
-
 /** Every topic once, in panel order. */
 export const topics = () => topicGroups().flatMap((g) => g.topics);
 

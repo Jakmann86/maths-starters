@@ -46,9 +46,6 @@ const ruleAt = (a, b, c, d, k) => {
 };
 const listTerms = (a, b, c, d, count) =>
   _.range(1, count + 1).map((n) => evalRule(a, b, c, d, n));
-// Plain ", " and "..." here, not "\ " / "\ldots" — the Archivo parser
-// (src/lib/archivoMath.jsx) doesn't know either LaTeX spacing command and
-// silently falls back to KaTeX for the whole line when it meets one.
 const showList = (t) => `${t.join(', ')}, ...`;
 
 // Successive differences, as far as they stay non-empty.

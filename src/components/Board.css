@@ -334,10 +334,8 @@
 }
 
 .slot-parts {
-  /* The instruction's type, not the question's heavy display weight. */
+  /* The instruction's type. */
   color: var(--ink-instr);
-  font-weight: 400;
-  letter-spacing: normal;
   line-height: 1.4;
 }
 
@@ -347,8 +345,6 @@
   /* The width left beside the figure, for qSize()'s cqi term. Inline-size
      only: cqh still resolves against the slot. */
   container-type: inline-size;
-  font-weight: 800;
-  letter-spacing: -0.02em;
   line-height: 1.25;
 }
 
@@ -373,8 +369,6 @@
 
 .answer-value {
   font-size: clamp(20px, min(8cqh, 4cqi), 38px);
-  font-weight: 800;
   color: var(--c);
-  letter-spacing: -0.02em;
 }
 

@@ -61,10 +61,7 @@ export const sf = (x, n = 3) => {
   return rounded.toFixed(Math.max(0, n - 1 - mag));
 };
 
-// The Archivo parser (SPEC.md section 6) does not know \approx, so writing
-// one here would drop the whole line into KaTeX's serif for the sake of one
-// symbol. The rounded value gets its own working line ending in
-// \text{ (3 s.f.)} instead.
+// The rounded value gets its own working line ending in \text{ (3 s.f.)}.
 export const ask = (what, m) => (m === EXACT
   ? `${what}. Leave your answer in terms of π`
   : `${what}. Give your answer to 3 significant figures`);

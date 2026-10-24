@@ -127,9 +127,9 @@ For each generator moved, in order:
 - [ ] Verify it varies meaningfully across each declared difficulty band,
       named `foundation` / `core` / `stretch`
 - [ ] Register the skill(s) in `src/curriculum/skills.js`
-- [ ] Check every LaTeX string against the Archivo parser. Anything that
-      falls back to KaTeX should do so deliberately — if a `\frac` is nested
-      only because of how the string was built, flatten it instead
+- [ ] Check every LaTeX string renders in KaTeX without a console warning,
+      and if a `\frac` is nested only because of how the string was built,
+      flatten it
 - [ ] Render it in a slot at Foundation and at Stretch, and check it fits
       without overflow both before and after the answer is revealed
 - [ ] Add its skill ids to the matching entry in `haese-igcse.json` and flip

@@ -7,23 +7,27 @@
 // The question IS the question — these return questionMath, not a figure.
 // Multi-line, so they use \n per SPEC.md §3.
 //
-// Symbols are geometric glyphs rather than emoji: DESIGN.md is flat, hard-edged
-// and Archivo only, and full-colour cartoon fruit would be the loudest thing on
+// Symbols are geometric glyphs rather than emoji: DESIGN.md is flat and
+// hard-edged, and full-colour cartoon fruit would be the loudest thing on
 // the board. Shape alone distinguishes at the back of a room without leaning on
 // colour, which the slot hues are already using.
 
 import _ from 'lodash';
 
-const CIRCLE = '\u25CF'; // ●
-const TRIANGLE = '\u25B2'; // ▲
-const SQUARE = '\u25A0'; // ■
+// KaTeX's own shapes rather than the Unicode ● ▲ ■: the board sets every
+// line in KaTeX, which has no metrics for those characters and warns on each.
+// KaTeX has no filled circle at this size (\bullet is a small dot), so the
+// star stands in for it.
+const STAR = '\\bigstar'; // ★
+const TRIANGLE = '\\blacktriangle'; // ▲
+const SQUARE = '\\blacksquare'; // ■
 
-const GLYPHS = [CIRCLE, TRIANGLE, SQUARE];
+const GLYPHS = [STAR, TRIANGLE, SQUARE];
 
 const BANDS = ['foundation', 'core', 'stretch'];
 const band = (d) => (BANDS.includes(d) ? d : 'core');
 
-/** n copies of a glyph, written out: ● + ● + ▲ */
+/** n copies of a glyph, written out: ★ + ★ + ▲ */
 const lhs = (coeffs, glyphs) =>
   glyphs
     .flatMap((g, i) => _.range(coeffs[i]).map(() => g))
@@ -38,7 +42,7 @@ const det3 = (m) =>
 
 // Coefficient patterns with a non-zero determinant, so the system has exactly
 // one solution. Verified in the test file rather than trusted here.
-// No line may carry more than four glyphs: ● + ● + ■ + ■ + ■ = 37 is unreadable
+// No line may carry more than four glyphs: ★ + ★ + ■ + ■ + ■ = 37 is unreadable
 // at the back of a room and stops being a puzzle.
 const CORE_PATTERNS = [
   [[2, 1], [1, 2]],
@@ -84,7 +88,7 @@ const answerOf = ({ glyphs, values }) =>
   glyphs.map((g, i) => `${g} = ${values[i]}`).join(',\\ ');
 
 // Foundation — one symbol is given away outright, then substitute.
-// ▲ + ▲ + ▲ = 12,  ▲ + ● = 9
+// ▲ + ▲ + ▲ = 12,  ▲ + ★ = 9
 const foundation = () => {
   const [g1, g2] = _.sampleSize(GLYPHS, 2);
   const v1 = _.random(2, 9);

@@ -9,10 +9,7 @@ import { median, dp1 } from '../shared';
 
 const NL = '\n';
 
-// Joined with a plain comma. The old `,\\ ` is not in the Archivo subset
-// (SPEC.md 6), so every list question fell back to KaTeX for the sake of a
-// thin space — the whole topic rendered in serif and warnIfUnparseable logged
-// on all of it.
+// Joined with a plain comma, which KaTeX spaces as punctuation.
 const showList = (xs) => xs.join(', ');
 
 // A list with exactly one most-common value, so "the mode" is never ambiguous.
@@ -227,8 +224,8 @@ export const generateAveragesFromTable = (options = {}) => {
     return {
       instruction: 'Find the mean',
       answer: dp1((sumFX * 10) / sumF),
-      // "sum of fx" rather than \sum fx: \sum is not in the Archivo subset,
-      // and \text{} is. Same words the list working already uses.
+      // "sum of fx" rather than \sum fx: the same words the list working
+      // already uses.
       workingOut: [
         `\\text{sum of } fx = ${xs.map((x, i) => `${fs[i]} \\times ${x}`).join(' + ')} = ${sumFX}`,
         `\\text{sum of } f = ${sumF}`,

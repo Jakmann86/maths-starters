@@ -206,62 +206,39 @@ Shuffle is per-session, not stored on the class.
 
 ## 6. Maths rendering
 
-Hybrid, in one component. The custom Archivo parser handles the common cases;
-KaTeX covers what it can't.
+**Every question and answer line renders in KaTeX** (`MathDisplay.jsx`), in
+every topic. The instruction stays in Archivo at regular weight; the maths
+beneath it — expressions, lists, answers — is set in KaTeX's serif, and a
+worded `questionText` in the same serif at regular weight (`.mprose`), at a
+fixed size a step above the instruction (`pSize` in `typeSizing.js`).
 
-**Parser handles** — `\frac{}{}` (one level), `\times`, `\div`, `\pm`, `\le`,
-`\ge`, `\ne`, `\approx`, `\pi`, `\Delta`, `\ldots`, `\text{}`, a bare degree
-suffix (`30^\circ`), the spaces `\ ` and `\quad`, and plain algebra. Hyphens before a digit or letter become U+2212.
+Earlier versions ran a custom Archivo parser first and fell back to KaTeX for
+roots, exponents and anything else it could not take, then moved whole topics
+(Number, Sets, Probability) onto KaTeX because the board switched typeface
+from box to box. The remaining Archivo 800 was hard to read from the back of
+the room, so the parser is gone and KaTeX takes every line.
 
-**Falls back to KaTeX** when it meets an unknown `\command`, a `\frac`
-nested two or more levels deep — at 0.82em per level, nested fractions become
-unreadable at the back of a room — a square root, or any exponent/subscript
-other than the bare degree suffix above. Square roots and general exponents
-read better in real mathematical typesetting than the parser's glyph
-substitution can manage, so they fall back unconditionally rather than only
-when the parser is stuck. In practice this catches:
+Generator strings are ordinary LaTeX. Two things KaTeX does that a plain
+reading would not expect:
 
-- every surd, `\sqrt{}` and `\sqrt[3]{}` alike (chapter 6), including
-  surds combined with a fraction, `\frac{a\sqrt{b}}{c}`
-- every exponent and subscript except `^\circ`: `x^2`, `a^{m+n}`, `a_{n+1}`,
-  index-law working (chapter 6), standard form, Pythagoras, quadratics — `°`
-  written as `^\circ` is the one exception, since it is a unit glyph rather
-  than a true exponent and appears too widely across angle, circle-theorem
-  and trig generators to move
-- recurring decimal dots, `0.\dot{1}\dot{2}` (chapter 6 and your existing
-  recurring-decimals generator)
-- column vectors, `\begin{pmatrix}` (chapter 24)
-- stacked algebraic fractions (chapter 16)
+- A comma is punctuation, followed by a thin space. Money and population
+  answers wrap in `\text{}` (`\text{£1,450}`) so the thousands comma does not
+  open a gap.
+- A character KaTeX has no metrics for (●, a literal `²` inside `\text{}`)
+  renders in a fallback font and logs a console warning. Use KaTeX's own
+  commands (`\bigstar`, `\blacktriangle`, `\blacksquare`) and LaTeX
+  exponents (`\text{cm}^2`). Treat any KaTeX console warning as a generator
+  bug.
 
-Plain fractions with no root inside them — `\frac{1}{2} \times b \times h`,
-changing-the-subject answers like `x = \frac{a}{T} + b` — are unaffected and
-keep rendering natively; only the combination of a fraction with a root
-inside it falls back, and it does so via the square-root rule above rather
-than any special-casing of fractions.
+KaTeX is its own chunk, but the board preloads it (and warms its main,
+maths-italic and delimiter fonts) on mount, so once it has arrived each line
+renders synchronously rather than flashing its source first
+(`src/lib/katexLoader.js`).
 
-The parser returns `null` on anything it can't take, and the caller renders
-KaTeX for that expression only. KaTeX is its own chunk, but the board
-preloads it (and warms its main, maths-italic and delimiter fonts) on mount,
-so once it has arrived each KaTeX line renders synchronously rather than
-flashing its source first (`src/lib/katexLoader.js`).
-
-**The Number strand and the Sets and Probability topics skip the parser
-entirely.** Every question and answer line in Indices, Standard form, Surds,
-Percentages, Sets and Probability renders in KaTeX (`isAllKatex` in
-`skills.js`), and a worded `questionText` there is set in KaTeX's serif at
-regular weight (`.mprose`) rather than Archivo 800. Most of the Number strand
-fell back anyway, and the rest switched typeface from box to box. The rule is
-per topic because the Statistics and probability strand holds both kinds:
-Averages and Representing data stay in Archivo. Money and population answers wrap in `\text{}` (`\text{£1,450}`)
-so KaTeX doesn't space the comma as punctuation.
-
-Those expressions render in KaTeX's serif rather than Archivo. Once surds and
-general exponents are included, that is a substantial share of questions
-across a year — surds, index laws, standard form, Pythagoras, quadratics, and
-more — not the handful the fallback path was first built for. Maths set in a
-serif is conventional enough that it won't read as a fault, but a board that
-leans on those topics in one lesson will look mixed-typeface for most of its
-four boxes, not just one.
+Figure labels are not part of this: they are plain SVG text (CLAUDE.md §6),
+set in KaTeX_Main at regular weight to match, with a lone variable letter in
+KaTeX_Math italic and a degree sign drawn as a raised ∘ (`labelRuns` in
+`Figure.jsx`).
 
 ## 7. Screens
 

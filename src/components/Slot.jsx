@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import MathDisplay from './MathDisplay.jsx';
 import Figure from './Figure.jsx';
-import { iSize, qSize } from '../lib/typeSizing.js';
+import { iSize, pSize, qSize } from '../lib/typeSizing.js';
 
 // qSize() estimates a question's width from its source, and KaTeX's serif
 // set runs wider than the estimate: on a 1366px board (or a 1920px one at
@@ -36,7 +36,7 @@ function useFitToBox(innerRef, rowRef, content, revealed) {
 }
 
 export default function Slot({ label, colorVar, data, revealed, onRegenSame, onRegen, onSwap }) {
-  const { topic, instr, q, qProse, qCompact, allKatex, a, fig, parts } = data;
+  const { topic, instr, q, qProse, qCompact, a, fig, parts } = data;
   const rowRef = useRef(null);
   const qRef = useRef(null);
   useFitToBox(qRef, rowRef, parts ? null : q, revealed);
@@ -98,10 +98,10 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
                 {parts.map((p) => <div key={p}>{p}</div>)}
               </div>
             ) : (
-              <div ref={qRef} style={{ fontSize: `calc(${qSize(q, instr, qCompact, Boolean(fig))} * var(--fit, 1))` }}>
-                {qProse && allKatex
+              <div ref={qRef} style={{ fontSize: `calc(${qProse ? pSize() : qSize(q, instr, qCompact, Boolean(fig))} * var(--fit, 1))` }}>
+                {qProse
                   ? <span className="mprose">{q}</span>
-                  : <MathDisplay math={q} allKatex={allKatex} />}
+                  : <MathDisplay math={q} />}
               </div>
             )}
           </div>
@@ -119,7 +119,7 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
           (a fraction with a surd numerator, e.g. rationalise-denominator)
           against `.slot`'s overflow:hidden. */}
       <div className={`slot-answer${revealed ? ' is-revealed' : ''}`}>
-        <div className="answer-value"><MathDisplay math={a} allKatex={allKatex} /></div>
+        <div className="answer-value"><MathDisplay math={a} /></div>
       </div>
     </section>
   );

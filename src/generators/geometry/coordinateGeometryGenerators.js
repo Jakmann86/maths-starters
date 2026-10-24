@@ -66,15 +66,14 @@ function generalForm(a, b, d) {
   return `${coef(a)}x ${by} = ${d}`;
 }
 
-// A plain comma: `,\\ ` is outside the Archivo subset (so questionMath would
-// fall back to KaTeX for a thin space) and `instruction` is plain text, where
-// the backslash would simply print.
+// A plain comma, not `,\\ `: `instruction` is plain text, where the
+// backslash would simply print.
 const point = (x, y) => `(${x}, ${y})`;
 
 /** A value as it should appear inside a sum: -4 becomes (-4), not "+ -4". */
 const br = (v) => (v < 0 ? `(${v})` : String(v));
 
-/** A number for plain-text instruction: a true minus sign, as the parser gives questionMath. */
+/** A number for plain-text instruction: a true minus sign, as KaTeX gives questionMath. */
 const txt = (v) => String(v).replace('-', '−');
 
 const TRIPLES = pythagoreanTriples(70);

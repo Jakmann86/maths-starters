@@ -43,7 +43,7 @@ const TWO_VAR_FORMULAS = [
     reverse: (C) => C / (2 * Math.PI),
     substitutedForward: (r) => `C = 2\\pi \\times ${r}`,
     substitutedReverse: (C) => `r = \\frac{${C}}{2\\pi}`,
-    range: [2, 25], decimals: 2, unitK: 'cm', unitU: 'cm',
+    range: [2, 25], decimals: 2, unitK: '\\text{cm}', unitU: '\\text{cm}',
   },
   {
     formula: 'A = \\pi r^2', known: 'r', unknown: 'A',
@@ -51,11 +51,7 @@ const TWO_VAR_FORMULAS = [
     reverse: (A) => Math.sqrt(A / Math.PI),
     substitutedForward: (r) => `A = \\pi \\times ${r}^2`,
     substitutedReverse: (A) => `r = \\sqrt{\\frac{${A}}{\\pi}}`,
-    // A literal Unicode ² here, not LaTeX 'cm^2' — this unit gets embedded
-    // inside a \text{} block (see below), which displays its contents
-    // literally rather than processing math markup, so '\text{cm^2}' would
-    // show a bare caret instead of a superscript.
-    range: [2, 20], decimals: 2, unitK: 'cm', unitU: 'cm²',
+    range: [2, 20], decimals: 2, unitK: '\\text{cm}', unitU: '\\text{cm}^2',
   },
   {
     formula: 'A = 4\\pi r^2', known: 'r', unknown: 'A',
@@ -63,7 +59,7 @@ const TWO_VAR_FORMULAS = [
     reverse: (A) => Math.sqrt(A / (4 * Math.PI)),
     substitutedForward: (r) => `A = 4\\pi \\times ${r}^2`,
     substitutedReverse: (A) => `r = \\sqrt{\\frac{${A}}{4\\pi}}`,
-    range: [2, 15], decimals: 2, unitK: 'cm', unitU: 'cm²',
+    range: [2, 15], decimals: 2, unitK: '\\text{cm}', unitU: '\\text{cm}^2',
   },
 ];
 
@@ -76,9 +72,9 @@ export const generateFormulaSubstitution = (options = {}) => {
     const result = round(f.forward(r), f.decimals);
     return {
       instruction: `Use the formula to find ${f.unknown}`,
-      questionMath: `${f.formula}` + NL + `${f.known} = ${r}\\text{ ${f.unitK}}`,
+      questionMath: `${f.formula}` + NL + `${f.known} = ${r}\\text{ }${f.unitK}`,
       answer: `${f.unknown} = ${result}`,
-      answerUnits: `\\text{${f.unitU}}`,
+      answerUnits: f.unitU,
       workingOut: [f.substitutedForward(r), `${f.unknown} = ${result}`].join(NL),
       visualization: null,
       metadata: { topic: 'formula-substitution', difficulty, tags: ['algebra', 'formulae'] },
@@ -92,9 +88,9 @@ export const generateFormulaSubstitution = (options = {}) => {
   const result = round(g.reverse(knownValue), g.decimals);
   return {
     instruction: 'Use the formula to find r',
-    questionMath: `${g.formula}` + NL + `${g.unknown} = ${knownValue}\\text{ ${g.unitU}}`,
+    questionMath: `${g.formula}` + NL + `${g.unknown} = ${knownValue}\\text{ }${g.unitU}`,
     answer: `r \\approx ${result}`,
-    answerUnits: `\\text{${g.unitK}}`,
+    answerUnits: g.unitK,
     workingOut: [g.substitutedReverse(knownValue), `r \\approx ${result}`].join(NL),
     visualization: { type: 'circle', r: 'r' },
     metadata: { topic: 'formula-substitution', difficulty, tags: ['algebra', 'formulae'] },
