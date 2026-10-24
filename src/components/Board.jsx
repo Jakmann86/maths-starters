@@ -2,9 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
 import TopicPanel from './TopicPanel.jsx';
-import { generateForSkill, getSkill, skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
+import { generateForSkill, skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
 import { loadPool, savePool, togglePool, drawBoxTopics, pickSwapTopic } from '../curriculum/topicPool.js';
 import { preloadKatex } from '../lib/katexLoader.js';
+import { questionView } from '../lib/questionView.js';
 import './Board.css';
 
 const SLOT_COLORS = ['var(--slot-1)', 'var(--slot-2)', 'var(--slot-3)', 'var(--slot-4)'];
@@ -18,25 +19,8 @@ const MIXED = ['foundation', 'core', 'core', 'stretch'];
 const INITIAL_DIFF = 1;
 const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 
-// answerUnits is either LaTeX ('\\text{cm}^3', passed through) or a plain
-// word ('cm'), which is wrapped in \text{} so it does not render as the
-// italic product c·m.
-const unitsTex = (u) => (u.includes('\\') ? u : `\\text{${u}}`);
-
 function slotData(skillId, band) {
-  const q = generateForSkill(skillId, band);
-  if (!q) return { topic: '—', instr: '', q: '', a: '' };
-
-  return {
-    topic: getSkill(skillId)?.label ?? skillId,
-    instr: q.instruction,
-    q: q.questionMath != null ? q.questionMath : (q.questionText ?? ''),
-    qProse: q.questionMath == null && q.questionText != null,
-    parts: q.questionParts ?? null,
-    qCompact: q.questionMathCompact === true,
-    a: q.answerUnits ? `${q.answer}\\text{ }${unitsTex(q.answerUnits)}` : q.answer,
-    fig: q.visualization,
-  };
+  return questionView(generateForSkill(skillId, band), skillId);
 }
 
 // A fresh draw: 4 topics at random from the pool (SPEC.md "Design revision:
