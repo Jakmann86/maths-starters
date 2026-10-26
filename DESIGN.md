@@ -86,11 +86,14 @@ never overflows on reveal.
 ## Header
 
 A single row of segments divided by 2px `--ink` rules, each a label/value
-pair. Left half: title, topics in play, difficulty stepper. Right half: timer,
-new four, show answers, fullscreen.
+pair. Left half: title (a compact slot that will hold the Hexagon Maths logo),
+topics in play, difficulty stepper. Right half: timer, new four, show answers,
+print, fullscreen. The right half sizes to its controls and never wraps; the
+left half takes the remaining width and the topics summary truncates.
 
 Every segment is either a labelled value or a button that looks like one.
-There is no toolbar iconography apart from the fullscreen glyph.
+The only toolbar iconography is the two square 56px icon buttons at the right
+end: print (an inline SVG printer in `currentColor`) and the fullscreen glyph.
 
 ## Maths rendering
 

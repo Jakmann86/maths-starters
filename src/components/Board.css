@@ -24,7 +24,11 @@
   align-content: stretch;
 }
 
+/* The right half sizes to its controls and never wraps; the left half takes
+   what is left, and the topics summary truncates rather than the bar breaking. */
 .header-half--right {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
   border-left: 2px solid var(--ink);
 }
 
@@ -53,6 +57,15 @@
   overflow: hidden;
 }
 
+
+.header-seg--brand {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+}
+
+.header-seg--brand .header-value {
+  font-size: 15px;
+}
 
 .header-seg--topics {
   border: 0;
@@ -214,8 +227,11 @@
   background: var(--ink);
 }
 
-.fullscreen-btn {
+.icon-btn {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 56px;
   border: 0;
   border-left: 2px solid var(--ink);
@@ -225,7 +241,7 @@
   cursor: pointer;
 }
 
-.fullscreen-btn:hover {
+.icon-btn:hover {
   background: var(--surface);
 }
 
