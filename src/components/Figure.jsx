@@ -2387,6 +2387,72 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, W, H, 'scatter', fig.big, shown, true, 1, true);
   }
 
+  // A box plot, drawn to the data on a gridded scale like `scatter`: a plot
+  // that is read from puts every value on a gridline, so each one can be
+  // read without estimating. One plot, or two sharing the scale with their names
+  // to the left. `reveal` makes the whole figure the answer: nothing until
+  // the answer is shown, then the plot in the slot colour. (An empty scale
+  // beside the question cost a long data list its width.) `marks`
+  // ({ plot, value }) are dashed reading lines from the top of a plot down
+  // to the axis, drawn on reveal.
+  if (fig.type === 'box-plot') {
+    const { axis: xa, plots = [] } = fig;
+    if (!xa || !plots.length || (fig.reveal && !shown)) return null;
+    const FS = 17;
+    const CHAR = 10.5;
+    const PW = 330;
+    const ROW = 64, BH = 38;
+    const longest = Math.max(0, ...plots.map((p) => String(p.name || '').length));
+    const edgeNum = fmtAxis(xa.min).length * CHAR / 2 + 6;
+    const LEFT = Math.max(edgeNum, longest ? longest * CHAR + 18 : 0);
+    const RIGHT = fmtAxis(xa.max).length * CHAR / 2 + 6;
+    const TOP = 10;
+    const AXY = TOP + plots.length * ROW + 4;
+    const H = AXY + (xa.title ? 58 : 32);
+    const W = LEFT + PW + RIGHT;
+    const X = (v) => LEFT + ((v - xa.min) / (xa.max - xa.min)) * PW;
+
+    const nodes = [];
+    const nx = Math.round((xa.max - xa.min) / xa.step);
+    for (let i = 0; i <= nx; i += 1) {
+      const v = xa.min + i * xa.step;
+      const major = i % (xa.every || 1) === 0;
+      nodes.push(figLine(`g${i}`, X(v), TOP, X(v), AXY, { strokeWidth: 1, strokeOpacity: major ? 0.26 : 0.12 }));
+      nodes.push(figLine(`t${i}`, X(v), AXY, X(v), AXY + (major ? 9 : 5), { strokeWidth: 2 }));
+      if (major) nodes.push(figLabel(`n${i}`, X(v), AXY + 27, fmtAxis(v), 'middle', 'var(--ink)', FS));
+    }
+    nodes.push(figLine('ax', X(xa.min), AXY, X(xa.max), AXY, { strokeWidth: 2.5 }));
+    if (xa.title) nodes.push(figLabel('xt', LEFT + PW / 2, AXY + 52, xa.title, 'middle', 'var(--ink)', FS));
+
+    const cyOf = (i) => TOP + i * ROW + ROW / 2;
+    const ink = fig.reveal ? color : 'var(--ink)';
+    plots.forEach((p, i) => {
+      const cy = cyOf(i);
+      const [t, b] = [cy - BH / 2, cy + BH / 2];
+      const s = { stroke: ink, strokeWidth: 3 };
+      nodes.push(<line key={`wl${i}`} x1={X(p.min)} y1={cy} x2={X(p.q1)} y2={cy} {...s} />);
+      nodes.push(<line key={`wr${i}`} x1={X(p.q3)} y1={cy} x2={X(p.max)} y2={cy} {...s} />);
+      nodes.push(<line key={`el${i}`} x1={X(p.min)} y1={cy - BH / 4} x2={X(p.min)} y2={cy + BH / 4} {...s} />);
+      nodes.push(<line key={`er${i}`} x1={X(p.max)} y1={cy - BH / 4} x2={X(p.max)} y2={cy + BH / 4} {...s} />);
+      nodes.push(<rect key={`bx${i}`} x={X(p.q1)} y={t} width={X(p.q3) - X(p.q1)} height={BH} fill={color} fillOpacity={0.22} {...s} />);
+      nodes.push(<line key={`md${i}`} x1={X(p.q2)} y1={t} x2={X(p.q2)} y2={b} stroke={ink} strokeWidth={4} />);
+    });
+    plots.forEach((p, i) => {
+      if (p.name) nodes.push(figLabel(`pn${i}`, LEFT - 14, cyOf(i) + 6, String(p.name), 'end', 'var(--ink)', FS));
+    });
+
+    if (shown) {
+      (fig.marks || []).forEach((m, k) => {
+        const x = X(m.value);
+        nodes.push(<line key={`mk${k}`} x1={x} y1={cyOf(m.plot || 0) - BH / 2 - 8} x2={x} y2={AXY} stroke={color} strokeWidth={3} strokeDasharray="7 5" />);
+      });
+    }
+
+    // noShrink and hug, as `scatter`: the plot is what the answer is read
+    // off, and it is wide and short.
+    return svgWrap(nodes, W, H, 'box-plot', fig.big, shown, true, 1.2, true);
+  }
+
   // The fourth data display: drawn to the data, like `pie-chart`. A gridline
   // at every whole unit so each bar ends exactly on one and can be read
   // without estimating; the generators keep every frequency a whole number.

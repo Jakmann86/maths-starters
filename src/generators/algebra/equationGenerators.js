@@ -227,6 +227,95 @@ export const generateSolveFractions = (options = {}) => {
 };
 
 // ===========================================================================
+// solve-fractional-coefficients   (Y9 Unit 1 do-nows)
+//   Foundation  (p/q)x + b = c                     multiply by the reciprocal
+//   Core        (p/q)x + b = (r/q)x + d            collect the x-terms first
+//   Stretch     (p/q)(ax + b) + e = cx + d          expand a fraction times a
+//               (p/q)(ax + b) - x/r = d             bracket, then collect
+// Different from solve-equations-fractions: there the fraction is the whole
+// side (k/x, (x + p)/c); here it is a coefficient. Foundation and Core land
+// on an integer; Stretch may not, as the do-nows' 8/7 does not.
+// ===========================================================================
+
+// (p/q)x, or x/q when p is 1.
+const fracX = (p, q) => (p === 1 ? `\\frac{x}{${q}}` : `\\frac{${p}}{${q}}x`);
+const coprimeTo = (q, max) => _.range(1, max + 1).filter((p) => gcd(p, q) === 1);
+
+const fcFoundation = () => {
+  const q = _.random(2, 5);
+  const p = _.sample(coprimeTo(q, 4));
+  const t = _.random(1, 6);
+  const x = q * t;
+  const b = randNonZero(-9, 9);
+  const c = p * t + b;
+  return {
+    questionMath: `${fracX(p, q)} ${constTerm(b)} = ${c}`,
+    answer: `x = ${x}`,
+    steps: [`${fracX(p, q)} = ${c - b}`, `x = ${c - b} \\times \\frac{${q}}{${p}}`, `x = ${x}`],
+  };
+};
+
+const fcCore = () => {
+  let q, p, r, x;
+  do {
+    q = _.random(2, 6);
+    const ps = coprimeTo(q, 2 * q - 1);
+    [r, p] = _.sortBy(_.sampleSize(ps, 2));
+    x = randNonZero(-10, 12);
+  } while (r === undefined || ((p - r) * x) % q !== 0);
+  const b = randNonZero(-8, 8);
+  const d = b + ((p - r) * x) / q;
+  return {
+    questionMath: `${fracX(p, q)} ${constTerm(b)} = ${fracX(r, q)} ${constTerm(d)}`,
+    answer: `x = ${x}`,
+    steps: [`${fracX(p, q)} - ${fracX(r, q)} = ${d} - ${b < 0 ? `(${b})` : b}`, `${fracX(p - r, q)} = ${d - b}`, `x = ${x}`],
+  };
+};
+
+const fcStretch = () => {
+  const q = _.random(2, 5);
+  const p = _.sample(coprimeTo(q, 4));
+  const a1 = _.random(1, 3);
+  const b1 = randNonZero(-4, 4);
+  const bracket = `\\frac{${p}}{${q}}(${xTerm(q * a1)} ${constTerm(q * b1)})`;
+  const expanded = `${xTerm(p * a1)} ${constTerm(p * b1)}`;
+
+  if (_.random(0, 1)) {
+    // (p/q)(qa1 x + qb1) + e = cx + d  ->  (p a1 - c)x = d - p b1 - e
+    let c;
+    do { c = _.random(1, 5); } while (c === p * a1);
+    const e = _.random(-6, 6);
+    const d = _.random(-10, 12);
+    const num = d - p * b1 - e;
+    if (num === 0) return fcStretch();
+    const lhs = e === 0 ? bracket : `${bracket} ${constTerm(e)}`;
+    return {
+      questionMath: `${lhs} = ${xTerm(c)} ${constTerm(d)}`,
+      answer: formatSolution(num, p * a1 - c),
+      steps: [`${expanded}${e === 0 ? '' : ` ${constTerm(e)}`} = ${xTerm(c)} ${constTerm(d)}`, `${xTerm(p * a1 - c)} = ${num}`, formatSolution(num, p * a1 - c)],
+    };
+  }
+  // (p/q)(qa1 x + qb1) - x/r = d  ->  (r p a1 - 1)x = r(d - p b1)
+  const r = _.random(2, 4);
+  const d = _.random(-10, 12);
+  const num = r * (d - p * b1);
+  const den = r * p * a1 - 1;
+  if (num === 0) return fcStretch();
+  return {
+    questionMath: `${bracket} - \\frac{x}{${r}} = ${d}`,
+    answer: formatSolution(num, den),
+    steps: [`${expanded} - \\frac{x}{${r}} = ${d}`, `${r * p * a1}x ${constTerm(r * p * b1)} - x = ${r * d}`, `${xTerm(den)} = ${num}`, formatSolution(num, den)],
+  };
+};
+
+export const generateSolveFractionalCoefficients = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const build = difficulty === 'foundation' ? fcFoundation : difficulty === 'stretch' ? fcStretch : fcCore;
+  const { questionMath, answer, steps } = build();
+  return compose(questionMath, answer, steps, 'solve-fractional-coefficients', difficulty);
+};
+
+// ===========================================================================
 // §E  solve-power-equations   (Haese 3E)
 //   Foundation  x^2 = k   perfect square, exact          x = ±r
 //   Core        x^2 = k   non-square, surd + 3 s.f.       x = ±√k

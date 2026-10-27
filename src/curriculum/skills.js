@@ -29,6 +29,9 @@ import * as circleLen from '../generators/geometry/circleLengthGenerators';
 import * as pct from '../generators/number/percentageGenerators';
 import * as ch6 from '../generators/number/chapter6Generators';
 import * as fracPow from '../generators/number/fractionalPowerGenerators';
+import * as indexLaws from '../generators/number/indexLawGenerators';
+import * as rational from '../generators/number/rationalNumberGenerators';
+import * as bidmas from '../generators/number/orderOfOperationsGenerators';
 import * as stats from '../generators/statistics/averagesGenerators';
 import * as displays from '../generators/statistics/dataDisplayGenerators';
 import * as pie from '../generators/statistics/pieChartGenerators';
@@ -42,6 +45,7 @@ import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
 import * as spread from '../generators/statistics/spreadGenerators';
+import * as boxPlots from '../generators/statistics/boxPlotGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -164,6 +168,14 @@ export const skills = {
     label: 'Solving equations with fractions',
     topic: 'Equations',
     generate: (opts) => equations.generateSolveFractions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Y9 do-nows: fractional coefficients, (3/4)x - 2 = 7 ---
+  'solve-fractional-coefficients': {
+    label: 'Solving equations with fractional coefficients',
+    topic: 'Equations',
+    generate: (opts) => equations.generateSolveFractionalCoefficients(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -770,11 +782,57 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Y9 do-nows: rational numbers ---
+  'fdp-conversions': {
+    label: 'Fractions, decimals and percentages',
+    topic: 'Rational numbers',
+    generate: (opts) => rational.generateFdpConversions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'recurring-decimals': {
+    label: 'Recurring decimals to fractions',
+    topic: 'Rational numbers',
+    generate: (opts) => rational.generateRecurringDecimals(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'rational-or-irrational': {
+    label: 'Rational or irrational?',
+    topic: 'Rational numbers',
+    generate: (opts) => rational.generateRationalOrNot(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'negative-fractions': {
+    label: 'Calculating with negative fractions',
+    topic: 'Rational numbers',
+    generate: (opts) => rational.generateNegativeFractions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Y9 do-nows: order of operations ---
+  'order-of-operations': {
+    label: 'Order of operations',
+    topic: 'Order of operations',
+    generate: (opts) => bidmas.generateOrderOfOperations(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'order-of-operations-tiles': {
+    label: 'Number cards: make it true',
+    topic: 'Order of operations',
+    generate: (opts) => bidmas.generateNumberCards(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 6B: index laws ---
   'index-laws': {
     label: 'Index laws',
     topic: 'Indices',
     generate: (opts) => pct.generateIndexLaws(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'index-laws-coefficients': {
+    label: 'Index laws with coefficients',
+    topic: 'Indices',
+    generate: (opts) => indexLaws.generateIndexLawsCoefficients(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -791,6 +849,18 @@ export const skills = {
     label: 'Fractional powers',
     topic: 'Indices',
     generate: (opts) => fracPow.generateFractionalPowers(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'index-laws-missing-power': {
+    label: 'Index laws: find the missing power',
+    topic: 'Indices',
+    generate: (opts) => indexLaws.generateIndexMissingPower(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'exponential-equations': {
+    label: 'Exponential equations',
+    topic: 'Indices',
+    generate: (opts) => indexLaws.generateExponentialEquations(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -813,6 +883,12 @@ export const skills = {
     label: 'Simplifying surds',
     topic: 'Surds',
     generate: (opts) => ch6.generateSurdsSimplify(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'surds-expand': {
+    label: 'Expanding brackets with surds',
+    topic: 'Surds',
+    generate: (opts) => ch6.generateSurdsExpand(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'rationalise-denominator': {
@@ -954,6 +1030,18 @@ export const skills = {
     generate: (opts) => spread.generateQuartilesIqr(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'five-number-summary': {
+    label: 'Five-number summary and box plot',
+    topic: 'Spread',
+    generate: (opts) => boxPlots.generateFiveNumberSummary(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'box-plot-reading': {
+    label: 'Reading box plots',
+    topic: 'Spread',
+    generate: (opts) => boxPlots.generateBoxPlotReading(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'compare-distributions': {
     label: 'Comparing two data sets',
     topic: 'Spread',
@@ -1015,7 +1103,7 @@ export const generateForSkill = (id, wanted = 'core') => {
  * Within a strand, topics run in Haese chapter order.
  */
 export const STRANDS = [
-  { name: 'Number', topics: ['Indices', 'Standard form', 'Surds', 'Percentages'] },
+  { name: 'Number', topics: ['Rational numbers', 'Order of operations', 'Indices', 'Standard form', 'Surds', 'Percentages'] },
   {
     name: 'Algebra',
     topics: [

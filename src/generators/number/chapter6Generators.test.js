@@ -22,7 +22,9 @@ import {
   generateStandardFormCalculate,
   generateSurdsSimplify,
   generateRationaliseDenominator,
+  generateSurdsExpand,
 } from './chapter6Generators';
+import { exactOf, vequal, compiles } from './latexArithmetic.check';
 
 const BANDS = ['foundation', 'core', 'stretch'];
 const SAMPLES = 6000;
@@ -198,7 +200,7 @@ describe('standard-form-write', () => {
 describe('standard-form-calculate', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
     const distinct = new Set();
-    let large = 0;
+    let large = 0, subtract = 0, adjust = 0;
     for (let i = 0; i < SAMPLES; i += 1) {
       const q = generateStandardFormCalculate({ difficulty });
       checkNoForbiddenTokens(q);
@@ -211,28 +213,49 @@ describe('standard-form-calculate', () => {
       expect(mantissa).toBeGreaterThanOrEqual(1);
       expect(mantissa).toBeLessThan(10);
 
+      if (difficulty === 'core') {
+        // Half of Core divides numbers whose quotient is below 1 (4.2 / 6),
+        // so the answer has to be adjusted back into standard form.
+        const [d1, d2] = q.questionMath.match(/^\((\d+(?:\.\d+)?) .*\) \\div \((\d+) /).slice(1).map(Number);
+        if (d1 < d2) adjust += 1;
+      }
+
       if (difficulty === 'stretch') {
-        expect(q.questionMath).toMatch(/\\times 10\^\{-?\d+\}\) \+ \(/);
-        // Exact sum, since floats can't separate values near 10^-30.
-        const [t1, t2] = q.questionMath.match(/^\((.*)\) \+ \((.*)\)$/).slice(1).map(exactSf);
+        expect(q.questionMath).toMatch(/\\times 10\^\{-?\d+\}\) [+-] \(/);
+        // Exact sum or difference, since floats can't separate values near 10^-30.
+        const [, a1, op, a2] = q.questionMath.match(/^\((.*)\) ([+-]) \((.*)\)$/);
+        const [t1, t2] = [a1, a2].map(exactSf);
         const e = Math.min(t1[1], t2[1]);
-        const sum = [t1[0] * 10n ** BigInt(t1[1] - e) + t2[0] * 10n ** BigInt(t2[1] - e), e];
+        const [v1, v2] = [t1[0] * 10n ** BigInt(t1[1] - e), t2[0] * 10n ** BigInt(t2[1] - e)];
+        if (op === '-') { subtract += 1; expect(v1 > v2, q.questionMath).toBe(true); }
+        const sum = [op === '+' ? v1 + v2 : v1 - v2, e];
         expect(exactEqual(sum, exactSf(q.answer)), `${q.questionMath} = ${q.answer}`).toBe(true);
         if (Math.abs(Number(m[2])) >= 12) large += 1;
         // No redundant "X x 10^E = X x 10^E" conversion line when both
-        // terms already share a power.
-        expect(q.workingOut).not.toMatch(/(\S.*) = \1(?!\S)/);
+        // terms already share a power. Anchored to whole lines, so a genuine
+        // subtraction such as 5 - 2.5 = 2.5 is not mistaken for one.
+        expect(q.workingOut).not.toMatch(/(^|\n)(\S.*) = \2(?=\n|$)/);
       }
     }
     expect(distinct.size).toBeGreaterThan(SAMPLES / 2);
-    // Roughly half of Stretch uses powers too large to write out in full.
-    if (difficulty === 'stretch') expect(large / SAMPLES).toBeGreaterThan(0.4);
+    // Roughly half of Stretch uses powers too large to write out in full,
+    // and roughly half subtracts rather than adds.
+    if (difficulty === 'stretch') {
+      expect(large / SAMPLES).toBeGreaterThan(0.4);
+      expect(subtract / SAMPLES).toBeGreaterThan(0.45);
+      expect(subtract / SAMPLES).toBeLessThan(0.55);
+    }
+    if (difficulty === 'core') {
+      expect(adjust / SAMPLES).toBeGreaterThan(0.45);
+      expect(adjust / SAMPLES).toBeLessThan(0.55);
+    }
   });
 });
 
 describe('surds-simplify', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
     const distinct = new Set();
+    let coefficients = 0;
     for (let i = 0; i < SAMPLES; i += 1) {
       const q = generateSurdsSimplify({ difficulty });
       checkNoForbiddenTokens(q);
@@ -248,16 +271,22 @@ describe('surds-simplify', () => {
         // confirm the working shows a genuinely common radicand.
         const inner = q.answer.match(/\\sqrt\{(\d+)\}$/);
         expect(inner, q.answer).toBeTruthy();
+        if (/^\d/.test(q.questionMath) || /\+ \d/.test(q.questionMath)) coefficients += 1;
       }
     }
     expect(distinct.size).toBeGreaterThan(1);
+    // Half of Stretch puts a coefficient on the surds (3\sqrt{8} + 2\sqrt{18}).
+    if (difficulty === 'stretch') {
+      expect(coefficients / SAMPLES).toBeGreaterThan(0.4);
+      expect(coefficients / SAMPLES).toBeLessThan(0.55);
+    }
   });
 });
 
 describe('rationalise-denominator', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
     const distinct = new Set();
-    let conjugates = 0, negatives = 0;
+    let conjugates = 0, negatives = 0, binomial = 0;
     for (let i = 0; i < SAMPLES; i += 1) {
       const q = generateRationaliseDenominator({ difficulty });
       checkNoForbiddenTokens(q);
@@ -296,6 +325,13 @@ describe('rationalise-denominator', () => {
         let squareFactor = false;
         for (let k = 2; k * k <= m; k++) if (m % (k * k) === 0) squareFactor = true;
         expect(squareFactor, `${d[1]} has no square factor`).toBe(true);
+      } else if (difficulty === 'core' && /^\\frac\{\d+ [+-] /.test(q.questionMath)) {
+        // Core's two-term numerator, (a ± sqrt b) / sqrt b: the answer is
+        // already checked equal; it must also be fully reduced.
+        binomial += 1;
+        const ints = [...q.answer.replace(/\\sqrt\{\d+\}/g, 's').matchAll(/\d+/g)].map((mm) => Number(mm[0]));
+        const sqrtCoeff = /(^|[^\d])\\sqrt/.test(q.answer) ? [1] : [];
+        if (asFrac) expect(ints.concat(sqrtCoeff).reduce(gcd), q.answer).toBe(1);
       } else {
         // Foundation and core split on whether a/b cancel. Recover a and b
         // from the question and check the split directly rather than
@@ -318,5 +354,44 @@ describe('rationalise-denominator', () => {
     } else {
       expect(conjugates).toBe(0);
     }
+    if (difficulty === 'core') {
+      expect(binomial / SAMPLES).toBeGreaterThan(0.45);
+      expect(binomial / SAMPLES).toBeLessThan(0.55);
+    } else {
+      expect(binomial).toBe(0);
+    }
+  });
+});
+
+// Read back by latexArithmetic.check.js, which multiplies surds exactly, so
+// the expanded answer must equal the printed brackets term for term.
+describe('surds-expand', () => {
+  it.each(BANDS)('is correct at %s', (difficulty) => {
+    const distinct = new Set();
+    let conjugates = 0;
+    for (let i = 0; i < SAMPLES; i += 1) {
+      const q = generateSurdsExpand({ difficulty });
+      expect(q.metadata.topic).toBe('surds-expand');
+      checkNoForbiddenTokens(q);
+      if (!distinct.has(q.questionMath)) { compiles(q.questionMath); compiles(q.answer); compiles(q.workingOut); }
+      distinct.add(q.questionMath);
+      expect(vequal(exactOf(q.questionMath), exactOf(q.answer)), `${q.questionMath} = ${q.answer}`).toBe(true);
+
+      // constant first, then one simplified surd
+      expect(q.answer, q.answer).toMatch(/^(-?\d+( [+-] \d*\\sqrt\{\d+\})?|-?\d*\\sqrt\{\d+\})$/);
+      expect(q.answer).not.toMatch(/(^|[^\d])1\\sqrt/);
+      [...q.answer.matchAll(/\\sqrt\{(\d+)\}/g)].forEach((mm) => expect(isSquareFree(Number(mm[1])), q.answer).toBe(true));
+      if (!/sqrt/.test(q.answer)) conjugates += 1;
+
+      const roots = new Set([...q.questionMath.matchAll(/\\sqrt\{(\d+)\}/g)].map((mm) => mm[1]));
+      if (difficulty === 'stretch') expect(roots.size, q.questionMath).toBe(2);
+      else expect(roots.size, q.questionMath).toBe(1);
+      if (difficulty === 'foundation') expect(q.questionMath).not.toMatch(/\d\\sqrt/);
+      if (difficulty === 'core') expect(q.questionMath).toMatch(/\d\\sqrt/);
+    }
+    console.log(`surds-expand ${difficulty}: ${distinct.size} distinct, ${conjugates} with no surd left`);
+    expect(distinct.size).toBeGreaterThan(difficulty === 'foundation' ? 300 : 1000);
+    // A conjugate pair, whose surds cancel, comes up at Foundation about one time in four.
+    if (difficulty === 'foundation') expect(conjugates / SAMPLES).toBeGreaterThan(0.2);
   });
 });
