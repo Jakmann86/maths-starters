@@ -1603,9 +1603,16 @@ export default function Figure({ fig, color, shown }) {
     // others.
     const pts = fig.points || [];
     const seg = fig.segment || null;
+    // Lines are { m, c } for y = mx + c, or { x } for a vertical line. `lines`
+    // draws several (solving graphically); `line` is the one-line shorthand.
+    const lines = fig.lines || (fig.line ? [fig.line] : []);
     let x0; let x1; let y0; let y1;
 
-    if (pts.length || seg) {
+    if (fig.window) {
+      // The generator knows what has to be on screen (two lines' crossing,
+      // say) better than any rule here could; it passes [x0, x1, y0, y1].
+      [x0, x1, y0, y1] = fig.window;
+    } else if (pts.length || seg) {
       // Bounds from the content, padded by a square, always including the
       // origin so both axes are on screen.
       const xs = [...pts.map((p) => p.x), ...(seg ? [seg[0][0], seg[1][0]] : []), 0];
@@ -1623,11 +1630,19 @@ export default function Figure({ fig, color, shown }) {
       // A line alone: fix a square window around its intercept and CLIP the
       // line to it. Growing the window to contain the whole line is what made
       // a gradient of -2 come out three times taller than it was wide.
-      const { c } = fig.line;
-      x0 = -5; x1 = 5;
-      y0 = Math.round(c) - 5; y1 = Math.round(c) + 5;
-      if (y0 > -1) { y0 = -1; y1 = 9; }
-      if (y1 < 1) { y1 = 1; y0 = -9; }
+      const [ln] = lines;
+      if (ln.x !== undefined) {
+        x0 = Math.round(ln.x) - 5; x1 = Math.round(ln.x) + 5;
+        if (x0 > -1) { x0 = -1; x1 = 9; }
+        if (x1 < 1) { x1 = 1; x0 = -9; }
+        y0 = -5; y1 = 5;
+      } else {
+        const { c } = ln;
+        x0 = -5; x1 = 5;
+        y0 = Math.round(c) - 5; y1 = Math.round(c) + 5;
+        if (y0 > -1) { y0 = -1; y1 = 9; }
+        if (y1 < 1) { y1 = 1; y0 = -9; }
+      }
     }
 
     const cell = 26;
@@ -1671,8 +1686,12 @@ export default function Figure({ fig, color, shown }) {
 
     // The line or segment is the subject of the question, so it takes the
     // slot colour, like every other `unknown` in this file.
-    if (fig.line) {
-      const { m, c } = fig.line;
+    lines.forEach((ln, li) => {
+      if (ln.x !== undefined) {
+        nodes.push(<line key={`ln${li}`} x1={X(ln.x)} y1={Y(y0)} x2={X(ln.x)} y2={Y(y1)} stroke={color} strokeWidth={3} />);
+        return;
+      }
+      const { m, c } = ln;
       const cand = [];
       const add = (x, y) => {
         if (x >= x0 - 1e-9 && x <= x1 + 1e-9 && y >= y0 - 1e-9 && y <= y1 + 1e-9) cand.push([x, y]);
@@ -1686,7 +1705,7 @@ export default function Figure({ fig, color, shown }) {
       }));
       nodes.push(
         <line
-          key="ln"
+          key={`ln${li}`}
           x1={X(best[0][0])}
           y1={Y(best[0][1])}
           x2={X(best[1][0])}
@@ -1695,7 +1714,7 @@ export default function Figure({ fig, color, shown }) {
           strokeWidth={3}
         />
       );
-    }
+    });
     if (seg) {
       nodes.push(
         <line

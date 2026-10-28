@@ -282,6 +282,91 @@ export const generateSimultaneousEquations = (options = {}) => {
 };
 
 // ---------------------------------------------------------------------------
+// generateSimultaneousGraphical (Y9 Unit 2 do-nows)
+//   foundation  both lines drawn, read the crossing
+//   core        two lines y = mx + c, draw them, then read the crossing
+//   stretch     one line in the form ax + by = d, plotted from its intercepts
+// The crossing is chosen first and is always a whole-number grid point, in
+// the first quadrant or close to it, since the class draws its own axes.
+const pointOf = (x, y) => `(${x}, ${y})`;
+
+// A square window around the crossing that always includes the origin, so
+// both axes are on screen — the same squaring-up the drawn-points grid does.
+const windowAround = (px, py) => {
+  let x0 = Math.min(-1, px - 3); let x1 = Math.max(1, px + 3);
+  let y0 = Math.min(-1, py - 3); let y1 = Math.max(1, py + 3);
+  while (x1 - x0 < y1 - y0) { if ((x1 - x0) % 2) x1 += 1; else x0 -= 1; }
+  while (y1 - y0 < x1 - x0) { if ((y1 - y0) % 2) y1 += 1; else y0 -= 1; }
+  return [x0, x1, y0, y1];
+};
+
+export const generateSimultaneousGraphical = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const answerOf = (x, y) => `x = ${x}, \\ y = ${y}`;
+  const meta = { topic: 'simultaneous-graphical', difficulty };
+
+  if (difficulty === 'stretch') {
+    let a, b, d, px, py;
+    do {
+      a = _.random(1, 4); b = _.random(1, 4);
+      px = _.random(0, 5); py = _.random(0, 6);
+      d = a * px + b * py;
+    } while (d === 0 || d % a !== 0 || d % b !== 0 || d / a > 10 || d / b > 10 || (px === 0 && py === 0));
+    let m;
+    do { m = _.sample([-2, -1, 1, 2, 3]); } while (m * b === -a); // not parallel
+    const c = py - m * px;
+    const general = `${a === 1 ? '' : a}x + ${b === 1 ? '' : b}y = ${d}`;
+    return {
+      instruction: 'Solve graphically: draw both lines and find where they cross',
+      questionMath: `${general}${NL}y = ${formatLinear(m, c)}`,
+      answer: answerOf(px, py),
+      workingOut: [
+        `${general}\\text{ crosses the axes at } ${pointOf(d / a, 0)} \\text{ and } ${pointOf(0, d / b)}`,
+        `y = ${formatLinear(m, c)}\\text{ passes through } ${pointOf(0, c)} \\text{ and } ${pointOf(1, m + c)}`,
+        `\\text{the lines cross at } ${pointOf(px, py)}`,
+      ].join(NL),
+      visualization: null,
+      metadata: meta,
+    };
+  }
+
+  // On the board the crossing is never on an axis: there both lines run over
+  // the very axis numbers the answer is read from.
+  const px = difficulty === 'foundation' ? _.sample([-2, -1, 1, 2, 3, 4]) : _.random(0, 4);
+  const py = difficulty === 'foundation' ? _.sample([-2, -1, 1, 2, 3, 4, 5, 6]) : _.random(0, 6);
+  const m1 = _.random(1, 3);
+  const m2 = _.sample([-3, -2, -1, ...(difficulty === 'foundation' ? [] : [m1 === 1 ? 2 : 1])]);
+  const c1 = py - m1 * px;
+  const c2 = py - m2 * px;
+  const questionMath = `y = ${formatLinear(m1, c1)}${NL}y = ${formatLinear(m2, c2)}`;
+
+  if (difficulty === 'foundation') {
+    return {
+      instruction: 'Use the graph to solve the simultaneous equations',
+      questionMath,
+      answer: answerOf(px, py),
+      workingOut: `\\text{the lines cross at } ${pointOf(px, py)}${NL}${answerOf(px, py)}`,
+      visualization: { type: 'coordinate-grid', lines: [{ m: m1, c: c1 }, { m: m2, c: c2 }], window: windowAround(px, py), big: true },
+      metadata: meta,
+    };
+  }
+
+  const table = (m, c) => [0, 1, 2].map((x) => pointOf(x, m * x + c)).join(',\\ ');
+  return {
+    instruction: 'Solve graphically: draw both lines and find where they cross',
+    questionMath,
+    answer: answerOf(px, py),
+    workingOut: [
+      `y = ${formatLinear(m1, c1)}: \\ ${table(m1, c1)}`,
+      `y = ${formatLinear(m2, c2)}: \\ ${table(m2, c2)}`,
+      `\\text{the lines cross at } ${pointOf(px, py)}`,
+    ].join(NL),
+    visualization: null,
+    metadata: meta,
+  };
+};
+
+// ---------------------------------------------------------------------------
 // generateSimultaneousProblemSolving (Haese 7F + Rayner 3.25#10) — topic
 // 'Problem solving', the same one angles-problem-solving already lives in.
 export const generateSimultaneousProblemSolving = (options = {}) => {

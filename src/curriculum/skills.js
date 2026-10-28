@@ -20,6 +20,7 @@ import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
 import * as cubicSeq from '../generators/algebra/cubicSequenceGenerators';
 import * as formulae from '../generators/algebra/formulaGenerators';
+import * as inequalities from '../generators/algebra/inequalityGenerators';
 import * as quadEq from '../generators/algebra/quadraticEquationGenerators';
 import * as solids from '../generators/geometry/solidsGenerators';
 import * as area from '../generators/geometry/areaGenerators';
@@ -88,6 +89,16 @@ export const skills = {
     label: 'Expanding a perfect square',
     topic: 'Expanding brackets',
     generate: (opts) => expressions.generateExpandPerfectSquare(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 1G: factorising with common factors (Y9 Unit 2 do-nows) ---
+  // First in the topic: taking out the HCF is the move every later
+  // factorising skill starts from, so a fresh draw opens here.
+  'factorise-common-factor': {
+    label: 'Factorising: common factors',
+    topic: 'Factorising',
+    generate: (opts) => factorising.generateFactoriseCommonFactor(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -192,6 +203,20 @@ export const skills = {
     label: 'Forming equations',
     topic: 'Equations',
     generate: (opts) => equations.generateFormingEquation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 3F-3G: linear inequalities (Y9 Unit 2 do-nows) ---
+  'inequality-list-values': {
+    label: 'Inequalities: which numbers fit?',
+    topic: 'Inequalities',
+    generate: (opts) => inequalities.generateInequalityListValues(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'solve-linear-inequalities': {
+    label: 'Solving linear inequalities',
+    topic: 'Inequalities',
+    generate: (opts) => inequalities.generateSolveLinearInequalities(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -368,6 +393,13 @@ export const skills = {
     label: 'Parallel and perpendicular gradients',
     topic: 'Coordinate geometry',
     generate: (opts) => coord.generateParallelPerpendicular(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // --- Haese 14A: vertical and horizontal lines (Y9 Unit 2 do-nows) ---
+  'horizontal-vertical-lines': {
+    label: 'Vertical and horizontal lines',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generateHorizontalVerticalLines(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'equation-of-a-line': {
@@ -551,6 +583,13 @@ export const skills = {
     label: 'Simultaneous equations',
     topic: 'Formulae and simultaneous equations',
     generate: (opts) => formulae.generateSimultaneousEquations(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // --- Y9 Unit 2 do-nows: solving simultaneous equations graphically ---
+  'simultaneous-graphical': {
+    label: 'Simultaneous equations: solving graphically',
+    topic: 'Formulae and simultaneous equations',
+    generate: (opts) => formulae.generateSimultaneousGraphical(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   // Joins angles-problem-solving under 'Problem solving' (see its entry
@@ -1110,6 +1149,7 @@ export const STRANDS = [
       'Expanding brackets',
       'Factorising',
       'Equations',
+      'Inequalities',
       'Formulae and simultaneous equations',
       'Algebraic fractions',
       'Quadratic equations',
