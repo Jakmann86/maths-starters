@@ -1603,9 +1603,16 @@ export default function Figure({ fig, color, shown }) {
     // others.
     const pts = fig.points || [];
     const seg = fig.segment || null;
+    // Lines are { m, c } for y = mx + c, or { x } for a vertical line. `lines`
+    // draws several (solving graphically); `line` is the one-line shorthand.
+    const lines = fig.lines || (fig.line ? [fig.line] : []);
     let x0; let x1; let y0; let y1;
 
-    if (pts.length || seg) {
+    if (fig.window) {
+      // The generator knows what has to be on screen (two lines' crossing,
+      // say) better than any rule here could; it passes [x0, x1, y0, y1].
+      [x0, x1, y0, y1] = fig.window;
+    } else if (pts.length || seg) {
       // Bounds from the content, padded by a square, always including the
       // origin so both axes are on screen.
       const xs = [...pts.map((p) => p.x), ...(seg ? [seg[0][0], seg[1][0]] : []), 0];
@@ -1623,11 +1630,19 @@ export default function Figure({ fig, color, shown }) {
       // A line alone: fix a square window around its intercept and CLIP the
       // line to it. Growing the window to contain the whole line is what made
       // a gradient of -2 come out three times taller than it was wide.
-      const { c } = fig.line;
-      x0 = -5; x1 = 5;
-      y0 = Math.round(c) - 5; y1 = Math.round(c) + 5;
-      if (y0 > -1) { y0 = -1; y1 = 9; }
-      if (y1 < 1) { y1 = 1; y0 = -9; }
+      const [ln] = lines;
+      if (ln.x !== undefined) {
+        x0 = Math.round(ln.x) - 5; x1 = Math.round(ln.x) + 5;
+        if (x0 > -1) { x0 = -1; x1 = 9; }
+        if (x1 < 1) { x1 = 1; x0 = -9; }
+        y0 = -5; y1 = 5;
+      } else {
+        const { c } = ln;
+        x0 = -5; x1 = 5;
+        y0 = Math.round(c) - 5; y1 = Math.round(c) + 5;
+        if (y0 > -1) { y0 = -1; y1 = 9; }
+        if (y1 < 1) { y1 = 1; y0 = -9; }
+      }
     }
 
     const cell = 26;
@@ -1671,8 +1686,12 @@ export default function Figure({ fig, color, shown }) {
 
     // The line or segment is the subject of the question, so it takes the
     // slot colour, like every other `unknown` in this file.
-    if (fig.line) {
-      const { m, c } = fig.line;
+    lines.forEach((ln, li) => {
+      if (ln.x !== undefined) {
+        nodes.push(<line key={`ln${li}`} x1={X(ln.x)} y1={Y(y0)} x2={X(ln.x)} y2={Y(y1)} stroke={color} strokeWidth={3} />);
+        return;
+      }
+      const { m, c } = ln;
       const cand = [];
       const add = (x, y) => {
         if (x >= x0 - 1e-9 && x <= x1 + 1e-9 && y >= y0 - 1e-9 && y <= y1 + 1e-9) cand.push([x, y]);
@@ -1686,7 +1705,7 @@ export default function Figure({ fig, color, shown }) {
       }));
       nodes.push(
         <line
-          key="ln"
+          key={`ln${li}`}
           x1={X(best[0][0])}
           y1={Y(best[0][1])}
           x2={X(best[1][0])}
@@ -1695,7 +1714,7 @@ export default function Figure({ fig, color, shown }) {
           strokeWidth={3}
         />
       );
-    }
+    });
     if (seg) {
       nodes.push(
         <line
@@ -2385,6 +2404,72 @@ export default function Figure({ fig, color, shown }) {
     // noShrink: the graph is what the answer is read off, as with the bar
     // chart. hug: it is height-bound in a slot, so the box narrows to it.
     return svgWrap(nodes, W, H, 'scatter', fig.big, shown, true, 1, true);
+  }
+
+  // A box plot, drawn to the data on a gridded scale like `scatter`: a plot
+  // that is read from puts every value on a gridline, so each one can be
+  // read without estimating. One plot, or two sharing the scale with their names
+  // to the left. `reveal` makes the whole figure the answer: nothing until
+  // the answer is shown, then the plot in the slot colour. (An empty scale
+  // beside the question cost a long data list its width.) `marks`
+  // ({ plot, value }) are dashed reading lines from the top of a plot down
+  // to the axis, drawn on reveal.
+  if (fig.type === 'box-plot') {
+    const { axis: xa, plots = [] } = fig;
+    if (!xa || !plots.length || (fig.reveal && !shown)) return null;
+    const FS = 17;
+    const CHAR = 10.5;
+    const PW = 330;
+    const ROW = 64, BH = 38;
+    const longest = Math.max(0, ...plots.map((p) => String(p.name || '').length));
+    const edgeNum = fmtAxis(xa.min).length * CHAR / 2 + 6;
+    const LEFT = Math.max(edgeNum, longest ? longest * CHAR + 18 : 0);
+    const RIGHT = fmtAxis(xa.max).length * CHAR / 2 + 6;
+    const TOP = 10;
+    const AXY = TOP + plots.length * ROW + 4;
+    const H = AXY + (xa.title ? 58 : 32);
+    const W = LEFT + PW + RIGHT;
+    const X = (v) => LEFT + ((v - xa.min) / (xa.max - xa.min)) * PW;
+
+    const nodes = [];
+    const nx = Math.round((xa.max - xa.min) / xa.step);
+    for (let i = 0; i <= nx; i += 1) {
+      const v = xa.min + i * xa.step;
+      const major = i % (xa.every || 1) === 0;
+      nodes.push(figLine(`g${i}`, X(v), TOP, X(v), AXY, { strokeWidth: 1, strokeOpacity: major ? 0.26 : 0.12 }));
+      nodes.push(figLine(`t${i}`, X(v), AXY, X(v), AXY + (major ? 9 : 5), { strokeWidth: 2 }));
+      if (major) nodes.push(figLabel(`n${i}`, X(v), AXY + 27, fmtAxis(v), 'middle', 'var(--ink)', FS));
+    }
+    nodes.push(figLine('ax', X(xa.min), AXY, X(xa.max), AXY, { strokeWidth: 2.5 }));
+    if (xa.title) nodes.push(figLabel('xt', LEFT + PW / 2, AXY + 52, xa.title, 'middle', 'var(--ink)', FS));
+
+    const cyOf = (i) => TOP + i * ROW + ROW / 2;
+    const ink = fig.reveal ? color : 'var(--ink)';
+    plots.forEach((p, i) => {
+      const cy = cyOf(i);
+      const [t, b] = [cy - BH / 2, cy + BH / 2];
+      const s = { stroke: ink, strokeWidth: 3 };
+      nodes.push(<line key={`wl${i}`} x1={X(p.min)} y1={cy} x2={X(p.q1)} y2={cy} {...s} />);
+      nodes.push(<line key={`wr${i}`} x1={X(p.q3)} y1={cy} x2={X(p.max)} y2={cy} {...s} />);
+      nodes.push(<line key={`el${i}`} x1={X(p.min)} y1={cy - BH / 4} x2={X(p.min)} y2={cy + BH / 4} {...s} />);
+      nodes.push(<line key={`er${i}`} x1={X(p.max)} y1={cy - BH / 4} x2={X(p.max)} y2={cy + BH / 4} {...s} />);
+      nodes.push(<rect key={`bx${i}`} x={X(p.q1)} y={t} width={X(p.q3) - X(p.q1)} height={BH} fill={color} fillOpacity={0.22} {...s} />);
+      nodes.push(<line key={`md${i}`} x1={X(p.q2)} y1={t} x2={X(p.q2)} y2={b} stroke={ink} strokeWidth={4} />);
+    });
+    plots.forEach((p, i) => {
+      if (p.name) nodes.push(figLabel(`pn${i}`, LEFT - 14, cyOf(i) + 6, String(p.name), 'end', 'var(--ink)', FS));
+    });
+
+    if (shown) {
+      (fig.marks || []).forEach((m, k) => {
+        const x = X(m.value);
+        nodes.push(<line key={`mk${k}`} x1={x} y1={cyOf(m.plot || 0) - BH / 2 - 8} x2={x} y2={AXY} stroke={color} strokeWidth={3} strokeDasharray="7 5" />);
+      });
+    }
+
+    // noShrink and hug, as `scatter`: the plot is what the answer is read
+    // off, and it is wide and short.
+    return svgWrap(nodes, W, H, 'box-plot', fig.big, shown, true, 1.2, true);
   }
 
   // The fourth data display: drawn to the data, like `pie-chart`. A gridline

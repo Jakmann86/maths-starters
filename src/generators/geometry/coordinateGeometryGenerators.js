@@ -610,3 +610,64 @@ export const generatePointOnLine = (options = {}) => {
     };
   }
 };
+
+/* --------------------------------------- 14A vertical and horizontal lines */
+//   foundation  one drawn line, x = k or y = k          read its equation
+//   core        two points sharing an x or a y          no figure
+//   stretch     where x = k or y = k meets y = mx + c    substitute, then
+//               (y = k needs solving for x)              give the point
+// Foundation has a real ceiling: k is a non-zero whole number on a readable
+// grid, two orientations, so 20 questions. k = 0 would sit on an axis and be
+// invisible; a wider k only moves the window.
+
+export const generateHorizontalVerticalLines = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const vertical = _.random(0, 1) === 1;
+
+  if (difficulty === 'foundation') {
+    const k = _.sample([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]);
+    return {
+      instruction: 'Find the equation of this line',
+      answer: vertical ? `x = ${k}` : `y = ${k}`,
+      workingOut: vertical
+        ? `\\text{every point on the line has } x = ${k}${NL}x = ${k}`
+        : `\\text{every point on the line has } y = ${k}${NL}y = ${k}`,
+      visualization: { type: 'coordinate-grid', line: vertical ? { x: k } : { m: 0, c: k }, big: true },
+      metadata: { topic: 'horizontal-vertical-lines', difficulty },
+    };
+  }
+
+  if (difficulty === 'core') {
+    const k = _.random(-8, 8);
+    const [p, q] = _.sampleSize(_.range(-8, 9), 2);
+    const a = vertical ? [k, p] : [p, k];
+    const b = vertical ? [k, q] : [q, k];
+    return {
+      instruction: 'Find the equation of the line through A and B',
+      questionMath: `A${point(a[0], a[1])} \\text{ and } B${point(b[0], b[1])}`,
+      questionMathCompact: true,
+      answer: vertical ? `x = ${k}` : `y = ${k}`,
+      workingOut: vertical
+        ? `\\text{both points have } x = ${k}\\text{, so the line is vertical}${NL}x = ${k}`
+        : `\\text{both points have } y = ${k}\\text{, so the line is horizontal}${NL}y = ${k}`,
+      metadata: { topic: 'horizontal-vertical-lines', difficulty },
+    };
+  }
+
+  // Stretch: the meeting point is chosen first, so it is always whole.
+  const m = _.sample([-4, -3, -2, -1, 1, 2, 3, 4]);
+  const px = _.random(-6, 6);
+  const c = _.random(-8, 8);
+  const py = m * px + c;
+  const sloped = `y = ${coef(m)}x${signed(c)}`;
+  const flat = vertical ? `x = ${px}` : `y = ${py}`;
+  return {
+    instruction: 'Find the point where these two lines meet',
+    questionMath: `${sloped}${NL}${flat}`,
+    answer: point(px, py),
+    workingOut: vertical
+      ? `y = ${m} \\times ${br(px)}${signed(c)} = ${py}${NL}${point(px, py)}`
+      : `${py} = ${coef(m)}x${signed(c)}${NL}x = ${px}${NL}${point(px, py)}`,
+    metadata: { topic: 'horizontal-vertical-lines', difficulty },
+  };
+};

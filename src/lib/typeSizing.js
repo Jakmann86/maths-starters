@@ -34,6 +34,11 @@ function visualLength(str) {
     // before the \frac rule below, which can't see past nested braces —
     // \frac{2^{8}}{2^{7}} otherwise counted as its full source length.
     .replace(/\^\{([^{}]*)\}/g, '^$1')
+    // A recurring-decimal dot sits over its digit, and a number card's box
+    // is one character wide however long `\boxed{\phantom{0}}` is to write.
+    .replace(/\\dot\{([^{}]*)\}/g, '$1')
+    .replace(/\\phantom\{([^{}]*)\}/g, '$1')
+    .replace(/\\boxed\{([^{}]*)\}/g, '$1 ')
     // A \frac{a}{b} stacks its numerator and denominator instead of laying
     // them side by side, so its on-screen width is close to the wider of
     // the two, not the length of the whole `\frac{a}{b}` source — counting

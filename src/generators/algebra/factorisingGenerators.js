@@ -9,6 +9,7 @@
 // output (MIGRATION known-issue #5).
 //
 // Skills exported here:
+//   generateFactoriseCommonFactor     Haese 1G   take out the HCF
 //   generateFactoriseMonic            Haese 1K   x^2 + bx + c
 //   generateFactoriseSplittingMiddle  Haese 1L   ax^2 + bx + c, a != 1
 //   generateDifferenceOfTwoSquares    Haese 1H   a^2 x^2 - b^2  (factorising)
@@ -52,6 +53,106 @@ const randNonZero = (min, max) => {
   let n = 0;
   while (n === 0) n = _.random(min, max);
   return n;
+};
+
+const NL = '\n';
+
+// The letters of a monomial in alphabetical order: { a: 2, b: 1 } -> "a^2b".
+const letters = (powers) =>
+  Object.keys(powers)
+    .sort()
+    .filter((v) => powers[v] > 0)
+    .map((v) => (powers[v] === 1 ? v : `${v}^${powers[v]}`))
+    .join('');
+
+// ---------------------------------------------------------------------------
+// 1G  —  taking out the highest common factor   (Y9 Unit 2 do-nows)
+//   foundation  a number only                    6a + 15       -> 3(2a + 5)
+//   core        a number and a power of x        3x^2 - 9x     -> 3x(x - 3)
+//   stretch     two letters, or three terms      12a^2b - 8ab^2 -> 4ab(3a - 2b)
+//                                                6x^3 + 9x^2 - 3x -> 3x(2x^2 + 3x - 1)
+// Built from the HCF and a bracket whose terms share nothing, so the answer
+// is fully factorised by construction.
+// ---------------------------------------------------------------------------
+
+const cfFoundation = () => {
+  const u = _.sample(['a', 'm', 'n', 'p', 'x', 'y']);
+  let k, p, q;
+  do {
+    k = _.random(2, 9);
+    p = _.random(1, 6);
+    q = randNonZero(-9, 9);
+  } while (gcd(p, q) !== 1);
+  return {
+    questionMath: joinTerms(leadTerm(k * p, u), laterTerm(k * q)),
+    hcf: String(k),
+    inner: joinTerms(leadTerm(p, u), laterTerm(q)),
+  };
+};
+
+const cfCore = () => {
+  const n = _.sample([1, 1, 2]);
+  let k, p, q;
+  do {
+    k = _.random(1, 6);
+    p = _.random(1, 5);
+    q = randNonZero(-9, 9);
+  } while (gcd(p, q) !== 1);
+  const hcf = `${k === 1 ? '' : k}${letters({ x: n })}`;
+  return {
+    questionMath: joinTerms(leadTerm(k * p, letters({ x: n + 1 })), laterTerm(k * q, letters({ x: n }))),
+    hcf,
+    inner: joinTerms(leadTerm(p, 'x'), laterTerm(q)),
+  };
+};
+
+const cfStretch = () => {
+  if (_.random(0, 1)) {
+    // Two letters: k u^i v (p u + q v)
+    const [u, v] = _.sample([['a', 'b'], ['x', 'y'], ['m', 'n'], ['p', 'q']]);
+    const i = _.sample([1, 1, 2]);
+    let k, p, q;
+    do {
+      k = _.random(2, 6);
+      p = _.random(1, 5);
+      q = randNonZero(-5, 5);
+    } while (gcd(p, q) !== 1);
+    return {
+      questionMath: joinTerms(
+        leadTerm(k * p, letters({ [u]: i + 1, [v]: 1 })),
+        laterTerm(k * q, letters({ [u]: i, [v]: 2 })),
+      ),
+      hcf: `${k}${letters({ [u]: i, [v]: 1 })}`,
+      inner: joinTerms(leadTerm(p, u), laterTerm(q, v)),
+    };
+  }
+  // Three terms: k x (p x^2 + q x + r)
+  let k, p, q, r;
+  do {
+    k = _.random(2, 5);
+    p = _.random(1, 4);
+    q = randNonZero(-6, 6);
+    r = randNonZero(-6, 6);
+  } while (gcd(gcd(p, q), r) !== 1);
+  return {
+    questionMath: joinTerms(leadTerm(k * p, 'x^3'), laterTerm(k * q, 'x^2'), laterTerm(k * r, 'x')),
+    hcf: `${k}x`,
+    inner: joinTerms(leadTerm(p, 'x^2'), laterTerm(q, 'x'), laterTerm(r)),
+  };
+};
+
+export const generateFactoriseCommonFactor = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const build = difficulty === 'foundation' ? cfFoundation : difficulty === 'stretch' ? cfStretch : cfCore;
+  const { questionMath, hcf, inner } = build();
+  const answer = `${hcf}(${inner})`;
+  return {
+    instruction: 'Factorise fully',
+    questionMath,
+    answer,
+    workingOut: `\\text{HCF} = ${hcf}${NL}${answer}`,
+    metadata: { topic: 'factorise-common-factor', difficulty },
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -210,8 +311,60 @@ const pickGroupingFactors = (difficulty) => {
   return { m: 1, r: 1, n: randNonZero(-9, 9), s: randNonZero(-9, 9) };
 };
 
+// The Y9 do-nows group two different letters as often as a split quadratic:
+// ax + 2a + 3x + 6 = a(x + 2) + 3(x + 2). Same move, same bands, so it is a
+// second form of this skill rather than a skill of its own, drawn half the
+// time in every band.
+//   foundation  (u + n)(v + s), all positive              ax + 2a + 3x + 6
+//   core        (mu + n)(v + s), mixed signs              3xy + 6x - 2y - 4
+//   stretch     (mu + n)(rv + s), both coefficients > 1   4ab - 6a + 10b - 15
+const LETTER_PAIRS = [['a', 'x'], ['x', 'y'], ['a', 'b'], ['m', 'x'], ['p', 'q'], ['m', 'n']];
+
+const pickTwoLetterFactors = (difficulty) => {
+  if (difficulty === 'foundation') {
+    return { m: 1, r: 1, n: _.random(2, 8), s: _.random(2, 8) };
+  }
+  if (difficulty === 'stretch') {
+    const [m, r] = _.sample([[2, 2], [2, 3], [3, 2], [3, 4], [4, 3], [2, 5], [5, 2]]);
+    return { m, r, n: randNonZero(-7, 7), s: randNonZero(-7, 7) };
+  }
+  return { m: _.sample([1, 2, 3]), r: 1, n: randNonZero(-6, 6), s: randNonZero(-6, 6) };
+};
+
+const twoLetterGrouping = (difficulty) => {
+  const [u, v] = _.sample(LETTER_PAIRS);
+  let m, r, n, s;
+  do {
+    ({ m, r, n, s } = pickTwoLetterFactors(difficulty));
+  } while (
+    gcd(m, n) !== 1 ||
+    gcd(r, s) !== 1 ||
+    (difficulty !== 'foundation' && n > 0 && s > 0) // keep core/stretch off the all-positive case
+  );
+
+  const first = `(${joinTerms(leadTerm(m, u), laterTerm(n))})`;
+  const second = `(${joinTerms(leadTerm(r, v), laterTerm(s))})`;
+  const questionMath = joinTerms(
+    leadTerm(m * r, `${u}${v}`),
+    laterTerm(m * s, u),
+    laterTerm(n * r, v),
+    laterTerm(n * s),
+  );
+  const pulled = `${leadTerm(m, u)}${second} ${n < 0 ? '-' : '+'} ${Math.abs(n) === 1 ? '' : Math.abs(n)}${second}`;
+
+  return {
+    instruction: 'Factorise',
+    questionMath,
+    answer: `${first}${second}`,
+    workingOut: `${pulled}${NL}${first}${second}`,
+    metadata: { topic: 'factorise-grouping', difficulty },
+  };
+};
+
 export const generateFactoriseGrouping = (options = {}) => {
   const { difficulty = 'core' } = options;
+
+  if (_.random(0, 1)) return twoLetterGrouping(difficulty);
 
   let m, r, n, s;
   do {

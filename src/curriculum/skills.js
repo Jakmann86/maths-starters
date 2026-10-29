@@ -20,6 +20,7 @@ import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
 import * as cubicSeq from '../generators/algebra/cubicSequenceGenerators';
 import * as formulae from '../generators/algebra/formulaGenerators';
+import * as inequalities from '../generators/algebra/inequalityGenerators';
 import * as quadEq from '../generators/algebra/quadraticEquationGenerators';
 import * as solids from '../generators/geometry/solidsGenerators';
 import * as area from '../generators/geometry/areaGenerators';
@@ -29,6 +30,9 @@ import * as circleLen from '../generators/geometry/circleLengthGenerators';
 import * as pct from '../generators/number/percentageGenerators';
 import * as ch6 from '../generators/number/chapter6Generators';
 import * as fracPow from '../generators/number/fractionalPowerGenerators';
+import * as indexLaws from '../generators/number/indexLawGenerators';
+import * as rational from '../generators/number/rationalNumberGenerators';
+import * as bidmas from '../generators/number/orderOfOperationsGenerators';
 import * as stats from '../generators/statistics/averagesGenerators';
 import * as displays from '../generators/statistics/dataDisplayGenerators';
 import * as pie from '../generators/statistics/pieChartGenerators';
@@ -42,6 +46,7 @@ import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
 import * as spread from '../generators/statistics/spreadGenerators';
+import * as boxPlots from '../generators/statistics/boxPlotGenerators';
 
 export const BANDS = ['foundation', 'core', 'stretch'];
 
@@ -84,6 +89,16 @@ export const skills = {
     label: 'Expanding a perfect square',
     topic: 'Expanding brackets',
     generate: (opts) => expressions.generateExpandPerfectSquare(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 1G: factorising with common factors (Y9 Unit 2 do-nows) ---
+  // First in the topic: taking out the HCF is the move every later
+  // factorising skill starts from, so a fresh draw opens here.
+  'factorise-common-factor': {
+    label: 'Factorising: common factors',
+    topic: 'Factorising',
+    generate: (opts) => factorising.generateFactoriseCommonFactor(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -167,6 +182,14 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Y9 do-nows: fractional coefficients, (3/4)x - 2 = 7 ---
+  'solve-fractional-coefficients': {
+    label: 'Solving equations with fractional coefficients',
+    topic: 'Equations',
+    generate: (opts) => equations.generateSolveFractionalCoefficients(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 3E: power equations ---
   'solve-power-equations': {
     label: 'Solving power equations',
@@ -180,6 +203,20 @@ export const skills = {
     label: 'Forming equations',
     topic: 'Equations',
     generate: (opts) => equations.generateFormingEquation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 3F-3G: linear inequalities (Y9 Unit 2 do-nows) ---
+  'inequality-list-values': {
+    label: 'Inequalities: which numbers fit?',
+    topic: 'Inequalities',
+    generate: (opts) => inequalities.generateInequalityListValues(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'solve-linear-inequalities': {
+    label: 'Solving linear inequalities',
+    topic: 'Inequalities',
+    generate: (opts) => inequalities.generateSolveLinearInequalities(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -356,6 +393,13 @@ export const skills = {
     label: 'Parallel and perpendicular gradients',
     topic: 'Coordinate geometry',
     generate: (opts) => coord.generateParallelPerpendicular(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // --- Haese 14A: vertical and horizontal lines (Y9 Unit 2 do-nows) ---
+  'horizontal-vertical-lines': {
+    label: 'Vertical and horizontal lines',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generateHorizontalVerticalLines(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'equation-of-a-line': {
@@ -539,6 +583,13 @@ export const skills = {
     label: 'Simultaneous equations',
     topic: 'Formulae and simultaneous equations',
     generate: (opts) => formulae.generateSimultaneousEquations(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // --- Y9 Unit 2 do-nows: solving simultaneous equations graphically ---
+  'simultaneous-graphical': {
+    label: 'Simultaneous equations: solving graphically',
+    topic: 'Formulae and simultaneous equations',
+    generate: (opts) => formulae.generateSimultaneousGraphical(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   // Joins angles-problem-solving under 'Problem solving' (see its entry
@@ -770,11 +821,57 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Y9 do-nows: rational numbers ---
+  'fdp-conversions': {
+    label: 'Fractions, decimals and percentages',
+    topic: 'Rational numbers',
+    generate: (opts) => rational.generateFdpConversions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'recurring-decimals': {
+    label: 'Recurring decimals to fractions',
+    topic: 'Rational numbers',
+    generate: (opts) => rational.generateRecurringDecimals(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'rational-or-irrational': {
+    label: 'Rational or irrational?',
+    topic: 'Rational numbers',
+    generate: (opts) => rational.generateRationalOrNot(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'negative-fractions': {
+    label: 'Calculating with negative fractions',
+    topic: 'Rational numbers',
+    generate: (opts) => rational.generateNegativeFractions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Y9 do-nows: order of operations ---
+  'order-of-operations': {
+    label: 'Order of operations',
+    topic: 'Order of operations',
+    generate: (opts) => bidmas.generateOrderOfOperations(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'order-of-operations-tiles': {
+    label: 'Number cards: make it true',
+    topic: 'Order of operations',
+    generate: (opts) => bidmas.generateNumberCards(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 6B: index laws ---
   'index-laws': {
     label: 'Index laws',
     topic: 'Indices',
     generate: (opts) => pct.generateIndexLaws(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'index-laws-coefficients': {
+    label: 'Index laws with coefficients',
+    topic: 'Indices',
+    generate: (opts) => indexLaws.generateIndexLawsCoefficients(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -791,6 +888,18 @@ export const skills = {
     label: 'Fractional powers',
     topic: 'Indices',
     generate: (opts) => fracPow.generateFractionalPowers(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'index-laws-missing-power': {
+    label: 'Index laws: find the missing power',
+    topic: 'Indices',
+    generate: (opts) => indexLaws.generateIndexMissingPower(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'exponential-equations': {
+    label: 'Exponential equations',
+    topic: 'Indices',
+    generate: (opts) => indexLaws.generateExponentialEquations(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -813,6 +922,12 @@ export const skills = {
     label: 'Simplifying surds',
     topic: 'Surds',
     generate: (opts) => ch6.generateSurdsSimplify(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'surds-expand': {
+    label: 'Expanding brackets with surds',
+    topic: 'Surds',
+    generate: (opts) => ch6.generateSurdsExpand(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'rationalise-denominator': {
@@ -954,6 +1069,18 @@ export const skills = {
     generate: (opts) => spread.generateQuartilesIqr(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'five-number-summary': {
+    label: 'Five-number summary and box plot',
+    topic: 'Spread',
+    generate: (opts) => boxPlots.generateFiveNumberSummary(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'box-plot-reading': {
+    label: 'Reading box plots',
+    topic: 'Spread',
+    generate: (opts) => boxPlots.generateBoxPlotReading(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'compare-distributions': {
     label: 'Comparing two data sets',
     topic: 'Spread',
@@ -1015,13 +1142,14 @@ export const generateForSkill = (id, wanted = 'core') => {
  * Within a strand, topics run in Haese chapter order.
  */
 export const STRANDS = [
-  { name: 'Number', topics: ['Indices', 'Standard form', 'Surds', 'Percentages'] },
+  { name: 'Number', topics: ['Rational numbers', 'Order of operations', 'Indices', 'Standard form', 'Surds', 'Percentages'] },
   {
     name: 'Algebra',
     topics: [
       'Expanding brackets',
       'Factorising',
       'Equations',
+      'Inequalities',
       'Formulae and simultaneous equations',
       'Algebraic fractions',
       'Quadratic equations',

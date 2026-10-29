@@ -188,6 +188,23 @@ export const generateStandardFormCalculate = (options = {}) => {
     };
   }
 
+  if (difficulty === 'core' && _.random(0, 1)) {
+    // The quotient of the numbers is below 1 (4.2 / 6 = 0.7), so the answer
+    // has to be adjusted back into standard form — the step that catches
+    // people. The dividend's digits are b x q, so the division is exact.
+    let b, q;
+    do { b = _.random(2, 9); q = _.random(1, 9); } while (b * q < 10);
+    const [e1, e2] = [_.random(-4, 9), _.random(-6, 5)];
+    const dividend = sf(b * q, e1 - 1);
+    return {
+      instruction: 'Work out, giving your answer in standard form',
+      questionMath: `(${dividend}) \\div (${b} \\times 10^{${e2}})`,
+      answer: sf(q, e1 - e2 - 1),
+      workingOut: `${toStandard(b * q, -1).mantissa} \\div ${b} = 0.${q},\\ 10^{${e1}} \\div 10^{${e2}} = 10^{${e1 - e2}}${NL}0.${q} \\times 10^{${e1 - e2}} = ${sf(q, e1 - e2 - 1)}`,
+      metadata: { topic: 'standard-form-calculate', difficulty },
+    };
+  }
+
   if (difficulty === 'core') {
     const b = _.random(2, 9);
     const q = _.random(2, 9);
@@ -211,15 +228,33 @@ export const generateStandardFormCalculate = (options = {}) => {
     : _.sample([_.random(12, 30), _.random(-30, -12)]);
   const gap = _.random(1, 3);
   const n1 = _.random(11, 89);             // n1 x 10^e
+  const E2 = toStandard(1, e + gap).exponent;    // the larger power of ten
+  const shifted = plain(n1, e - E2);             // the smaller term rewritten to that power
+  const convert = toStandard(n1, e).exponent === E2 ? '' : `${sf(n1, e)} = ${shifted} \\times 10^{${E2}}${NL}`;
+
+  // Half the time the smaller number is taken away from the larger, which
+  // matches the powers the same way. The larger always comes first and is
+  // genuinely larger, so the answer stays positive.
+  if (_.random(0, 1)) {
+    let n2;
+    do { n2 = _.random(2, 9); } while (n2 * 10 ** gap <= n1);
+    const diff = n2 * 10 ** gap - n1;
+    return {
+      instruction: 'Work out, giving your answer in standard form',
+      questionMath: `(${sf(n2, e + gap)}) - (${sf(n1, e)})`,
+      answer: sf(diff, e),
+      workingOut: `${convert}${n2} - ${shifted} = ${plain(diff, e - E2)}${NL}= ${sf(diff, e)}`,
+      metadata: { topic: 'standard-form-calculate', difficulty },
+    };
+  }
+
   const n2 = _.random(2, 9);               // n2 x 10^(e+gap)
   const total = n1 + n2 * 10 ** gap;
-  const E2 = toStandard(n2, e + gap).exponent;   // the larger power of ten
-  const shifted = plain(n1, e - E2);             // the smaller term rewritten to that power
   return {
     instruction: 'Work out, giving your answer in standard form',
     questionMath: `(${sf(n1, e)}) + (${sf(n2, e + gap)})`,
     answer: sf(total, e),
-    workingOut: `${toStandard(n1, e).exponent === E2 ? '' : `${sf(n1, e)} = ${shifted} \\times 10^{${E2}}${NL}`}${shifted} + ${n2} = ${plain(total, e - E2)}${NL}= ${sf(total, e)}`,
+    workingOut: `${convert}${shifted} + ${n2} = ${plain(total, e - E2)}${NL}= ${sf(total, e)}`,
     metadata: { topic: 'standard-form-calculate', difficulty },
   };
 };
@@ -283,19 +318,96 @@ export const generateSurdsSimplify = (options = {}) => {
     };
   }
 
-  // Collect like surds, which only works once each is simplified.
-  let n1, n2, k1, m1, k2, m2;
+  // Collect like surds, which only works once each is simplified. Half the
+  // time each surd carries a coefficient (3\sqrt{8} + 2\sqrt{18}), which
+  // multiplies into the number pulled out of the root.
+  const withCoeff = _.random(0, 1) === 1;
+  let n1, n2, k1, m1, k2, m2, c1, c2;
   do {
     n1 = _.sample(SIMPLIFIABLE); n2 = _.sample(SIMPLIFIABLE);
     [k1, m1] = simplifySurd(n1);
     [k2, m2] = simplifySurd(n2);
-  } while (m1 !== m2 || n1 === n2 || k1 + k2 > 40);
+    [c1, c2] = withCoeff ? [_.random(1, 5), _.random(2, 5)] : [1, 1];
+  } while (m1 !== m2 || n1 === n2 || c1 * k1 + c2 * k2 > 40 || (withCoeff && n1 > 200) || (withCoeff && n2 > 200));
+  const lead = (c, n) => `${c === 1 ? '' : c}\\sqrt{${n}}`;
+  const [t1, t2] = [surd(c1 * k1, m1), surd(c2 * k2, m2)];
   return {
     instruction: 'Write in simplest surd form',
-    questionMath: `\\sqrt{${n1}} + \\sqrt{${n2}}`,
-    answer: surd(k1 + k2, m1),
-    workingOut: `\\sqrt{${n1}} = ${surd(k1, m1)},\\ \\sqrt{${n2}} = ${surd(k2, m2)}${NL}${surd(k1, m1)} + ${surd(k2, m2)} = ${surd(k1 + k2, m1)}`,
+    questionMath: `${lead(c1, n1)} + ${lead(c2, n2)}`,
+    answer: surd(c1 * k1 + c2 * k2, m1),
+    workingOut: `${lead(c1, n1)} = ${t1},\\ ${lead(c2, n2)} = ${t2}${NL}${t1} + ${t2} = ${surd(c1 * k1 + c2 * k2, m1)}`,
     metadata: { topic: 'surds-simplify', difficulty },
+  };
+};
+
+/* ------------------------------------------------- expanding brackets with surds */
+//
+//   foundation  (\sqrt{a} + p)(\sqrt{a} + q), sometimes a conjugate pair
+//               whose surds cancel
+//   core        coefficients on the surds: (2\sqrt{7} + 3)(\sqrt{7} - 1)
+//   stretch     two different surds: (\sqrt{5} + \sqrt{3})(\sqrt{5} + 2\sqrt{3})
+//
+// Every answer is written constant first, as c + k\sqrt{m}.
+
+// c + k\sqrt{m}, dropping whichever part is zero.
+const surdSum = (c, k, m) => {
+  if (k === 0) return String(c);
+  const s = surd(Math.abs(k), m);
+  if (c === 0) return k < 0 ? `-${s}` : s;
+  return `${c} ${k < 0 ? '-' : '+'} ${s}`;
+};
+// one term inside a bracket: k\sqrt{m} or a plain number, signed after the first
+const bterm = (k, m, first) => {
+  const body = m === 1 ? String(Math.abs(k)) : surd(Math.abs(k), m);
+  if (first) return k < 0 ? `-${body}` : body;
+  return `${k < 0 ? '-' : '+'} ${body}`;
+};
+
+export const generateSurdsExpand = (options = {}) => {
+  const { difficulty = 'core' } = options;
+
+  if (difficulty === 'stretch') {
+    // (m\sqrt{a} + n\sqrt{b})(r\sqrt{a} + s\sqrt{b}), a and b distinct primes so
+    // \sqrt{ab} is already simplest.
+    let a, b, m, n, r, t;
+    do {
+      [a, b] = _.sortBy(_.sampleSize([2, 3, 5, 7, 11], 2));
+      [m, r] = [_.random(1, 3), _.random(1, 3)];
+      [n, t] = [_.sample([-3, -2, -1, 1, 2, 3]), _.sample([-3, -2, -1, 1, 2, 3])];
+    } while (a * b > 40);
+    const c = m * r * a + n * t * b;
+    const k = m * t + n * r;
+    const answer = surdSum(c, k, a * b);
+    return {
+      instruction: 'Expand and simplify',
+      questionMath: `(${bterm(m, a, true)} ${bterm(n, b)})(${bterm(r, a, true)} ${bterm(t, b)})`,
+      answer,
+      workingOut: `${m * r * a} ${bterm(m * t, a * b)} ${bterm(n * r, a * b)} ${bterm(n * t * b, 1)}${NL}= ${answer}`,
+      metadata: { topic: 'surds-expand', difficulty },
+    };
+  }
+
+  // (m\sqrt{a} + p)(n\sqrt{a} + q) = mna + pq + (mq + np)\sqrt{a}
+  const a = _.sample(SQUAREFREE.filter((v) => v <= 13));
+  let m = 1, n = 1, p, q;
+  if (difficulty === 'core') {
+    do { m = _.random(1, 4); n = _.random(1, 3); } while (m === 1 && n === 1);
+    p = _.sample([-6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6]);
+    q = _.sample([-6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6]);
+  } else {
+    p = _.random(1, 7);
+    // one in four is a conjugate pair, where the surds cancel
+    q = _.random(0, 3) === 0 ? -p : _.sample([-7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7].filter((v) => v !== -p));
+  }
+  const c = m * n * a + p * q;
+  const k = m * q + n * p;
+  const answer = surdSum(c, k, a);
+  return {
+    instruction: 'Expand and simplify',
+    questionMath: `(${bterm(m, a, true)} ${bterm(p, 1)})(${bterm(n, a, true)} ${bterm(q, 1)})`,
+    answer,
+    workingOut: `${m * n * a} ${bterm(m * q, a)} ${bterm(n * p, a)} ${bterm(p * q, 1)}${NL}= ${answer}`,
+    metadata: { topic: 'surds-expand', difficulty },
   };
 };
 
@@ -360,6 +472,25 @@ export const generateRationaliseDenominator = (options = {}) => {
       questionMath: `\\frac{${a}}{\\sqrt{${d}}}`,
       answer,
       workingOut: `\\sqrt{${d}} = ${surd(k, m)}${NL}\\frac{${a}}{${surd(k, m)}} = \\frac{${a}\\sqrt{${m}}}{${den}}${NL}= ${answer}`,
+      metadata: { topic: 'rationalise-denominator', difficulty },
+    };
+  }
+
+  // Core, half the time: a two-term numerator, (a ± sqrt(b)) / sqrt(b). The
+  // multiply is the same; expanding the top is the extra step. Reduced by any
+  // factor a shares with b, so (6 + sqrt(3)) / sqrt(3) ends as 2 sqrt(3) + 1.
+  if (difficulty === 'core' && _.random(0, 1)) {
+    const b = _.sample(SQUAREFREE.filter((v) => v <= 15));
+    const a = _.random(1, 9);
+    const minus = _.random(0, 1) === 1;
+    const g = gcd(a, b);
+    const top = `${surd(a / g, b)} ${minus ? '-' : '+'} ${b / g}`;
+    const answer = b / g === 1 ? top : `\\frac{${top}}{${b / g}}`;
+    return {
+      instruction: 'Write with a rational denominator',
+      questionMath: `\\frac{${a} ${minus ? '-' : '+'} \\sqrt{${b}}}{\\sqrt{${b}}}`,
+      answer,
+      workingOut: `\\text{multiply top and bottom by } \\sqrt{${b}}${NL}= \\frac{${surd(a, b)} ${minus ? '-' : '+'} ${b}}{${b}}${g === 1 ? '' : `${NL}= ${answer}`}`,
       metadata: { topic: 'rationalise-denominator', difficulty },
     };
   }

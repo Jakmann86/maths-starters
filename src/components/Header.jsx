@@ -8,7 +8,8 @@ export default function Header({
   return (
     <header className="board-header">
       <div className="header-half">
-        <div className="header-seg">
+        {/* Placeholder for the Hexagon Maths logo — kept compact so the bar fits. */}
+        <div className="header-seg header-seg--brand">
           <div className="header-label">Starter bank</div>
           <div className="header-value">Four in a row</div>
         </div>
@@ -55,9 +56,16 @@ export default function Header({
           {revealed ? 'Hide answers' : 'Show answers'}
         </button>
 
-        <button type="button" className="new-four-btn" onClick={onPrint}>Print</button>
+        <button type="button" className="icon-btn" title="Print" aria-label="Print" onClick={onPrint}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 9V3h12v6" />
+            <rect x="2" y="9" width="20" height="9" />
+            <rect x="6" y="14" width="12" height="7" fill="var(--ground)" />
+          </svg>
+        </button>
 
-        <button type="button" className="fullscreen-btn" title="Full screen" onClick={onFullscreen}>⛶</button>
+        <button type="button" className="icon-btn" title="Full screen" aria-label="Full screen" onClick={onFullscreen}>⛶</button>
       </div>
     </header>
   );
