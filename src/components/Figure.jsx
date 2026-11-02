@@ -87,8 +87,10 @@ function figLabel(key, x, y, text, anchor = 'middle', color = 'var(--ink)', font
 
 // Figure labels are plain SVG text, not KaTeX (see fig.a etc. above, e.g.
 // '3 cm') — so an angleLabel written in LaTeX-ish form ('35\circ') needs its
-// degree command swapped for the literal symbol before it can be drawn.
-const plainAngleLabel = (label) => String(label).replace(/\^?\\circ/g, '°');
+// degree command swapped for the literal symbol before it can be drawn. The
+// spaced hyphen of a Stretch expression ('3x - 18') becomes a true minus
+// sign, as KaTeX sets it in the question beside the figure.
+const plainAngleLabel = (label) => String(label).replace(/\^?\\circ/g, '°').replace(/ - /g, ' − ');
 
 // An axis value as printed: up to two decimal places with no float noise
 // (1.4 + 0.05 x 3 is 1.5500000000000003), and no trailing zeros.
@@ -99,9 +101,76 @@ function unitVec(dx, dy) {
   return [dx / len, dy / len];
 }
 
+// Rough advance width of a figure label, in em, as figLabel sets it in
+// KaTeX_Main (digits 0.5em, a variable letter a little wider, + and − much
+// wider, the raised ∘ narrow). Only used to keep an angle label's box clear
+// of the lines around it, so a slight overestimate is the safe side.
+function labelWidthEm(text) {
+  let w = 0;
+  for (const ch of text) {
+    if (/\d/.test(ch)) w += 0.5;
+    else if (ch === '°') w += 0.42;
+    else if (ch === ' ') w += 0.25;
+    else if ('+-−=×'.includes(ch)) w += 0.78;
+    else if (/[A-Za-z]/.test(ch)) w += 0.56;
+    else w += 0.5;
+  }
+  return w;
+}
+
+// Where an angle's label goes: the point nearest the vertex at which the
+// label's box sits wholly inside the angle, clear of the arc and of both arms.
+// The angle runs from direction `startDeg`, sweeping `sweepDeg` (signed, in
+// SVG's y-down degrees). A sharp angle pushes its label further out and an
+// obtuse one lets it sit close in, so the label always reads as belonging to
+// its arc. `prefer` (0 = toward the start arm, 1 = toward the end arm, 0.5 =
+// the bisector) breaks near-ties: a triangle's base corners lean toward the
+// base, so their labels sit low in the corner rather than riding up the
+// side. `k` is how hard `prefer` pulls against "nearest the vertex", and
+// `PAD` the clearance from the arms and the arc. Returns the label's
+// baseline position for figLabel.
+function fitAngleLabel(vx, vy, startDeg, sweepDeg, text, fontSize, arcR, prefer = 0.5, k = 0.35, PAD = 3) {
+  const hw = (labelWidthEm(text) * fontSize) / 2 + 1;
+  const hh = 0.38 * fontSize;
+  const sup = (nx, ny) => Math.abs(nx) * hw + Math.abs(ny) * hh;
+  const rad = (d) => (d * Math.PI) / 180;
+  const gap = Math.abs(sweepDeg);
+  const arms = [startDeg, startDeg + sweepDeg];
+  let best = null;
+  for (let f = 0.08; f <= 0.921; f += 0.02) {
+    const phi = startDeg + sweepDeg * f;
+    const u = [Math.cos(rad(phi)), Math.sin(rad(phi))];
+    let d = arcR + PAD + sup(u[0], u[1]);
+    [gap * f, gap * (1 - f)].forEach((alpha, i) => {
+      if (alpha >= 89) return; // the label is beside this arm, not over it
+      const a = [Math.cos(rad(arms[i])), Math.sin(rad(arms[i]))];
+      // The arm's normal on the label's side.
+      const dot = u[0] * a[0] + u[1] * a[1];
+      const n = unitVec(u[0] - dot * a[0], u[1] - dot * a[1]);
+      d = Math.max(d, (sup(n[0], n[1]) + PAD) / Math.sin(rad(alpha)));
+    });
+    const score = d * (1 + k * Math.abs(f - prefer));
+    if (!best || score < best.score) best = { score, x: vx + u[0] * d, y: vy + u[1] * d };
+  }
+  // Baseline sits below the box's centre: digits and x have no descender.
+  return [best.x, best.y + 0.36 * fontSize];
+}
+
+// A triangle corner's label leans toward its lower neighbour, so a base
+// corner's label sits low in the corner. Level neighbours (an apex over a
+// horizontal base) keep it on the bisector.
+const preferLower = (p1, p2) => {
+  if (Math.abs(p1[1] - p2[1]) < 5) return 0.5;
+  return p1[1] > p2[1] ? 0 : 1;
+};
+
 // A small arc + label at `vertex`, spanning the angle between the rays to
 // p1 and p2 — the label always takes the slot colour, same as an 'x' side
 // does.
+//
+// `opts.fit` places the label with fitAngleLabel (opts.prefer, opts.k and
+// opts.pad as there, opts.fontSize to override the default 15) and ignores
+// the nudges below.
 function angleMarker(vertex, p1, p2, label, keyBase, color, opts = {}, r = 20) {
   const [vx, vy] = vertex;
   const u1 = unitVec(p1[0] - vx, p1[1] - vy);
@@ -111,6 +180,16 @@ function angleMarker(vertex, p1, p2, label, keyBase, color, opts = {}, r = 20) {
   const sweep = u1[0] * u2[1] - u1[1] * u2[0] > 0 ? 1 : 0;
   const bis = unitVec(u1[0] + u2[0], u1[1] + u2[1]);
   const text = plainAngleLabel(label);
+  if (opts.fit) {
+    const fs = opts.fontSize ?? 15;
+    const startDeg = (Math.atan2(u1[1], u1[0]) * 180) / Math.PI;
+    const gapDeg = (Math.acos(Math.max(-1, Math.min(1, u1[0] * u2[0] + u1[1] * u2[1]))) * 180) / Math.PI;
+    const [lx, ly] = fitAngleLabel(vx, vy, startDeg, sweep ? gapDeg : -gapDeg, text, fs, r, opts.prefer ?? 0.5, opts.k ?? 0.35, opts.pad ?? 3);
+    return [
+      <path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 0 ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke={color} strokeWidth={3} />,
+      figLabel(`${keyBase}-lbl`, lx, ly, text, 'middle', color, fs),
+    ];
+  }
   // The wedge here is a fixed ~38-52 deg regardless of what the label says,
   // so a longer string ('76°', or an algebraic '3x - 25' at Stretch) still
   // needs pushing out a little further than 'x' does or its sides spill
@@ -191,12 +270,38 @@ function pointAngleMarker(cx, cy, deg1, deg2, gapDeg, label, keyBase, labelColor
     <path key={`${keyBase}-arc`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 ${largeArc} ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke="var(--ink)" strokeWidth={3} />,
   ];
 
+  // Placed by fitAngleLabel, held near the bisector (k = 0.8): close in for
+  // an obtuse or reflex angle, further out for a sharp one. A fixed radius
+  // grown only by text length left a 120° label floating far from its arc.
   const text = plainAngleLabel(label);
-  const midDeg = deg1 + dir * (gapDeg / 2);
-  const labelR = r + 12 + Math.max(0, text.length - 1) * 6;
-  const [lx, lyBase] = toXY(midDeg, labelR);
-  nodes.push(figLabel(`${keyBase}-lbl`, lx, lyBase + 5, text, 'middle', labelColor, 16));
+  const [lx, ly] = fitAngleLabel(cx, cy, deg1, dir * gapDeg, text, 16, r, 0.5, 0.8);
+  nodes.push(figLabel(`${keyBase}-lbl`, lx, ly, text, 'middle', labelColor, 16));
   return nodes;
+}
+
+// The wedges as drawn, from their true sizes. Below MIN_DRAWN_ANGLE a wedge
+// has no room for its label, so it is drawn at the minimum and the extra is
+// taken from the larger wedges. The label still carries the true value: like
+// every figure here it is schematic. Nothing changes class: an acute wedge
+// stays acute, an obtuse one stays obtuse and a reflex one reflex, and the
+// total is unchanged so a straight line stays straight.
+const MIN_DRAWN_ANGLE = 30;
+function drawnGaps(gaps) {
+  const floorOf = (g) => {
+    if (g <= MIN_DRAWN_ANGLE) return MIN_DRAWN_ANGLE;
+    if (g < 90) return MIN_DRAWN_ANGLE;
+    if (g === 90) return 90;
+    if (g < 180) return Math.min(g, 100);
+    if (g === 180) return 180;
+    return Math.min(g, 190);
+  };
+  const out = gaps.map((g) => Math.max(g, MIN_DRAWN_ANGLE));
+  let deficit = out.reduce((s, g) => s + g, 0) - gaps.reduce((s, g) => s + g, 0);
+  if (deficit <= 0) return gaps;
+  const slack = gaps.map((g, i) => (g > MIN_DRAWN_ANGLE ? Math.max(0, out[i] - floorOf(g)) : 0));
+  const total = slack.reduce((s, v) => s + v, 0);
+  if (total < deficit) return gaps; // nowhere to take it from: draw true
+  return out.map((g, i) => g - (deficit * slack[i]) / total);
 }
 
 // Shared by the three circle-theorem figures below (semicircle, angle at the
@@ -611,7 +716,8 @@ export default function Figure({ fig, color, shown }) {
     // straight line, whose two ends aren't "adjacent"). A falsy label
     // skips that gap's arc entirely — used when only some of the angles at
     // an intersection are actually part of the question.
-    const { rays, gapDegrees = [], labels = [], unknownIndex, wrap } = fig;
+    const { gapDegrees = [], labels = [], unknownIndex, wrap } = fig;
+    let { rays } = fig;
     if (!Array.isArray(rays) || rays.length < 2) return null;
     // Same ray geometry, tighter box (182 vs 200) — ~10% bigger on screen
     // for the same reason the previous 230->200 tightening was: the SVG's
@@ -623,17 +729,27 @@ export default function Figure({ fig, color, shown }) {
     const cx = 91, cy = 91, R = 90;
     const toXY = (deg) => [cx + R * Math.cos((deg * Math.PI) / 180), cy + R * Math.sin((deg * Math.PI) / 180)];
     const nodes = [<circle key="pt" cx={cx} cy={cy} r={3} fill="var(--ink)" />];
+    // Redraw the rays from the drawn gap sizes (drawnGaps), keeping the first
+    // ray where the generator put it and turning the same way it does.
+    const gaps = wrap ? rays.length : rays.length - 1;
+    const trueGaps = gapDegrees.slice(0, gaps);
+    const shownGaps = trueGaps.length === gaps ? drawnGaps(trueGaps) : trueGaps;
+    if (shownGaps !== trueGaps) {
+      const raw = ((rays[1] - rays[0]) % 360 + 360) % 360;
+      const turn = Math.abs(raw - trueGaps[0]) < Math.abs(360 - raw - trueGaps[0]) ? 1 : -1;
+      let at = rays[0];
+      rays = [rays[0], ...shownGaps.slice(0, rays.length - 1).map((g) => (at += turn * g))];
+    }
     rays.forEach((deg, i) => {
       const [x, y] = toXY(deg);
       nodes.push(<line key={`ray${i}`} x1={cx} y1={cy} x2={x} y2={y} stroke="var(--ink)" strokeWidth={3} strokeLinecap="round" />);
     });
-    const gaps = wrap ? rays.length : rays.length - 1;
     for (let i = 0; i < gaps; i++) {
       const label = labels[i];
       if (!label) continue;
       const next = (i + 1) % rays.length;
       const labelColor = i === unknownIndex ? color : 'var(--ink)';
-      nodes.push(...pointAngleMarker(cx, cy, rays[i], rays[next], gapDegrees[i], label, `g${i}`, labelColor));
+      nodes.push(...pointAngleMarker(cx, cy, rays[i], rays[next], shownGaps[i], label, `g${i}`, labelColor));
     }
     return svgWrap(nodes, 182, 182, 'ar', fig.big, shown);
   }
@@ -675,20 +791,20 @@ export default function Figure({ fig, color, shown }) {
       const label = labels[i];
       if (!label) return;
       const labelColor = i === unknownIndex ? color : 'var(--ink)';
-      // Algebraic (long) Stretch labels only ever land on the default
-      // ACUTE_TRI shape (see generator), so index 2 reliably means "apex"
-      // here: it nudges up a touch when long, while the two base labels
-      // (0, 1) pull in closer together and drop further down the open
-      // lower area when long — and pull in a touch even for the ordinary
-      // short numeric case, where the apex stays untouched either way.
-      const opts = i === 2 ? { longVShift: -5 } : { horizScale: 0.85, longHorizScale: 0.6, longVShift: 10 };
-      nodes.push(...angleMarker(v, adjacent[i][0], adjacent[i][1], label, `tv${i}`, labelColor, opts));
+      // Each label sits where its box fits inside the corner (fitAngleLabel),
+      // leaning toward the lower side: a base corner's label stays low and
+      // well inside the triangle instead of riding up into the sloping side,
+      // which a sharp corner or a long Stretch expression used to cut off.
+      const [p1, p2] = adjacent[i];
+      nodes.push(...angleMarker(v, p1, p2, label, `tv${i}`, labelColor, { fit: true, prefer: preferLower(p1, p2), pad: 5 }));
     });
     if (exteriorLabel) {
       const dir = unitVec(TB[0] - TA[0], TB[1] - TA[1]);
       const D = [TB[0] + dir[0] * 60, TB[1] + dir[1] * 60];
       nodes.push(<line key="ext" x1={TB[0]} y1={TB[1]} x2={D[0]} y2={D[1]} stroke="var(--ink)" strokeWidth={3} strokeLinecap="round" />);
-      nodes.push(...angleMarker(TB, D, TC, exteriorLabel, 'text', exteriorUnknown ? color : 'var(--ink)'));
+      // Pulled hard toward the extended base (k = 1.5), so the label sits
+      // down beside the line it is measured from rather than up by the side.
+      nodes.push(...angleMarker(TB, D, TC, exteriorLabel, 'text', exteriorUnknown ? color : 'var(--ink)', { fit: true, prefer: 0, k: 1.5, pad: 5 }));
     }
     return svgWrap(nodes, 300, 180, 'tr', fig.big, shown);
   }
@@ -717,16 +833,12 @@ export default function Figure({ fig, color, shown }) {
       tick('t1', APEX, BASE_L),
       tick('t2', APEX, BASE_R),
     ];
-    // All three labels sit a little further down and in from the plain
-    // bisector push — same nudge whether the label is a short number or a
-    // long Stretch expression (unlike the plain 'triangle' figure, this
-    // isn't scoped to just the algebraic case). Harmless no-op on the
-    // apex's horizontal share, which is already dead vertical by symmetry.
-    const isoNudge = { horizScale: 0.8, vShift: 6, longHorizScale: 0.8, longVShift: 6 };
-    if (apexLabel) nodes.push(...angleMarker(APEX, BASE_L, BASE_R, apexLabel, 'ia', apexColor, isoNudge));
+    // Placed as the 'triangle' figure's are: inside each corner, the base
+    // labels leaning down toward the base.
+    if (apexLabel) nodes.push(...angleMarker(APEX, BASE_L, BASE_R, apexLabel, 'ia', apexColor, { fit: true, pad: 5 }));
     if (baseLabel) {
-      nodes.push(...angleMarker(BASE_L, APEX, BASE_R, baseLabel, 'ib1', baseColor, isoNudge));
-      nodes.push(...angleMarker(BASE_R, APEX, BASE_L, baseLabel, 'ib2', baseColor, isoNudge));
+      nodes.push(...angleMarker(BASE_L, APEX, BASE_R, baseLabel, 'ib1', baseColor, { fit: true, prefer: 1, pad: 5 }));
+      nodes.push(...angleMarker(BASE_R, APEX, BASE_L, baseLabel, 'ib2', baseColor, { fit: true, prefer: 1, pad: 5 }));
     }
     return svgWrap(nodes, 220, 170, 'ia', fig.big, shown);
   }
@@ -1587,9 +1699,20 @@ export default function Figure({ fig, color, shown }) {
       const labelColor = (Array.isArray(unknownIndex) ? unknownIndex.includes(i) : i === unknownIndex)
         ? color
         : 'var(--ink)';
-      elements.push(...angleMarker(v, prev, next, label, `pi${i}`, labelColor, {}, 6));
+      elements.push(...angleMarker(v, prev, next, label, `pi${i}`, labelColor, { fit: true, fontSize: 17 }, 8));
     });
-    return svgWrap(elements, 200, 200, 'pgi', fig.big, shown);
+    // The box fits the drawn outline. A fixed 200 x 200 box let a stretched
+    // top vertex (radius factor up to 1.25) poke above the figure and into the
+    // instruction, and left dead space wherever the outline came in short.
+    // Labels sit inside the outline, so the vertices bound everything.
+    // Extra room above the top vertex keeps the outline clear of the
+    // instruction over it.
+    const PAD = 6, TOP = 18;
+    const xs = verts.map((v) => v[0]);
+    const ys = verts.map((v) => v[1]);
+    const x0 = Math.min(...xs) - PAD, y0 = Math.min(...ys) - TOP;
+    const w = Math.max(...xs) + PAD - x0, h = Math.max(...ys) + PAD - y0;
+    return svgWrap(<g transform={`translate(${-x0} ${-y0})`}>{elements}</g>, w.toFixed(1), h.toFixed(1), 'pgi', fig.big, shown);
   }
 
   if (fig.type === 'coordinate-grid') {

@@ -10,7 +10,7 @@
 // Run: npx vitest run src/generators/geometry/angleFactsGenerators.test.js
 
 import { describe, expect, it } from 'vitest';
-import { generateQuadrilateralAngleSum } from './angleFactsGenerators';
+import { generateAnglesOnALine, generateQuadrilateralAngleSum } from './angleFactsGenerators';
 
 const BANDS = ['foundation', 'core', 'stretch'];
 const SAMPLES = 2000;
@@ -105,5 +105,44 @@ describe('quadrilateral-angle-sum', () => {
       expect(q.visualization.$$typeof).toBeUndefined();
       expect(q.metadata.topic).toBe('quadrilateral-angle-sum');
     });
+  });
+});
+
+// Angles on a line: the answer is recomputed from the figure — the two gap
+// sizes and their labels — never from the generator's variables. The line is
+// turned to a random tilt, so this also checks the rays still make a straight
+// line, and that the middle ray really splits it into the two labelled gaps.
+describe('angles-on-a-line', () => {
+  const mod = (a) => ((a % 360) + 360) % 360;
+
+  it.each(BANDS)('resolves the two labelled angles to 180 on a straight line, at %s', (difficulty) => {
+    const distinct = new Set();
+    const tilts = new Set();
+    for (let i = 0; i < SAMPLES; i += 1) {
+      const q = generateAnglesOnALine({ difficulty });
+      const fig = q.visualization;
+      const x = parseX(q.answer);
+
+      expect(fig.type).toBe('angle-rays');
+      expect(fig.wrap).toBe(false);
+      const [r0, r1, r2] = fig.rays;
+      expect(mod(r0 - r2)).toBe(180);
+      // r0 -> r1 -> r2 runs one way round, gap by gap.
+      expect(mod(r0 - r1)).toBe(fig.gapDegrees[0]);
+      expect(mod(r1 - r2)).toBe(fig.gapDegrees[1]);
+      expect(fig.gapDegrees[0] + fig.gapDegrees[1]).toBe(180);
+
+      // Every label, evaluated at the answer, is the gap it sits in.
+      fig.labels.forEach((label, idx) => {
+        const { value } = parseLabel(label, x);
+        expect(value).toBe(fig.gapDegrees[idx]);
+      });
+
+      distinct.add(JSON.stringify(fig.labels));
+      tilts.add(mod(r2));
+    }
+    expect(distinct.size).toBeGreaterThan(30);
+    // Tilted both ways and turned over, not one horizontal line.
+    expect(tilts.size).toBeGreaterThan(50);
   });
 });
