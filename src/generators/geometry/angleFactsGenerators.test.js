@@ -12,8 +12,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   ACUTE_POSITIONS, PARALLEL_CHAINS, generateAnglesOnALine, generateParallelChain, generateParallelLineAngles,
-  generatePolygonInteriorAngles, generateQuadrilateralAngleSum,
+  generatePolygonExteriorAngles, generatePolygonInteriorAngles, generateQuadrilateralAngleSum,
 } from './angleFactsGenerators';
+import { evenEnough, polygonFromInteriorAngles } from '../../lib/polygonFromAngles.js';
 
 const BANDS = ['foundation', 'core', 'stretch'];
 const SAMPLES = 2000;
@@ -262,5 +263,66 @@ describe('parallel-chain', () => {
     expect(chains).toBeGreaterThan(850);
     expect(chains).toBeLessThan(1150);
     expect([...seen].sort()).toEqual([...PARALLEL_CHAINS].sort());
+  });
+});
+
+// Stretch draws an irregular polygon to its true angles, with every angle the
+// question uses on the figure. Recomputed from the labels alone: either the
+// exterior labels and x sum to 360, or the interior labels and the missing
+// interior angle (180 - x) sum to 180(n - 2). Each label must also match the
+// angle the outline is actually drawn with.
+describe('polygon-exterior-angles stretch', () => {
+  const num = (label) => Number(label.match(/^(\d+)\^\\circ$/)[1]);
+  const turn = (a, b) => {
+    const d = Math.atan2(a[0] * b[1] - a[1] * b[0], a[0] * b[0] + a[1] * b[1]);
+    return (Math.abs(d) * 180) / Math.PI;
+  };
+
+  it('every label is drawn true and the answer substitutes back', () => {
+    const seen = { exterior: new Set(), interior: new Set() };
+    for (let s = 0; s < SAMPLES * 2; s += 1) {
+      const q = generatePolygonExteriorAngles({ difficulty: 'stretch' });
+      const v = q.visualization;
+      const x = parseX(q.answer);
+      expect(q.questionMath).toBeNull();
+      expect(v.type).toBe('polygon-irregular');
+      expect(v.interiorValues).toHaveLength(v.n);
+      expect(evenEnough(v.interiorValues)).toBe(true);
+      expect(v.exteriorLabels[v.unknownIndex]).toBe('x');
+
+      // The drawn outline turns through each vertex's exterior angle.
+      const { verts } = polygonFromInteriorAngles(v.interiorValues);
+      const drawnExterior = verts.map((p, i) => {
+        const prev = verts[(i - 1 + v.n) % v.n], next = verts[(i + 1) % v.n];
+        return turn([p[0] - prev[0], p[1] - prev[1]], [next[0] - p[0], next[1] - p[1]]);
+      });
+      drawnExterior.forEach((e, i) => expect(e).toBeCloseTo(180 - v.interiorValues[i], 6));
+
+      const allExterior = v.exteriorLabels.filter(Boolean).length === v.n;
+      if (allExterior) {
+        expect(v.angles.every((a) => a === '')).toBe(true);
+        const given = v.exteriorLabels.filter((l, i) => i !== v.unknownIndex).map(num);
+        given.forEach((e) => expect(e).toBeGreaterThanOrEqual(35));
+        expect(given.reduce((a, b) => a + b, 0) + x).toBe(360);
+        v.exteriorLabels.forEach((l, i) => {
+          if (i !== v.unknownIndex) expect(num(l)).toBe(180 - v.interiorValues[i]);
+        });
+        seen.exterior.add(JSON.stringify(v.exteriorLabels));
+      } else {
+        expect(v.exteriorLabels.filter(Boolean)).toEqual(['x']);
+        expect(v.angles[v.unknownIndex]).toBe('');
+        const given = v.angles.filter((l, i) => i !== v.unknownIndex).map(num);
+        expect(given).toHaveLength(v.n - 1);
+        expect(given.reduce((a, b) => a + b, 0) + (180 - x)).toBe(180 * (v.n - 2));
+        v.angles.forEach((l, i) => {
+          if (i !== v.unknownIndex) expect(num(l)).toBe(v.interiorValues[i]);
+        });
+        seen.interior.add(JSON.stringify(v.angles));
+      }
+      expect(x).toBe(180 - v.interiorValues[v.unknownIndex]);
+    }
+    // Both designs appear, and neither has a low ceiling.
+    expect(seen.exterior.size).toBeGreaterThan(1000);
+    expect(seen.interior.size).toBeGreaterThan(1000);
   });
 });
