@@ -1923,6 +1923,77 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(<g transform={`translate(${-x0} ${-y0})`}>{elements}</g>, w.toFixed(1), h.toFixed(1), 'pch', fig.big, shown);
   }
 
+  // Regular polygons round a point (polygon-interior-angles Stretch): the
+  // wedges at the shared vertex, in order anticlockwise from `start`:
+  //   { n }                      a regular polygon, drawn whole
+  //   { n, label, partial }      polygon P: only the sides near the point
+  //   { gap, label }             an angle between two polygons, marked
+  // Adjacent polygons share a side; every side has the same length. Drawn
+  // to the true angles, since they have to close round the point; the
+  // generator passes P's true n so its corner is the right size.
+  if (fig.type === 'polygons-at-point') {
+    const S = 62;
+    const rad = (d) => (d * Math.PI) / 180;
+    const dir = (d) => [Math.cos(rad(d)), -Math.sin(rad(d))];   // y down
+    const add = (p, d, len) => [p[0] + dir(d)[0] * len, p[1] + dir(d)[1] * len];
+    const V = [0, 0];
+    const strokes = [], dashes = [], marks = [];
+    let theta = fig.start ?? 0;
+    const sgn = fig.mirror ? -1 : 1;
+    (fig.wedges ?? []).forEach((w, k) => {
+      const alpha = w.n ? 180 - 360 / w.n : w.gap;
+      if (w.n) {
+        // Walk the polygon from V: heading theta, turning by the exterior
+        // angle at each corner, which keeps the inside on the left.
+        const ext = 360 / w.n;
+        const pts = [V];
+        for (let i = 0; i < w.n - 1; i += 1) pts.push(add(pts[i], theta + sgn * i * ext, S));
+        if (!w.partial) {
+          strokes.push({ key: `p${k}`, pts: [...pts, V], closed: true });
+        } else {
+          const near = [pts[pts.length - 2], pts[pts.length - 1], V, pts[1], pts[2]];
+          strokes.push({ key: `p${k}`, pts: near, closed: false });
+          dashes.push({ key: `d${k}a`, a: pts[2], b: add(pts[2], theta + sgn * 2 * ext, S * 0.55) });
+          dashes.push({ key: `d${k}b`, a: pts[pts.length - 2], b: add(pts[pts.length - 2], theta + sgn * (w.n - 3) * ext + 180, S * 0.55) });
+        }
+        if (w.label) {
+          const mid = theta + sgn * alpha / 2;
+          marks.push({ key: `l${k}`, at: add(V, mid, S * 1.05), text: w.label, color: fig.unknown === w.label ? color : 'var(--ink)', size: 22 });
+        }
+      } else {
+        const r = 24;
+        const a = add(V, theta, r), b = add(V, theta + sgn * alpha, r);
+        marks.push({ key: `g${k}`, arc: `M ${a[0]} ${a[1]} A ${r} ${r} 0 ${alpha > 180 ? 1 : 0} ${fig.mirror ? 1 : 0} ${b[0]} ${b[1]}` });
+        const label = plainAngleLabel(w.label ?? '');
+        marks.push({ key: `gl${k}`, at: add(V, theta + sgn * alpha / 2, r + 14 + label.length * 4.5), text: label, color: 'var(--ink)', size: 18 });
+      }
+      theta += sgn * alpha;
+    });
+    // Fit the drawing: everything drawn, plus room round each label.
+    const all = [...strokes.flatMap((s) => s.pts), ...dashes.flatMap((d) => [d.a, d.b]), ...marks.filter((m) => m.at).map((m) => m.at)];
+    const xs = all.map((p) => p[0]), ys = all.map((p) => p[1]);
+    const M = 22;
+    const [x0, y0] = [Math.min(...xs) - M, Math.min(...ys) - M];
+    const W = Math.max(...xs) + M - x0, H = Math.max(...ys) + M - y0;
+    const T = (p) => [p[0] - x0, p[1] - y0];
+    const nodes = [];
+    strokes.forEach((s) => {
+      const pts = s.pts.map(T).map((p) => p.map((v) => v.toFixed(1)).join(',')).join(' ');
+      nodes.push(s.closed
+        ? <polygon key={s.key} points={pts} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />
+        : <polyline key={s.key} points={pts} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />);
+    });
+    dashes.forEach((d) => {
+      const [a, b] = [T(d.a), T(d.b)];
+      nodes.push(<line key={d.key} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="var(--ink)" strokeWidth={2.5} strokeDasharray="5,5" />);
+    });
+    marks.forEach((m) => {
+      if (m.arc) nodes.push(<path key={m.key} d={m.arc} transform={`translate(${-x0} ${-y0})`} fill="none" stroke="var(--ink)" strokeWidth={2.5} />);
+      else { const p = T(m.at); nodes.push(figLabel(m.key, p[0], p[1] + 7, m.text, 'middle', m.color, m.size)); }
+    });
+    return svgWrap(nodes, Math.round(W), Math.round(H), 'pap', fig.big, shown);
+  }
+
   if (fig.type === 'polygon') {
     const n = fig.n, radius = 68, cx = 84, cy = 84;
     const verts = [];
