@@ -201,11 +201,11 @@
     { "id": "28E", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Exponential modelling", "page": 576, "skills": [], "status": "skip" },
 
     { "id": "29A", "ch": 29, "unit": "Further trigonometry", "lesson": "The unit circle", "page": 579, "skills": [], "status": "todo" },
-    { "id": "29B", "ch": 29, "unit": "Further trigonometry", "lesson": "Area of a triangle using sine", "page": 583, "skills": [], "status": "todo" },
-    { "id": "29C", "ch": 29, "unit": "Further trigonometry", "lesson": "The sine rule", "page": 585, "skills": [], "status": "todo" },
-    { "id": "29D", "ch": 29, "unit": "Further trigonometry", "lesson": "The cosine rule", "page": 588, "skills": [], "status": "todo" },
-    { "id": "29E", "ch": 29, "unit": "Further trigonometry", "lesson": "Problem solving with the sine and cosine rules", "page": 591, "skills": [], "status": "skip" },
-    { "id": "29F", "ch": 29, "unit": "Further trigonometry", "lesson": "Trigonometry with compound shapes", "page": 593, "skills": [], "status": "todo" },
+    { "id": "29B", "ch": 29, "unit": "Further trigonometry", "lesson": "Area of a triangle using sine", "page": 583, "skills": ["triangle-area-sine"], "status": "ready" },
+    { "id": "29C", "ch": 29, "unit": "Further trigonometry", "lesson": "The sine rule", "page": 585, "skills": ["sine-rule"], "status": "ready" },
+    { "id": "29D", "ch": 29, "unit": "Further trigonometry", "lesson": "The cosine rule", "page": 588, "skills": ["cosine-rule"], "status": "ready" },
+    { "id": "29E", "ch": 29, "unit": "Further trigonometry", "lesson": "Problem solving with the sine and cosine rules", "page": 591, "skills": ["sine-cosine-mixed"], "status": "ready" },
+    { "id": "29F", "ch": 29, "unit": "Further trigonometry", "lesson": "Trigonometry with compound shapes", "page": 593, "skills": ["sine-cosine-mixed"], "status": "ready" },
     { "id": "29G", "ch": 29, "unit": "Further trigonometry", "lesson": "Trigonometric graphs", "page": 595, "skills": [], "status": "todo" },
     { "id": "29H", "ch": 29, "unit": "Further trigonometry", "lesson": "Graphs of y = a sin bx and y = a cos bx", "page": 599, "skills": [], "status": "todo" },
 

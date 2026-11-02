@@ -16,6 +16,7 @@ import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 import * as arithmagon from '../generators/puzzles/arithmagonGenerators';
 import * as pythagoras from '../generators/geometry/pythagorasGenerators';
 import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
+import * as furtherTrig from '../generators/geometry/furtherTrigGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
 import * as cubicSeq from '../generators/algebra/cubicSequenceGenerators';
@@ -271,6 +272,32 @@ export const skills = {
     label: 'SOHCAHTOA: find an angle',
     topic: 'Pythagoras and trigonometry',
     generate: (opts) => sohcahtoa.generateSohcahtoaFindAngle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 29B-F: the sine and cosine rules ---
+  'sine-rule': {
+    label: 'The sine rule',
+    topic: 'Further trigonometry',
+    generate: (opts) => furtherTrig.generateSineRule(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'cosine-rule': {
+    label: 'The cosine rule',
+    topic: 'Further trigonometry',
+    generate: (opts) => furtherTrig.generateCosineRule(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'triangle-area-sine': {
+    label: 'Area of a triangle: ½ab sin C',
+    topic: 'Further trigonometry',
+    generate: (opts) => furtherTrig.generateTriangleAreaSine(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sine-cosine-mixed': {
+    label: 'Sine and cosine rules: mixed',
+    topic: 'Further trigonometry',
+    generate: (opts) => furtherTrig.generateSineCosineMixed(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1167,6 +1194,7 @@ export const STRANDS = [
       'Coordinate geometry',
       'Straight-line graphs',
       'Pythagoras and trigonometry',
+      'Further trigonometry',
       'Circle theorems',
     ],
   },
