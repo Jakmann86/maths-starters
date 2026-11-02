@@ -1738,40 +1738,188 @@ export default function Figure({ fig, color, shown }) {
     // actual angle values, only the arc + label at each of the eight fixed
     // positions changes per question. TL/TR/BL/BR name the quadrant around
     // each of the two crossings (1 = upper crossing, 2 = lower).
-    const POS = {
-      TL1: { arc: [80, 60, 88.53, 43.62], label: [68.07, 43.38] },
-      TR1: { arc: [88.53, 43.62, 120, 60], label: [116.62, 28.07] },
-      BL1: { arc: [111.47, 76.38, 80, 60], label: [83.38, 91.93] },
-      BR1: { arc: [120, 60, 111.47, 76.38], label: [131.93, 76.62] },
-      TL2: { arc: [143, 150, 151.53, 133.62], label: [131.07, 133.38] },
-      TR2: { arc: [151.53, 133.62, 183, 150], label: [179.62, 118.07] },
-      BL2: { arc: [174.47, 166.38, 143, 150], label: [146.38, 181.93] },
-      BR2: { arc: [183, 150, 174.47, 166.38], label: [194.93, 166.62] },
+    //
+    // The transversal crosses at about 55°, so TL and BR are the acute
+    // wedges and TR and BL the obtuse ones; the generator puts each angle
+    // in a wedge of its own kind. `mirror` reflects the drawing left to
+    // right. A position keeps its name and its kind, only where it is drawn
+    // changes, so the generator's logic is the same either way.
+    const W = 260;
+    const T0 = [80, 31], T1 = [183, 179];
+    const Y1 = 60, Y2 = 150;
+    const atY = (y) => T0[0] + ((T1[0] - T0[0]) * (y - T0[1])) / (T1[1] - T0[1]);
+    const CROSS = { 1: [atY(Y1), Y1], 2: [atY(Y2), Y2] };
+    // Directions in SVG's y-down degrees: right 0, left 180, the transversal
+    // down-right DOWN and up-left DOWN + 180.
+    const DOWN = (Math.atan2(T1[1] - T0[1], T1[0] - T0[0]) * 180) / Math.PI;
+    // [start, sweep] for each quadrant around a crossing.
+    const WEDGE = {
+      TL: [180, DOWN],              // left round to up-left: acute
+      TR: [DOWN + 180, 180 - DOWN], // up-left round to right: obtuse
+      BR: [0, DOWN],                // right round to down-right: acute
+      BL: [DOWN, 180 - DOWN],       // down-right round to left: obtuse
     };
+    const mx = (x) => (fig.mirror ? W - x : x);
+    const mdeg = (d) => (fig.mirror ? 180 - d : d);
     const { given, unknown } = fig;
-    const arcPath = ([x1, y1, x2, y2]) => `M ${x1} ${y1} A 20 20 0 0 1 ${x2} ${y2}`;
+    const line = (key, x1, y1, x2, y2) => <line key={key} x1={mx(x1)} y1={y1} x2={mx(x2)} y2={y2} stroke="var(--ink)" strokeWidth={2} />;
+    const chevron = (key, y) => <path key={key} d={`M${mx(40)},${y - 6} L${mx(48)},${y} L${mx(40)},${y + 6}`} fill="none" stroke="var(--ink)" strokeWidth={2} />;
     const elements = [
-      <line key="l1" x1={20} y1={60} x2={240} y2={60} stroke="var(--ink)" strokeWidth={2} />,
-      <line key="l2" x1={20} y1={150} x2={240} y2={150} stroke="var(--ink)" strokeWidth={2} />,
-      <path key="t1" d="M40,54 L48,60 L40,66" fill="none" stroke="var(--ink)" strokeWidth={2} />,
-      <path key="t2" d="M40,144 L48,150 L40,156" fill="none" stroke="var(--ink)" strokeWidth={2} />,
-      <line key="tv" x1={80} y1={31} x2={183} y2={179} stroke="var(--ink)" strokeWidth={2} />,
+      line('l1', 20, Y1, 240, Y1), line('l2', 20, Y2, 240, Y2),
+      chevron('t1', Y1), chevron('t2', Y2),
+      line('tv', T0[0], T0[1], T1[0], T1[1]),
     ];
-    if (given) {
-      const p = POS[given.position];
-      elements.push(
-        <path key="ga" d={arcPath(p.arc)} fill="none" stroke="var(--ink)" strokeWidth={2} />,
-        figLabel('gl', p.label[0], p.label[1] + 6, plainAngleLabel(given.label), 'middle', 'var(--ink)'),
-      );
+    const R = 20;
+    const mark = (key, pos, label, col, width) => {
+      const [c0, c1] = CROSS[pos[2]];
+      const cx = mx(c0);
+      let [start, sweep] = WEDGE[pos.slice(0, 2)];
+      start = mdeg(start);
+      if (fig.mirror) sweep = -sweep;
+      const rad = (d) => (d * Math.PI) / 180;
+      const A = [cx + R * Math.cos(rad(start)), c1 + R * Math.sin(rad(start))];
+      const B = [cx + R * Math.cos(rad(start + sweep)), c1 + R * Math.sin(rad(start + sweep))];
+      const text = plainAngleLabel(label);
+      const [lx, ly] = fitAngleLabel(cx, c1, start, sweep, text, 20, R, 0.5, 0.8, 4);
+      return [
+        <path key={`${key}a`} d={`M ${A[0]} ${A[1]} A ${R} ${R} 0 0 ${sweep > 0 ? 1 : 0} ${B[0]} ${B[1]}`} fill="none" stroke={col} strokeWidth={width} />,
+        figLabel(`${key}l`, lx, ly, text, 'middle', col),
+      ];
+    };
+    if (given) elements.push(...mark('g', given.position, given.label, 'var(--ink)', 2));
+    if (unknown) elements.push(...mark('u', unknown.position, unknown.label, color, 2.5));
+    return svgWrap(elements, W, 210, 'pt', fig.big, shown);
+  }
+
+  if (fig.type === 'parallel-chain') {
+    // Parallel lines combined with a shape, for the Stretch band of angles
+    // in parallel lines: every question chains a parallel-line fact with a
+    // second fact (angle sum, angles on a line, isosceles, opposite angles).
+    //
+    // Unlike 'parallel-transversal', each shape is drawn to its true angles:
+    // `a` and `b` are the generator's angle sizes and the geometry follows
+    // them, so an obtuse answer always looks obtuse. The generator keeps
+    // them in a range where the shape stays legible. `labels` maps a mark
+    // name to its label; a missing or empty label leaves that mark undrawn.
+    // `unknown` names the mark in the slot colour. `mirror` reflects the
+    // drawing left to right.
+    //
+    //   triangle-between  apex A on the top line, base BC on the bottom.
+    //                     top = angle between the top line and AB (a),
+    //                     base = angle C (b), apex = angle A.
+    //   triangle-on-line  a transversal from P on the top line to Q on the
+    //                     bottom; a line from R (on the bottom line) meets
+    //                     it at S. line = angle at P (a), corner = angle R
+    //                     (b), apex = angle S.
+    //   arrowhead         a line from P (top) bends at B and meets the
+    //                     bottom line at Q. top = angle at P (a), bottom =
+    //                     angle at Q (b), bend = angle PBQ.
+    //   iso-trapezium     ABCD, AB the bottom, DC the top, AD = BC. A-D are
+    //                     the four angles; a is the base angle.
+    //   parallelogram     ABCD as above; ext = the exterior angle at A on
+    //                     the bottom side extended; a is angle A.
+    const { variant, labels = {}, unknown } = fig;
+    const rad = (d) => (d * Math.PI) / 180;
+    const cot = (d) => 1 / Math.tan(rad(d));
+    const a = Number(fig.a), b = Number(fig.b);
+    const TOP = 40, BOT = 160, H = BOT - TOP;
+    const pts = {};
+    const segs = [];
+    const marks = []; // [name, vertex, p1, p2]
+    const chev = []; // [p, q, count]
+    const ticks = []; // [p, q]
+    let longLines = true;
+
+    if (variant === 'triangle-between') {
+      const A = [0, TOP], B = [-H * cot(a), BOT], C = [H * cot(b), BOT];
+      Object.assign(pts, { A, B, C });
+      segs.push([A, B], [A, C]);
+      marks.push(['top', A, [A[0] - 60, TOP], B], ['base', C, A, B], ['apex', A, B, C]);
+    } else if (variant === 'triangle-on-line') {
+      const P = [0, TOP], Q = [H * cot(a), BOT];
+      const w = Math.min(150, 0.8 * H * (cot(a) + cot(b)));
+      const R = [Q[0] - w, BOT];
+      const t = w / (Math.cos(rad(b)) + Math.sin(rad(b)) * cot(a));
+      const S = [R[0] + t * Math.cos(rad(b)), BOT - t * Math.sin(rad(b))];
+      const d = unitVec(Q[0] - P[0], Q[1] - P[1]);
+      Object.assign(pts, { P, Q, R, S });
+      segs.push([[P[0] - d[0] * 28, P[1] - d[1] * 28], [Q[0] + d[0] * 28, Q[1] + d[1] * 28]], [R, S]);
+      marks.push(['line', P, [P[0] + 60, TOP], Q], ['corner', R, Q, S], ['apex', S, R, Q]);
+    } else if (variant === 'arrowhead') {
+      const MID = (TOP + BOT) / 2;
+      const P = [0, TOP], B = [(MID - TOP) * cot(a), MID];
+      const Q = [B[0] - (BOT - MID) * cot(b), BOT];
+      Object.assign(pts, { P, B, Q });
+      segs.push([P, B], [B, Q]);
+      marks.push(['top', P, [P[0] + 60, TOP], B], ['bottom', Q, [Q[0] + 60, BOT], B], ['bend', B, P, Q]);
+    } else if (variant === 'iso-trapezium' || variant === 'parallelogram') {
+      longLines = false;
+      const iso = variant === 'iso-trapezium';
+      const L = iso ? 220 : 190;
+      const A = [0, BOT], B = [L, BOT], D = [H * cot(a), TOP];
+      const C = iso ? [L - H * cot(a), TOP] : [L + H * cot(a), TOP];
+      Object.assign(pts, { A, B, C, D });
+      segs.push([A, B], [B, C], [C, D], [D, A]);
+      chev.push([A, B, 1], [D, C, 1]);
+      if (iso) ticks.push([A, D], [B, C]);
+      else chev.push([A, D, 2], [B, C, 2]);
+      marks.push(['A', A, B, D], ['B', B, C, A], ['C', C, D, B], ['D', D, A, C]);
+      if (!iso && labels.ext) {
+        const E = [A[0] - 55, BOT];
+        segs.push([A, E]);
+        marks.push(['ext', A, E, D]);
+      }
+    } else {
+      return null;
     }
-    if (unknown) {
-      const p = POS[unknown.position];
-      elements.push(
-        <path key="ua" d={arcPath(p.arc)} fill="none" stroke={color} strokeWidth={2.5} />,
-        figLabel('ul', p.label[0], p.label[1] + 6, plainAngleLabel(unknown.label), 'middle', color),
-      );
+
+    // Mirror, then frame everything that is drawn.
+    const flip = (p) => (fig.mirror ? [-p[0], p[1]] : p);
+    const F = (p) => flip(p);
+    const all = [...segs.flat(), ...marks.flatMap((m) => [m[1], m[2], m[3]])].map(F);
+    // Long parallel lines run well past the shape, so their arrows sit
+    // clear of every corner on them.
+    const RUN = longLines ? 64 : 28;
+    const x0 = Math.min(...all.map((p) => p[0])) - RUN;
+    const x1 = Math.max(...all.map((p) => p[0])) + RUN;
+    const y0 = TOP - 26, y1 = BOT + 30;
+    const elements = [];
+    const seg = (key, p, q, extra) => {
+      const [P1, Q1] = [F(p), F(q)];
+      elements.push(<line key={key} x1={P1[0]} y1={P1[1]} x2={Q1[0]} y2={Q1[1]} stroke="var(--ink)" strokeWidth={2.5} strokeLinecap="round" {...extra} />);
+    };
+    if (longLines) {
+      // The two parallel lines run past everything on them.
+      [TOP, BOT].forEach((y, i) => {
+        elements.push(<line key={`pl${i}`} x1={x0} y1={y} x2={x1} y2={y} stroke="var(--ink)" strokeWidth={2.5} />);
+        const cx = fig.mirror ? x1 - 26 : x0 + 26;
+        const dx = fig.mirror ? -8 : 8;
+        elements.push(<path key={`pc${i}`} d={`M${cx - dx / 2},${y - 6} L${cx + dx / 2},${y} L${cx - dx / 2},${y + 6}`} fill="none" stroke="var(--ink)" strokeWidth={2.5} />);
+      });
     }
-    return svgWrap(elements, 260, 210, 'pt', fig.big, shown);
+    segs.forEach(([p, q], i) => seg(`s${i}`, p, q));
+    // Chevrons at a side's midpoint, pointing along it.
+    chev.forEach(([p, q, count], i) => {
+      const [P1, Q1] = [F(p), F(q)];
+      const u = unitVec(Q1[0] - P1[0], Q1[1] - P1[1]);
+      const n = [-u[1], u[0]];
+      const m = [(P1[0] + Q1[0]) / 2, (P1[1] + Q1[1]) / 2];
+      for (let k = 0; k < count; k += 1) {
+        const o = (k - (count - 1) / 2) * 8;
+        const tip = [m[0] + u[0] * (o + 4), m[1] + u[1] * (o + 4)];
+        const back = [m[0] + u[0] * (o - 4), m[1] + u[1] * (o - 4)];
+        elements.push(<path key={`c${i}-${k}`} d={`M${back[0] + n[0] * 6},${back[1] + n[1] * 6} L${tip[0]},${tip[1]} L${back[0] - n[0] * 6},${back[1] - n[1] * 6}`} fill="none" stroke="var(--ink)" strokeWidth={2.5} />);
+      }
+    });
+    ticks.forEach(([p, q], i) => elements.push(tickMark(F(p), F(q), `pc${i}`)));
+    marks.forEach(([name, v, p1, p2]) => {
+      const label = labels[name];
+      if (!label) return;
+      const col = name === unknown ? color : 'var(--ink)';
+      elements.push(...angleMarker(F(v), F(p1), F(p2), label, `m-${name}`, col, { fit: true, fontSize: 17, pad: 4 }, 18));
+    });
+    const w = x1 - x0, h = y1 - y0;
+    return svgWrap(<g transform={`translate(${-x0} ${-y0})`}>{elements}</g>, w.toFixed(1), h.toFixed(1), 'pch', fig.big, shown);
   }
 
   if (fig.type === 'polygon') {
@@ -1785,6 +1933,12 @@ export default function Figure({ fig, color, shown }) {
     const elements = [
       <polygon key="p" points={ptsStr} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
     ];
+    // The arc stays inside one corner. At r = 30 a 15- or 20-gon's arc was
+    // wider than a side and ran across the neighbouring corners, so it is
+    // capped at 40% of the side length.
+    const side = 2 * radius * Math.sin(Math.PI / n);
+    const arcR = Math.min(30, 0.4 * side);
+    const fitOpts = { fit: true, fontSize: 17, pad: 4 };
 
     if (fig.exterior) {
       // Extend the side INTO vertex 0 past vertex 0, mark the angle between
@@ -1799,16 +1953,22 @@ export default function Figure({ fig, color, shown }) {
       const [xNext, yNext] = verts[1];
       const dirExt = [x0 - xPrev, y0 - yPrev];
       const lenExt = Math.hypot(...dirExt);
-      const ext = [x0 + (dirExt[0] / lenExt) * 40, y0 + (dirExt[1] / lenExt) * 40];
+      // Long enough that a many-sided polygon's thin exterior wedge (20° at
+      // n = 18) still holds its label between the extension and the side.
+      const EXT = 64;
+      const ext = [x0 + (dirExt[0] / lenExt) * EXT, y0 + (dirExt[1] / lenExt) * EXT];
       elements.push(<line key="ext" x1={x0} y1={y0} x2={ext[0]} y2={ext[1]} stroke="var(--ink)" strokeWidth={2} strokeDasharray="5,5" />);
-      if (fig.angleLabel) elements.push(...angleMarker([x0, y0], ext, [xNext, yNext], fig.angleLabel, 'al', color, {}, 30));
+      // Outside the polygon the arc has no neighbouring corner to run into,
+      // so it only has to stay shorter than the side it ends on.
+      const extR = Math.min(30, 0.8 * side);
+      if (fig.angleLabel) elements.push(...angleMarker([x0, y0], ext, [xNext, yNext], fig.angleLabel, 'al', color, fitOpts, extR));
     } else {
       // Interior: same angleMarker reuse, at vertex 0 between its two real
       // neighbours — bigger (r=30) and the label always lands inside the
       // polygon by construction (true bisector), unlike the old fixed
       // corner-mark's hand-tuned offset which could spill outside for a
       // sharp n=3/4 corner.
-      if (fig.angleLabel) elements.push(...angleMarker(verts[0], verts[n - 1], verts[1], fig.angleLabel, 'al', color, {}, 30));
+      if (fig.angleLabel) elements.push(...angleMarker(verts[0], verts[n - 1], verts[1], fig.angleLabel, 'al', color, fitOpts, arcR));
     }
 
     return svgWrap(elements, 168, 168, 'pg', fig.big, shown);

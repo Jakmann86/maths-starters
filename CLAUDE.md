@@ -243,6 +243,12 @@ Established conventions:
 - An `unknown` field names which label takes the slot colour; everything else
   is `var(--ink)`. Default to `null` where the unknown is usually not a
   labelled edge (an area or a volume).
+- **Angle figures where acute vs obtuse matters** (`angle-rays`,
+  `parallel-chain`) are drawn to the true angles, within a range the
+  generator keeps legible, so an obtuse answer never looks acute. Angles
+  under 30° in `angle-rays` are drawn at 30° and still labelled true.
+  `parallel-transversal` keeps fixed geometry, so its generator puts each
+  angle in a wedge of its own kind.
 - **Data displays are the exception.** `coordinate-grid`, `stem-leaf` and
   `pie-chart` are drawn to the data, because there the geometry *is* the
   data: a pie chart's sectors are in proportion, a stem-and-leaf's leaves

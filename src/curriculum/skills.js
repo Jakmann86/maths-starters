@@ -362,22 +362,12 @@ export const skills = {
   },
 
   // --- Haese: angles in parallel lines ---
-  'corresponding-angles': {
-    label: 'Corresponding angles',
+  // One skill for all three relationships, chosen at random per question,
+  // so the class has to recognise which one applies.
+  'parallel-line-angles': {
+    label: 'Angles in parallel lines',
     topic: 'Parallel lines and polygons',
-    generate: (opts) => angleFacts.generateCorrespondingAngles(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
-  'alternate-angles': {
-    label: 'Alternate angles',
-    topic: 'Parallel lines and polygons',
-    generate: (opts) => angleFacts.generateAlternateAngles(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
-  'co-interior-angles': {
-    label: 'Co-interior angles',
-    topic: 'Parallel lines and polygons',
-    generate: (opts) => angleFacts.generateCoInteriorAngles(opts),
+    generate: (opts) => angleFacts.generateParallelLineAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 

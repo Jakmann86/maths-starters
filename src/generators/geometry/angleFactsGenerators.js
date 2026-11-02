@@ -524,34 +524,145 @@ export const generateAnglesProblemSolving = (options = {}) => {
   };
 };
 
-// generateCorrespondingAngles / generateAlternateAngles / generateCoInteriorAngles ------------
-// Haese: angle facts from two parallel lines cut by a transversal. All three
-// share Figure.jsx's 'parallel-transversal' type (fixed geometry, eight
-// possible labelled positions — see POSITION_PAIRS) and this one builder,
-// since they differ only in which pair of positions gets used and whether
-// that pair is equal or supplementary.
+// generateParallelLineAngles ------------------------------------------------
+// Haese 4A: angle facts from two parallel lines cut by a transversal. One
+// skill, with the relationship drawn at random per question — corresponding,
+// alternate or co-interior — so the class has to recognise which applies
+// rather than being told by the skill name. Figure.jsx's
+// 'parallel-transversal' type has fixed geometry and eight labelled
+// positions (POSITION_PAIRS). The transversal crosses at about 55°, so TL
+// and BR at each crossing are drawn acute and TR and BL obtuse: a given
+// angle always goes in a wedge of its own kind, so 145° is never written in
+// an acute corner. `mirror` flips the drawing left to right (acute and
+// obtuse positions keep their names), so the slant isn't always the same.
 //   Foundation  one angle given, a multiple of 5     find the other by the relationship
 //   Core        one angle given, any integer          find the other by the relationship
-//   Stretch     the given is numeric, the unknown is an expression in x     solve for x
+//   Stretch     half: the given is numeric, the unknown an expression in x, solve for x;
+//               half: a parallel-line fact chained with a shape (generateParallelChain)
 const RELATIONSHIP_INFO = {
-  corresponding: { label: 'corresponding angles', equal: true, topic: 'corresponding-angles' },
-  alternate: { label: 'alternate angles', equal: true, topic: 'alternate-angles' },
-  coInterior: { label: 'co-interior angles', equal: false, topic: 'co-interior-angles' },
+  corresponding: { label: 'corresponding angles', equal: true },
+  alternate: { label: 'alternate angles', equal: true },
+  coInterior: { label: 'co-interior angles', equal: false },
 };
 const POSITION_PAIRS = {
   corresponding: [['TL1', 'TL2'], ['TR1', 'TR2'], ['BL1', 'BL2'], ['BR1', 'BR2']],
   alternate: [['BR1', 'TL2'], ['BL1', 'TR2']],
   coInterior: [['BR1', 'TR2'], ['BL1', 'TL2']],
 };
+// Drawn acute in the fixed geometry (see Figure.jsx).
+export const ACUTE_POSITIONS = ['TL1', 'BR1', 'TL2', 'BR2'];
+const isAcutePos = (pos) => ACUTE_POSITIONS.includes(pos);
 
-const buildParallelAngle = (relationship, options = {}) => {
-  const { difficulty = 'core' } = options;
-  const { label: factLabel, equal, topic } = RELATIONSHIP_INFO[relationship];
-  const [posA, posB] = _.sample(POSITION_PAIRS[relationship]);
-  const [givenPos, unknownPos] = _.sample([true, false]) ? [posA, posB] : [posB, posA];
+// Stretch: parallel lines combined with a shape (Figure.jsx's
+// 'parallel-chain'). Each chains a parallel-line fact with one more fact and
+// stays numeric, per the user's rule for theorem topics: two facts, no
+// algebra on the figure. `a` and `b` are the true angle sizes the figure is
+// drawn from; every label is one of them or follows from them.
+//   triangle-between  alternate angles, then the angle sum of a triangle
+//   triangle-on-line  alternate angles, then the angle sum of a triangle
+//   arrowhead         a third parallel through the bend, alternate angles twice
+//   iso-trapezium     isosceles base angles, then co-interior angles
+//   parallelogram     angles on a line, then opposite angles
+export const PARALLEL_CHAINS = ['triangle-between', 'triangle-on-line', 'arrowhead', 'iso-trapezium', 'parallelogram'];
+const dg = (v) => `${v}^\\circ`;
 
-  const givenValue = difficulty === 'foundation' ? _.random(6, 30) * 5 : _.random(10, 170);
+export const generateParallelChain = (variant = _.sample(PARALLEL_CHAINS)) => {
+  let a, b = null, labels, unknown, x, steps;
+  const flip = _.sample([true, false]);
+
+  if (variant === 'triangle-between' || variant === 'triangle-on-line') {
+    a = _.random(40, 70);
+    b = _.random(40, 70);
+    const apex = 180 - a - b;
+    const [g1, g2] = variant === 'triangle-between' ? ['top', 'base'] : ['line', 'corner'];
+    const viaAlt = variant === 'triangle-between'
+      ? `\\text{the base angle below it} = ${dg(a)} \\text{ (alternate angles)}`
+      : `\\text{the triangle's angle on the transversal} = ${dg(a)} \\text{ (alternate angles)}`;
+    if (flip) {
+      labels = { [g1]: dg(a), [g2]: dg(b), apex: 'x' };
+      unknown = 'apex';
+      x = apex;
+      steps = [viaAlt, `x = 180^\\circ - ${dg(a)} - ${dg(b)} \\text{ (angle sum of a triangle)}`, `x = ${dg(apex)}`];
+    } else {
+      labels = { [g1]: dg(a), apex: dg(apex), [g2]: 'x' };
+      unknown = g2;
+      x = b;
+      steps = [viaAlt, `x = 180^\\circ - ${dg(a)} - ${dg(apex)} \\text{ (angle sum of a triangle)}`, `x = ${dg(b)}`];
+    }
+  } else if (variant === 'arrowhead') {
+    a = _.random(30, 65);
+    b = _.random(30, 65);
+    const bend = a + b;
+    const construct = '\\text{draw a third parallel line through the bend}';
+    if (flip) {
+      labels = { top: dg(a), bottom: dg(b), bend: 'x' };
+      unknown = 'bend';
+      x = bend;
+      steps = [construct, `x = ${dg(a)} + ${dg(b)} \\text{ (alternate angles)}`, `x = ${dg(bend)}`];
+    } else {
+      labels = { top: dg(a), bend: dg(bend), bottom: 'x' };
+      unknown = 'bottom';
+      x = b;
+      steps = [construct, `${dg(bend)} = ${dg(a)} + x \\text{ (alternate angles)}`, `x = ${dg(b)}`];
+    }
+  } else if (variant === 'iso-trapezium') {
+    a = _.random(55, 80);
+    const value = { A: a, B: a, C: 180 - a, D: 180 - a };
+    const OPP = { A: 'C', C: 'A', B: 'D', D: 'B' };
+    // The partner on the same parallel side, which the isosceles fact gives.
+    const PARTNER = { A: 'B', B: 'A', C: 'D', D: 'C' };
+    const given = _.sample(['A', 'B', 'C', 'D']);
+    unknown = OPP[given];
+    labels = { [given]: dg(value[given]), [unknown]: 'x' };
+    x = value[unknown];
+    steps = [
+      `\\text{the other angle on that parallel side} = ${dg(value[PARTNER[given]])} \\text{ (isosceles trapezium)}`,
+      `x = 180^\\circ - ${dg(value[given])} \\text{ (co-interior angles)}`,
+      `x = ${dg(x)}`,
+    ];
+  } else {
+    a = _.random(50, 80);
+    const ext = 180 - a;
+    labels = { ext: dg(ext), C: 'x' };
+    unknown = 'C';
+    x = a;
+    steps = [
+      `\\text{angle } A = 180^\\circ - ${dg(ext)} = ${dg(a)} \\text{ (angles on a line)}`,
+      `x = ${dg(a)} \\text{ (opposite angles of a parallelogram)}`,
+    ];
+  }
+
+  return {
+    instruction: 'Find the size of angle x — arrows mark parallel lines',
+    questionMath: null,
+    answer: `x = ${dg(x)}`,
+    workingOut: steps.join(NL),
+    visualization: { type: 'parallel-chain', variant, a, b, labels, unknown, mirror: _.sample([true, false]), big: true },
+    metadata: { topic: 'parallel-line-angles', difficulty: 'stretch', tags: ['angles', 'parallel', variant] },
+  };
+};
+
+export const generateParallelLineAngles = (options = {}) => {
+  const { difficulty = 'core', relationship = _.sample(Object.keys(RELATIONSHIP_INFO)) } = options;
+  const { label: factLabel, equal } = RELATIONSHIP_INFO[relationship];
+  // Half of Stretch is a parallel-line fact chained with a shape; the other
+  // half solves for x on a plain transversal.
+  if (difficulty === 'stretch' && !options.relationship && _.sample([true, false])) return generateParallelChain();
+
+  // 90 is neither acute nor obtuse, and the drawing has no right angle.
+  let givenValue;
+  do {
+    givenValue = difficulty === 'foundation' ? _.random(6, 30) * 5 : _.random(10, 170);
+  } while (givenValue === 90);
   const trueUnknownValue = equal ? givenValue : 180 - givenValue;
+
+  // Every position pair, either way round, whose given end matches the given
+  // angle's kind. The unknown end then matches too: equal pairs share a kind
+  // and co-interior pairs are one of each.
+  const candidates = POSITION_PAIRS[relationship]
+    .flatMap(([a, b]) => [[a, b], [b, a]])
+    .filter(([g]) => isAcutePos(g) === givenValue < 90);
+  const [givenPos, unknownPos] = _.sample(candidates);
 
   let unknownLabel, answer, workingOut;
   if (difficulty === 'stretch') {
@@ -566,10 +677,10 @@ const buildParallelAngle = (relationship, options = {}) => {
       `x = ${x}`;
   } else {
     unknownLabel = 'x';
-    answer = `${trueUnknownValue}^\\circ`;
+    answer = `x = ${trueUnknownValue}^\\circ`;
     workingOut = equal
-      ? `\\text{${factLabel} are equal}` + NL + `${trueUnknownValue}^\\circ`
-      : `\\text{${factLabel} are supplementary}` + NL + `180 - ${givenValue} = ${trueUnknownValue}^\\circ`;
+      ? `\\text{${factLabel} are equal}` + NL + `x = ${trueUnknownValue}^\\circ`
+      : `\\text{${factLabel} are supplementary}` + NL + `x = 180 - ${givenValue} = ${trueUnknownValue}^\\circ`;
   }
 
   return {
@@ -584,15 +695,12 @@ const buildParallelAngle = (relationship, options = {}) => {
       type: 'parallel-transversal',
       given: { position: givenPos, label: `${givenValue}^\\circ` },
       unknown: { position: unknownPos, label: unknownLabel },
+      mirror: _.sample([true, false]),
       big: true,
     },
-    metadata: { topic, difficulty, tags: ['angles', relationship] },
+    metadata: { topic: 'parallel-line-angles', difficulty, tags: ['angles', relationship] },
   };
 };
-
-export const generateCorrespondingAngles = (options = {}) => buildParallelAngle('corresponding', options);
-export const generateAlternateAngles = (options = {}) => buildParallelAngle('alternate', options);
-export const generateCoInteriorAngles = (options = {}) => buildParallelAngle('coInterior', options);
 
 // generatePolygonInteriorAngles / generatePolygonExteriorAngles ----------------------------------
 // Haese: regular-polygon angle facts. Both share Figure.jsx's 'polygon' type
@@ -624,7 +732,10 @@ export const generatePolygonInteriorAngles = (options = {}) => {
       const angle = interiorAngleOf(n);
       return {
         instruction: 'Each interior angle of a regular polygon is given. How many sides does it have?',
-        questionMath: `${angle}^\\circ`,
+        // The angle is labelled on the figure; repeating it as a question
+        // line printed it twice (CLAUDE.md §2: a forward question carries
+        // everything on the figure).
+        questionMath: null,
         answer: `n = ${n}`,
         workingOut: `\\frac{180(n-2)}{n} = ${angle}` + NL + `n = ${n}`,
         visualization: { type: 'polygon', n, angleLabel: `${angle}^\\circ`, big: true },
@@ -648,12 +759,13 @@ export const generatePolygonInteriorAngles = (options = {}) => {
 
     return {
       instruction: `This is an irregular ${n}-sided polygon. Find the missing angle x.`,
-      questionMath: `${knownAngles.map((a) => `${a}^\\circ`).join(',\\ ')},\\ x`,
+      // Every angle is labelled on the figure, so no list beside it.
+      questionMath: null,
       answer: `x = ${missing}^\\circ`,
       workingOut:
         `\\text{sum of interior angles} = 180(${n} - 2) = ${180 * (n - 2)}^\\circ` + NL +
         `x = ${180 * (n - 2)} - (${knownAngles.join(' + ')}) = ${missing}^\\circ`,
-      visualization: { type: 'polygon-irregular', n, angles, unknownIndex, radiusFactors: randomRadiusFactors(n) },
+      visualization: { type: 'polygon-irregular', n, angles, unknownIndex, radiusFactors: randomRadiusFactors(n), big: true },
       metadata: { topic: 'polygon-interior-angles', difficulty, tags: ['angles', 'polygon', 'interior', 'irregular'] },
     };
   }
