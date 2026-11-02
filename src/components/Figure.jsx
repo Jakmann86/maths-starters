@@ -693,6 +693,161 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, 300, 180, 'tr', fig.big, shown);
   }
 
+  // Any triangle, for the sine and cosine rules and the sine area formula
+  // (Haese 29B-F). Sides and angles are both labelled, and either may be the
+  // unknown.
+  //
+  //   angles        the triangle's true angles in degrees, [A, B, C]: used
+  //                 only to choose the shape, never to scale it
+  //   sides         labels for a, b, c (a is opposite A), or null
+  //   angleLabels   labels for A, B, C ('38°', 'x'), or null
+  //   vertices      vertex letters (['P', 'Q', 'R']), or omitted
+  //   unknown       { side: i } or { angle: i }: that label in the slot colour
+  //   mirror        flip left to right, for variety
+  //
+  // Schematic, like every figure here (CLAUDE.md 7), with one honesty rule.
+  // There are two outlines, acute and obtuse, and the triangle's corners are
+  // placed on them by size: the largest angle on the outline's largest
+  // corner, and so on. So an obtuse angle is never drawn acute, and the
+  // longest side is always drawn longest. Students use exactly those cues
+  // (the largest angle faces the longest side), so the drawing must not
+  // contradict them.
+  if (fig.type === 'oblique-triangle') {
+    const ACUTE = [[28, 172], [292, 172], [120, 28]];   // about 57°, 40°, 83°
+    const OBTUSE = [[112, 170], [300, 170], [22, 42]];  // about 124°, 25°, 31°
+    const W = 320;
+    const angleAt = (P, i) => {
+      const [a, b] = [P[(i + 1) % 3], P[(i + 2) % 3]];
+      const u = unitVec(a[0] - P[i][0], a[1] - P[i][1]), v = unitVec(b[0] - P[i][0], b[1] - P[i][1]);
+      return (Math.acos(Math.max(-1, Math.min(1, u[0] * v[0] + u[1] * v[1]))) * 180) / Math.PI;
+    };
+    const truth = fig.angles ?? [60, 60, 60];
+    const outline = Math.max(...truth) > 90 ? OBTUSE : ACUTE;
+    // Corners of the outline, largest angle first; the triangle's vertices,
+    // largest angle first; pair them off.
+    const byOutline = [0, 1, 2].sort((i, j) => angleAt(outline, j) - angleAt(outline, i));
+    const byTruth = [0, 1, 2].sort((i, j) => truth[j] - truth[i] || i - j);
+    const P = [];
+    byTruth.forEach((v, k) => { P[v] = outline[byOutline[k]]; });
+    if (fig.mirror) P.forEach((p, i) => { P[i] = [W - p[0], p[1]]; });
+
+    const G = [(P[0][0] + P[1][0] + P[2][0]) / 3, (P[0][1] + P[1][1] + P[2][1]) / 3];
+    const tint = (kind, i) => (fig.unknown?.[kind] === i ? color : 'var(--ink)');
+    const nodes = [
+      <polygon key="t" points={P.map((p) => p.join(',')).join(' ')} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+    ];
+
+    // Side labels: at the midpoint of the side, pushed outward, further for
+    // a side running up and down, since the text runs across it.
+    const CHAR = 10.5;
+    (fig.sides ?? []).forEach((text, i) => {
+      if (!text) return;
+      const [p, q] = [P[(i + 1) % 3], P[(i + 2) % 3]];
+      const m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+      let [nx, ny] = unitVec(-(q[1] - p[1]), q[0] - p[0]);
+      if (nx * (m[0] - G[0]) + ny * (m[1] - G[1]) < 0) { nx = -nx; ny = -ny; }
+      const off = 13 + Math.abs(nx) * (String(text).length * CHAR) / 2;
+      nodes.push(figLabel(`s${i}`, m[0] + nx * off, m[1] + ny * off + 7, text, 'middle', tint('side', i)));
+    });
+
+    // Angle arcs and labels inside each corner. A narrow corner gets a
+    // wider arc and its label further in, or the label sits on the sides.
+    (fig.angleLabels ?? []).forEach((text, i) => {
+      if (!text) return;
+      const V = P[i];
+      const [a, b] = [P[(i + 1) % 3], P[(i + 2) % 3]];
+      const u = unitVec(a[0] - V[0], a[1] - V[1]), v = unitVec(b[0] - V[0], b[1] - V[1]);
+      const drawn = angleAt(P, i);
+      const r = drawn < 35 ? 34 : drawn > 100 ? 20 : 26;
+      const A = [V[0] + u[0] * r, V[1] + u[1] * r], B = [V[0] + v[0] * r, V[1] + v[1] * r];
+      const sweep = u[0] * v[1] - u[1] * v[0] > 0 ? 1 : 0;
+      nodes.push(<path key={`a${i}`} d={`M ${A[0]} ${A[1]} A ${r} ${r} 0 0 ${sweep} ${B[0]} ${B[1]}`} fill="none" stroke={tint('angle', i)} strokeWidth={2.5} />);
+      const bis = unitVec(u[0] + v[0], u[1] + v[1]);
+      const label = plainAngleLabel(text);
+      const d = r + 12 + label.length * (drawn < 35 ? 6 : 4.5);
+      nodes.push(figLabel(`al${i}`, V[0] + bis[0] * d, V[1] + bis[1] * d + 6, label, 'middle', tint('angle', i), 18));
+    });
+
+    // Vertex letters, just outside each corner.
+    (fig.vertices ?? []).forEach((text, i) => {
+      if (!text) return;
+      const out = unitVec(P[i][0] - G[0], P[i][1] - G[1]);
+      nodes.push(figLabel(`v${i}`, P[i][0] + out[0] * 16, P[i][1] + out[1] * 16 + 7, text, 'middle', 'var(--ink)'));
+    });
+
+    return svgWrap(nodes, W, 200, 'ot', fig.big, shown);
+  }
+
+  // Two triangles sharing a side: quadrilateral ABCD cut by the diagonal BD,
+  // for problems solved one triangle at a time (Haese 29F). Positions are
+  // fixed and named A to D whatever letters are printed:
+  //   vertices   letters printed at A, B, C, D (['P', 'Q', 'R', 'S'])
+  //   sides      { AB, BC, CD, DA, BD }: labels, or omitted
+  //   angles     { A, ABD, ADB, C, CBD, CDB }: labels, the corners at B and
+  //              D split by the diagonal
+  //   unknown    { side: 'CD' } or { angle: 'C' }: that label in the slot colour
+  //   mirror     flip left to right
+  //
+  // Schematic, so the generator owns the honesty rule the single triangle
+  // keeps for itself: within each triangle the true angles must rank as the
+  // drawn ones do, and none may be obtuse. Drawn, they are
+  //   ABD:  A 75.5 > ADB 57.4 > ABD 47.2
+  //   BCD:  CBD 79.6 > C 58.4 > CDB 42.0
+  if (fig.type === 'two-triangles') {
+    const W = 340;
+    const at = { A: [20, 186], B: [210, 196], C: [320, 64], D: [70, 28] };
+    if (fig.mirror) Object.keys(at).forEach((k) => { at[k] = [W - at[k][0], at[k][1]]; });
+    const tint = (kind, k) => (fig.unknown?.[kind] === k ? color : 'var(--ink)');
+    const { A, B, C, D } = at;
+    const nodes = [
+      <polygon key="q" points={[A, B, C, D].map((p) => p.join(',')).join(' ')} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+      <line key="bd" x1={B[0]} y1={B[1]} x2={D[0]} y2={D[1]} stroke="var(--ink)" strokeWidth={3} />,
+    ];
+
+    // Side labels, pushed away from the centroid of the side's own triangle
+    // (BD's away from ABD, so into BCD).
+    const centroid = (...ps) => [ps.reduce((s, p) => s + p[0], 0) / ps.length, ps.reduce((s, p) => s + p[1], 0) / ps.length];
+    const SIDES = { AB: [A, B, D], BC: [B, C, D], CD: [C, D, B], DA: [D, A, B], BD: [B, D, A] };
+    Object.entries(SIDES).forEach(([k, [p, q, r]]) => {
+      const text = fig.sides?.[k];
+      if (!text) return;
+      const G = centroid(p, q, r);
+      const m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+      let [nx, ny] = unitVec(-(q[1] - p[1]), q[0] - p[0]);
+      if (nx * (m[0] - G[0]) + ny * (m[1] - G[1]) < 0) { nx = -nx; ny = -ny; }
+      const off = 13 + Math.abs(nx) * (String(text).length * 10.5) / 2;
+      nodes.push(figLabel(`s${k}`, m[0] + nx * off, m[1] + ny * off + 7, text, 'middle', tint('side', k)));
+    });
+
+    // Angle arcs, each between the two rays that bound it.
+    const CORNERS = { A: [A, B, D], ABD: [B, A, D], ADB: [D, A, B], C: [C, B, D], CBD: [B, C, D], CDB: [D, C, B] };
+    Object.entries(CORNERS).forEach(([k, [V, p, q]]) => {
+      const text = fig.angles?.[k];
+      if (!text) return;
+      const u = unitVec(p[0] - V[0], p[1] - V[1]), v = unitVec(q[0] - V[0], q[1] - V[1]);
+      const drawn = (Math.acos(Math.max(-1, Math.min(1, u[0] * v[0] + u[1] * v[1]))) * 180) / Math.PI;
+      const r = drawn < 50 ? 32 : 26;
+      const P1 = [V[0] + u[0] * r, V[1] + u[1] * r], P2 = [V[0] + v[0] * r, V[1] + v[1] * r];
+      const sweep = u[0] * v[1] - u[1] * v[0] > 0 ? 1 : 0;
+      nodes.push(<path key={`a${k}`} d={`M ${P1[0]} ${P1[1]} A ${r} ${r} 0 0 ${sweep} ${P2[0]} ${P2[1]}`} fill="none" stroke={tint('angle', k)} strokeWidth={2.5} />);
+      const bis = unitVec(u[0] + v[0], u[1] + v[1]);
+      const label = plainAngleLabel(text);
+      const d = r + 12 + label.length * (drawn < 50 ? 6 : 4.5);
+      nodes.push(figLabel(`al${k}`, V[0] + bis[0] * d, V[1] + bis[1] * d + 6, label, 'middle', tint('angle', k), 18));
+    });
+
+    // Vertex letters, outside each corner.
+    const G = centroid(A, B, C, D);
+    ['A', 'B', 'C', 'D'].forEach((k, i) => {
+      const text = fig.vertices?.[i];
+      if (!text) return;
+      const out = unitVec(at[k][0] - G[0], at[k][1] - G[1]);
+      nodes.push(figLabel(`v${k}`, at[k][0] + out[0] * 16, at[k][1] + out[1] * 16 + 7, text, 'middle', 'var(--ink)'));
+    });
+
+    return svgWrap(nodes, W, 220, 'tt', fig.big, shown);
+  }
+
   if (fig.type === 'isosceles-angles') {
     // Same outline as isosceles-triangle, but labels the three angles
     // (Haese 4C: base angles are equal) instead of gating a hidden-height
