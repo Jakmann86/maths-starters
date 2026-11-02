@@ -368,7 +368,7 @@ export const generateSimultaneousGraphical = (options = {}) => {
 
 // ---------------------------------------------------------------------------
 // generateSimultaneousProblemSolving (Haese 7F + Rayner 3.25#10) — topic
-// 'Problem solving', the same one angles-problem-solving already lives in.
+// 'Simultaneous equations'.
 export const generateSimultaneousProblemSolving = (options = {}) => {
   const { difficulty = 'core' } = options;
   const pool = difficulty === 'foundation' ? ['numbers', 'coins']

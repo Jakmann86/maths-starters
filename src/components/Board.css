@@ -60,11 +60,15 @@
 
 .header-seg--brand {
   flex: 0 0 auto;
-  padding: 8px 14px;
+  padding: 4px 14px;
+  align-items: center;
 }
 
-.header-seg--brand .header-value {
-  font-size: 15px;
+/* Sized to the bar's height so the logo never makes the header taller. */
+.brand-logo {
+  display: block;
+  height: 74px;
+  width: auto;
 }
 
 .header-seg--topics {
@@ -83,7 +87,6 @@
 
 .header-seg--diff {
   flex: 0 0 auto;
-  border-right: 0;
 }
 
 .diff-stepper {
@@ -118,13 +121,13 @@
 }
 
 .timer-block {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   display: flex;
   align-items: stretch;
 }
 
 .timer-field {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -191,12 +194,11 @@
   background: var(--surface);
 }
 
-.new-four-btn {
-  flex: 1 1 auto;
-  padding: 0 18px;
+.new-questions-btn {
+  flex: 0 0 auto;
+  padding: 0 22px;
   white-space: nowrap;
   border: 0;
-  border-left: 2px solid var(--ink);
   background: transparent;
   color: var(--ink);
   font-size: 15px;
@@ -204,7 +206,7 @@
   cursor: pointer;
 }
 
-.new-four-btn:hover {
+.new-questions-btn:hover {
   background: var(--surface);
 }
 
@@ -220,7 +222,6 @@
   cursor: pointer;
   min-width: 0;
   white-space: nowrap;
-  text-align: left;
 }
 
 .reveal-btn.is-revealed {

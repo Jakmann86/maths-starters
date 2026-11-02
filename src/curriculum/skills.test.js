@@ -66,9 +66,9 @@ describe('topic grouping', () => {
   });
 
   it('returns the first skill for a null or unknown currentSkillId', () => {
-    const ids = skillsInTopic('Pythagoras');
-    expect(nextSkillInTopic('Pythagoras', null)).toBe(ids[0]);
-    expect(nextSkillInTopic('Pythagoras', undefined)).toBe(ids[0]);
-    expect(nextSkillInTopic('Pythagoras', 'not-a-skill')).toBe(ids[0]);
+    const ids = skillsInTopic('Pythagoras and trigonometry');
+    expect(nextSkillInTopic('Pythagoras and trigonometry', null)).toBe(ids[0]);
+    expect(nextSkillInTopic('Pythagoras and trigonometry', undefined)).toBe(ids[0]);
+    expect(nextSkillInTopic('Pythagoras and trigonometry', 'not-a-skill')).toBe(ids[0]);
   });
 });

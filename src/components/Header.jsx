@@ -8,14 +8,12 @@ export default function Header({
   return (
     <header className="board-header">
       <div className="header-half">
-        {/* Placeholder for the Hexagon Maths logo — kept compact so the bar fits. */}
         <div className="header-seg header-seg--brand">
-          <div className="header-label">Starter bank</div>
-          <div className="header-value">Four in a row</div>
+          <img className="brand-logo" src={`${import.meta.env.BASE_URL}hexagon-maths.png`} alt="Hexagon Maths" />
         </div>
 
         <button type="button" className="header-seg header-seg--topics" onClick={onOpenPool}>
-          <div className="header-label">Topics in play</div>
+          <div className="header-label">Chosen topics</div>
           <div className="header-value">{poolSummary}</div>
         </button>
 
@@ -27,6 +25,10 @@ export default function Header({
             <button type="button" className="diff-btn" onClick={onDiffUp}>+</button>
           </div>
         </div>
+
+        {/* Kept in the left half, away from the timer and Show answers, so a
+            stray tap aimed at those cannot throw away the board. */}
+        <button type="button" className="new-questions-btn" onClick={onRegenAll}>New questions</button>
       </div>
 
       <div className="header-half header-half--right">
@@ -49,8 +51,6 @@ export default function Header({
             {timerRunning ? 'Pause' : 'Start'}
           </button>
         </div>
-
-        <button type="button" className="new-four-btn" onClick={onRegenAll}>New four</button>
 
         <button type="button" className={`reveal-btn${revealed ? ' is-revealed' : ''}`} onClick={onToggleReveal}>
           {revealed ? 'Hide answers' : 'Show answers'}

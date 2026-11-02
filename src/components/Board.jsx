@@ -26,7 +26,7 @@ function slotData(skillId, band) {
 
 // A fresh draw: 4 topics at random from the pool (SPEC.md "Design revision:
 // topic-level selection (v1)"), each starting at its topic's first skill.
-// Used on mount and by "New four" — every draw is independent, no memory of
+// Used on mount and by "New questions" — every draw is independent, no memory of
 // the previous one.
 function drawBoxes(pool, diff) {
   return drawBoxTopics(pool, topics()).map((topic, i) => {
@@ -109,7 +109,7 @@ export default function Board() {
   const selectNoneTopics = () => changePool([]);
 
   // Done draws a fresh four if the selection changed. Leaving the old boxes up
-  // until "New four" showed topics the teacher had just unticked, which read
+  // until "New questions" showed topics the teacher had just unticked, which read
   // as the panel not taking.
   const poolAtOpen = useRef(pool);
   const openPool = () => {

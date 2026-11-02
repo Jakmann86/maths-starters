@@ -101,13 +101,16 @@ describe('togglePool', () => {
 
 describe('migratePool', () => {
   it('replaces a renamed topic with its successors, once each', () => {
-    expect(migratePool(['Pythagoras', 'Statistics'])).toEqual(['Pythagoras', 'Representing data', 'Averages']);
+    expect(migratePool(['Volume', 'Statistics'])).toEqual(['Volume', 'Representing data', 'Averages']);
+    expect(migratePool(['Pythagoras', 'Trigonometry'])).toEqual(['Pythagoras and trigonometry']);
     expect(migratePool(['Averages', 'Statistics'])).toEqual(['Averages', 'Representing data']);
   });
 
   it('leaves only topics the catalogue knows', () => {
     // Guards RENAMED itself: a successor misspelt there would drop silently.
     const all = topics();
-    migratePool(['Statistics']).forEach((t) => expect(all).toContain(t));
+    const old = ['Statistics', 'Angles', 'Pythagoras', 'Trigonometry', 'Sequences',
+      'Formulae and simultaneous equations', 'Circles', 'Problem solving'];
+    migratePool(old).forEach((t) => expect(all).toContain(t));
   });
 });

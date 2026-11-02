@@ -25,7 +25,7 @@ export default function TopicPanel({ open, selected, onToggle, onSelectAll, onSe
         <div className="topic-panel-header">
           <div>
             <div className="topic-panel-eyebrow">Choose the pool</div>
-            <div className="topic-panel-title">Topics in play</div>
+            <div className="topic-panel-title">Chosen topics</div>
           </div>
           <span className="topic-panel-spacer" />
           <button type="button" className="topic-panel-btn" onClick={onSelectAll}>All</button>

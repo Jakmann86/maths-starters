@@ -21,7 +21,7 @@ Every box has three buttons:
 | ↻ | Next skill within the same topic, cycling in catalogue order |
 | ⇄ | Swap this box to a different topic from the pool |
 
-A fresh draw ("New four", or ⇄) always opens a topic on its first skill in
+A fresh draw ("New questions", or ⇄) always opens a topic on its first skill in
 catalogue order; the others are reached with ↻. That is deliberate: a long
 topic such as Sequences takes several presses to reach its later skills,
 which is the price of the teacher choosing topics rather than skills.

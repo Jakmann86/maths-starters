@@ -3,7 +3,7 @@
 // Pool-selection model for the board (replaces the ticked-history/recency
 // model in topicHistory.js — retired). The teacher picks a SET of topics —
 // the pool — and each of the four boxes draws a topic at random from it.
-// No calendar/date logic, no per-box recency: every "New four" is an
+// No calendar/date logic, no per-box recency: every "New questions" is an
 // independent random draw from the current pool.
 
 import _ from 'lodash';
@@ -13,8 +13,18 @@ const STORAGE_KEY = 'maths-starters:topic-pool';
 // Topics that have been renamed or split, mapped to what replaced them. A
 // pool saved before the change still names the old topic, and a box drawn
 // from a name the catalogue no longer has would have no skills to show.
+// Only names that no longer exist belong here: a kept name (Coordinate
+// geometry, which lost its line skills to Straight-line graphs) would re-add
+// its successors on every load, undoing a teacher's untick.
 const RENAMED = {
   Statistics: ['Representing data', 'Averages'],
+  Angles: ['Angle facts', 'Parallel lines and polygons'],
+  Pythagoras: ['Pythagoras and trigonometry'],
+  Trigonometry: ['Pythagoras and trigonometry'],
+  Sequences: ['Arithmetic and geometric sequences', 'Quadratic and cubic sequences'],
+  'Formulae and simultaneous equations': ['Formulae', 'Simultaneous equations'],
+  Circles: ['Perimeter', 'Area'],
+  'Problem solving': ['Angle facts', 'Simultaneous equations'],
 };
 
 /** A saved pool with renamed topics replaced by their successors. */

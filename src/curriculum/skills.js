@@ -243,19 +243,19 @@ export const skills = {
     // --- Haese Ch 8: Pythagoras ---
   'pythagoras-hypotenuse': {
     label: 'Pythagoras: find the hypotenuse',
-    topic: 'Pythagoras',
+    topic: 'Pythagoras and trigonometry',
     generate: (opts) => pythagoras.generatePythagorasHypotenuse(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'pythagoras-missing-side': {
     label: 'Pythagoras: find a missing side',
-    topic: 'Pythagoras',
+    topic: 'Pythagoras and trigonometry',
     generate: (opts) => pythagoras.generatePythagorasMissingSide(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'pythagoras-isosceles': {
     label: 'Pythagoras: isosceles triangles',
-    topic: 'Pythagoras',
+    topic: 'Pythagoras and trigonometry',
     generate: (opts) => pythagoras.generatePythagorasIsosceles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -263,13 +263,13 @@ export const skills = {
   // --- Haese 15B: right-angled trigonometry ---
   'sohcahtoa-find-side': {
     label: 'SOHCAHTOA: find a side',
-    topic: 'Trigonometry',
+    topic: 'Pythagoras and trigonometry',
     generate: (opts) => sohcahtoa.generateSohcahtoaFindSide(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sohcahtoa-find-angle': {
     label: 'SOHCAHTOA: find an angle',
-    topic: 'Trigonometry',
+    topic: 'Pythagoras and trigonometry',
     generate: (opts) => sohcahtoa.generateSohcahtoaFindAngle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -277,19 +277,19 @@ export const skills = {
   // --- Haese 4A: angle facts at a point ---
   'angles-on-a-line': {
     label: 'Angles on a line',
-    topic: 'Angles',
+    topic: 'Angle facts',
     generate: (opts) => angleFacts.generateAnglesOnALine(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'angles-at-a-point': {
     label: 'Angles at a point',
-    topic: 'Angles',
+    topic: 'Angle facts',
     generate: (opts) => angleFacts.generateAnglesAtAPoint(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'vertically-opposite': {
     label: 'Vertically opposite angles',
-    topic: 'Angles',
+    topic: 'Angle facts',
     generate: (opts) => angleFacts.generateVerticallyOpposite(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -297,13 +297,13 @@ export const skills = {
   // --- Haese 4B: triangle angle sum / exterior angle ---
   'triangle-angle-sum': {
     label: 'Triangle angle sum',
-    topic: 'Angles',
+    topic: 'Angle facts',
     generate: (opts) => angleFacts.generateTriangleAngleSum(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'triangle-exterior-angle': {
     label: 'Triangle exterior angle',
-    topic: 'Angles',
+    topic: 'Angle facts',
     generate: (opts) => angleFacts.generateTriangleExteriorAngle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -311,7 +311,7 @@ export const skills = {
   // --- Haese 4C: isosceles base angles ---
   'isosceles-base-angles': {
     label: 'Isosceles base angles',
-    topic: 'Angles',
+    topic: 'Angle facts',
     generate: (opts) => angleFacts.generateIsoscelesBaseAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -319,19 +319,17 @@ export const skills = {
   // --- angle sum of a quadrilateral ---
   'quadrilateral-angle-sum': {
     label: 'Angle sum of a quadrilateral',
-    topic: 'Angles',
+    topic: 'Angle facts',
     generate: (opts) => angleFacts.generateQuadrilateralAngleSum(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
   // --- Haese 4: angle problem solving (two-theorem chains) ---
-  // Topic moved from 'Angles' to 'Problem solving' alongside
-  // simultaneous-problem-solving below — the two are the same kind of
-  // skill (a worded problem building a small system to solve), not really
-  // an "Angles" skill that happens to use a triangle figure.
+  // Last in 'Angle facts': it chains the facts above, so it is where ↻
+  // arrives once the single-fact skills have been seen.
   'angles-problem-solving': {
     label: 'Angle problem solving',
-    topic: 'Problem solving',
+    topic: 'Angle facts',
     generate: (opts) => angleFacts.generateAnglesProblemSolving(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -339,19 +337,19 @@ export const skills = {
   // --- Haese: angles in parallel lines ---
   'corresponding-angles': {
     label: 'Corresponding angles',
-    topic: 'Angles',
+    topic: 'Parallel lines and polygons',
     generate: (opts) => angleFacts.generateCorrespondingAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'alternate-angles': {
     label: 'Alternate angles',
-    topic: 'Angles',
+    topic: 'Parallel lines and polygons',
     generate: (opts) => angleFacts.generateAlternateAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'co-interior-angles': {
     label: 'Co-interior angles',
-    topic: 'Angles',
+    topic: 'Parallel lines and polygons',
     generate: (opts) => angleFacts.generateCoInteriorAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -359,13 +357,13 @@ export const skills = {
   // --- Haese: polygon angles ---
   'polygon-interior-angles': {
     label: 'Polygon interior angles',
-    topic: 'Angles',
+    topic: 'Parallel lines and polygons',
     generate: (opts) => angleFacts.generatePolygonInteriorAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'polygon-exterior-angles': {
     label: 'Polygon exterior angles',
-    topic: 'Angles',
+    topic: 'Parallel lines and polygons',
     generate: (opts) => angleFacts.generatePolygonExteriorAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -398,25 +396,25 @@ export const skills = {
   // --- Haese 14A: vertical and horizontal lines (Y9 Unit 2 do-nows) ---
   'horizontal-vertical-lines': {
     label: 'Vertical and horizontal lines',
-    topic: 'Coordinate geometry',
+    topic: 'Straight-line graphs',
     generate: (opts) => coord.generateHorizontalVerticalLines(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'equation-of-a-line': {
     label: 'Equation of a line',
-    topic: 'Coordinate geometry',
+    topic: 'Straight-line graphs',
     generate: (opts) => coord.generateEquationOfALine(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'line-general-form': {
     label: 'Straight lines in general form',
-    topic: 'Coordinate geometry',
+    topic: 'Straight-line graphs',
     generate: (opts) => coord.generateLineGeneralForm(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'point-on-line': {
     label: 'A point on a line',
-    topic: 'Coordinate geometry',
+    topic: 'Straight-line graphs',
     generate: (opts) => coord.generatePointOnLine(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -424,25 +422,25 @@ export const skills = {
   // --- Haese 26B: arithmetic sequences ---
   'sequences-arithmetic-nth-term': {
     label: 'Arithmetic sequences: find the nth term rule',
-    topic: 'Sequences',
+    topic: 'Arithmetic and geometric sequences',
     generate: (opts) => sequences.generateSequenceFindNthTermArithmetic(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-arithmetic-use-nth-term': {
     label: 'Arithmetic sequences: use the nth term rule',
-    topic: 'Sequences',
+    topic: 'Arithmetic and geometric sequences',
     generate: (opts) => sequences.generateSequenceUseNthTermArithmetic(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-arithmetic-is-term': {
     label: 'Arithmetic sequences: is it a term?',
-    topic: 'Sequences',
+    topic: 'Arithmetic and geometric sequences',
     generate: (opts) => sequences.generateSequenceIsInSequenceArithmetic(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-arithmetic-pattern': {
     label: 'Arithmetic sequences: growing pattern',
-    topic: 'Sequences',
+    topic: 'Arithmetic and geometric sequences',
     generate: (opts) => sequences.generateSequencePatternArithmetic(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -450,25 +448,25 @@ export const skills = {
   // --- Haese 26C: geometric sequences ---
   'sequences-geometric-nth-term': {
     label: 'Geometric sequences: find the nth term rule',
-    topic: 'Sequences',
+    topic: 'Arithmetic and geometric sequences',
     generate: (opts) => sequences.generateSequenceFindNthTermGeometric(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-geometric-use-nth-term': {
     label: 'Geometric sequences: use the nth term rule',
-    topic: 'Sequences',
+    topic: 'Arithmetic and geometric sequences',
     generate: (opts) => sequences.generateSequenceUseNthTermGeometric(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-geometric-is-term': {
     label: 'Geometric sequences: is it a term?',
-    topic: 'Sequences',
+    topic: 'Arithmetic and geometric sequences',
     generate: (opts) => sequences.generateSequenceIsInSequenceGeometric(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-geometric-pattern': {
     label: 'Geometric sequences: branching pattern',
-    topic: 'Sequences',
+    topic: 'Arithmetic and geometric sequences',
     generate: (opts) => sequences.generateSequencePatternGeometric(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -476,25 +474,25 @@ export const skills = {
   // --- Haese 26D: quadratic sequences ---
   'sequences-quadratic-nth-term': {
     label: 'Quadratic sequences: find the nth term rule',
-    topic: 'Sequences',
+    topic: 'Quadratic and cubic sequences',
     generate: (opts) => sequences.generateSequenceFindNthTermQuadratic(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-quadratic-use-nth-term': {
     label: 'Quadratic sequences: use the nth term rule',
-    topic: 'Sequences',
+    topic: 'Quadratic and cubic sequences',
     generate: (opts) => sequences.generateSequenceUseNthTermQuadratic(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-quadratic-is-term': {
     label: 'Quadratic sequences: is it a term?',
-    topic: 'Sequences',
+    topic: 'Quadratic and cubic sequences',
     generate: (opts) => sequences.generateSequenceIsInSequenceQuadratic(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-quadratic-pattern': {
     label: 'Quadratic sequences: dot grid pattern',
-    topic: 'Sequences',
+    topic: 'Quadratic and cubic sequences',
     generate: (opts) => sequences.generateSequencePatternQuadratic(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -502,19 +500,19 @@ export const skills = {
   // --- Haese 26D: the difference method and cubic sequences ---
   'sequences-difference-method': {
     label: 'The difference method: naming a sequence',
-    topic: 'Sequences',
+    topic: 'Quadratic and cubic sequences',
     generate: (opts) => cubicSeq.generateDifferenceMethod(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-cubic-nth-term': {
     label: 'Cubic sequences: find the nth term rule',
-    topic: 'Sequences',
+    topic: 'Quadratic and cubic sequences',
     generate: (opts) => cubicSeq.generateCubicNthTerm(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'sequences-cubic-use-nth-term': {
     label: 'Cubic sequences: use the nth term rule',
-    topic: 'Sequences',
+    topic: 'Quadratic and cubic sequences',
     generate: (opts) => cubicSeq.generateCubicUseNthTerm(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -563,41 +561,40 @@ export const skills = {
   // --- Haese 7: formulae and simultaneous equations -----------------------
   'formula-substitution': {
     label: 'Formula substitution',
-    topic: 'Formulae and simultaneous equations',
+    topic: 'Formulae',
     generate: (opts) => formulae.generateFormulaSubstitution(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'formula-rearrangement': {
     label: 'Formula rearrangement',
-    topic: 'Formulae and simultaneous equations',
+    topic: 'Formulae',
     generate: (opts) => formulae.generateFormulaRearrangement(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'formula-derivation': {
     label: 'Formula derivation',
-    topic: 'Formulae and simultaneous equations',
+    topic: 'Formulae',
     generate: (opts) => formulae.generateFormulaDerivation(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'simultaneous-equations': {
     label: 'Simultaneous equations',
-    topic: 'Formulae and simultaneous equations',
+    topic: 'Simultaneous equations',
     generate: (opts) => formulae.generateSimultaneousEquations(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   // --- Y9 Unit 2 do-nows: solving simultaneous equations graphically ---
   'simultaneous-graphical': {
     label: 'Simultaneous equations: solving graphically',
-    topic: 'Formulae and simultaneous equations',
+    topic: 'Simultaneous equations',
     generate: (opts) => formulae.generateSimultaneousGraphical(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  // Joins angles-problem-solving under 'Problem solving' (see its entry
-  // above) rather than 'Formulae and simultaneous equations' — it's a
-  // worded-problem skill first, algebra-topic second.
+  // Last in 'Simultaneous equations': the worded problem comes after the
+  // two methods it relies on.
   'simultaneous-problem-solving': {
     label: 'Simultaneous equations: problem solving',
-    topic: 'Problem solving',
+    topic: 'Simultaneous equations',
     generate: (opts) => formulae.generateSimultaneousProblemSolving(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -720,20 +717,6 @@ export const skills = {
     difficulties: ['foundation', 'core'],
   },
 
-  // --- Haese 9D / Rayner 4.2: circles ---
-  'circumference-circle': {
-    label: 'Circumference of a circle',
-    topic: 'Circles',
-    generate: (opts) => perim.generateCircumferenceCircle(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
-  'area-circle': {
-    label: 'Area of a circle',
-    topic: 'Circles',
-    generate: (opts) => perim.generateAreaCircle(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
-
   // --- Haese 9B: perimeter ---
   'perimeter-rectangle': {
     label: 'Perimeter of a rectangle',
@@ -746,6 +729,23 @@ export const skills = {
     topic: 'Perimeter',
     generate: (opts) => perim.generatePerimeterCompound(opts),
     difficulties: ['foundation', 'core'],
+  },
+
+  // --- Haese 9D / Rayner 4.2: circles ---
+  // Split across Perimeter and Area rather than a two-skill topic of their
+  // own; after the rectilinear skills so each topic still opens on the
+  // rectangle.
+  'circumference-circle': {
+    label: 'Circumference of a circle',
+    topic: 'Perimeter',
+    generate: (opts) => perim.generateCircumferenceCircle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'area-circle': {
+    label: 'Area of a circle',
+    topic: 'Area',
+    generate: (opts) => perim.generateAreaCircle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
   },
 
   // --- Haese 27A-B: circle theorems, plus tangent theorems not in that backlog ---
@@ -1150,19 +1150,31 @@ export const STRANDS = [
       'Factorising',
       'Equations',
       'Inequalities',
-      'Formulae and simultaneous equations',
+      'Formulae',
+      'Simultaneous equations',
       'Algebraic fractions',
       'Quadratic equations',
-      'Sequences',
+      'Arithmetic and geometric sequences',
+      'Quadratic and cubic sequences',
       'Variation',
     ],
   },
-  { name: 'Geometry', topics: ['Angles', 'Coordinate geometry', 'Pythagoras', 'Trigonometry', 'Circle theorems'] },
-  { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Circles', 'Surface area', 'Volume'] },
+  {
+    name: 'Geometry',
+    topics: [
+      'Angle facts',
+      'Parallel lines and polygons',
+      'Coordinate geometry',
+      'Straight-line graphs',
+      'Pythagoras and trigonometry',
+      'Circle theorems',
+    ],
+  },
+  { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Surface area', 'Volume'] },
   // Sets sits here rather than in Number: Venn diagrams lead into
   // probability from a diagram, and the scheme teaches them together.
   { name: 'Statistics and probability', topics: ['Sets', 'Representing data', 'Averages', 'Spread', 'Scatter graphs', 'Probability'] },
-  { name: 'Problem solving', topics: ['Problem solving', 'Puzzles'] },
+  { name: 'Problem solving', topics: ['Puzzles'] },
 ];
 
 const catalogueTopics = () => {
