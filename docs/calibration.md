@@ -9,6 +9,10 @@ and Rayner *Complete International Mathematics for Cambridge IGCSE*.
 Read this before writing any generator. Difficulty means a change in the
 **shape** of the question, never a bigger number.
 
+The example questions and answers below are quoted from the textbooks to show
+how each exercise escalates. They are calibration evidence, not material:
+never use one of these values in a generator (`CLAUDE.md`, Working style).
+
 ---
 
 ## Two findings that override existing assumptions

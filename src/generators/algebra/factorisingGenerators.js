@@ -6,7 +6,7 @@
 // shape from SPEC §3. No React, no JSX, no state, no curated answer lists —
 // every question is built by choosing the factors and expanding, so it is
 // correct by construction and each difficulty band genuinely varies its
-// output (MIGRATION known-issue #5).
+// output (CLAUDE.md, old-app known defect 5).
 //
 // Skills exported here:
 //   generateFactoriseCommonFactor     Haese 1G   take out the HCF

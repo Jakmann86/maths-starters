@@ -49,6 +49,9 @@ function algebraSummingTo(n, total, x, partMin, partMax) {
 export const generateAnglesOnALine = (options = {}) => {
   const { difficulty = 'core' } = options;
   let a1, a2, labels, unknownIndex, answer, steps;
+  // Tilt of the line, up to 40° either way, plus a half turn half the time
+  // (which puts the arm on the other side of the line).
+  const turn = _.random(-40, 40) + _.sample([0, 180]);
 
   if (difficulty === 'stretch') {
     const x = _.random(4, 20);
@@ -82,7 +85,9 @@ export const generateAnglesOnALine = (options = {}) => {
     workingOut: steps.join(NL),
     visualization: {
       type: 'angle-rays',
-      rays: [180, a2, 0],
+      // The straight line is turned to a random tilt, with the arm above or
+      // below it, so the class doesn't only ever see one horizontal line.
+      rays: [180 + turn, a2 + turn, turn],
       gapDegrees: [180 - a2, a2],
       wrap: false,
       labels,
@@ -747,7 +752,7 @@ export const generateQuadrilateralAngleSum = (options = {}) => {
       instruction: 'Find the size of angle x',
       answer: `x = ${d}^\\circ`,
       workingOut: `\\text{angles in a quadrilateral add to } 360^\\circ${NL}${a} + ${b} + ${c} = ${a + b + c}${NL}x = 360 - ${a + b + c} = ${d}`,
-      visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors() },
+      visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors(), big: true },
       metadata: { topic: 'quadrilateral-angle-sum', difficulty },
     };
   }
@@ -766,7 +771,7 @@ export const generateQuadrilateralAngleSum = (options = {}) => {
       instruction: 'The two unmarked angles are equal. Find x',
       answer: `x = ${x}^\\circ`,
       workingOut: `\\text{angles in a quadrilateral add to } 360^\\circ${NL}2x = 360 - ${a} - ${b} = ${360 - a - b}${NL}x = ${x}`,
-      visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors() },
+      visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors(), big: true },
       metadata: { topic: 'quadrilateral-angle-sum', difficulty },
     };
   }
@@ -794,7 +799,7 @@ export const generateQuadrilateralAngleSum = (options = {}) => {
     instruction: 'Form an equation and solve it to find x',
     answer: `x = ${x}`,
     workingOut: `\\text{angles in a quadrilateral add to } 360^\\circ${NL}${sumC}x + ${sumD} = 360${NL}${sumC}x = ${360 - sumD}${NL}x = ${x}`,
-    visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors() },
+    visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors(), big: true },
     metadata: { topic: 'quadrilateral-angle-sum', difficulty },
   };
 };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { topicGroups, skillsInTopic, getSkill } from '../curriculum/skills.js';
 import './TopicPanel.css';
 
-// The pool picker (SPEC.md "Design revision: topic-level selection (v1)").
+// The pool picker (SPEC.md §2.3, §7.2).
 // Each topic is a multi-select toggle — tapping it adds/removes it from the
 // pool without closing the panel, so a teacher can build up a set in one
 // visit. The skill list under a topic is informational only (what that
