@@ -10,6 +10,7 @@
 // Run: npx vitest run src/generators/geometry/angleFactsGenerators.test.js
 
 import { describe, expect, it } from 'vitest';
+import _ from 'lodash';
 import {
   ACUTE_POSITIONS, PARALLEL_CHAINS, generateAnglesOnALine, generateParallelChain, generateParallelLineAngles,
   generatePolygonExteriorAngles, generatePolygonInteriorAngles, generateQuadrilateralAngleSum,
@@ -324,5 +325,156 @@ describe('polygon-exterior-angles stretch', () => {
     // Both designs appear, and neither has a low ceiling.
     expect(seen.exterior.size).toBeGreaterThan(1000);
     expect(seen.interior.size).toBeGreaterThan(1000);
+  });
+});
+
+// Regular polygons meeting at a point (interior Stretch). The answer is
+// recomputed from the instruction's polygon names and the gap label alone:
+// P's interior angle is what is left of 360, its exterior angle is 180 minus
+// that, and n = 360 / exterior. The figure must agree: its polygons are the
+// ones named, P is drawn with the answer's n, and the wedges close round the
+// point. checkJoined is mutation-tested below.
+const NAMED = {
+  'equilateral triangle': 3, square: 4, 'regular pentagon': 5, 'regular hexagon': 6,
+  'regular octagon': 8, 'regular nonagon': 9, 'regular decagon': 10, 'regular dodecagon': 12,
+};
+const inner = (n) => 180 - 360 / n;
+const AT_POINT = /^(?:Two (.+)s|(?:A|An) (.+), (?:a|an) (.+)) and (a|part of a) regular polygon P meet at a point\. How many sides does P have\?$/;
+const SHARE = /^(?:A|An) (.+) and part of a regular polygon P share a side\. How many sides does P have\?$/;
+
+function checkJoined(q) {
+  const fail = (m) => { throw new Error(`${m}: ${JSON.stringify(q)}`); };
+  const f = q.visualization;
+  if (f?.type !== 'polygons-at-point' || f.big !== true || f.unknown !== 'P') fail('figure');
+  if (q.questionMath !== null || q.answerUnits !== undefined) fail('no question line, no units');
+  if (q.metadata?.topic !== 'polygon-interior-angles' || q.metadata?.difficulty !== 'stretch') fail('metadata');
+  let known, gap = 0;
+  const a = AT_POINT.exec(q.instruction), s = SHARE.exec(q.instruction);
+  if (a) known = a[1] ? [a[1], a[1]] : [a[2], a[3]];
+  else if (s) known = [s[1]];
+  else fail('instruction');
+  known = known.map((name) => NAMED[name] ?? fail(`name ${name}`));
+  const gaps = f.wedges.filter((w) => w.gap !== undefined);
+  const ps = f.wedges.filter((w) => w.label === 'P');
+  const whole = f.wedges.filter((w) => w.n && !w.partial);
+  const withGap = Boolean(s) || a?.[4] === 'part of a';
+  if (ps.length !== 1 || !ps[0].partial || f.wedges.length !== known.length + 1 + (withGap ? 1 : 0)) fail('P, the polygons named and any gap are the wedges');
+  if (JSON.stringify(whole.map((w) => w.n).sort()) !== JSON.stringify([...known].sort())) fail('the figure draws the polygons named');
+  if (withGap) {
+    if (gaps.length !== 1) fail('one gap');
+    const m = /^(\d+)\^\\circ$/.exec(gaps[0].label);
+    if (!m || Number(m[1]) !== gaps[0].gap) fail('the gap label is the gap drawn');
+    gap = Number(m[1]);
+  } else if (gaps.length) fail('no gap at a point');
+  const pInterior = 360 - known.reduce((t, n) => t + inner(n), 0) - gap;
+  const ext = 180 - pInterior;
+  const n = 360 / ext;
+  if (!(pInterior > 0 && pInterior < 180 && Number.isInteger(n) && n >= 5)) fail(`P's interior angle ${pInterior} is not a regular polygon's`);
+  if (q.answer !== `n = ${n}`) fail(`answer ${q.answer}, P has ${n} sides`);
+  if (ps[0].n !== n) fail('P is drawn with the right number of sides');
+  const total = f.wedges.reduce((t, w) => t + (w.n ? inner(w.n) : w.gap), 0);
+  if (Math.abs(total - 360) > 1e-9) fail('the wedges close round the point');
+  // Every working line holds: "a - b - c = d", "180 - a = b", "n = 360/e = n".
+  const lines = q.workingOut.split('\n');
+  const nums = (l) => (l.match(/\d+(\.\d+)?/g) ?? []).map(Number);
+  const [w1, w2, w3] = lines.map(nums);
+  if (lines.length !== 3) fail('three working lines');
+  if (w1[0] !== 360 || w1.slice(1, -1).reduce((t, v) => t - v, 360) !== w1.at(-1) || w1.at(-1) !== pInterior) fail(`working "${lines[0]}"`);
+  if (w2[0] !== 180 || w2[0] - w2[1] !== w2[2] || w2[1] !== pInterior) fail(`working "${lines[1]}"`);
+  if (w3[0] !== 360 || w3[0] / w3[1] !== w3[2] || w3[2] !== n) fail(`working "${lines[2]}"`);
+  if (a && !withGap && /part of/.test(q.instruction)) fail('wording');
+  return { kind: s ? 'sharing a side' : withGap ? 'point and gap' : 'at a point', n };
+}
+
+describe('polygons at a point', () => {
+  const joined = () => {
+    for (;;) {
+      const q = generatePolygonInteriorAngles({ difficulty: 'stretch' });
+      if (q.visualization.type === 'polygons-at-point') return q;
+    }
+  };
+
+  it('every answer follows from the names and the gap', () => {
+    const distinct = { 'at a point': new Set(), 'sharing a side': new Set(), 'point and gap': new Set() };
+    const ns = new Set();
+    for (let i = 0; i < 6000; i += 1) {
+      const q = joined();
+      const { kind, n } = checkJoined(q);
+      distinct[kind].add(`${q.instruction}|${JSON.stringify(q.visualization.wedges.map((w) => w.gap ?? w.n))}`);
+      ns.add(n);
+    }
+    // As maths: the polygons and the gap, set aside the order drawn.
+    const maths = new Set();
+    for (let i = 0; i < 3000; i += 1) {
+      const q = joined();
+      maths.add(JSON.stringify(q.visualization.wedges.map((w) => w.gap ?? w.n).sort()));
+    }
+    process.stdout.write(`polygons at a point: ${Object.entries(distinct).map(([k, v]) => `${v.size} ${k}`).join(', ')}; ${maths.size} distinct as maths; P has ${[...ns].sort((p, r) => p - r).join(', ')} sides\n`);
+    // Seven sets close round a point with a whole n; the gaps give the variety.
+    expect(distinct['sharing a side'].size).toBeGreaterThan(300);
+    expect(distinct['point and gap'].size).toBeGreaterThan(200);
+    expect(distinct['at a point'].size).toBeGreaterThan(20);
+    expect(maths.size).toBeGreaterThan(100);   // about 115: the real ceiling, given P and the known polygons must have whole-number angles
+  });
+
+  it('makes up half of interior Stretch', () => {
+    let k = 0;
+    for (let i = 0; i < 4000; i += 1) if (generatePolygonInteriorAngles({ difficulty: 'stretch' }).visualization.type === 'polygons-at-point') k += 1;
+    expect(k).toBeGreaterThan(1800);
+    expect(k).toBeLessThan(2200);
+  });
+
+  it('the checker rejects broken copies', () => {
+    const OPS = {
+      'answer nudged': (q) => { q.answer = q.answer.replace(/\d+$/, (d) => String(Number(d) + 1)); },
+      'gap label changed': (q) => {
+        const g = q.visualization.wedges.find((w) => w.gap);
+        if (!g) return false;
+        g.label = `${g.gap + 2}^\\circ`;
+      },
+      'gap drawn differently': (q) => {
+        const g = q.visualization.wedges.find((w) => w.gap);
+        if (!g) return false;
+        g.gap += 2; g.label = `${g.gap}^\\circ`;
+      },
+      'a known polygon swapped': (q) => {
+        const w = q.visualization.wedges.find((x) => x.n && !x.partial);
+        w.n = w.n === 4 ? 5 : 4;
+      },
+      'P drawn with another n': (q) => { const w = q.visualization.wedges.find((x) => x.partial); w.n += 1; },
+      'instruction names another polygon': (q) => {
+        const name = Object.keys(NAMED).find((nm) => q.instruction.includes(nm));
+        const other = name === 'square' ? 'regular pentagon' : 'square';
+        q.instruction = q.instruction.replace(name, other).replace(/\b(A|An) (?=square|regular)/, 'A ').replace(/\b(a|an) (?=square|regular)/, 'a ');
+      },
+      'a working number changed': (q) => {
+        const lines = q.workingOut.split('\n');
+        const k = _.random(0, 2);
+        const hits = [...lines[k].matchAll(/\d+/g)];
+        const h = _.sample(hits);
+        lines[k] = lines[k].slice(0, h.index) + String(Number(h[0]) + 1) + lines[k].slice(h.index + h[0].length);
+        q.workingOut = lines.join('\n');
+      },
+      'P label moved off P': (q) => {
+        const w = q.visualization.wedges.find((x) => x.n && !x.partial);
+        w.label = 'P';
+      },
+    };
+    const tally = {};
+    for (let i = 0; i < 400; i += 1) {
+      const q = joined();
+      Object.entries(OPS).forEach(([name, op]) => {
+        const m = _.cloneDeep(q);
+        if (op(m) === false || _.isEqual(m, q)) return;
+        tally[name] ??= [0, 0];
+        tally[name][0] += 1;
+        try { checkJoined(m); } catch { tally[name][1] += 1; }
+      });
+    }
+    Object.entries(tally).forEach(([name, [applied, killed]]) => {
+      process.stdout.write(`  ${name}: ${killed}/${applied} killed\n`);
+      expect(killed, name).toBe(applied);
+    });
+    expect(Object.keys(tally).sort()).toEqual(Object.keys(OPS).sort());
   });
 });

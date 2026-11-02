@@ -201,6 +201,13 @@ of sides."
 That last one is an excellent starter question — one line, no figure, and it
 forces the student to work out how many sides there must have been.
 
+**Regular polygons meeting at a point** (interior Stretch, half of it, beyond
+both books' exercises but a standard GCSE question): two regular polygons and
+a polygon P meet at a point, or P shares a side with one, the angle left
+between them marked. P's interior angle is what is left of 360°, then its
+exterior angle, then n. Only seven sets of polygons close round a point with
+a whole-number n; the marked gap is what gives the variety.
+
 ## Functions — Haese 19A–F, 23B and Rayner 5.1–5.3
 
 Both books mix two notations, `f(x) = 3x − 7` and `f : x ↦ 3x − 7`, and two

@@ -709,7 +709,9 @@ export const generateParallelLineAngles = (options = {}) => {
 // extension + arc depending on `exterior`).
 //   Foundation  small n (<= 8, interior) / <= 10 (exterior)     read off the fact
 //   Core        any n from the nice-n pool                       read off the fact
-//   Stretch     interior: given the angle, find n. exterior: given all-but-one
+//   Stretch     interior: regular polygons meeting at a point, find P's n
+//               (half); given the angle, find n; or an irregular polygon's
+//               missing angle. exterior: given all-but-one
 //               exterior angle (sum to 360, any polygon), find the missing one
 const NICE_POLYGON_N = [4, 5, 6, 8, 9, 10, 12, 15, 18, 20];
 const interiorAngleOf = (n) => (180 * (n - 2)) / n;
@@ -719,16 +721,100 @@ const interiorAngleOf = (n) => (180 * (n - 2)) / n;
 // mismatched angle labels.
 const randomRadiusFactors = (n) => Array.from({ length: n }, () => _.random(72, 100) / 100);
 
+// Regular polygons that meet at a point (Stretch). Polygon P's interior
+// angle is what is left of 360 degrees, then its exterior angle, then n:
+// interior and exterior angles used together. Two layouts:
+//   at a point      two known polygons and P fill the angle round the vertex
+//   sharing a side  a known polygon and P share a side, and the angle left
+//                   between them is marked on the figure
+//   point and gap   two known polygons, a marked gap and P
+// "At a point" has only seven sets that close with a whole n; the gap
+// versions are what give the variety.
+const KNOWN_POLYGONS = {
+  3: 'equilateral triangle', 4: 'square', 5: 'regular pentagon', 6: 'regular hexagon',
+  8: 'regular octagon', 9: 'regular nonagon', 10: 'regular decagon', 12: 'regular dodecagon',
+};
+const P_SIDES = [5, 6, 8, 9, 10, 12, 15, 18, 20, 24, 30, 36];
+const article = (name) => (/^[aeiou]/.test(name) ? `an ${name}` : `a ${name}`);
+const capFirst = (t) => t[0].toUpperCase() + t.slice(1);
+const pluralName = (name) => `${name}s`;
+
+const AT_A_POINT = (() => {
+  const out = [];
+  const known = Object.keys(KNOWN_POLYGONS).map(Number);
+  known.forEach((a, i) => known.slice(i).forEach((b) => {
+    const p = 360 - interiorAngleOf(a) - interiorAngleOf(b);
+    const n = P_SIDES.find((m) => interiorAngleOf(m) === p);
+    if (n && n !== a && n !== b) out.push([a, b, n]);
+  }));
+  return out;
+})();
+
+function polygonsAtPoint(difficulty) {
+  const layout = _.sample(['point', 'side', 'side', 'point and gap']);
+  const KN = Object.keys(KNOWN_POLYGONS).map(Number);
+  const named = (a, b) => (a === b ? `Two ${pluralName(KNOWN_POLYGONS[a])}` : `${capFirst(article(KNOWN_POLYGONS[a]))}, ${article(KNOWN_POLYGONS[b])}`);
+  let wedges, instruction, n, steps;
+  if (layout === 'point') {
+    const [a, b, pn] = _.sample(AT_A_POINT);
+    n = pn;
+    instruction = `${named(a, b)} and a regular polygon P meet at a point. How many sides does P have?`;
+    wedges = _.shuffle([{ n: a }, { n: b }, { n, label: 'P', partial: true }]);
+    steps = [`360^\\circ - ${interiorAngleOf(a)}^\\circ - ${interiorAngleOf(b)}^\\circ = ${interiorAngleOf(n)}^\\circ`];
+  } else if (layout === 'side') {
+    let a, g;
+    do {
+      a = _.sample(KN);
+      n = _.sample(P_SIDES);
+      g = 360 - interiorAngleOf(a) - interiorAngleOf(n);
+    } while (n === a || g < 30 || g > 150 || g === 90);
+    instruction = `${capFirst(article(KNOWN_POLYGONS[a]))} and part of a regular polygon P share a side. How many sides does P have?`;
+    wedges = _.shuffle([{ n: a }, { gap: g, label: `${g}^\\circ` }, { n, label: 'P', partial: true }]);
+    steps = [`360^\\circ - ${interiorAngleOf(a)}^\\circ - ${g}^\\circ = ${interiorAngleOf(n)}^\\circ`];
+  } else {
+    // Two polygons side by side, then a gap, then P: four wedges.
+    let a, b, g;
+    do {
+      [a, b] = [_.sample(KN.filter((k) => k <= 6)), _.sample(KN.filter((k) => k <= 6))];
+      n = _.sample(P_SIDES);
+      g = 360 - interiorAngleOf(a) - interiorAngleOf(b) - interiorAngleOf(n);
+    } while (n === a || n === b || g < 25 || g > 120 || g === 90 || g === 60);
+    instruction = `${named(a, b)} and part of a regular polygon P meet at a point. How many sides does P have?`;
+    const pair = _.shuffle([{ n: a }, { n: b }]);
+    wedges = _.sample([true, false]) ? [...pair, { gap: g, label: `${g}^\\circ` }, { n, label: 'P', partial: true }]
+      : [...pair, { n, label: 'P', partial: true }, { gap: g, label: `${g}^\\circ` }];
+    steps = [`360^\\circ - ${interiorAngleOf(a)}^\\circ - ${interiorAngleOf(b)}^\\circ - ${g}^\\circ = ${interiorAngleOf(n)}^\\circ`];
+  }
+  const ext = 360 / n;
+  return {
+    instruction,
+    questionMath: null,
+    answer: `n = ${n}`,
+    workingOut: [
+      ...steps,
+      `180^\\circ - ${interiorAngleOf(n)}^\\circ = ${ext}^\\circ`,
+      `n = \\frac{360}{${ext}} = ${n}`,
+    ].join(NL),
+    visualization: { type: 'polygons-at-point', wedges, start: _.random(0, 359), mirror: _.sample([true, false]), unknown: 'P', big: true },
+    metadata: { topic: 'polygon-interior-angles', difficulty, tags: ['angles', 'polygon', 'interior', 'joined'] },
+  };
+}
+
+export const POLYGONS_AT_A_POINT = AT_A_POINT;
+
 export const generatePolygonInteriorAngles = (options = {}) => {
   const { difficulty = 'core' } = options;
 
   if (difficulty === 'stretch') {
-    // Half the time: the regular-polygon reverse lookup (given the interior
-    // angle, find n). The other half: an irregular polygon with all but one
+    // Half the time: regular polygons meeting at a point (polygonsAtPoint).
+    // A quarter: the regular-polygon reverse lookup (given the interior
+    // angle, find n). A quarter: an irregular polygon with all but one
     // interior angle given, find the missing one via 180(n-2) — genuinely
     // different reasoning (the general angle-sum fact, not the regular-n
     // formula), so Stretch isn't just the same trick with bigger numbers.
-    if (_.sample([true, false])) {
+    const pick = Math.random();
+    if (pick < 0.5) return polygonsAtPoint(difficulty);
+    if (pick < 0.75) {
       const n = _.sample(NICE_POLYGON_N.filter((v) => v >= 6));
       const angle = interiorAngleOf(n);
       return {
