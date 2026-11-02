@@ -124,10 +124,10 @@
     { "id": "17B", "ch": 17, "unit": "Continuous data", "lesson": "Histograms", "page": 355, "skills": [], "status": "todo" },
     { "id": "17C", "ch": 17, "unit": "Continuous data", "lesson": "Cumulative frequency", "page": 359, "skills": ["cumulative-frequency-table"], "status": "ready" },
 
-    { "id": "18A", "ch": 18, "unit": "Similarity", "lesson": "Similarity", "page": 367, "skills": [], "status": "todo" },
-    { "id": "18B", "ch": 18, "unit": "Similarity", "lesson": "Similar triangles", "page": 370, "skills": [], "status": "todo" },
+    { "id": "18A", "ch": 18, "unit": "Similarity", "lesson": "Similarity", "page": 367, "skills": ["similar-shapes"], "status": "ready" },
+    { "id": "18B", "ch": 18, "unit": "Similarity", "lesson": "Similar triangles", "page": 370, "skills": ["similar-triangles"], "status": "ready" },
     { "id": "18C", "ch": 18, "unit": "Similarity", "lesson": "Problem solving", "page": 373, "skills": [], "status": "skip" },
-    { "id": "18D", "ch": 18, "unit": "Similarity", "lesson": "Area and volume of similar shapes", "page": 376, "skills": [], "status": "todo" },
+    { "id": "18D", "ch": 18, "unit": "Similarity", "lesson": "Area and volume of similar shapes", "page": 376, "skills": ["similar-areas-volumes"], "status": "ready" },
 
     { "id": "19A", "ch": 19, "unit": "Introduction to functions", "lesson": "Mapping diagrams", "page": 383, "skills": ["domain-range"], "status": "ready" },
     { "id": "19B", "ch": 19, "unit": "Introduction to functions", "lesson": "Functions", "page": 385, "skills": ["domain-range"], "status": "ready" },
