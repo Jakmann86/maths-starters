@@ -50,22 +50,27 @@ src/
     skills.js              catalogue: skill ids → generator functions, by topic
     topicPool.js           the teacher's topic selection
     schemes/*.json         textbook backlog; pure data, not used by the app
-  generators/              pure functions returning question data
-  lib/                     KaTeX loader, type sizing
-reference/                 design export; read-only, nothing builds from it
+  generators/              pure functions returning question data, with tests
+  lib/                     KaTeX loader, type sizing, question → view mapping
+  print/                   printable exit ticket / practice / homework sheets
+  dev/                     dev-only test pages (math-test.html, print-test.html)
+docs/calibration.md        how the textbooks escalate each topic
+reference/                 original design export; read-only history
 ```
 
 ## Documents
 
-Read these before changing anything structural. They disagree with each other
-nowhere; if they ever do, that's a bug.
+Read these before changing anything structural. `CLAUDE.md` is the
+authority; the others are written not to disagree with it or each other, and
+if they ever do, that's a bug.
 
 | File | What it covers |
 |------|----------------|
-| `CLAUDE.md` | Conventions and non-negotiables. Read first. |
-| `SPEC.md` | Question shape, maths rendering, persistence |
-| `DESIGN.md` | Visual system, tokens, layout rules |
-| `MIGRATION.md` | Porting generators from `maths-teaching-app` |
+| `CLAUDE.md` | Conventions and non-negotiables, and porting from the old app. Read first. |
+| `SPEC.md` | The app as built: data model, question shape, difficulty, actions, rendering, print |
+| `DESIGN.md` | Visual system, tokens, layout rules, sizing |
+| `docs/calibration.md` | How difficulty bands were derived from the textbooks |
+| `FUTURE.md` | Unbuilt designs and parked ideas — not the app |
 
 ## Conventions worth knowing before you touch anything
 

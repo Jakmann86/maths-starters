@@ -1,80 +1,56 @@
 # Maths Starters — Specification
 
-Supersedes the earlier draft. Reconciled with the final design
-(`reference/starter-board.html`) and `DESIGN.md`.
+What the app does, as built. `CLAUDE.md` is the authority on conventions and
+wins any conflict; this file goes into the detail. Designs that were written
+for an earlier model of the app (class records, ticks, recency labels,
+`resolveSlots`, shuffle, a scheme editor) now live in `FUTURE.md` and are not
+part of the app.
 
-## Design revision: topic-level selection (v1) — 2026-08-25
-
-The teacher-facing unit of selection is the **topic** (e.g. "Pythagoras"), not
-the granular skill (`pythagoras-hypotenuse`) — there are roughly 30 topics
-against roughly 150 skills. A teacher teaches "Pythagoras this week," not
-"find-the-hypotenuse this week," so the thing they pick from has to match
-that grain.
-
-- Skills stay exactly as granular as they are today. A `topic` field on each
-  catalogue entry (`src/curriculum/skills.js`) groups them; nothing about an
-  individual skill or generator changes.
-- The teacher picks topics from a **list**, not a fixed scheme of work — every
-  class has a different scheme and year group, and a single ordered scheme
-  can't represent that.
-- A board box holds a topic. The regenerate button **cycles** through that
-  topic's skills in catalogue order (changing question = changing skill),
-  with difficulty held fixed.
-- "Last lesson" / "Last week" etc. will be driven by **which topics were last
-  ticked** — starting deliberately simple, with no calendar-window maths in
-  v1. (Contrast with §4's date-window walk, which this replaces for now.)
-- Guiding principle: get it working, then optimised, then pretty. The app
-  does not grow structurally beyond this for v1 — the full scheme-of-work
-  screen, unit boundaries, and date-window resolution described below are
-  explicitly **deferred, possibly indefinitely**.
-
-This contradicts §4 (`resolveSlots`'s recency algorithm), §5 (shuffle/label
-switching) and §7.2 (the scheme screen) below. Those sections are marked
-superseded rather than deleted or rewritten — they remain a possible future
-direction if the app ever grows to support a real scheme of work.
+Section numbers §3, §6 and §7.4 are referenced from code comments. Keep them
+stable.
 
 ## 1. What it does
 
 Generates four maths questions for the start of a lesson, on a classroom
-board. Each question sits in a slot representing a distance into the past:
+board. The teacher chooses a **pool of topics** in the topic panel
+("Pythagoras and trigonometry", "Volume", ...). Each of the four boxes draws
+a topic at random from the pool and asks a question from that topic's first
+skill.
 
-| Slot | Label       | Drawn from                                   |
-|------|-------------|----------------------------------------------|
-| 1    | Last lesson | The most recently taught entry               |
-| 2    | Last week   | Anything taught in the previous week         |
-| 3    | Last topic  | Anything from the previous chapter           |
-| 4    | Last year   | Long-ago material and puzzles                |
-
-Spacing retrieval at widening intervals is the point. A pool of random topics
-gives interleaving but leaves spacing to chance; with a full scheme checked,
-chance regularly serves four things from the same half-term. Resolving each
-slot by recency guarantees the distribution.
-
-Shuffle mode overrides this — see §5.
+The topic is the teacher's unit of choice, not the skill: there are about 35
+topics against about 150 skills, and a teacher thinks "we did Pythagoras this
+week", not "we did find-the-hypotenuse".
 
 ## 2. Data model
 
 ### 2.1 Skill catalogue — `src/curriculum/skills.js`
 
-Maps curriculum labels to generator functions. Code, not data.
+Maps skill ids to generator functions. Code, not data.
 
 ```js
 export const skills = {
   'pythagoras-hypotenuse': {
     label: 'Pythagoras: find the hypotenuse',
-    generate: (opts) => pythagorasGenerators.generateFindHypotenuse(opts),
+    topic: 'Pythagoras and trigonometry',
+    generate: (opts) => pythagoras.generatePythagorasHypotenuse(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 };
 ```
 
-`difficulties` lists only the bands the generator genuinely varies across. A
-generator that ignores the option declares one band.
+- `topic` groups skills. Skills sharing a topic must be interchangeable within
+  a lesson, and their order in the file is the order ↻ cycles through.
+- `difficulties` lists only the bands the generator genuinely varies across.
+- `STRANDS` sets the topic panel's display order (Number, Algebra, Geometry,
+  Mensuration, Statistics and probability, Problem solving), deliberately
+  separate from file order. A topic missing from `STRANDS` lands in "Other".
+- `generateForSkill(id, band)` is the board's single entry point. It returns
+  `null` for an unknown id rather than throwing.
 
-### 2.2 Scheme — `src/curriculum/schemes/haese-igcse.json`
+### 2.2 Scheme backlog — `src/curriculum/schemes/haese-igcse.json`
 
-An ordered array of entries. Order in the array is the teaching order. Pure
-JSON — it must survive a round trip through `JSON.stringify`.
+**Not imported by the running app.** An ordered list of Haese textbook
+sections, each with the skill ids it needs and a `status`:
 
 ```json
 { "id": "8A", "ch": 8, "unit": "The theorem of Pythagoras",
@@ -83,35 +59,26 @@ JSON — it must survive a round trip through `JSON.stringify`.
   "status": "ready" }
 ```
 
-`status` is `ready` (a generator exists), `todo` (startable, generator needed)
-or `skip` (not reducible to a starter question). Only `ready` entries can fill
-a slot; the field doubles as the build backlog.
+`status` is `ready` (generators exist), `todo` (startable, generator needed)
+or `skip` (not reducible to a starter question). It is the build backlog and
+nothing more. Pure JSON — it must survive `JSON.parse(JSON.stringify(x))`
+(guarded by `schemes.test.js`).
 
-The shipped file follows Haese's chapter order. That is a reference order, not
-a teaching order — expect to reorder it in the scheme editor.
+It drifts from `skills.js`: ids that no longer exist, `todo` entries whose
+generators are written, `todo` entries with an empty `skills` list. Report
+drift; don't read it as a missing generator.
 
-### 2.3 Class — localStorage
+### 2.3 Topic pool — `src/curriculum/topicPool.js`
 
-```json
-{ "id": "c1", "name": "10B/Ma2", "schemeId": "haese-igcse",
-  "difficulty": 1,
-  "ticks": [ { "entryId": "1A", "tickedAt": "2026-09-08" },
-             { "entryId": "1B", "tickedAt": "2026-09-10" } ] }
-```
-
-Ticks are the only record of progress. There is no position integer and no
-exclusion list — a class that skipped surds simply never ticked surds, and
-untaught material can never appear.
-
-`difficulty` is `0` Foundation, `1` Core, `2` Stretch.
-
-Ticking sets `tickedAt` to today. Editing a tick's date is allowed (people
-forget to tick on the day); unticking removes the record.
+The teacher's selection: an array of topic names in localStorage under
+`maths-starters:topic-pool`. An empty pool draws from every topic, so the
+board is never blank. `RENAMED` maps retired topic names to their successors,
+so a pool saved before a rename still loads.
 
 ## 3. Question shape
 
-Generators return this. The board adapts to it — do not change generator
-output to match the board's internal field names.
+Generators return this. The board adapts to it (`src/lib/questionView.js`) —
+do not change generator output to match the board's internal field names.
 
 ```js
 {
@@ -128,7 +95,8 @@ output to match the board's internal field names.
                                         // names the given, not the answer, so
                                         // it shouldn't outsize it)
   answer: '(x + 3)(x + 4)',
-  answerUnits: undefined,              // 'cm' — never baked into answer
+  answerUnits: undefined,              // 'cm' or '\\text{cm}^3' — never baked
+                                        // into answer
   workingOut: '\\text{pair multiplying to } 12',
   visualization: { type: 'right-triangle', a: '3 cm', b: '4 cm', c: 'x' },
   metadata: { topic: 'factorising-quadratics', difficulty: 'core' }
@@ -141,68 +109,41 @@ branch. Generators never return JSX.
 `workingOut` is not shown on the board. Generators still return it, and the
 verification tests read it.
 
-Multi-line questions use `\n` in `questionMath`.
+Multi-line questions separate lines with a real newline character (`NL`,
+`'\n'` in JavaScript source), never the two characters backslash and n.
 
-## 4. Slot resolution
+## 4. Difficulty
 
-> **SUPERSEDED FOR v1** by [Design revision: topic-level selection (v1)](#design-revision-topic-level-selection-v1--2026-08-25) —
-> retained as possible future direction.
+One band for the whole board, set by the header stepper: Foundation, Core,
+Stretch, or Mixed. Mixed ramps the boxes in reading order — Foundation, Core,
+Core, Stretch — fixed rather than random, so "box 4 is the stretch" is always
+true. Mixed is provisional (`CLAUDE.md`). The board opens on Core.
 
-A pure function, unit tested: `resolveSlots(scheme, catalogue, cls, today)`.
+If a skill doesn't declare the band asked for, `nearestBand` gives the closest
+it does: Stretch → Core → Foundation, Core → Foundation → Stretch,
+Foundation → Core → Stretch. It steps down before up, so a Stretch board never
+shows an easier question than a Core one.
 
-Work from the class's ticks, sorted by `tickedAt` descending. Let `latest` be
-the most recent tick.
+Changing the band gives every box fresh numbers at the new band, keeps each
+box's topic and skill, and hides the answers.
 
-- **Last lesson** — the skills of `latest`'s entry.
-- **Last week** — entries ticked during the calendar week before the week
-  containing `latest`. If that week is empty, step back a week at a time, up
-  to four weeks, to clear half-terms and holidays.
-- **Last topic** — walk back through ticks for the first entry whose `unit`
-  differs from `latest`'s. Pool every ticked entry in that unit.
-- **Last year** — everything ticked more than six weeks before `today`, plus
-  every `Puzzles` entry regardless of tick state.
+## 5. Board actions
 
-### 4.1 Filters, before sampling any pool
+| Control | Action |
+|---|---|
+| New questions (header), `r` | Four fresh topics from the pool, each on its first skill |
+| `#` on a box | Same skill, fresh numbers |
+| `↻` on a box | Next skill in the topic, in catalogue order, cycling back to the first |
+| `⇄` on a box | A different topic from the pool, on its first skill |
+| Show answers, Space | Toggle all four answers |
 
-1. Drop entries whose `status` is not `ready`.
-2. Drop entries with an empty `skills` array.
-3. Drop any skill already chosen for an earlier slot — no repeats in one board.
+The draw takes four different topics when the pool has at least four, and
+allows repeats below that. `⇄` prefers a topic not already on the board.
+Space and `r` are ignored while an input has focus.
 
-### 4.2 Fallback chain
-
-Pools are empty for most of the first half-term. When one empties after
-filtering, fall through and take the first that isn't:
-
-```
-Last topic  → Last week → Last lesson → puzzles
-Last week   → Last lesson → puzzles
-Last lesson → puzzles
-Last year   → puzzles
-```
-
-Puzzles are the backstop and have no prerequisites, so they can always fill a
-slot. If even that fails, render the slot's empty state — never throw.
-
-### 4.3 Difficulty
-
-Pass the class band to `generate()`. If the skill doesn't declare that band,
-pass the nearest it does (stretch → core → foundation). The header stepper
-regenerates all four slots and hides answers, as it does now.
-
-## 5. Shuffle
-
-> **SUPERSEDED FOR v1** by [Design revision: topic-level selection (v1)](#design-revision-topic-level-selection-v1--2026-08-25) —
-> retained as possible future direction.
-
-A header toggle. When on, all four slots sample independently from every
-ticked `ready` entry, ignoring recency. For revision lessons and cover.
-
-**The labels must change with it.** A box saying "Last year" over yesterday's
-work is a lie, and the labels are load-bearing — they tell the class why the
-question is there. In shuffle mode each eyebrow shows the entry's chapter name
-instead of the temporal label. Slot colours stay as they are.
-
-Shuffle is per-session, not stored on the class.
+Always opening a topic on its first skill is deliberate: a long topic takes
+several presses of ↻ to reach its later skills, which is the price of the
+teacher choosing topics rather than skills.
 
 ## 6. Maths rendering
 
@@ -214,9 +155,9 @@ fixed size a step above the instruction (`pSize` in `typeSizing.js`).
 
 Earlier versions ran a custom Archivo parser first and fell back to KaTeX for
 roots, exponents and anything else it could not take, then moved whole topics
-(Number, Sets, Probability) onto KaTeX because the board switched typeface
-from box to box. The remaining Archivo 800 was hard to read from the back of
-the room, so the parser is gone and KaTeX takes every line.
+onto KaTeX because the board switched typeface from box to box. The remaining
+Archivo 800 was hard to read from the back of the room, so the parser is gone
+and KaTeX takes every line.
 
 Generator strings are ordinary LaTeX. Two things KaTeX does that a plain
 reading would not expect:
@@ -235,7 +176,7 @@ maths-italic and delimiter fonts) on mount, so once it has arrived each line
 renders synchronously rather than flashing its source first
 (`src/lib/katexLoader.js`).
 
-Figure labels are not part of this: they are plain SVG text (CLAUDE.md §6),
+Figure labels are not part of this: they are plain SVG text (`CLAUDE.md` §6),
 set in KaTeX_Main at regular weight to match, with a lone variable letter in
 KaTeX_Math italic and a degree sign drawn as a raised ∘ (`labelRuns` in
 `Figure.jsx`).
@@ -244,38 +185,25 @@ KaTeX_Math italic and a degree sign drawn as a raised ∘ (`labelRuns` in
 
 ### 7.1 Board — `/`
 
-As built. Header segments, 2×2 grid, container-query type sizing, per-slot
-regenerate and swap, timer, reveal, fullscreen. Space toggles answers, `r`
-regenerates all.
+Header, then a 2×2 grid of boxes. Container-query type sizing (`DESIGN.md`),
+per-box `#` `↻` `⇄`, countdown timer (opens at 5:00), show answers, print,
+fullscreen. See §5 for the actions.
 
-Additions to what exists: a class selector in the header, and the shuffle
-toggle.
+### 7.2 Topic panel
 
-`swapOne()` currently re-rolls to a random different topic. Keep that as the
-click action — it is fast mid-lesson — and add a picker on long press or
-right-click for when you want something specific.
+A right-hand sheet opened from the header's topics segment. Topics grouped by
+strand (§2.1), each a toggle row with a 20px square tick box; All / None /
+Done in its header. Each tap saves the pool (§2.3) and the panel stays open,
+so several topics can be toggled in one visit. Done draws a fresh four if the
+selection changed.
 
-### 7.2 Scheme — `/scheme`
+### 7.3 Dev pages
 
-> **SUPERSEDED FOR v1** by [Design revision: topic-level selection (v1)](#design-revision-topic-level-selection-v1--2026-08-25) —
-> retained as possible future direction.
-
-The existing topic panel, grown up. Same sheet, same 20px square tick boxes,
-same All / None / Done header.
-
-Changes needed for 172 entries: group by chapter rather than strand, make
-groups collapsible, add a filter field, show the tick date beside a ticked
-row, and allow drag-and-drop reordering of entries. Export and import JSON.
-
-Entries with `status: "todo"` show but are visibly inert — they can't be
-ticked into play until a generator exists. That makes the panel the build
-backlog as well as the progress record.
-
-### 7.3 Classes — `/classes`
-
-Create, rename, delete. Set scheme and difficulty band. Each class carries its
-own ticks, so two classes on the same scheme sit at different points in it and
-get genuinely different boards.
+Not shipped to teachers. `math-test.html` renders a fixed list of LaTeX cases
+(fractions, roots, degrees, ...) so KaTeX output and warnings can be checked in
+one place. `print-test.html` draws every skill
+at every band in both print layouts, so overflow is measured rather than
+spotted.
 
 ### 7.4 Print — over the board
 
@@ -299,19 +227,13 @@ over), with fresh numbers. Nothing is chosen afresh.
   free. No PDF library.
 
 On paper each question is a fixed cell. A question too big for its cell is
-shrunk, text and figure together, in 5% steps to no less than 65%. The
-dev page `print-test.html` draws every skill at every band in both layouts,
-so overflow is measured rather than spotted.
+shrunk, text and figure together, in 5% steps to no less than 65%.
 
 ## 8. Persistence
 
-localStorage throughout. Classes and schemes under stable keys; the four
-resolved questions cached under `board:{classId}:{yyyy-mm-dd}` so a refresh
-mid-lesson doesn't change the board, and tomorrow's is fresh. Regenerating a
-slot overwrites its cache entry.
-
-This is simpler than seeding the generators' RNG, which would mean touching
-every one of them.
+Only the topic pool persists (§2.3). The board itself is not cached: a
+refresh draws a fresh board. A per-day board cache is described in
+`FUTURE.md` §1.4 and is not built.
 
 ## 9. Out of scope
 
@@ -320,18 +242,4 @@ capture, analytics, a PDF library or worksheet engine, and the four other
 lesson sections from the original app. Printing the board through the
 browser is in scope (§7.4).
 
-Calculator / non-calculator filtering is deferred — the catalogue may carry
-the tag, but there is no UI for it and nothing filters on it yet.
-
-## 10. Build order
-
-1. Extract the board from the design bundle into a clean Vite + React project.
-2. Question shape, the hybrid renderer, one migrated generator rendering live.
-3. Skill catalogue with the 14 `ready` skills.
-4. `resolveSlots` with tests covering the fallback chain and an empty tick list.
-5. Classes, ticks, localStorage.
-6. Scheme screen with grouping, filter, reorder, import/export.
-7. Shuffle toggle and label switching.
-8. Bulk generator migration — see `MIGRATION.md`.
-
-Steps 1–5 give something usable in a real lesson.
+Calculator / non-calculator filtering is deferred — see `FUTURE.md` §3.

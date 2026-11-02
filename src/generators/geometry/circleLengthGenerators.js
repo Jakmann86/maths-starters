@@ -8,8 +8,7 @@
 //   tangent-length                the tangent is perpendicular to the radius
 //                                 at the point of contact
 //
-// Both lean on Pythagoras, so both fall back to KaTeX (SPEC.md §6 sends every
-// exponent that way). Neither returns questionMath: every given is a length
+// Both lean on Pythagoras. Neither returns questionMath: every given is a length
 // and sits on the figure as a dimension label, which is the forward-question
 // split in CLAUDE.md §2.
 //

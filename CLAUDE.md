@@ -36,10 +36,10 @@ per question; leave it alone unless asked.
 
 Earlier drafts resolved each box from the class's position in an ordered
 scheme of work, with the four boxes labelled Last lesson / Last week / Last
-topic / Last year. **That model is gone.** `SPEC.md` §4 (`resolveSlots` and
-its fallback chain), §5 (shuffle and label switching) and §7.2 (the scheme
-screen) describe it and are marked superseded there; they are kept as a
-possible future direction, not as a description of the app. There is no
+topic / Last year. **That model is gone.** Its design (`resolveSlots` and
+its fallback chain, shuffle and label switching, the scheme and class
+screens) now lives in `FUTURE.md`, kept as a possible future direction, not
+as a description of the app. There is no
 `resolveSlots`, no class record, no tick list, and no calendar arithmetic
 anywhere in the code.
 
@@ -70,9 +70,9 @@ npm run dev      # Vite dev server
 npm run build    # production build
 npm run preview  # preview the production build
 npm run lint     # oxlint (react/rules-of-hooks, react/only-export-components)
+npm test         # vitest run — generator verification tests live beside
+                 # each generator file (*.test.js)
 ```
-
-Check `package.json` before assuming a test runner is or isn't wired up.
 
 ## Current state
 
@@ -88,6 +88,7 @@ src/
   print/         PrintSheet.jsx  buildSheets.js  print.css
   dev/           MathTestPage.jsx (math-test.html), PrintTestPage.jsx
                  (print-test.html) — dev only
+docs/            calibration.md — how the textbooks escalate, per topic
 ```
 
 - `Board.jsx` orchestrates: draws four topics from the pool, holds the
@@ -109,18 +110,19 @@ signal that a generator is missing.
 
 ## Key documents
 
-Read the relevant one before structural changes. They are written not to
-disagree, so treat a conflict as a bug to flag rather than a choice to make
-silently — with the one exception of the superseded sections above, where
-this file wins.
+**This file is the authority.** Where any other document disagrees with it,
+this file wins — but a disagreement is still a bug: flag it and fix the
+other document rather than choosing silently. The others are written not to
+disagree with each other either.
 
 | File | Covers |
 |------|--------|
-| `SPEC.md` | Question shape (§3), the maths renderer's parser/fallback split (§6), persistence. §4, §5 and §7.2 are superseded — see above |
-| `DESIGN.md` | Visual system, tokens, layout rules, figure sizing |
-| `MIGRATION.md` | What ported from `maths-teaching-app`, what was left behind, defects in the source to fix rather than reproduce |
+| `SPEC.md` | The app as built: data model, question shape (§3), difficulty, board actions, maths rendering (§6), print (§7.4), persistence |
+| `DESIGN.md` | Visual system, tokens, layout rules, figure sizing, the student/teacher sizing split, the open type-sizing question |
+| `docs/calibration.md` | How Haese and Rayner escalate each topic, used to design the bands. Read before writing a generator. Its examples are textbook values: for calibration only, never for use in a generator (see Working style) |
+| `FUTURE.md` | Unbuilt designs (the recency model, scheme and class screens) and parked ideas. Not the app — ask before building from it |
 | `README.md` | User-facing overview and repository layout |
-| `reference/starter-board.html` | Design export. Read-only — nothing builds from it |
+| `reference/starter-board.html` | The original design export. Read-only history — nothing builds from it, and the app has moved on from it |
 
 ## Non-negotiable conventions
 
@@ -270,9 +272,17 @@ Metric units. IGCSE/GCSE grade descriptors.
 
 - Everything fits one screen at 1920×1080. No vertical scrolling on the
   starter view, ever.
-- Minimum touch target 44px. Assume a finger, not a mouse.
-- Minimum body text 18px; question text larger.
 - High contrast — these screens are viewed in daylight with the blinds open.
+- **The size minimums are for what students read**: instruction, question,
+  figure and answer. Minimum body text 18px; question text larger.
+- **Teacher-facing parts keep their current sizes**: the header, each box's
+  eyebrow (topic and skill name) and the `#` `↻` `⇄` buttons. The teacher
+  stands at the board and the class doesn't need to read them. Buttons are
+  34px, not 44px, and that is deliberate — don't enlarge them. Assume a
+  finger, not a mouse: controls are always visible, never hover-revealed.
+- Question type sizing is still being calibrated by the user. See
+  `DESIGN.md` "Open question: question type sizing" before changing
+  `typeSizing.js`.
 
 ## Stack
 
@@ -289,3 +299,54 @@ without asking.
 - The textbook is inspiration for question shape and scaffolding only. Never
   copy a value out of it.
 - Prefer deleting code from the old app over porting it "just in case".
+
+## Porting from the old app
+
+This repo started as a reduction of `maths-teaching-app`, which lives in the
+`hexagon-maths` repo at `hexagon-maths/maths-teaching-app/src/`. Most of
+what was wanted has come across; what's left is listed in `FUTURE.md` §3.
+If you port anything else, copy one file at a time and normalise it on
+arrival. Never add the old repo as a remote, and keep the working directory
+as `maths-starters`.
+
+Left behind on purpose: `ExamplesSectionBase`, `DiagnosticSectionBase`,
+`ChallengeSection`, all `LearnSection` files, `LessonContentProvider.jsx`,
+`curriculum.js`, the `src/worksheets/` tree (jsPDF), `angleMarkers.js`,
+JSXGraph and everything depending on it, `indicesExamplesGenerator.js`.
+
+### Known defects in the old app — fix on arrival, never reproduce
+
+1. **Missing exports called by name.** Old StarterSection files call
+   `generateFindMissingAngleTrig`, which does not exist. Check every
+   imported name actually exists before relying on it.
+2. **Two competing question formats.** Older generators return
+   `{ question, answer }`, with `question` sometimes a string, sometimes
+   LaTeX, sometimes a React element. Normalise everything to the `SPEC.md`
+   §3 shape.
+3. **JSX leaking into generator wrappers.** Old wrappers inject
+   `<RightTriangle {...viz} />`. Here, generators return a config object and
+   `Figure.jsx` alone maps `type` to a drawing.
+4. **Inconsistent file naming.** Singular and plural duplicates
+   (`magicSquareGenerator.js` / `magicSquareGenerators.js`) were both
+   imported. Generator filenames are plural. Where the old app has a
+   duplicate pair, diff them, keep the better one, port one.
+5. **`difficulty` honoured inconsistently.** Some old generators accept it
+   and ignore it. Every generator here must genuinely vary across each band
+   it declares, or declare fewer (convention 3 and 4 above).
+6. **`sectionType: 'starter'` passed everywhere.** Drop it — there is one
+   section type.
+
+### Checklist for a new or ported generator
+
+- [ ] No React imports; returns the `SPEC.md` §3 shape; `visualization` is a
+      config object; `metadata` has `topic` and `difficulty`
+- [ ] Varies structurally across every declared band (convention 4)
+- [ ] Registered in `skills.js` with a `topic`, in a sensible cycle position
+- [ ] Every LaTeX string renders without a KaTeX console warning; a `\frac`
+      nested only because of how the string was built is flattened
+- [ ] Verified by substituting the answer back, thousands of runs per band,
+      and distinct questions counted (convention 8)
+- [ ] Checked on the board at Foundation and Stretch, before and after
+      reveal, without overflow
+- [ ] Its skill ids added to the matching `haese-igcse.json` entry, and that
+      entry flipped to `ready`

@@ -320,8 +320,8 @@ export const generateSolveFractionalCoefficients = (options = {}) => {
 //   Foundation  x^2 = k   perfect square, exact          x = ±r
 //   Core        x^2 = k   non-square, surd + 3 s.f.       x = ±√k
 //   Stretch     x^3 = k   non-cube, cube root + 3 s.f.    x = ∛k
-// NOTE: Stretch uses \sqrt[3]{} (indexed radical) — a deliberate KaTeX fallback,
-// per DESIGN.md §6. Good coverage for the fallback path.
+// NOTE: Stretch uses \sqrt[3]{} (indexed radical), rendered by KaTeX like
+// every other line (SPEC.md §6).
 // ===========================================================================
 
 const powFoundation = () => {
