@@ -10,7 +10,10 @@
 // Run: npx vitest run src/generators/geometry/angleFactsGenerators.test.js
 
 import { describe, expect, it } from 'vitest';
-import { generateAnglesOnALine, generateQuadrilateralAngleSum } from './angleFactsGenerators';
+import {
+  ACUTE_POSITIONS, generateAnglesOnALine, generateParallelLineAngles, generatePolygonInteriorAngles,
+  generateQuadrilateralAngleSum,
+} from './angleFactsGenerators';
 
 const BANDS = ['foundation', 'core', 'stretch'];
 const SAMPLES = 2000;
@@ -146,3 +149,61 @@ describe('angles-on-a-line', () => {
     expect(tilts.size).toBeGreaterThan(50);
   });
 });
+
+// Angles in parallel lines: the relationship is read off the two labelled
+// positions on the figure (never the generator's own choice), the unknown is
+// recomputed from it and the given label, and the answer must match. Every
+// label must also sit in a wedge of its own kind: the figure draws TL and BR
+// acute, TR and BL obtuse.
+describe('parallel-line-angles', () => {
+  const relationshipOf = (a, b) => {
+    const [qa, la] = [a.slice(0, 2), a[2]];
+    const [qb, lb] = [b.slice(0, 2), b[2]];
+    if (la === lb) return null; // same crossing: not one of the three
+    if (qa === qb) return 'corresponding';
+    const lower = la === '2' ? qa : qb;
+    const upper = la === '1' ? qa : qb;
+    // Between the lines: B at the upper crossing, T at the lower.
+    if (upper[0] !== 'B' || lower[0] !== 'T') return null;
+    return upper[1] === lower[1] ? 'coInterior' : 'alternate';
+  };
+
+  it.each(BANDS)('resolves the unknown from the figure, in a wedge of its own kind, at %s', (difficulty) => {
+    const seen = new Set();
+    const distinct = new Set();
+    for (let i = 0; i < SAMPLES; i += 1) {
+      const q = generateParallelLineAngles({ difficulty });
+      const { given, unknown } = q.visualization;
+      const rel = relationshipOf(given.position, unknown.position);
+      expect(rel, `${given.position} / ${unknown.position}`).toBeTruthy();
+      seen.add(rel);
+
+      const g = parseLabel(given.label, 0).value;
+      expect(g).not.toBe(90);
+      const u = rel === 'coInterior' ? 180 - g : g;
+      const x = parseX(q.answer);
+      if (difficulty === 'stretch') expect(parseLabel(unknown.label, x).value).toBe(u);
+      else {
+        expect(unknown.label).toBe('x');
+        expect(x).toBe(u);
+      }
+
+      expect(ACUTE_POSITIONS.includes(given.position)).toBe(g < 90);
+      expect(ACUTE_POSITIONS.includes(unknown.position)).toBe(u < 90);
+      expect(q.workingOut).toContain(rel === 'coInterior' ? 'co-interior' : rel);
+      distinct.add(JSON.stringify([given, unknown]));
+    }
+    expect([...seen].sort()).toEqual(['alternate', 'coInterior', 'corresponding']);
+    expect(distinct.size).toBeGreaterThan(100);
+  });
+});
+
+// A forward polygon question carries its angles on the figure only.
+describe('polygon-interior-angles', () => {
+  it('never repeats the figure in a question line, at stretch', () => {
+    for (let i = 0; i < 500; i += 1) {
+      expect(generatePolygonInteriorAngles({ difficulty: 'stretch' }).questionMath).toBeNull();
+    }
+  });
+});
+
