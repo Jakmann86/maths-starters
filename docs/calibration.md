@@ -201,6 +201,72 @@ of sides."
 That last one is an excellent starter question — one line, no figure, and it
 forces the student to work out how many sides there must have been.
 
+## Functions — Haese 19A–F, 23B and Rayner 5.1–5.3
+
+Both books mix two notations, `f(x) = 3x − 7` and `f : x ↦ 3x − 7`, and two
+for composites: Haese writes `f(g(x))`, Rayner `fg(x)`. The generators mix
+both, so a class meets each.
+
+**Function notation** — Haese 19C, Rayner 5.1.
+Foundation: evaluate a linear function, Haese 19C Q2 ("If f(x) = 5 − 4x,
+find f(3)"). Core: a quadratic at a negative input (Haese Example 4,
+`f(−5)` for `3x² − 4x`), or the reverse, "find x when f(x) = 1" (19C Q3).
+Stretch: substitute an expression and simplify, Haese 19C Q8–Q9
+(`f(a + 1)`, `f(−x)`, `f(2x)`); or Rayner 5.1 Q26, "f(1) = 8 and
+f(4) = 17, find a and b".
+
+**Domain and range** — Haese 19A–B, Rayner 5.1 Example 1. Haese's mapping
+diagrams become a listed domain: "the domain {0, 1, 2, 3} and the function
+'subtract 2', find the range". Core: an interval, Rayner's
+`f(x) = 2x + 1, x > 0` gives `f(x) > 1`, and a decreasing function turns
+the inequality round. Stretch: a quadratic whose turning point is inside
+the domain, so one end of the range is the turning point and not an end
+value.
+
+**Composite functions** — Haese 19D, Rayner 5.1–5.2.
+Foundation: a number, Haese 19D Q1 (`f(g(3))`). Core: in simplest form with
+one function quadratic, Haese Example 6 (`f(g(x)) = (2x − 3)² + 1`).
+Stretch: the reverse, Haese 19D Q8 ("find x when g(f(x)) = 17"), or Q11
+("f(x) = ax + b and f(f(x)) = 4x − 15, find a and b"), which has two
+answers; Haese's answer key gives both.
+
+**Inverse functions** — Haese 23B, Rayner 5.2.
+Foundation: two operations, Rayner 5.2 Q9–Q10 (`5x − 2`, `5(x − 2)`).
+Core: three operations or a reversal (Rayner Example 4, `(5x − 2)/3`;
+Q16, `7 − x`-type), or the inverse at a number. Stretch: x on top and
+bottom, Rayner Q17; or where a function meets its inverse.
+
+**The absolute value function** — Haese 19F, Rayner 5.3.
+Foundation: evaluate, Haese Example 7 (`|a + b|` with a = −7, b = 3) and
+19F.1 Q2 (`|2x + 3|` at x = −4). Core: Haese 19F.1 Q4, `|x + 1| = 3`,
+`5 − |x| = 1`: two answers. Stretch goes past both books to `|px + q| =
+mx + d`, where a candidate making the right side negative is rejected; it
+is in Cambridge Additional Mathematics and is the step a strong 0607 class
+is ready for.
+
+**Reciprocal functions** — Haese 19E.
+Foundation: the asymptotes of `k/(x − a)`, or k from a point on `y = k/x`
+(19E Q3). Core: `k/(x − a) + b` (19E Q4c). Stretch: `(bx + c)/(x − a)`,
+which has to be rewritten as `b + k/(x − a)` first; or k from the
+asymptotes and a point.
+
+## The sine and cosine rules — Haese 29B–F and Rayner 10
+
+**Sine rule** — Haese 29C. Foundation: a side from its pair of angles.
+Core: the angle sum first, or an angle. Stretch: the ambiguous case
+(Example 6, 44.8° or 135.2°; Example 7 rejects the obtuse value because
+KM < LM).
+
+**Cosine rule** — Haese 29D. SAS for a side, then SSS for an angle, then
+Rayner's "smallest angle of a triangle with sides 3x, 4x and 6x".
+
+**Area, ½ab sin C** — Haese 29B. The area; the area given, find a side; the
+area given, find the angle, which has two values.
+
+**Mixed** — Haese 29E–F, Rayner 10.13. Bearings (Haese Example 10) and two
+triangles sharing a side (Example 11, cosine rule then sine rule). Haese's
+advice for a choice: use the cosine rule, since it has no ambiguous case.
+
 ---
 
 ## Not yet calibrated
