@@ -11,8 +11,8 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  ACUTE_POSITIONS, generateAnglesOnALine, generateParallelLineAngles, generatePolygonInteriorAngles,
-  generateQuadrilateralAngleSum,
+  ACUTE_POSITIONS, PARALLEL_CHAINS, generateAnglesOnALine, generateParallelChain, generateParallelLineAngles,
+  generatePolygonInteriorAngles, generateQuadrilateralAngleSum,
 } from './angleFactsGenerators';
 
 const BANDS = ['foundation', 'core', 'stretch'];
@@ -173,6 +173,8 @@ describe('parallel-line-angles', () => {
     const distinct = new Set();
     for (let i = 0; i < SAMPLES; i += 1) {
       const q = generateParallelLineAngles({ difficulty });
+      // Half of Stretch is a shape chain, checked in 'parallel-chain' below.
+      if (q.visualization.type === 'parallel-chain') continue;
       const { given, unknown } = q.visualization;
       const rel = relationshipOf(given.position, unknown.position);
       expect(rel, `${given.position} / ${unknown.position}`).toBeTruthy();
@@ -207,3 +209,58 @@ describe('polygon-interior-angles', () => {
   });
 });
 
+// Parallel lines with a shape (Stretch). The figure is drawn from `a` and
+// `b`, so every label must be the angle the geometry gives that mark: worked
+// out here from a and b alone, never from the generator's own values. The
+// answer is the value under the label marked x.
+describe('parallel-chain', () => {
+  const expected = ({ variant, a, b }) => ({
+    'triangle-between': { top: a, base: b, apex: 180 - a - b },
+    'triangle-on-line': { line: a, corner: b, apex: 180 - a - b },
+    arrowhead: { top: a, bottom: b, bend: a + b },
+    'iso-trapezium': { A: a, B: a, C: 180 - a, D: 180 - a },
+    parallelogram: { A: a, B: 180 - a, C: a, D: 180 - a, ext: 180 - a },
+  })[variant];
+
+  it.each(PARALLEL_CHAINS)('labels agree with the drawn angles, %s', (variant) => {
+    const distinct = new Set();
+    for (let i = 0; i < SAMPLES; i += 1) {
+      const q = generateParallelChain(variant);
+      const fig = q.visualization;
+      const want = expected(fig);
+      const x = parseX(q.answer);
+      const names = Object.keys(fig.labels);
+      expect(names.length).toBeGreaterThanOrEqual(2);
+      expect(fig.labels[fig.unknown]).toBe('x');
+      names.forEach((name) => {
+        const label = fig.labels[name];
+        const value = label === 'x' ? x : parseLabel(label, 0).value;
+        expect(value, `${variant} ${name}`).toBe(want[name]);
+      });
+      // Every drawn angle is a real, legible angle.
+      Object.values(want).forEach((v) => {
+        expect(v).toBeGreaterThan(20);
+        expect(v).toBeLessThan(160);
+      });
+      expect(q.questionMath).toBeNull();
+      distinct.add(JSON.stringify(fig.labels));
+    }
+    // The parallelogram has one free angle (50-80), so 31 is its ceiling.
+    expect(distinct.size).toBeGreaterThan(variant === 'parallelogram' ? 25 : 60);
+  });
+
+  it('makes up about half of Stretch, and every design appears', () => {
+    const seen = new Set();
+    let chains = 0;
+    for (let i = 0; i < 2000; i += 1) {
+      const q = generateParallelLineAngles({ difficulty: 'stretch' });
+      if (q.visualization.type === 'parallel-chain') {
+        chains += 1;
+        seen.add(q.visualization.variant);
+      }
+    }
+    expect(chains).toBeGreaterThan(850);
+    expect(chains).toBeLessThan(1150);
+    expect([...seen].sort()).toEqual([...PARALLEL_CHAINS].sort());
+  });
+});
