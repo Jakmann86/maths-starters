@@ -274,6 +274,28 @@ area given, find the angle, which has two values.
 triangles sharing a side (Example 11, cosine rule then sine rule). Haese's
 advice for a choice: use the cosine rule, since it has no ambiguous case.
 
+## Similarity — Haese 18A, 18B, 18D and Rayner 7.4
+
+**Similar shapes** — Haese 18A, Rayner Ex 7.8. Foundation: two shapes side
+by side, a whole-number scale factor, x on the larger (Haese 18A Q2).
+Core: a fractional scale factor, x on either, the second shape turned
+round so the sides match by their angles (Rayner Ex 7.8 Q3-Q11). Stretch:
+no figure, the shapes named in an order that is not the obvious one,
+Haese 18A Q6 ("rectangles ABCD and FGHE are similar").
+
+**Similar triangles** — Haese 18B, Rayner Ex 7.9. Foundation: the A shape
+with whole sides given. Core: the parts AD and DB given, so AB comes first
+(Haese Example 3), or the X shape (Rayner Ex 7.8 Q13, the trapezium's
+diagonals). Stretch: x is the part of a side, so subtract at the end, or
+the X shape with the whole line given. Haese 18C (shadows, ramps) is left
+out, as the scheme marks it.
+
+**Areas and volumes** — Haese 18D, Rayner Ex 7.11-7.12. Foundation: k from
+two lengths, area times k squared (Haese Example 7). Core: areas given,
+find a length (Rayner Example 6), or volume from lengths (Haese
+Example 9). Stretch: surface areas given, find a volume (Haese 18D Q7-8),
+or the trapezium left in the A shape (Haese 18D Q3, Rayner Ex 7.12 Q5).
+
 ---
 
 ## Not yet calibrated

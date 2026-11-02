@@ -18,6 +18,7 @@ import * as pythagoras from '../generators/geometry/pythagorasGenerators';
 import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 import * as functions from '../generators/algebra/functionGenerators';
 import * as furtherTrig from '../generators/geometry/furtherTrigGenerators';
+import * as similarity from '../generators/geometry/similarityGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
 import * as cubicSeq from '../generators/algebra/cubicSequenceGenerators';
@@ -299,6 +300,26 @@ export const skills = {
     label: 'Sine and cosine rules: mixed',
     topic: 'Further trigonometry',
     generate: (opts) => furtherTrig.generateSineCosineMixed(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 18A, 18B, 18D: similarity ---
+  'similar-shapes': {
+    label: 'Similar shapes',
+    topic: 'Similarity',
+    generate: (opts) => similarity.generateSimilarShapes(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'similar-triangles': {
+    label: 'Similar triangles',
+    topic: 'Similarity',
+    generate: (opts) => similarity.generateSimilarTriangles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'similar-areas-volumes': {
+    label: 'Areas and volumes of similar shapes',
+    topic: 'Similarity',
+    generate: (opts) => similarity.generateSimilarAreasVolumes(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1225,6 +1246,7 @@ export const STRANDS = [
       'Straight-line graphs',
       'Pythagoras and trigonometry',
       'Further trigonometry',
+      'Similarity',
       'Circle theorems',
     ],
   },

@@ -965,6 +965,234 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, W, 220, 'tt', fig.big, shown);
   }
 
+  // Two similar shapes side by side (Similarity, Haese 18A-B, Rayner 7.4):
+  //   shape     'triangle' or 'rectangle'
+  //   left, right  { sides, vertices?, area?, big? } for each shape. A
+  //             triangle's sides[i] is opposite vertices[i]; a rectangle's
+  //             sides are [width, height]. `big` marks the larger one, drawn
+  //             larger. `area` is written inside.
+  //   turn      how the right shape is turned: 'none', 'rotate' (half a
+  //             turn), 'flip' (reflected) or, for a rectangle, 'quarter'
+  //   unknown   { side: 'left' | 'right', index } or { area: 'left' | 'right' }
+  // Schematic: one outline, its sides ranked as the generator ranks the
+  // true sides (triangle: side 1 longest, then 0, then 2; rectangle: width
+  // longer). Triangle corners carry matching angle marks, one arc at vertex
+  // 1 and two at vertex 2, so a turned copy still shows which corners match.
+  if (fig.type === 'similar-pair') {
+    const tri = fig.shape === 'triangle';
+    const UNIT = tri ? [[0.35, 0], [0, 1], [1.2, 1]] : [[0, 0], [1, 0], [1, 0.6], [0, 0.6]];
+    const nodes = [];
+    const placed = [];
+    let xCursor = 64;   // room for a side label left of the first shape
+    const sizes = ['left', 'right'].map((k) => (fig[k]?.big ? 150 : 92));
+    const baseY = 30 + Math.max(...sizes) * (tri ? 1 : 0.6) + (fig.turn === 'quarter' ? 60 : 0);
+    ['left', 'right'].forEach((which, w) => {
+      const s = fig[which] ?? {};
+      const sz = sizes[w];
+      let pts = UNIT.map(([x, y]) => [x * sz, y * sz]);
+      const turn = which === 'right' ? (fig.turn ?? 'none') : 'none';
+      const cx = (Math.min(...pts.map((p) => p[0])) + Math.max(...pts.map((p) => p[0]))) / 2;
+      const cy = (Math.min(...pts.map((p) => p[1])) + Math.max(...pts.map((p) => p[1]))) / 2;
+      if (turn === 'rotate') pts = pts.map(([x, y]) => [2 * cx - x, 2 * cy - y]);
+      if (turn === 'flip') pts = pts.map(([x, y]) => [2 * cx - x, y]);
+      if (turn === 'quarter') pts = pts.map(([x, y]) => [cx - (y - cy), cy + (x - cx)]);
+      const minX = Math.min(...pts.map((p) => p[0])), maxY = Math.max(...pts.map((p) => p[1]));
+      pts = pts.map(([x, y]) => [x - minX + xCursor, y - maxY + baseY]);
+      // Room between the shapes for a side label on either.
+      xCursor = Math.max(...pts.map((p) => p[0])) + 100;
+      placed.push({ which, pts, s });
+    });
+    const tint = (kind, which, index) => {
+      const u = fig.unknown ?? {};
+      if (kind === 'side') return u.side === which && u.index === index ? color : 'var(--ink)';
+      return u.area === which ? color : 'var(--ink)';
+    };
+    placed.forEach(({ which, pts, s }) => {
+      const G = [pts.reduce((t, p) => t + p[0], 0) / pts.length, pts.reduce((t, p) => t + p[1], 0) / pts.length];
+      nodes.push(<polygon key={`${which}p`} points={pts.map((p) => p.join(',')).join(' ')} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />);
+      // Side k of a triangle joins the two vertices other than k; a
+      // rectangle's width is its first edge (and opposite), height its second.
+      const sideEnds = tri ? [[1, 2], [2, 0], [0, 1]] : [[3, 2], [0, 3]];
+      (s.sides ?? []).forEach((text, k) => {
+        if (!text) return;
+        const [p, q] = sideEnds[k].map((i) => pts[i]);
+        const m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+        let [nx, ny] = unitVec(-(q[1] - p[1]), q[0] - p[0]);
+        if (nx * (m[0] - G[0]) + ny * (m[1] - G[1]) < 0) { nx = -nx; ny = -ny; }
+        const off = 13 + Math.abs(nx) * (String(text).length * 10.5) / 2;
+        nodes.push(figLabel(`${which}s${k}`, m[0] + nx * off, m[1] + ny * off + 7, text, 'middle', tint('side', which, k)));
+      });
+      if (tri) {
+        // Matching corners: one arc at vertex 1, two at vertex 2.
+        [[1, [24]], [2, [22, 29]]].forEach(([v, radii]) => {
+          const V = pts[v];
+          const [a, b] = [pts[(v + 1) % 3], pts[(v + 2) % 3]];
+          const u = unitVec(a[0] - V[0], a[1] - V[1]), t = unitVec(b[0] - V[0], b[1] - V[1]);
+          const sweep = u[0] * t[1] - u[1] * t[0] > 0 ? 1 : 0;
+          radii.forEach((r, j) => nodes.push(<path key={`${which}a${v}${j}`} d={`M ${V[0] + u[0] * r} ${V[1] + u[1] * r} A ${r} ${r} 0 0 ${sweep} ${V[0] + t[0] * r} ${V[1] + t[1] * r}`} fill="none" stroke="var(--ink)" strokeWidth={2.5} />));
+        });
+        (s.vertices ?? []).forEach((text, v) => {
+          const out = unitVec(pts[v][0] - G[0], pts[v][1] - G[1]);
+          nodes.push(figLabel(`${which}v${v}`, pts[v][0] + out[0] * 16, pts[v][1] + out[1] * 16 + 7, text, 'middle', 'var(--ink)'));
+        });
+      }
+      // An area sits inside a rectangle; a triangle is too narrow for it, so
+      // there it goes underneath, below any label on the bottom side.
+      if (s.area) {
+        const maxY = Math.max(...pts.map((p) => p[1]));
+        nodes.push(tri
+          ? figLabel(`${which}ar`, G[0], maxY + 48, s.area, 'middle', tint('area', which))
+          : figLabel(`${which}ar`, G[0], G[1] + 7, s.area, 'middle', tint('area', which)));
+      }
+    });
+    const W = xCursor - 40, H = baseY + (tri && (fig.left?.area || fig.right?.area) ? 64 : 40);
+    return svgWrap(nodes, Math.round(W), Math.round(H), 'sp', fig.big, shown);
+  }
+
+  // One triangle inside another (the A shape) or two meeting at a point (the
+  // X shape), with a pair of parallel sides (Similarity, Haese 18B):
+  //   kind      'A': D on AB, E on AC, DE parallel to BC
+  //             'X': AD and BE cross at C, AB parallel to ED
+  //   vertices  letters for A, B, C, D, E, in that order
+  //   labels    by segment: A shape AD, DB, AB, AE, EC, AC, DE, BC;
+  //             X shape AC, CD, BC, CE, AB, DE. A whole side of the A shape
+  //             (AB, AC) is labelled on a dimension line further out than
+  //             its parts.
+  //   unknown   the segment whose label takes the slot colour
+  // Schematic: fixed outlines, mirrored at random.
+  if (fig.type === 'similar-triangles') {
+    const W = 330, H = 230;
+    // X: C divides AD and BE in the ratio 1 : 1.8, so ED is AB enlarged.
+    const P = fig.kind === 'X'
+      ? { A: [40, 28], B: [150, 28], C: [118, 88], D: [258.4, 196], E: [60.4, 196] }
+      : { A: [150, 22], B: [40, 204], C: [292, 204], D: [100, 105], E: [216, 105] };
+    if (fig.mirror) Object.keys(P).forEach((k) => { P[k] = [W - P[k][0], P[k][1]]; });
+    const seg = (a, b, key) => <line key={key} x1={P[a][0]} y1={P[a][1]} x2={P[b][0]} y2={P[b][1]} stroke="var(--ink)" strokeWidth={3} strokeLinecap="round" />;
+    const nodes = fig.kind === 'X'
+      ? [seg('A', 'B', 'ab'), seg('E', 'D', 'ed'), seg('A', 'D', 'ad'), seg('B', 'E', 'be')]
+      : [seg('A', 'B', 'ab'), seg('A', 'C', 'ac'), seg('B', 'C', 'bc'), seg('D', 'E', 'de')];
+    // Parallel arrows on the two parallel sides.
+    // On the X shape the parallel sides' labels sit at their middles, so
+    // the arrows go a third of the way along instead.
+    const at = fig.kind === 'X' ? 0.3 : 0.5;
+    const arrow = (a, b, key) => {
+      const m = [P[a][0] + (P[b][0] - P[a][0]) * at, P[a][1] + (P[b][1] - P[a][1]) * at];
+      const u = unitVec(P[b][0] - P[a][0], P[b][1] - P[a][1]);
+      const tip = [m[0] + u[0] * 7, m[1] + u[1] * 7];
+      const n = [-u[1], u[0]];
+      return <path key={key} d={`M ${tip[0] - u[0] * 11 + n[0] * 7} ${tip[1] - u[1] * 11 + n[1] * 7} L ${tip[0]} ${tip[1]} L ${tip[0] - u[0] * 11 - n[0] * 7} ${tip[1] - u[1] * 11 - n[1] * 7}`} fill="none" stroke="var(--ink)" strokeWidth={2.5} />;
+    };
+    const flipDir = fig.mirror ? -1 : 1;
+    if (fig.kind === 'X') nodes.push(arrow(flipDir > 0 ? 'A' : 'B', flipDir > 0 ? 'B' : 'A', 'pa1'), arrow(flipDir > 0 ? 'E' : 'D', flipDir > 0 ? 'D' : 'E', 'pa2'));
+    else nodes.push(arrow(flipDir > 0 ? 'D' : 'E', flipDir > 0 ? 'E' : 'D', 'pa1'), arrow(flipDir > 0 ? 'B' : 'C', flipDir > 0 ? 'C' : 'B', 'pa2'));
+
+    const tint = (k) => (fig.unknown === k ? color : 'var(--ink)');
+    // A label beside a segment, pushed away from a reference point by `push`.
+    const G = fig.kind === 'X' ? P.C : [(P.A[0] + P.B[0] + P.C[0]) / 3, (P.A[1] + P.B[1] + P.C[1]) / 3];
+    const beside = (key, a, b, text, push = 13, away = G) => {
+      const m = [(P[a][0] + P[b][0]) / 2, (P[a][1] + P[b][1]) / 2];
+      let [nx, ny] = unitVec(-(P[b][1] - P[a][1]), P[b][0] - P[a][0]);
+      if (nx * (m[0] - away[0]) + ny * (m[1] - away[1]) < 0) { nx = -nx; ny = -ny; }
+      const off = push + Math.abs(nx) * (String(text).length * 10.5) / 2;
+      return figLabel(key, m[0] + nx * off, m[1] + ny * off + 7, text, 'middle', tint(key));
+    };
+    const L = fig.labels ?? {};
+    if (fig.kind === 'X') {
+      const away = { AB: P.C, DE: P.C };
+      ['AC', 'CD', 'BC', 'CE'].forEach((k) => {
+        if (!L[k]) return;
+        // Along a crossing line, push to the side away from the other line.
+        const other = k === 'AC' ? P.B : k === 'CD' ? P.E : k === 'BC' ? P.A : P.D;
+        nodes.push(beside(k, k[0], k[1], L[k], 13, other));
+      });
+      ['AB', 'DE'].forEach((k) => { if (L[k]) nodes.push(beside(k, k[0], k[1], L[k], 13, away[k])); });
+    } else {
+      // Parts first, then whole sides on a dimension line further out.
+      ['AD', 'DB', 'AE', 'EC'].forEach((k) => { if (L[k]) nodes.push(beside(k, k[0], k[1], L[k])); });
+      ['AB', 'AC'].forEach((k) => {
+        if (!L[k]) return;
+        const [a, b] = [P[k[0]], P[k[1]]];
+        const u = unitVec(b[0] - a[0], b[1] - a[1]);
+        let n = [-u[1], u[0]];
+        const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        if (n[0] * (m[0] - G[0]) + n[1] * (m[1] - G[1]) < 0) n = [-n[0], -n[1]];
+        const partsLabelled = (k === 'AB' ? L.AD || L.DB : L.AE || L.EC);
+        const d = partsLabelled ? 64 : 18;
+        const a2 = [a[0] + n[0] * d, a[1] + n[1] * d], b2 = [b[0] + n[0] * d, b[1] + n[1] * d];
+        nodes.push(<line key={`${k}dim`} x1={a2[0]} y1={a2[1]} x2={b2[0]} y2={b2[1]} stroke="var(--ink)" strokeWidth={1.5} />);
+        [a2, b2].forEach((p, j) => nodes.push(<line key={`${k}t${j}`} x1={p[0] - n[0] * 6} y1={p[1] - n[1] * 6} x2={p[0] + n[0] * 6} y2={p[1] + n[1] * 6} stroke="var(--ink)" strokeWidth={1.5} />));
+        const mm = [(a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2];
+        const off = 12 + Math.abs(n[0]) * (String(L[k]).length * 10.5) / 2;
+        nodes.push(figLabel(k, mm[0] + n[0] * off, mm[1] + n[1] * off + 7, L[k], 'middle', tint(k)));
+      });
+      // DE inside, just above the line; BC below.
+      if (L.DE) nodes.push(figLabel('DE', (P.D[0] + P.E[0]) / 2, P.D[1] + 24, L.DE, 'middle', tint('DE')));
+      if (L.BC) nodes.push(figLabel('BC', (P.B[0] + P.C[0]) / 2, P.B[1] + 26, L.BC, 'middle', tint('BC')));
+    }
+    // Vertex letters.
+    const VC = fig.kind === 'X' ? P.C : G;
+    ['A', 'B', 'C', 'D', 'E'].forEach((k, i) => {
+      const text = fig.vertices?.[i];
+      if (!text) return;
+      let out = unitVec(P[k][0] - VC[0], P[k][1] - VC[1]);
+      // The crossing point's letter goes in the narrow wedge below it, where
+      // no side's label is.
+      if (fig.kind === 'X' && k === 'C') out = [0, 1.9];
+      if (fig.kind !== 'X' && (k === 'D' || k === 'E')) out = [k === 'D' ? -1 : 1, 0].map((v, j) => (j === 0 ? v * (fig.mirror ? -1 : 1) : -0.3));
+      nodes.push(figLabel(`v${k}`, P[k][0] + out[0] * 16, P[k][1] + out[1] * 16 + 7, text, 'middle', 'var(--ink)'));
+    });
+    return svgWrap(nodes, W, H + 20, 'st', fig.big, shown);
+  }
+
+  // Two similar solids, small and large (Similarity, Haese 18D):
+  //   solid    'cylinder', 'cuboid' or 'cone'
+  //   left, right  { length, value, big }: `length` labels the height,
+  //            `value` (an area or volume, or 'x') is written underneath
+  //   unknown  'left' | 'right' | 'left-length' | 'right-length'
+  if (fig.type === 'similar-solids') {
+    const nodes = [];
+    const line = (key, a, b, extra = {}) => <line key={key} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="var(--ink)" strokeWidth={3} strokeLinecap="round" {...extra} />;
+    const hidden = { strokeDasharray: '6 6', strokeWidth: 2 };
+    let x = 20;
+    const base = 230;
+    const tint = (k) => (fig.unknown === k ? color : 'var(--ink)');
+    ['left', 'right'].forEach((which) => {
+      const s = fig[which] ?? {};
+      const k = s.big ? 1 : 0.62;
+      let width = 0, top = 0, hx = 0;
+      if (fig.solid === 'cuboid') {
+        const w = 120 * k, h = 90 * k, d = 40 * k;
+        const FBL = [x, base], FBR = [x + w, base], FTR = [x + w, base - h], FTL = [x, base - h];
+        const o = [d, -d];
+        const B = (p) => [p[0] + o[0], p[1] + o[1]];
+        nodes.push(line(`${which}1`, FBL, FBR), line(`${which}2`, FBR, FTR), line(`${which}3`, FTR, FTL), line(`${which}4`, FTL, FBL),
+          line(`${which}5`, FBR, B(FBR)), line(`${which}6`, FTR, B(FTR)), line(`${which}7`, FTL, B(FTL)), line(`${which}8`, B(FTL), B(FTR)), line(`${which}9`, B(FBR), B(FTR)),
+          line(`${which}h1`, FBL, B(FBL), hidden), line(`${which}h2`, B(FBL), B(FBR), hidden), line(`${which}h3`, B(FBL), B(FTL), hidden));
+        width = w + d; top = base - h - d; hx = x - 10;
+      } else {
+        const RX = 50 * k, RY = 14 * k, h = (fig.solid === 'cone' ? 130 : 110) * k;
+        const CX = x + RX;
+        nodes.push(
+          <path key={`${which}bb`} d={`M ${CX - RX} ${base} A ${RX} ${RY} 0 0 1 ${CX + RX} ${base}`} fill="none" stroke="var(--ink)" strokeWidth={2} strokeDasharray="6 6" />,
+          <path key={`${which}bf`} d={`M ${CX - RX} ${base} A ${RX} ${RY} 0 0 0 ${CX + RX} ${base}`} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+        );
+        if (fig.solid === 'cone') {
+          nodes.push(line(`${which}s1`, [CX, base - h], [CX - RX, base]), line(`${which}s2`, [CX, base - h], [CX + RX, base]));
+        } else {
+          nodes.push(line(`${which}s1`, [CX - RX, base - h], [CX - RX, base]), line(`${which}s2`, [CX + RX, base - h], [CX + RX, base]),
+            <ellipse key={`${which}t`} cx={CX} cy={base - h} rx={RX} ry={RY} fill="none" stroke="var(--ink)" strokeWidth={3} />);
+        }
+        width = 2 * RX; top = base - h - RY; hx = CX - RX - 10;
+      }
+      const h0 = fig.solid === 'cuboid' ? base - (90 * k) / 2 : base - ((fig.solid === 'cone' ? 130 : 110) * k) / 2;
+      if (s.length) nodes.push(figLabel(`${which}len`, hx, h0 + 6, s.length, 'end', tint(`${which}-length`)));
+      if (s.value) nodes.push(figLabel(`${which}val`, x + width / 2, base + 40, s.value, 'middle', tint(which)));
+      x += width + 90;
+      void top;
+    });
+    return svgWrap(nodes, Math.round(x - 40), 280, 'ss', fig.big, shown);
+  }
+
   if (fig.type === 'isosceles-angles') {
     // Same outline as isosceles-triangle, but labels the three angles
     // (Haese 4C: base angles are equal) instead of gating a hidden-height
