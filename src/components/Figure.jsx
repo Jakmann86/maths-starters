@@ -778,6 +778,76 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, W, 200, 'ot', fig.big, shown);
   }
 
+  // Two triangles sharing a side: quadrilateral ABCD cut by the diagonal BD,
+  // for problems solved one triangle at a time (Haese 29F). Positions are
+  // fixed and named A to D whatever letters are printed:
+  //   vertices   letters printed at A, B, C, D (['P', 'Q', 'R', 'S'])
+  //   sides      { AB, BC, CD, DA, BD }: labels, or omitted
+  //   angles     { A, ABD, ADB, C, CBD, CDB }: labels, the corners at B and
+  //              D split by the diagonal
+  //   unknown    { side: 'CD' } or { angle: 'C' }: that label in the slot colour
+  //   mirror     flip left to right
+  //
+  // Schematic, so the generator owns the honesty rule the single triangle
+  // keeps for itself: within each triangle the true angles must rank as the
+  // drawn ones do, and none may be obtuse. Drawn, they are
+  //   ABD:  A 75.5 > ADB 57.4 > ABD 47.2
+  //   BCD:  CBD 79.6 > C 58.4 > CDB 42.0
+  if (fig.type === 'two-triangles') {
+    const W = 340;
+    const at = { A: [20, 186], B: [210, 196], C: [320, 64], D: [70, 28] };
+    if (fig.mirror) Object.keys(at).forEach((k) => { at[k] = [W - at[k][0], at[k][1]]; });
+    const tint = (kind, k) => (fig.unknown?.[kind] === k ? color : 'var(--ink)');
+    const { A, B, C, D } = at;
+    const nodes = [
+      <polygon key="q" points={[A, B, C, D].map((p) => p.join(',')).join(' ')} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />,
+      <line key="bd" x1={B[0]} y1={B[1]} x2={D[0]} y2={D[1]} stroke="var(--ink)" strokeWidth={3} />,
+    ];
+
+    // Side labels, pushed away from the centroid of the side's own triangle
+    // (BD's away from ABD, so into BCD).
+    const centroid = (...ps) => [ps.reduce((s, p) => s + p[0], 0) / ps.length, ps.reduce((s, p) => s + p[1], 0) / ps.length];
+    const SIDES = { AB: [A, B, D], BC: [B, C, D], CD: [C, D, B], DA: [D, A, B], BD: [B, D, A] };
+    Object.entries(SIDES).forEach(([k, [p, q, r]]) => {
+      const text = fig.sides?.[k];
+      if (!text) return;
+      const G = centroid(p, q, r);
+      const m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+      let [nx, ny] = unitVec(-(q[1] - p[1]), q[0] - p[0]);
+      if (nx * (m[0] - G[0]) + ny * (m[1] - G[1]) < 0) { nx = -nx; ny = -ny; }
+      const off = 13 + Math.abs(nx) * (String(text).length * 10.5) / 2;
+      nodes.push(figLabel(`s${k}`, m[0] + nx * off, m[1] + ny * off + 7, text, 'middle', tint('side', k)));
+    });
+
+    // Angle arcs, each between the two rays that bound it.
+    const CORNERS = { A: [A, B, D], ABD: [B, A, D], ADB: [D, A, B], C: [C, B, D], CBD: [B, C, D], CDB: [D, C, B] };
+    Object.entries(CORNERS).forEach(([k, [V, p, q]]) => {
+      const text = fig.angles?.[k];
+      if (!text) return;
+      const u = unitVec(p[0] - V[0], p[1] - V[1]), v = unitVec(q[0] - V[0], q[1] - V[1]);
+      const drawn = (Math.acos(Math.max(-1, Math.min(1, u[0] * v[0] + u[1] * v[1]))) * 180) / Math.PI;
+      const r = drawn < 50 ? 32 : 26;
+      const P1 = [V[0] + u[0] * r, V[1] + u[1] * r], P2 = [V[0] + v[0] * r, V[1] + v[1] * r];
+      const sweep = u[0] * v[1] - u[1] * v[0] > 0 ? 1 : 0;
+      nodes.push(<path key={`a${k}`} d={`M ${P1[0]} ${P1[1]} A ${r} ${r} 0 0 ${sweep} ${P2[0]} ${P2[1]}`} fill="none" stroke={tint('angle', k)} strokeWidth={2.5} />);
+      const bis = unitVec(u[0] + v[0], u[1] + v[1]);
+      const label = plainAngleLabel(text);
+      const d = r + 12 + label.length * (drawn < 50 ? 6 : 4.5);
+      nodes.push(figLabel(`al${k}`, V[0] + bis[0] * d, V[1] + bis[1] * d + 6, label, 'middle', tint('angle', k), 18));
+    });
+
+    // Vertex letters, outside each corner.
+    const G = centroid(A, B, C, D);
+    ['A', 'B', 'C', 'D'].forEach((k, i) => {
+      const text = fig.vertices?.[i];
+      if (!text) return;
+      const out = unitVec(at[k][0] - G[0], at[k][1] - G[1]);
+      nodes.push(figLabel(`v${k}`, at[k][0] + out[0] * 16, at[k][1] + out[1] * 16 + 7, text, 'middle', 'var(--ink)'));
+    });
+
+    return svgWrap(nodes, W, 220, 'tt', fig.big, shown);
+  }
+
   if (fig.type === 'isosceles-angles') {
     // Same outline as isosceles-triangle, but labels the three angles
     // (Haese 4C: base angles are equal) instead of gating a hidden-height
