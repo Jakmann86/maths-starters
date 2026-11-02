@@ -1,4 +1,5 @@
 import './Figure.css';
+import { polygonFromInteriorAngles } from '../lib/polygonFromAngles.js';
 
 // All sizes here are 1.2x the original figures — shapes and labels share one
 // viewBox-relative coordinate system, so scaling this shared wrapper scales
@@ -1981,8 +1982,15 @@ export default function Figure({ fig, color, shown }) {
     // read as genuinely irregular rather than a regular shape carrying
     // mismatched labels — the actual drawn angles still needn't match the
     // label values exactly (schematic, like every other angle figure here).
-    const { n, angles = [], unknownIndex, radiusFactors = [] } = fig;
+    // `interiorValues` (the true interior angles, in degrees) draws the
+    // outline to those angles (polygonFromInteriorAngles) instead of from
+    // radiusFactors, so an obtuse corner looks obtuse. `exteriorLabels`
+    // marks an exterior angle at each vertex that has one: the side coming
+    // into the vertex is extended past it, dashed, and the angle between the
+    // extension and the side going out is labelled.
+    const { n, angles = [], unknownIndex, radiusFactors = [], interiorValues, exteriorLabels = [] } = fig;
     if (!Array.isArray(angles) || angles.length < 3) return null;
+    const isUnknown = (i) => (Array.isArray(unknownIndex) ? unknownIndex.includes(i) : i === unknownIndex);
     // Bigger and further out than the single-label polygon types above
     // (radius 90 vs 68, angleMarker's own arc radius pulled down to 6 vs
     // the default 20): this figure labels every vertex at once, so with
@@ -1991,12 +1999,28 @@ export default function Figure({ fig, color, shown }) {
     // adjacent-label gap was single-digit pixels, sometimes literally
     // overlapping) on a compact hexagon/heptagon. This spacing keeps every
     // pair of labels comfortably apart even at n=7 with 3-digit angles.
-    const radius = 90, cx = 98, cy = 98;
-    const verts = [];
-    for (let i = 0; i < n; i++) {
-      const t = (Math.PI * 2 * i) / n - Math.PI / 2;
-      const rf = radiusFactors[i] ?? 1;
-      verts.push([cx + radius * rf * Math.cos(t), cy + radius * rf * Math.sin(t)]);
+    // With an exterior angle at every vertex, the extensions and their
+    // labels ring the outline. A full-size outline would push the frame out
+    // and the board would scale every label down to fit, so the outline
+    // shrinks instead and the frame stays near its usual size.
+    const extCount = exteriorLabels.filter(Boolean).length;
+    const ringed = extCount > 1;
+    const radius = ringed ? 72 : 90, cx = 98, cy = 98;
+    const EXT_LEN = ringed ? 32 : 46;
+    let verts = [];
+    if (Array.isArray(interiorValues) && interiorValues.length === n) {
+      // Scaled so the outline spans what the radius-90 drawing does.
+      const raw = polygonFromInteriorAngles(interiorValues).verts;
+      const rx = raw.map((v) => v[0]), ry = raw.map((v) => v[1]);
+      const span = Math.max(Math.max(...rx) - Math.min(...rx), Math.max(...ry) - Math.min(...ry)) || 1;
+      const k = (2 * radius) / span;
+      verts = raw.map(([x, y]) => [x * k, y * k]);
+    } else {
+      for (let i = 0; i < n; i++) {
+        const t = (Math.PI * 2 * i) / n - Math.PI / 2;
+        const rf = radiusFactors[i] ?? 1;
+        verts.push([cx + radius * rf * Math.cos(t), cy + radius * rf * Math.sin(t)]);
+      }
     }
     const ptsStr = verts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
     const elements = [
@@ -2011,20 +2035,33 @@ export default function Figure({ fig, color, shown }) {
       // quadrilateral question can have two equal unknowns, or three vertices
       // carrying the same x. Every existing caller passes a number and is
       // unaffected.
-      const labelColor = (Array.isArray(unknownIndex) ? unknownIndex.includes(i) : i === unknownIndex)
-        ? color
-        : 'var(--ink)';
+      const labelColor = isUnknown(i) ? color : 'var(--ink)';
       elements.push(...angleMarker(v, prev, next, label, `pi${i}`, labelColor, { fit: true, fontSize: 17 }, 8));
     });
     // The box fits the drawn outline. A fixed 200 x 200 box let a stretched
     // top vertex (radius factor up to 1.25) poke above the figure and into the
     // instruction, and left dead space wherever the outline came in short.
     // Labels sit inside the outline, so the vertices bound everything.
+    // Exterior angles: drawn after the interior ones, and their extensions
+    // join the framed points.
+    const extEnds = [];
+    verts.forEach((v, i) => {
+      const label = exteriorLabels[i];
+      if (!label) return;
+      const prev = verts[(i - 1 + n) % n];
+      const next = verts[(i + 1) % n];
+      const u = unitVec(v[0] - prev[0], v[1] - prev[1]);
+      const E = [v[0] + u[0] * EXT_LEN, v[1] + u[1] * EXT_LEN];
+      extEnds.push(E);
+      elements.push(<line key={`pe${i}`} x1={v[0]} y1={v[1]} x2={E[0]} y2={E[1]} stroke="var(--ink)" strokeWidth={2} strokeDasharray="5,5" />);
+      elements.push(...angleMarker(v, E, next, label, `pe${i}`, isUnknown(i) ? color : 'var(--ink)', { fit: true, fontSize: ringed ? 19 : 17, pad: 4 }, ringed ? 22 : 14));
+    });
     // Extra room above the top vertex keeps the outline clear of the
-    // instruction over it.
-    const PAD = 6, TOP = 18;
-    const xs = verts.map((v) => v[0]);
-    const ys = verts.map((v) => v[1]);
+    // instruction over it; exterior labels sit outside the outline, so they
+    // get a margin of their own.
+    const PAD = extEnds.length ? (ringed ? 16 : 22) : 6, TOP = extEnds.length ? (ringed ? 20 : 26) : 18;
+    const xs = [...verts, ...extEnds].map((v) => v[0]);
+    const ys = [...verts, ...extEnds].map((v) => v[1]);
     const x0 = Math.min(...xs) - PAD, y0 = Math.min(...ys) - TOP;
     const w = Math.max(...xs) + PAD - x0, h = Math.max(...ys) + PAD - y0;
     return svgWrap(<g transform={`translate(${-x0} ${-y0})`}>{elements}</g>, w.toFixed(1), h.toFixed(1), 'pgi', fig.big, shown);

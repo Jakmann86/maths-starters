@@ -16,6 +16,7 @@
 // (e.g. "angles on a line"), so workingOut carries that through here too.
 
 import _ from 'lodash';
+import { evenEnough } from '../../lib/polygonFromAngles.js';
 
 const NL = '\n';
 
@@ -790,25 +791,73 @@ export const generatePolygonExteriorAngles = (options = {}) => {
   const { difficulty = 'core' } = options;
 
   if (difficulty === 'stretch') {
-    // Exterior angles of ANY polygon sum to 360 - doesn't need regularity.
-    // Rejection-sample so the missing angle always lands somewhere
-    // sensible (15-150) rather than risking a negative or tiny result.
-    let n, knownAngles, missing;
-    do {
-      n = _.random(5, 7);
-      knownAngles = Array.from({ length: n - 1 }, () => _.random(25, 75));
-      missing = 360 - knownAngles.reduce((a, b) => a + b, 0);
-    } while (missing < 15 || missing > 150);
+    // An irregular polygon drawn to its true angles, and every angle the
+    // question uses is on the figure. Half the time each:
+    //   exterior  every exterior angle is marked, x among them: they sum to 360
+    //   interior  the interior angles are marked at every vertex but one, and x
+    //             is the exterior angle there: 180(n - 2) gives the missing
+    //             interior angle, then x = 180 - it
+    // Angle sets whose closing side lengths come out uneven (a sliver of a
+    // side, see evenEnough) are drawn again.
+    const n = _.random(5, 7);
+    const unknownIndex = _.random(0, n - 1);
+    const fromExterior = _.sample([true, false]);
+    // Draw angle sets until one closes into an even enough outline.
+    const draw = () => {
+      if (fromExterior) {
+        // Given angles from 35: a narrower wedge pushes its fitted label a
+        // long way out from the vertex, toward the next one.
+        const known = Array.from({ length: n - 1 }, () => _.random(35, 75));
+        const missing = 360 - known.reduce((a, b) => a + b, 0);
+        if (missing < 30 || missing > 120) return null;
+        known.splice(unknownIndex, 0, missing);
+        return known.map((e) => 180 - e);
+      }
+      const known = Array.from({ length: n - 1 }, () => _.random(95, 160));
+      const missing = 180 * (n - 2) - known.reduce((a, b) => a + b, 0);
+      if (missing < 60 || missing > 155) return null;
+      known.splice(unknownIndex, 0, missing);
+      return known;
+    };
+    let interior = draw();
+    while (!interior || !evenEnough(interior)) interior = draw();
+    const exterior = interior.map((v) => 180 - v);
+    const x = exterior[unknownIndex];
 
+    if (fromExterior) {
+      const others = exterior.filter((_v, i) => i !== unknownIndex);
+      return {
+        instruction: `Find the exterior angle x of this ${n}-sided polygon`,
+        questionMath: null,
+        answer: `x = ${x}^\\circ`,
+        workingOut:
+          `\\text{exterior angles of any polygon sum to } 360^\\circ` + NL +
+          `x = 360 - (${others.join(' + ')}) = ${x}^\\circ`,
+        visualization: {
+          type: 'polygon-irregular', n, angles: Array(n).fill(''), interiorValues: interior,
+          exteriorLabels: exterior.map((e, i) => (i === unknownIndex ? 'x' : `${e}^\\circ`)), unknownIndex, big: true,
+        },
+        metadata: { topic: 'polygon-exterior-angles', difficulty, tags: ['angles', 'polygon', 'exterior', 'irregular'] },
+      };
+    }
+
+    const others = interior.filter((_v, i) => i !== unknownIndex);
+    const sum = 180 * (n - 2);
+    const inner = interior[unknownIndex];
     return {
-      instruction: `The exterior angles of a ${n}-sided polygon are shown. Find the missing one.`,
-      questionMath: `${knownAngles.map((a) => `${a}^\\circ`).join(',\\ ')},\\ x`,
-      answer: `x = ${missing}^\\circ`,
+      instruction: `Find the exterior angle x of this ${n}-sided polygon`,
+      questionMath: null,
+      answer: `x = ${x}^\\circ`,
       workingOut:
-        `\\text{exterior angles of any polygon sum to } 360^\\circ` + NL +
-        `x = 360 - (${knownAngles.join(' + ')}) = ${missing}^\\circ`,
-      visualization: { type: 'polygon', n, exterior: true, angleLabel: 'x', big: true },
-      metadata: { topic: 'polygon-exterior-angles', difficulty, tags: ['angles', 'polygon', 'exterior'] },
+        `\\text{sum of interior angles} = 180(${n} - 2) = ${sum}^\\circ` + NL +
+        `\\text{missing interior angle} = ${sum} - (${others.join(' + ')}) = ${inner}^\\circ` + NL +
+        `x = 180 - ${inner} = ${x}^\\circ \\text{ (angles on a line)}`,
+      visualization: {
+        type: 'polygon-irregular', n, interiorValues: interior, unknownIndex, big: true,
+        angles: interior.map((v, i) => (i === unknownIndex ? '' : `${v}^\\circ`)),
+        exteriorLabels: interior.map((_v, i) => (i === unknownIndex ? 'x' : '')),
+      },
+      metadata: { topic: 'polygon-exterior-angles', difficulty, tags: ['angles', 'polygon', 'exterior', 'interior'] },
     };
   }
 
