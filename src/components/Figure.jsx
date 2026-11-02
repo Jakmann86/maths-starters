@@ -1976,20 +1976,23 @@ export default function Figure({ fig, color, shown }) {
     const [x0, y0] = [Math.min(...xs) - M, Math.min(...ys) - M];
     const W = Math.max(...xs) + M - x0, H = Math.max(...ys) + M - y0;
     const T = (p) => [p[0] - x0, p[1] - y0];
+    // A large P (a 36-gon's corner is nearly straight) makes a large drawing,
+    // which the box then shrinks: lines and labels grow to keep their size.
+    const k = Math.max(1, Math.max(W, H) / 260);
     const nodes = [];
     strokes.forEach((s) => {
       const pts = s.pts.map(T).map((p) => p.map((v) => v.toFixed(1)).join(',')).join(' ');
       nodes.push(s.closed
-        ? <polygon key={s.key} points={pts} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />
-        : <polyline key={s.key} points={pts} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" />);
+        ? <polygon key={s.key} points={pts} fill="none" stroke="var(--ink)" strokeWidth={3 * k} strokeLinejoin="round" />
+        : <polyline key={s.key} points={pts} fill="none" stroke="var(--ink)" strokeWidth={3 * k} strokeLinejoin="round" />);
     });
     dashes.forEach((d) => {
       const [a, b] = [T(d.a), T(d.b)];
-      nodes.push(<line key={d.key} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="var(--ink)" strokeWidth={2.5} strokeDasharray="5,5" />);
+      nodes.push(<line key={d.key} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="var(--ink)" strokeWidth={2.5 * k} strokeDasharray={`${5 * k},${5 * k}`} />);
     });
     marks.forEach((m) => {
-      if (m.arc) nodes.push(<path key={m.key} d={m.arc} transform={`translate(${-x0} ${-y0})`} fill="none" stroke="var(--ink)" strokeWidth={2.5} />);
-      else { const p = T(m.at); nodes.push(figLabel(m.key, p[0], p[1] + 7, m.text, 'middle', m.color, m.size)); }
+      if (m.arc) nodes.push(<path key={m.key} d={m.arc} transform={`translate(${-x0} ${-y0})`} fill="none" stroke="var(--ink)" strokeWidth={2.5 * k} />);
+      else { const p = T(m.at); nodes.push(figLabel(m.key, p[0], p[1] + 7 * k, m.text, 'middle', m.color, m.size * k)); }
     });
     return svgWrap(nodes, Math.round(W), Math.round(H), 'pap', fig.big, shown);
   }
