@@ -983,7 +983,7 @@ export default function Figure({ fig, color, shown }) {
     const UNIT = tri ? [[0.35, 0], [0, 1], [1.2, 1]] : [[0, 0], [1, 0], [1, 0.6], [0, 0.6]];
     const nodes = [];
     const placed = [];
-    let xCursor = 30;
+    let xCursor = 64;   // room for a side label left of the first shape
     const sizes = ['left', 'right'].map((k) => (fig[k]?.big ? 150 : 92));
     const baseY = 30 + Math.max(...sizes) * (tri ? 1 : 0.6) + (fig.turn === 'quarter' ? 60 : 0);
     ['left', 'right'].forEach((which, w) => {
@@ -998,7 +998,8 @@ export default function Figure({ fig, color, shown }) {
       if (turn === 'quarter') pts = pts.map(([x, y]) => [cx - (y - cy), cy + (x - cx)]);
       const minX = Math.min(...pts.map((p) => p[0])), maxY = Math.max(...pts.map((p) => p[1]));
       pts = pts.map(([x, y]) => [x - minX + xCursor, y - maxY + baseY]);
-      xCursor = Math.max(...pts.map((p) => p[0])) + 70;
+      // Room between the shapes for a side label on either.
+      xCursor = Math.max(...pts.map((p) => p[0])) + 100;
       placed.push({ which, pts, s });
     });
     const tint = (kind, which, index) => {
@@ -1071,8 +1072,11 @@ export default function Figure({ fig, color, shown }) {
       ? [seg('A', 'B', 'ab'), seg('E', 'D', 'ed'), seg('A', 'D', 'ad'), seg('B', 'E', 'be')]
       : [seg('A', 'B', 'ab'), seg('A', 'C', 'ac'), seg('B', 'C', 'bc'), seg('D', 'E', 'de')];
     // Parallel arrows on the two parallel sides.
+    // On the X shape the parallel sides' labels sit at their middles, so
+    // the arrows go a third of the way along instead.
+    const at = fig.kind === 'X' ? 0.3 : 0.5;
     const arrow = (a, b, key) => {
-      const m = [(P[a][0] + P[b][0]) / 2, (P[a][1] + P[b][1]) / 2];
+      const m = [P[a][0] + (P[b][0] - P[a][0]) * at, P[a][1] + (P[b][1] - P[a][1]) * at];
       const u = unitVec(P[b][0] - P[a][0], P[b][1] - P[a][1]);
       const tip = [m[0] + u[0] * 7, m[1] + u[1] * 7];
       const n = [-u[1], u[0]];
