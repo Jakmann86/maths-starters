@@ -16,6 +16,7 @@ import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 import * as arithmagon from '../generators/puzzles/arithmagonGenerators';
 import * as pythagoras from '../generators/geometry/pythagorasGenerators';
 import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
+import * as functions from '../generators/algebra/functionGenerators';
 import * as furtherTrig from '../generators/geometry/furtherTrigGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
@@ -531,6 +532,44 @@ export const skills = {
     label: 'Cubic sequences: use the nth term rule',
     topic: 'Quadratic and cubic sequences',
     generate: (opts) => cubicSeq.generateCubicUseNthTerm(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 19, Rayner 5.1-5.3: functions ---
+  'function-notation': {
+    label: 'Function notation',
+    topic: 'Functions',
+    generate: (opts) => functions.generateFunctionNotation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'domain-range': {
+    label: 'Domain and range',
+    topic: 'Functions',
+    generate: (opts) => functions.generateDomainRange(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'composite-functions': {
+    label: 'Composite functions',
+    topic: 'Functions',
+    generate: (opts) => functions.generateCompositeFunctions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'inverse-functions': {
+    label: 'Inverse functions',
+    topic: 'Functions',
+    generate: (opts) => functions.generateInverseFunctions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'absolute-value': {
+    label: 'The absolute value function',
+    topic: 'Functions',
+    generate: (opts) => functions.generateAbsoluteValue(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'reciprocal-functions': {
+    label: 'Reciprocal functions',
+    topic: 'Functions',
+    generate: (opts) => functions.generateReciprocalFunctions(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1174,6 +1213,7 @@ export const STRANDS = [
       'Arithmetic and geometric sequences',
       'Quadratic and cubic sequences',
       'Variation',
+      'Functions',
     ],
   },
   {

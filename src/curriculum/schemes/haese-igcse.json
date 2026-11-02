@@ -129,12 +129,12 @@
     { "id": "18C", "ch": 18, "unit": "Similarity", "lesson": "Problem solving", "page": 373, "skills": [], "status": "skip" },
     { "id": "18D", "ch": 18, "unit": "Similarity", "lesson": "Area and volume of similar shapes", "page": 376, "skills": [], "status": "todo" },
 
-    { "id": "19A", "ch": 19, "unit": "Introduction to functions", "lesson": "Mapping diagrams", "page": 383, "skills": [], "status": "todo" },
-    { "id": "19B", "ch": 19, "unit": "Introduction to functions", "lesson": "Functions", "page": 385, "skills": [], "status": "todo" },
-    { "id": "19C", "ch": 19, "unit": "Introduction to functions", "lesson": "Function notation", "page": 389, "skills": [], "status": "todo" },
-    { "id": "19D", "ch": 19, "unit": "Introduction to functions", "lesson": "Composite functions", "page": 391, "skills": [], "status": "todo" },
-    { "id": "19E", "ch": 19, "unit": "Introduction to functions", "lesson": "Reciprocal functions", "page": 393, "skills": [], "status": "todo" },
-    { "id": "19F", "ch": 19, "unit": "Introduction to functions", "lesson": "The absolute value function", "page": 395, "skills": [], "status": "todo" },
+    { "id": "19A", "ch": 19, "unit": "Introduction to functions", "lesson": "Mapping diagrams", "page": 383, "skills": ["domain-range"], "status": "ready" },
+    { "id": "19B", "ch": 19, "unit": "Introduction to functions", "lesson": "Functions", "page": 385, "skills": ["domain-range"], "status": "ready" },
+    { "id": "19C", "ch": 19, "unit": "Introduction to functions", "lesson": "Function notation", "page": 389, "skills": ["function-notation"], "status": "ready" },
+    { "id": "19D", "ch": 19, "unit": "Introduction to functions", "lesson": "Composite functions", "page": 391, "skills": ["composite-functions"], "status": "ready" },
+    { "id": "19E", "ch": 19, "unit": "Introduction to functions", "lesson": "Reciprocal functions", "page": 393, "skills": ["reciprocal-functions"], "status": "ready" },
+    { "id": "19F", "ch": 19, "unit": "Introduction to functions", "lesson": "The absolute value function", "page": 395, "skills": ["absolute-value"], "status": "ready" },
 
     { "id": "20A", "ch": 20, "unit": "Transformation geometry", "lesson": "Translations", "page": 402, "skills": [], "status": "todo" },
     { "id": "20B", "ch": 20, "unit": "Transformation geometry", "lesson": "Rotations", "page": 404, "skills": [], "status": "todo" },
@@ -161,7 +161,7 @@
     { "id": "22C", "ch": 22, "unit": "Two variable analysis", "lesson": "Linear regression", "page": 461, "skills": [], "status": "skip" },
 
     { "id": "23A", "ch": 23, "unit": "Further functions", "lesson": "Cubic functions", "page": 469, "skills": [], "status": "todo" },
-    { "id": "23B", "ch": 23, "unit": "Further functions", "lesson": "Inverse functions", "page": 473, "skills": [], "status": "todo" },
+    { "id": "23B", "ch": 23, "unit": "Further functions", "lesson": "Inverse functions", "page": 473, "skills": ["inverse-functions"], "status": "ready" },
     { "id": "23C", "ch": 23, "unit": "Further functions", "lesson": "Using technology", "page": 475, "skills": [], "status": "skip" },
     { "id": "23D", "ch": 23, "unit": "Further functions", "lesson": "Tangents to curves", "page": 480, "skills": [], "status": "todo" },
 
