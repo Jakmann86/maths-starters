@@ -19,6 +19,7 @@ import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 import * as functions from '../generators/algebra/functionGenerators';
 import * as furtherTrig from '../generators/geometry/furtherTrigGenerators';
 import * as similarity from '../generators/geometry/similarityGenerators';
+import * as transformations from '../generators/geometry/transformationGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
 import * as cubicSeq from '../generators/algebra/cubicSequenceGenerators';
@@ -320,6 +321,38 @@ export const skills = {
     label: 'Areas and volumes of similar shapes',
     topic: 'Similarity',
     generate: (opts) => similarity.generateSimilarAreasVolumes(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 20A-D: transformations on a grid (no vectors chapter) ---
+  'translation': {
+    label: 'Translation',
+    topic: 'Transformations',
+    generate: (opts) => transformations.generateTranslation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'reflection': {
+    label: 'Reflection',
+    topic: 'Transformations',
+    generate: (opts) => transformations.generateReflection(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'rotation': {
+    label: 'Rotation',
+    topic: 'Transformations',
+    generate: (opts) => transformations.generateRotation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'enlargement': {
+    label: 'Enlargement',
+    topic: 'Transformations',
+    generate: (opts) => transformations.generateEnlargement(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'describe-transformation': {
+    label: 'Describing a transformation',
+    topic: 'Transformations',
+    generate: (opts) => transformations.generateDescribeTransformation(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1247,6 +1280,7 @@ export const STRANDS = [
       'Pythagoras and trigonometry',
       'Further trigonometry',
       'Similarity',
+      'Transformations',
       'Circle theorems',
     ],
   },

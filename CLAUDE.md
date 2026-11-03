@@ -249,10 +249,11 @@ Established conventions:
   under 30° in `angle-rays` are drawn at 30° and still labelled true.
   `parallel-transversal` keeps fixed geometry, so its generator puts each
   angle in a wedge of its own kind.
-- **Data displays are the exception.** `coordinate-grid`, `stem-leaf` and
-  `pie-chart` are drawn to the data, because there the geometry *is* the
-  data: a pie chart's sectors are in proportion, a stem-and-leaf's leaves
-  line up into columns.
+- **Data displays are the exception.** `coordinate-grid`, `transform-grid`,
+  `stem-leaf` and `pie-chart` are drawn to the data, because there the
+  geometry *is* the data: a pie chart's sectors are in proportion, a
+  stem-and-leaf's leaves line up into columns, a shape on a grid sits on
+  the coordinates the question reads off it.
 
 ### 8. Generators are verified by substituting the answer back
 
