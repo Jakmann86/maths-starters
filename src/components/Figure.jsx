@@ -2549,8 +2549,10 @@ export default function Figure({ fig, color, shown }) {
     [x0, x1, y0, y1] = [Math.floor(x0), Math.ceil(x1), Math.floor(y0), Math.ceil(y1)];
     while (x1 - x0 < 8) { x0 -= 1; if (x1 - x0 < 8) x1 += 1; }
     while (y1 - y0 < 8) { y0 -= 1; if (y1 - y0 < 8) y1 += 1; }
-    const cell = Math.min(26, 360 / Math.max(x1 - x0, y1 - y0));
-    const PL = 30, PR = 30, PT = 22, PB = 28;
+    // Generators keep the window to at most 14 by 10, so a cell of 30 fills
+    // the box beside the question without shrinking the labels.
+    const cell = Math.min(30, 480 / (x1 - x0), 300 / (y1 - y0));
+    const PL = 32, PR = 34, PT = 24, PB = 30;
     const W = (x1 - x0) * cell + PL + PR, H = (y1 - y0) * cell + PT + PB;
     const X = (x) => PL + (x - x0) * cell;
     const Y = (y) => PT + (y1 - y) * cell;
@@ -2559,9 +2561,10 @@ export default function Figure({ fig, color, shown }) {
     for (let y = y0; y <= y1; y += 1) nodes.push(figLine(`gy${y}`, X(x0), Y(y), X(x1), Y(y), { strokeWidth: 1, strokeOpacity: 0.16 }));
     if (y0 <= 0 && y1 >= 0) nodes.push(figLine('ax', X(x0), Y(0), X(x1), Y(0), { strokeWidth: 2 }));
     if (x0 <= 0 && x1 >= 0) nodes.push(figLine('ay', X(0), Y(y0), X(0), Y(y1), { strokeWidth: 2 }));
-    const step = Math.max(x1 - x0, y1 - y0) > 12 ? 2 : 1;
-    for (let x = Math.ceil(x0 / step) * step; x <= x1; x += step) if (x !== 0) nodes.push(figLabel(`nx${x}`, X(x), Y(0) + 15, String(x), 'middle', 'var(--ink)', 12));
-    for (let y = Math.ceil(y0 / step) * step; y <= y1; y += step) if (y !== 0) nodes.push(figLabel(`ny${y}`, X(0) - 6, Y(y) + 4, String(y), 'end', 'var(--ink)', 12));
+    const step = Math.max(x1 - x0, y1 - y0) > 14 ? 2 : 1;
+    const n = (v) => String(v).replace('-', '\u2212');
+    for (let x = Math.ceil(x0 / step) * step; x <= x1; x += step) if (x !== 0) nodes.push(figLabel(`nx${x}`, X(x), Y(0) + 17, n(x), 'middle', 'var(--ink)', 14));
+    for (let y = Math.ceil(y0 / step) * step; y <= y1; y += step) if (y !== 0) nodes.push(figLabel(`ny${y}`, X(0) - 6, Y(y) + 5, n(y), 'end', 'var(--ink)', 14));
     nodes.push(figLabel('lx', X(x1) + 10, Y(0) + 5, 'x', 'start', 'var(--ink)', 15));
     nodes.push(figLabel('ly', X(0) + 7, Y(y1) - 6, 'y', 'start', 'var(--ink)', 15));
 
@@ -2576,9 +2579,16 @@ export default function Figure({ fig, color, shown }) {
       }
       const out = [<line key={key} x1={X(a[0])} y1={Y(a[1])} x2={X(b[0])} y2={Y(b[1])} stroke={stroke} strokeWidth={3} strokeDasharray="8,6" />];
       if (label) {
-        // At the top end of the line, beside it.
-        const top = Y(a[1]) < Y(b[1]) ? a : b;
-        out.push(figLabel(`${key}l`, X(top[0]) + 6, Y(top[1]) + 16, label, 'start', stroke, 16));
+        // At the top end of the line, beside it. A diagonal's label sits a
+        // little way down the line and to its right, clear of the dashes.
+        const [top, low] = Y(a[1]) < Y(b[1]) ? [a, b] : [b, a];
+        if (ln.m === undefined) out.push(figLabel(`${key}l`, X(top[0]) + 6, Y(top[1]) + 16, label, 'start', stroke, 17));
+        else {
+          const d = unitVec(X(low[0]) - X(top[0]), Y(low[1]) - Y(top[1]));
+          const side = d[1] > 0 ? [d[1], -d[0]] : [-d[1], d[0]];
+          const right = side[0] >= 0 ? side : [-side[0], -side[1]];
+          out.push(figLabel(`${key}l`, X(top[0]) + d[0] * 30 + right[0] * 12, Y(top[1]) + d[1] * 30 + right[1] * 12 + 6, label, 'start', stroke, 17));
+        }
       }
       return out;
     };
@@ -2589,12 +2599,37 @@ export default function Figure({ fig, color, shown }) {
       const pts = s.pts.map(([x, y]) => `${X(x)},${Y(y)}`).join(' ');
       nodes.push(<polygon key={`sh${k}`} points={pts} fill={stroke} fillOpacity={fillOpacity} stroke={stroke} strokeWidth={3} strokeLinejoin="round" />);
       const G = [s.pts.reduce((t, p) => t + p[0], 0) / s.pts.length, s.pts.reduce((t, p) => t + p[1], 0) / s.pts.length];
-      if (s.name) nodes.push(figLabel(`sn${k}`, X(G[0]), Y(G[1]) + 6, s.name, 'middle', stroke, 18));
+      if (s.name) {
+        // Inside, at the centre, when there is room; a thin shape has its
+        // letter just above it instead, clear of its edges.
+        const segDist = (p, q) => {
+          const [dx, dy] = [q[0] - p[0], q[1] - p[1]];
+          const t = Math.max(0, Math.min(1, ((G[0] - p[0]) * dx + (G[1] - p[1]) * dy) / (dx * dx + dy * dy)));
+          return Math.hypot(G[0] - p[0] - t * dx, G[1] - p[1] - t * dy);
+        };
+        const room = Math.min(...s.pts.map((p, i) => segDist(p, s.pts[(i + 1) % s.pts.length])));
+        // Beside it, on the side away from the y-axis and its numbers.
+        const xs = s.pts.map((p) => p[0]), ys = s.pts.map((p) => p[1]);
+        const midY = Y((Math.min(...ys) + Math.max(...ys)) / 2) + 7;
+        if (room >= 0.45) nodes.push(figLabel(`sn${k}`, X(G[0]), Y(G[1]) + 7, s.name, 'middle', stroke, 20));
+        else if (G[0] > 0) nodes.push(figLabel(`sn${k}`, X(Math.max(...xs)) + 8, midY, s.name, 'start', stroke, 20));
+        else nodes.push(figLabel(`sn${k}`, X(Math.min(...xs)) - 8, midY, s.name, 'end', stroke, 20));
+      }
       if (s.vertex) {
         const p = s.pts[s.vertex.index];
         const out = unitVec(p[0] - G[0], -(p[1] - G[1]));
+        // Pushed out from the shape, in whichever of eight directions points
+        // most nearly outward without landing on an axis's numbers (below
+        // the x-axis, left of the y-axis) or on the axis itself.
+        const at = (d) => [X(p[0]) + d[0] * 17, Y(p[1]) + d[1] * 17];
+        const clash = ([lx, ly]) => (Math.abs(ly - Y(0)) < 14 || (ly > Y(0) && ly < Y(0) + 24))
+          || (Math.abs(lx - X(0)) < 14 || (lx < X(0) && lx > X(0) - 26));
+        const dirs = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => [Math.cos((i * Math.PI) / 4), Math.sin((i * Math.PI) / 4)]);
+        const score = (d) => d[0] * out[0] + d[1] * out[1] - (clash(at(d)) ? 2 : 0);
+        const best = [out, ...dirs].reduce((a, d) => (score(d) > score(a) ? d : a));
+        const [lx, ly] = at(best);
         nodes.push(<circle key={`sv${k}`} cx={X(p[0])} cy={Y(p[1])} r={4.5} fill={stroke} />);
-        nodes.push(figLabel(`svl${k}`, X(p[0]) + out[0] * 15, Y(p[1]) + out[1] * 15 + 6, s.vertex.text, 'middle', stroke, 17));
+        nodes.push(figLabel(`svl${k}`, lx, ly + 6, s.vertex.text, 'middle', stroke, 19));
       }
     };
     (fig.shapes ?? []).forEach((s, k) => drawShape(s, `o${k}`, 'var(--ink)', 0.08));
