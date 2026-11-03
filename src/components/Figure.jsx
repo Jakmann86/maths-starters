@@ -2525,6 +2525,86 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, W, H, 'cg', fig.big, shown, true);
   }
 
+  // Transformations on a grid (Haese 20A-D, Rayner 11.3), drawn to scale
+  // like coordinate-grid: the squares are what the student counts.
+  //   shapes     [{ pts: [[x, y], ...], name?, vertex? }] the objects, in ink.
+  //              `name` is written inside ('A', 'B'); `vertex` is
+  //              { index, text } for a lettered corner.
+  //   solution   shapes drawn only on reveal, in the slot colour
+  //   mirror     a line: { x }, { y } or { m, c } (y = x is { m: 1, c: 0 });
+  //              mirrorLabel its equation, drawn dashed. solutionMirror is
+  //              the same, drawn only on reveal.
+  //   centre     [x, y] marked with a dot; solutionCentre only on reveal
+  // The window covers every shape, the solution and the centre, so nothing
+  // moves when the answer is shown. An image's vertex is written A' with an
+  // ASCII apostrophe: the label font has no U+2032 prime, and its apostrophe
+  // is drawn as one.
+  if (fig.type === 'transform-grid') {
+    const all = [
+      ...(fig.shapes ?? []).flatMap((s) => s.pts), ...(fig.solution ?? []).flatMap((s) => s.pts),
+      ...(fig.centre ? [fig.centre] : []), ...(fig.solutionCentre ? [fig.solutionCentre] : []), [0, 0],
+    ];
+    let x0 = Math.min(...all.map((p) => p[0])) - 1, x1 = Math.max(...all.map((p) => p[0])) + 1;
+    let y0 = Math.min(...all.map((p) => p[1])) - 1, y1 = Math.max(...all.map((p) => p[1])) + 1;
+    [x0, x1, y0, y1] = [Math.floor(x0), Math.ceil(x1), Math.floor(y0), Math.ceil(y1)];
+    while (x1 - x0 < 8) { x0 -= 1; if (x1 - x0 < 8) x1 += 1; }
+    while (y1 - y0 < 8) { y0 -= 1; if (y1 - y0 < 8) y1 += 1; }
+    const cell = Math.min(26, 360 / Math.max(x1 - x0, y1 - y0));
+    const PL = 30, PR = 30, PT = 22, PB = 28;
+    const W = (x1 - x0) * cell + PL + PR, H = (y1 - y0) * cell + PT + PB;
+    const X = (x) => PL + (x - x0) * cell;
+    const Y = (y) => PT + (y1 - y) * cell;
+    const nodes = [];
+    for (let x = x0; x <= x1; x += 1) nodes.push(figLine(`gx${x}`, X(x), Y(y0), X(x), Y(y1), { strokeWidth: 1, strokeOpacity: 0.16 }));
+    for (let y = y0; y <= y1; y += 1) nodes.push(figLine(`gy${y}`, X(x0), Y(y), X(x1), Y(y), { strokeWidth: 1, strokeOpacity: 0.16 }));
+    if (y0 <= 0 && y1 >= 0) nodes.push(figLine('ax', X(x0), Y(0), X(x1), Y(0), { strokeWidth: 2 }));
+    if (x0 <= 0 && x1 >= 0) nodes.push(figLine('ay', X(0), Y(y0), X(0), Y(y1), { strokeWidth: 2 }));
+    const step = Math.max(x1 - x0, y1 - y0) > 12 ? 2 : 1;
+    for (let x = Math.ceil(x0 / step) * step; x <= x1; x += step) if (x !== 0) nodes.push(figLabel(`nx${x}`, X(x), Y(0) + 15, String(x), 'middle', 'var(--ink)', 12));
+    for (let y = Math.ceil(y0 / step) * step; y <= y1; y += step) if (y !== 0) nodes.push(figLabel(`ny${y}`, X(0) - 6, Y(y) + 4, String(y), 'end', 'var(--ink)', 12));
+    nodes.push(figLabel('lx', X(x1) + 10, Y(0) + 5, 'x', 'start', 'var(--ink)', 15));
+    nodes.push(figLabel('ly', X(0) + 7, Y(y1) - 6, 'y', 'start', 'var(--ink)', 15));
+
+    const lineOf = (key, ln, label, stroke) => {
+      let a, b;
+      if (ln.x !== undefined) { a = [ln.x, y0]; b = [ln.x, y1]; } else if (ln.y !== undefined) { a = [x0, ln.y]; b = [x1, ln.y]; } else {
+        const cand = [];
+        const keep = (x, y) => { if (x >= x0 - 1e-9 && x <= x1 + 1e-9 && y >= y0 - 1e-9 && y <= y1 + 1e-9) cand.push([x, y]); };
+        keep(x0, ln.m * x0 + ln.c); keep(x1, ln.m * x1 + ln.c); keep((y0 - ln.c) / ln.m, y0); keep((y1 - ln.c) / ln.m, y1);
+        cand.sort((p, q) => p[0] - q[0]);
+        [a, b] = [cand[0], cand[cand.length - 1]];
+      }
+      const out = [<line key={key} x1={X(a[0])} y1={Y(a[1])} x2={X(b[0])} y2={Y(b[1])} stroke={stroke} strokeWidth={3} strokeDasharray="8,6" />];
+      if (label) {
+        // At the top end of the line, beside it.
+        const top = Y(a[1]) < Y(b[1]) ? a : b;
+        out.push(figLabel(`${key}l`, X(top[0]) + 6, Y(top[1]) + 16, label, 'start', stroke, 16));
+      }
+      return out;
+    };
+    if (fig.mirror) nodes.push(...lineOf('mir', fig.mirror, fig.mirrorLabel, 'var(--ink)'));
+    if (shown && fig.solutionMirror) nodes.push(...lineOf('smir', fig.solutionMirror, fig.solutionMirrorLabel, color));
+
+    const drawShape = (s, k, stroke, fillOpacity) => {
+      const pts = s.pts.map(([x, y]) => `${X(x)},${Y(y)}`).join(' ');
+      nodes.push(<polygon key={`sh${k}`} points={pts} fill={stroke} fillOpacity={fillOpacity} stroke={stroke} strokeWidth={3} strokeLinejoin="round" />);
+      const G = [s.pts.reduce((t, p) => t + p[0], 0) / s.pts.length, s.pts.reduce((t, p) => t + p[1], 0) / s.pts.length];
+      if (s.name) nodes.push(figLabel(`sn${k}`, X(G[0]), Y(G[1]) + 6, s.name, 'middle', stroke, 18));
+      if (s.vertex) {
+        const p = s.pts[s.vertex.index];
+        const out = unitVec(p[0] - G[0], -(p[1] - G[1]));
+        nodes.push(<circle key={`sv${k}`} cx={X(p[0])} cy={Y(p[1])} r={4.5} fill={stroke} />);
+        nodes.push(figLabel(`svl${k}`, X(p[0]) + out[0] * 15, Y(p[1]) + out[1] * 15 + 6, s.vertex.text, 'middle', stroke, 17));
+      }
+    };
+    (fig.shapes ?? []).forEach((s, k) => drawShape(s, `o${k}`, 'var(--ink)', 0.08));
+    if (shown) (fig.solution ?? []).forEach((s, k) => drawShape(s, `s${k}`, color, 0.15));
+    const dot = (key, p, fill) => nodes.push(<circle key={key} cx={X(p[0])} cy={Y(p[1])} r={5.5} fill={fill} />);
+    if (fig.centre) dot('cen', fig.centre, 'var(--ink)');
+    if (shown && fig.solutionCentre) dot('scen', fig.solutionCentre, color);
+    return svgWrap(nodes, Math.round(W), Math.round(H), 'tg', fig.big, shown, true);
+  }
+
   if (fig.type === 'branching-pattern') {
     // Each node at generation k grows `ratio` children at generation k+1
     // (Haese 26C: geometric growth shown as a tree, not literal dots, since
