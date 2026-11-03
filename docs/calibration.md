@@ -296,6 +296,45 @@ find a length (Rayner Example 6), or volume from lengths (Haese
 Example 9). Stretch: surface areas given, find a volume (Haese 18D Q7-8),
 or the trapezium left in the A shape (Haese 18D Q3, Rayner Ex 7.12 Q5).
 
+## Transformations — Haese 20A–D and Rayner 11.6–11.12
+
+Year 8, on a coordinate grid; the vectors in Rayner 11.1–11.5 and Haese's
+stretches, function transformations, inverses and combinations (20E–H)
+are left out. A carry-out question letters one corner A and asks for A′;
+the image is drawn on reveal so the class can check their drawing. A
+describe question draws shapes A and B; the reveal draws the mirror line
+or the centre.
+
+**Translation** — Haese 20A, Rayner Ex 11.10. Foundation: in words,
+"3 squares right and 2 squares down". Core: by a column vector, the form
+both books use. Stretch: write the column vector that maps A onto B.
+
+**Reflection** — Haese 20C, Rayner Ex 11.6–11.7. Foundation: in a
+vertical or horizontal line, the axes among them. Core: in y = x or
+y = −x (Rayner Ex 11.7). Stretch: find the equation of the mirror line
+(Rayner Ex 11.7, "find the equation of the mirror line").
+
+**Rotation** — Haese 20B, Rayner Ex 11.8–11.9. Foundation: 90° either way
+or 180° about the origin. Core: about another centre, marked. Stretch:
+describe fully, with the angle, the direction and the centre, as Rayner
+insists all three are needed.
+
+**Enlargement** — Haese 20D, Rayner Ex 11.11. Foundation: scale factor 2
+or 3 from a marked centre. Core: describe one, with the scale factor and
+the centre (Rayner's "find the centre of enlargement and the scale
+factor"). Stretch: scale factor ½, carried out or described; Haese calls
+this a reduction, and "enlargement, scale factor ½" is what the mark
+schemes ask for. Negative and fractional factors other than ½ are left
+out at Year 8.
+
+**Describing a transformation** — Rayner Ex 11.12, "describe fully the
+following transformations". Foundation: a translation, a reflection in a
+vertical or horizontal line, or a rotation about the origin. Core: any of
+the four, centres anywhere and scale factors 2 and 3. Stretch: the harder
+case of three: reflection in y = x or y = −x, a quarter turn about a
+centre off the origin, scale factor ½. A translation has no harder case,
+so it stops at Core.
+
 ---
 
 ## Not yet calibrated
