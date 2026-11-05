@@ -120,8 +120,8 @@ export const generateCubicUseNthTerm = (options = {}) => {
   const value = evalRule(a, b, c, d, k);
   const sub = ruleAt(a, b, c, d, k);
   return {
-    instruction: `Find the value of the ${k}th term`,
-    questionMath: `u_n = ${rule(a, b, c, d)}`,
+    instruction: 'Find the value of this term',
+    questionMath: `u_n = ${rule(a, b, c, d)}${NL}u_{${k}}`,
     answer: `u_{${k}} = ${value}`,
     workingOut: `u_{${k}} = ${sub}${NL}= ${value}`,
     metadata: { topic: 'sequences-cubic-use-nth-term', difficulty },

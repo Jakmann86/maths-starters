@@ -64,7 +64,8 @@ const checkText = (q) => {
 
 // Recompute the answer from what is on the board. Returns [answer, variant].
 const solve = (q) => {
-  const { instruction: text, visualization: fig } = q;
+  const { visualization: fig } = q;
+  const text = [q.instruction, q.questionText].filter(Boolean).join(' ');
 
   if (fig.type === 'table') {
     const body = fig.rows.slice(1);
@@ -119,7 +120,7 @@ describe('pie-charts', () => {
         expect(q.answer).toMatch(/^\d+(\^\\circ)?$/);
         seen[variant] = (seen[variant] ?? 0) + 1;
         answers.add(q.answer);
-        questions.add(JSON.stringify([q.instruction, q.visualization]));
+        questions.add(JSON.stringify([q.instruction, q.questionText, q.visualization]));
       }
       // Stretch samples its two variants 50/50; both must actually turn up.
       variants.forEach((v) => expect(seen[v] / SAMPLES).toBeGreaterThan(variants.length > 1 ? 0.45 : 0.99));

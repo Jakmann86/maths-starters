@@ -228,13 +228,14 @@ function readProportion() {
   const name = { q1: 'Q_1', q2: '\\text{the median}', q3: 'Q_3' }[key];
   const frac = quarters === 2 ? '\\tfrac{1}{2}' : `\\tfrac{${quarters}}{4}`;
   return {
-    instruction: `The box plot shows ${ctx.what(N)}. About how many ${ctx.count} ${ctx[side](fmt(v))}?`,
+    instruction: `The box plot shows ${ctx.what()}.`,
+    questionText: `There are ${N} ${ctx.count}. About how many ${ctx[side](fmt(v))}?`,
     answer: String((N * quarters) / 4),
     workingOut: [
       `${fmt(v)} \\text{ is } ${name} \\text{, so } ${frac} \\text{ of the ${ctx.count} ${side === 'more' ? 'are above' : 'are below'} it}`,
       `${frac} \\times ${N} = ${(N * quarters) / 4}`,
     ].join(NL),
-    visualization: plotFig(ctx.axis, [p], [{ plot: 0, value: v }]),
+    visualization: { ...plotFig(ctx.axis, [p], [{ plot: 0, value: v }]), beside: true },
     metadata: { topic: 'box-plot-reading', difficulty: 'core' },
   };
 }

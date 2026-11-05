@@ -367,8 +367,8 @@ export const generateMeanMissingValue = (options = {}) => {
       const missing = mean * n - _.sum(known);
       if (missing < 1 || missing > 40) continue;
       return {
-        instruction: `The mean of these values is ${mean}. Find x`,
-        questionMath: showList(_.shuffle([...known, 'x'])),
+        instruction: 'Find x',
+        questionMath: `\\text{mean} = ${mean}${NL}${showList(_.shuffle([...known, 'x']))}`,
         answer: `x = ${missing}`,
         workingOut: [
           `\\text{total} = ${mean} \\times ${n} = ${mean * n}`,
@@ -396,7 +396,8 @@ export const generateMeanMissingValue = (options = {}) => {
       const knownFX = _.sum(xs.map((v, i) => (i === hide ? 0 : v * fs[i])));
       const shownFs = fs.map((f, i) => (i === hide ? 'x' : String(f)));
       return {
-        instruction: `The mean is ${target}. Find x`,
+        instruction: 'Find x',
+        questionText: `The mean is ${target}.`,
         answer: `x = ${x}`,
         workingOut: [
           `\\text{sum of } f = ${knownF} + x, \\text{sum of } fx = ${knownFX} + ${xs[hide]}x`,
@@ -427,7 +428,8 @@ export const generateMeanMissingValue = (options = {}) => {
     const knownFX = _.sum(mids.map((m, i) => (i === hide ? 0 : m * fs[i])));
     const shownFs = fs.map((f, i) => (i === hide ? 'x' : String(f)));
     return {
-      instruction: `The estimated mean is ${target}. Find x`,
+      instruction: 'Find x',
+      questionText: `The estimated mean is ${target}.`,
       answer: `x = ${x}`,
       workingOut: [
         `\\text{midpoints: } ${mids.join(', ')}`,
@@ -461,8 +463,8 @@ function meanMissingFromLongList() {
     if (missing < 1 || missing > 40) continue;
     const mean = dp1(tenths);
     return {
-      instruction: `The mean of these values is ${mean}. Find x`,
-      questionMath: showList(_.shuffle([...known, 'x'])),
+      instruction: 'Find x',
+      questionMath: `\\text{mean} = ${mean}${NL}${showList(_.shuffle([...known, 'x']))}`,
       answer: `x = ${missing}`,
       workingOut: [
         `\\text{total} = ${mean} \\times ${n} = ${total}`,

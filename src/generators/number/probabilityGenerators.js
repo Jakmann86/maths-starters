@@ -17,7 +17,8 @@
 // Fractions are given as the count over the total and then simplified where
 // they can be, as venn-probability does. Decimals are multiples of 0.05.
 //
-// FIELDS. `instruction` is the set-up and `questionText` the ask, so the ask
+// FIELDS. Any number the class needs is big: `questionText` is the set-up
+// (DESIGN.md "Instruction or question") and `instruction` the ask, so the ask
 // renders at question size, in the Probability strand's serif. The one
 // exception is Stretch's bag, a reverse question: the given probability is
 // `questionMath` and the ask joins the set-up.
@@ -87,7 +88,7 @@ function bag(colours = 3) {
   return {
     names, counts, item,
     total: _.sum(counts),
-    setup: `A ${item.container} holds ${contents} ${item.plural}. One is taken at random.`,
+    setup: `A ${item.container} holds ${contents} ${item.plural}.`,
   };
 }
 
@@ -120,8 +121,8 @@ function foundation() {
     const i = _.random(0, 2);
     const c = b.names[i];
     return {
-      instruction: b.setup,
-      questionText: `Find the probability that it is ${c}.`,
+      instruction: `One is taken at random. Find the probability that it is ${c}.`,
+      questionText: b.setup,
       answer: `${P(c)} = ${fracTex(b.counts[i], b.total)}`,
       workingOut: `${b.counts.join(' + ')} = ${b.total}\n${P(c)} = ${fracTex(b.counts[i], b.total)}`,
       metadata: meta('foundation'),
@@ -153,8 +154,8 @@ function core() {
       const hits = _.range(1, n + 1).filter(prop.test);
       if (hits.length < 3 || hits.length > n - 3) continue;
       return {
-        instruction: `Cards numbered 1 to ${n} are shuffled and one is taken at random.`,
-        questionText: `Find the probability that the number is ${prop.phrase}.`,
+        instruction: 'One card is taken at random.',
+        questionText: `Cards are numbered 1 to ${n}. Find the probability that the number is ${prop.phrase}.`,
         answer: `${P(prop.phrase.replace(/^an? /, ''))} = ${fracTex(hits.length, n)}`,
         workingOut: `${hits.join(', ')}\n${hits.length} \\text{ out of } ${n}\n= ${fracTex(hits.length, n)}`,
         metadata: meta('core'),
@@ -167,8 +168,8 @@ function core() {
   const event = not ? `not ${b.names[i]}` : `${b.names[i]} or ${b.names[j]}`;
   const k = not ? b.total - b.counts[i] : b.counts[i] + b.counts[j];
   return {
-    instruction: b.setup,
-    questionText: `Find the probability that it is ${event}.`,
+    instruction: `One is taken at random. Find the probability that it is ${event}.`,
+    questionText: b.setup,
     answer: `${P(event)} = ${fracTex(k, b.total)}`,
     workingOut: not
       ? `${b.total} - ${b.counts[i]} = ${k}\n${P(event)} = ${fracTex(k, b.total)}`
@@ -192,10 +193,8 @@ function stretch() {
       // A reverse question: the given probability is questionMath, like a
       // given volume, and the instruction carries the ask.
       return {
-        instruction:
-          `A ${item.container} holds ${a} ${c1} ${item.plural} and some ${c2} ${item.plural}. ` +
-          `One is taken at random. How many ${c2} ${item.plural} are there?`,
-        questionMath: `${P(c1)} = \\frac{${a / g}}{${n / g}}`,
+        instruction: `One is taken at random. How many ${c2} ${item.plural} are there?`,
+        questionMath: `\\text{${a} ${c1} and some ${c2} ${item.plural}}${'\n'}${P(c1)} = \\frac{${a / g}}{${n / g}}`,
         answer: String(b),
         answerUnits: `\\text{${c2} ${item.plural}}`,
         workingOut: `\\frac{${a / g}}{${n / g}} = \\frac{${a}}{${n}}\n${n} - ${a} = ${b}`,

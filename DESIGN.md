@@ -80,6 +80,20 @@ The board has two readers, and the size rules apply to them differently.
 
 `CLAUDE.md` "Interactive whiteboard constraints" states the same split.
 
+## Instruction or question
+
+The instruction is smaller and greyer, and the teacher can read it out. The
+question is what students read from the back of the room. So:
+
+- **Any number a student needs to do the question goes in the question**
+  (`questionMath` or `questionText`) or on the figure. "Enlarge by scale factor
+  3", "There are 49 houses altogether", "Find the 10th term": all question.
+- **What they can infer stays in the instruction**: the context ("the table
+  shows the times people took to finish a race"), the task with no number in
+  it ("Find x"), and the form of the answer ("to 3 significant figures").
+- A count the figure already shows is not a needed number. "The marks of 11
+  students" beside the 11 marks can stay in the instruction.
+
 ## Open question: question type sizing (in progress)
 
 The user is still working out minimum and maximum sizes for the question
@@ -93,6 +107,11 @@ text. The forces they are balancing:
   sake — a little bigger, not filling the box.
 - **Room to write.** If possible, leave space in a box for the teacher to
   write working on the board.
+
+Decided so far: a lone fraction with one term over one term (`\\frac{15}{9y}`)
+has a 54px ceiling against everyone else's 76px, since stacked it stands far
+taller than any other single line (`isSimpleFraction`); and a `compact` given
+line has the same floor as any other question, because students need its number.
 
 So the current `qSize()` behaviour (grow to fill the space) is not the final
 word. Expect a tighter range: a ceiling on how big a short question grows, a
@@ -117,7 +136,8 @@ Top to bottom, as a 4-row grid (`auto auto minmax(0,1fr) auto`):
 
 Figures shrink when the answer is showing so the slot never overflows on
 reveal: their height cap drops from `47cqh` to `34cqh` (`64cqh` to `41cqh`
-for a big figure; `svgWrap` in `Figure.jsx`). That is accepted — once the
+for a big figure; `svgWrap` in `Figure.jsx`, with 3D solids 14% larger than
+that and dropped clear of the instruction, through `solidWrap`). That is accepted — once the
 answer is up, the question matters less.
 
 ## Header

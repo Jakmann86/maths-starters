@@ -257,7 +257,8 @@ function foundationBand() {
   const target = _.sample(sectors);
 
   return {
-    instruction: `${context.intro(total)}. The pie chart shows the results. How many ${target.clause}?`,
+    instruction: 'The pie chart shows the results.',
+    questionText: `${context.intro(total)}. How many ${target.clause}?`,
     answer: String(target.freq),
     answerUnits: `\\text{${context.unit}}`,
     workingOut:
@@ -311,9 +312,8 @@ function stretchBand() {
     if (given.freq === target.freq) return stretchBand();
 
     return {
-      instruction:
-        `The pie chart shows ${context.shows}. ` +
-        `${given.freq} of them ${given.clause}. How many ${target.clause}?`,
+      instruction: `The pie chart shows ${context.shows}.`,
+      questionText: `${given.freq} of them ${given.clause}. How many ${target.clause}?`,
       answer: String(target.freq),
       answerUnits: `\\text{${context.unit}}`,
       workingOut:
@@ -332,7 +332,8 @@ function stretchBand() {
   const others = sectors.filter((s) => s.name !== target.name);
 
   return {
-    instruction: `${context.intro(total)}. The pie chart shows the results. How many ${target.clause}?`,
+    instruction: 'The pie chart shows the results.',
+    questionText: `${context.intro(total)}. How many ${target.clause}?`,
     answer: String(target.freq),
     answerUnits: `\\text{${context.unit}}`,
     workingOut:

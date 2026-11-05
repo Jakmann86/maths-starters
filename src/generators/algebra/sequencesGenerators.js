@@ -64,8 +64,8 @@ export const generateSequenceUseNthTermGeometric = (options = {}) => {
   const targetValue = nthTerm(a, r, targetN);
 
   return {
-    instruction: `Find the first 5 terms, then find the ${targetN}th term`,
-    questionMath: formatRuleLatex(a, r),
+    instruction: 'Find these terms',
+    questionMath: `${formatRuleLatex(a, r)}${NL}a_1 \\text{ to } a_5 \\text{ and } a_{${targetN}}`,
     // Two lines, not one joined with "\quad" — same unsupported-command
     // fallback as the ellipsis above, and a clean line break reads better
     // here anyway (matches how every multi-step workingOut in this file
@@ -185,8 +185,8 @@ export const generateSequencePatternGeometric = (options = {}) => {
   }
 
   return {
-    instruction: 'Study the pattern, then answer:',
-    questionMath: `\\text{${instruction}}`,
+    instruction: 'Study the pattern',
+    questionText: instruction,
     answer,
     workingOut: `\\text{generations shown: } ${generationCounts.join(', ')}` + NL +
       `\\text{each node branches into } ${r} \\text{ more}`,
@@ -262,8 +262,8 @@ export const generateSequenceUseNthTermArithmetic = (options = {}) => {
   const targetValue = d * targetN + c;
 
   return {
-    instruction: `Find the first 5 terms, then find the ${targetN}th term`,
-    questionMath: formatArithmeticRule(d, c),
+    instruction: 'Find these terms',
+    questionMath: `${formatArithmeticRule(d, c)}${NL}a_1 \\text{ to } a_5 \\text{ and } a_{${targetN}}`,
     answer: `${firstFive.join(', ')}` + NL + `a_{${targetN}} = ${targetValue}`,
     workingOut:
       firstFive.map((t, i) => `a_{${i + 1}} = ${t}`).join(NL) + NL +
@@ -341,7 +341,9 @@ export const generateSequencePatternArithmetic = (options = {}) => {
   const motif = _.sample(PATTERN_MOTIFS);
   const countAt = (n) => startCount + step * (n - 1);
   const shownCounts = [1, 2, 3].map(countAt);
-  const unit = motif === 'matchstick-squares' ? 'matches' : 'units';
+  // Named for what is drawn: the figure's marks are squares, dots or tiles, and
+  // a count of "matches" would not match a row of closed squares.
+  const unit = { 'matchstick-squares': 'squares', 'dot-row': 'dots', 'tile-squares': 'tiles' }[motif];
 
   let instruction, answer;
   if (difficulty === 'foundation') {
@@ -360,8 +362,8 @@ export const generateSequencePatternArithmetic = (options = {}) => {
   }
 
   return {
-    instruction: 'Study the pattern, then answer:',
-    questionMath: `\\text{${instruction}}`,
+    instruction: 'Study the pattern',
+    questionText: instruction,
     answer,
     workingOut: `\\text{terms shown: } ${shownCounts.join(', ')}`,
     visualization: { type: 'growing-pattern', motif, step, startCount, counts: shownCounts, big: true },
@@ -417,9 +419,10 @@ export const generateSequenceFindNthTermQuadratic = (options = {}) => {
 
   return {
     instruction: showReference
-      ? 'Compare to n²: 1, 4, 9, 16, 25 — then find a formula for a_n'
+      ? 'Compare to the square numbers, then find a formula for the nth term'
       : 'Find a formula for the nth term of the sequence',
-    questionMath: `${terms.join(',\\ ')},\\ \\ldots`,
+    questionMath: `${terms.join(',\\ ')},\\ \\ldots`
+      + (showReference ? `${NL}n^2\\!: 1,\\ 4,\\ 9,\\ 16,\\ 25,\\ \\ldots` : ''),
     answer: formatQuadraticRule(a, b, c),
     workingOut,
     visualization: null,
@@ -446,8 +449,8 @@ export const generateSequenceUseNthTermQuadratic = (options = {}) => {
   const targetValue = nthTermQuadratic(a, b, c, targetN);
 
   return {
-    instruction: `Find the first 5 terms, then find the ${targetN}th term`,
-    questionMath: formatQuadraticRule(a, b, c),
+    instruction: 'Find these terms',
+    questionMath: `${formatQuadraticRule(a, b, c)}${NL}a_1 \\text{ to } a_5 \\text{ and } a_{${targetN}}`,
     answer: `${firstFive.join(', ')}` + NL + `a_{${targetN}} = ${targetValue}`,
     workingOut:
       firstFive.map((t, i) => `a_{${i + 1}} = ${t}`).join(NL) + NL +
@@ -532,23 +535,25 @@ export const generateSequenceIsInSequenceQuadratic = (options = {}) => {
 };
 
 // generateSequencePatternQuadratic -----------------------------------------------
-// "Continue the pattern" for quadratic growth - an n×n dot grid plus c
-// extra dots in a distinct spot. a fixed at 1 for the figure specifically
-// (scaling the grid to 'a copies' isn't worth the visual complexity yet),
-// even though a varies in the three skills above. Figure.jsx's
-// 'dot-grid-pattern' case draws the grid and the extra-dot row.
+// "Continue the pattern" for quadratic growth: term n is one solid block of
+// dots, n wide and n + k tall, so a_n = n^2 + kn (k = 0 is the square numbers).
+// a is 1 and c is 0 for the figure specifically, even though they vary in the
+// three skills above: anything else needs dots set apart from the block, which
+// read as a second pattern rather than part of this one.
+//
+// A real ceiling: k is small so the blocks stay countable from the back of the
+// room, which gives 12 distinct questions at Foundation, 16 at Core and 18 at
+// Stretch.
 export const generateSequencePatternQuadratic = (options = {}) => {
   const { difficulty = 'core' } = options;
 
-  const a = 1;
-  const b = 0;
-  const c = difficulty === 'foundation' ? _.random(0, 4) : _.random(0, 8);
-  const countAt = (n) => nthTermQuadratic(a, b, c, n);
+  const k = difficulty === 'foundation' ? _.random(0, 3) : difficulty === 'core' ? _.random(0, 3) : _.random(1, 3);
+  const countAt = (n) => nthTermQuadratic(1, k, 0, n);
   const shownCounts = [1, 2, 3].map(countAt);
 
   let instruction, answer;
   if (difficulty === 'foundation') {
-    const askN = _.random(4, 5);
+    const askN = _.random(4, 6);
     instruction = `How many dots are in term ${askN}?`;
     answer = `${countAt(askN)}`;
   } else if (difficulty === 'core') {
@@ -558,15 +563,15 @@ export const generateSequencePatternQuadratic = (options = {}) => {
   } else {
     const askN = _.random(10, 15);
     instruction = `Write a rule for the nth term, then find term number ${askN}`;
-    answer = `${formatQuadraticRule(a, b, c)}` + NL + `a_{${askN}} = ${countAt(askN)}`;
+    answer = `${formatQuadraticRule(1, k, 0)}` + NL + `a_{${askN}} = ${countAt(askN)}`;
   }
 
   return {
-    instruction: 'Study the pattern, then answer:',
-    questionMath: `\\text{${instruction}}`,
+    instruction: 'Study the pattern',
+    questionText: instruction,
     answer,
     workingOut: `\\text{terms shown: } ${shownCounts.join(', ')}`,
-    visualization: { type: 'dot-grid-pattern', extraDots: c, counts: shownCounts, big: true },
+    visualization: { type: 'dot-grid-pattern', terms: [1, 2, 3].map((n) => [n, n + k]) },
     metadata: { topic: 'sequences-quadratic-pattern', difficulty },
   };
 };

@@ -176,9 +176,12 @@ const PATH = { XX: ['x', 'xx'], XY: ['x', 'xy'], YX: ['y', 'yx'], YY: ['y', 'yy'
 
 /** The paths a question covers, read from its set-up and its ask. */
 export function readQuestion(q) {
-  const ask = /^Find the probability that (.+)\.$/.exec(q.questionText ?? '');
-  must(ask, 'questionText is not a "Find the probability that ..." ask', q);
-  const bag = BAG.exec(q.instruction);
+  // With blank branches the set-up is the big text and the ask the small.
+  const swapped = /^Find the probability that/.test(q.instruction);
+  const setup = swapped ? q.questionText : q.instruction;
+  const ask = /^Find the probability that (.+)\.$/.exec((swapped ? q.instruction : q.questionText) ?? '');
+  must(ask, 'neither line is a "Find the probability that ..." ask', q);
+  const bag = BAG.exec(setup);
   if (bag) {
     const [, , a, c1, L1, b, c2, L2, plural, mode] = bag;
     const paths = bagAsks(c1, c2, plural)[ask[1]];
@@ -186,7 +189,7 @@ export function readQuestion(q) {
     return { source: 'bag', a: Number(a), b: Number(b), letters: [L1, L2], replace: mode === 'with', paths };
   }
   for (const s of EVENT_SETUPS) {
-    const m = s.re.exec(q.instruction);
+    const m = s.re.exec(setup);
     if (!m) continue;
     const table = typeof s.asks === 'function' ? s.asks(m[1]) : s.asks;
     const paths = table[ask[1]];

@@ -55,14 +55,16 @@ describe('mean-missing-value', () => {
       for (let t = 0; t < SAMPLES; t += 1) {
         const q = generateMeanMissingValue({ difficulty });
         parses(q);
-        const target = Number(q.instruction.match(/is (\d+(?:\.\d)?)\. Find x$/)[1]);
+        // The mean is in the big text: first line of a list, or beside a table.
+        const [stated, list] = q.questionMath ? q.questionMath.split('\n') : [q.questionText];
+        const target = Number(stated.match(/(?:is|=) (\d+(?:\.\d)?)/)[1]);
         const x = answerX(q);
         expect(x).toBeGreaterThan(0);
 
         if (q.questionMath) {
           lists += 1;
           expect(q.visualization).toBeUndefined();
-          const items = q.questionMath.split(', ');
+          const items = list.split(', ');
           expect(items.filter((s) => s === 'x')).toHaveLength(1);
           const known = items.filter((s) => s !== 'x').map(Number);
           expect(known.every(Number.isInteger)).toBe(true);

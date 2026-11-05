@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import MathDisplay from './MathDisplay.jsx';
+import MathDisplay, { Prose } from './MathDisplay.jsx';
 import Figure from './Figure.jsx';
 import { iSize, pSize, qSize } from '../lib/typeSizing.js';
 
@@ -100,7 +100,7 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
             ) : (
               <div ref={qRef} style={{ fontSize: `calc(${qProse ? pSize() : qSize(q, instr, qCompact, Boolean(fig))} * var(--fit, 1))` }}>
                 {qProse
-                  ? <span className="mprose">{q}</span>
+                  ? <Prose text={q} />
                   : <MathDisplay math={q} />}
               </div>
             )}

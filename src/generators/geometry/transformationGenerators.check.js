@@ -69,7 +69,8 @@ const lineLabelOf = (line) => (line.x !== undefined ? `x = ${line.x}` : line.y !
 
 // The carry-out sentence -> { kind, map, line?, centre?, ... }.
 function parseCarryOut(q) {
-  const s = plain(q.instruction);
+  // Told what to do in the big text, and what to find in the instruction.
+  const s = plain(q.questionText ? `${q.questionText} ${q.instruction}` : q.instruction);
   must(s.endsWith(' Find the coordinates of A′.'), 'asks for A′', q);
   const head = s.slice(0, -' Find the coordinates of A′.'.length);
   let m = /^Translate the shape (\d+) squares? (right|left)(?: and (\d+) squares? (up|down))?\.$/.exec(head)
@@ -297,8 +298,9 @@ function checkCommon(q, topic, band) {
   must(typeof q.workingOut === 'string' && !q.workingOut.includes('\\n'), 'working uses real newlines', q);
   must(q.answerUnits === undefined, 'no units on a coordinate or a description', q);
   [q.answer, q.questionMath, q.workingOut].filter((s) => s !== undefined).forEach((s) => compiles(s));
-  must(!/-(?=[\dx])/.test(q.instruction), 'instructions use a real minus sign', q);
-  must(!/\u2212(?![\dx])/.test(q.instruction), 'a hyphen, not a minus sign, in y-axis', q);
+  const words = `${q.questionText ?? ''} ${q.instruction}`;
+  must(!/-(?=[\dx])/.test(words), 'instructions use a real minus sign', q);
+  must(!/\u2212(?![\dx])/.test(words), 'a hyphen, not a minus sign, in y-axis', q);
   checkWindow(f, q);
   return f;
 }

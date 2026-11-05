@@ -65,7 +65,7 @@ describe('venn-counts', () => {
           const hidden = KEYS.filter((k) => r[k] === '?');
           expect(hidden).toHaveLength(1);
           expect(fig.unknown).toBe(hidden[0]);
-          const total = Number(q.instruction.match(/^There are (\d+) /)[1]);
+          const total = Number(q.questionText.match(/^There are (\d+) /)[1]);
           const shown = KEYS.filter((k) => k !== hidden[0]).map((k) => Number(r[k]));
           expect(ans).toBe(total - _.sum(shown));
           // The question names the region that is withheld.
@@ -79,8 +79,9 @@ describe('venn-counts', () => {
         }
 
         if (difficulty === 'stretch') {
-          const m = q.instruction.match(/^In a group of (\d+) \w+, (\d+) .+ and (\d+) .+\. (\d+) \w+ neither\. How many \w+ both\?$/);
-          expect(m, q.instruction).not.toBeNull();
+          expect(q.instruction).toMatch(/^How many \w+ both\?$/);
+          const m = q.questionText.match(/^In a group of (\d+) \w+, (\d+) .+ and (\d+) .+\. (\d+) \w+ neither\.$/);
+          expect(m, q.questionText).not.toBeNull();
           const [total, a, b, neither] = m.slice(1).map(Number);
           // The figure's algebra uses U+2212, never a hyphen (figure text
           // never reaches the renderer).
@@ -97,7 +98,7 @@ describe('venn-counts', () => {
           expect(q.workingOut).toContain(`(${a} - x)`);
         }
         answers.add(ans);
-        questions.add(q.instruction + JSON.stringify(fig.regions));
+        questions.add(q.instruction + q.questionText + JSON.stringify(fig.regions));
       }
       process.stdout.write(`venn-counts ${difficulty}: ${answers.size} distinct answers, ${questions.size} distinct questions\n`);
       expect(questions.size).toBeGreaterThan(SAMPLES * 0.8);

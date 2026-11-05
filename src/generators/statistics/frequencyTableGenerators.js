@@ -177,7 +177,8 @@ function foundationBand() {
     const picked = fs.filter((_f, i) => hit[i]);
     const sum = _.sum(picked);
     return {
-      instruction: `The table shows ${context.shows}. ${context.condQ(cond.phrase(k))}`,
+      instruction: `The table shows ${context.shows}.`,
+      questionText: context.condQ(cond.phrase(k)),
       answer: String(sum),
       answerUnits: unitsOf(context.who),
       workingOut: `${picked.join(' + ')} = ${sum}`,
@@ -212,7 +213,8 @@ function stretchBand() {
   const known = fs.filter((_f, i) => i !== hide);
   const total = _.sum(xs.map((x, i) => x * fs[i]));
   return {
-    instruction: `The table shows ${context.shows}. ${context.count(n)}. ${context.totalQ}`,
+    instruction: `The table shows ${context.shows}.`,
+    questionText: `${context.count(n)}. ${context.totalQ}`,
     answer: String(total),
     answerUnits: unitsOf(context.what),
     workingOut: [

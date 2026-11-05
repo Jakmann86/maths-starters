@@ -221,6 +221,26 @@ const meta = (q, topic, difficulty) => {
   must(!/-/.test(q.instruction), 'a minus sign in the instruction is a real minus', q);
 };
 const instr = (q) => q.instruction.replace(/\u2212/g, '-');
+
+// On the board the numbers asked about are the question's last line, big, with
+// a plain instruction above them. The checks read that back as one sentence.
+export const asked = (q) => {
+  const lines = q.questionMath.split('\n');
+  if (lines.length < 2 || !['Evaluate', 'Find x'].includes(q.instruction)) return q;
+  const last = lines.pop();
+  return {
+    ...q,
+    questionMath: lines.join('\n'),
+    instruction: q.instruction === 'Evaluate' ? `Find ${last}` : `Find x when ${last}`,
+  };
+};
+// The same for an absolute value, whose last line gives the values.
+export const askedAbsolute = (q) => {
+  const lines = q.questionMath.split('\n');
+  if (lines.length < 2 || q.instruction !== 'Evaluate') return q;
+  const last = lines.pop().replace(',\\ ', ' and ');
+  return { ...q, questionMath: lines.join('\n'), instruction: `Find the value when ${last}` };
+};
 const renders = (q) => {
   [q.questionMath, q.answer].forEach((t) => { try { compiles(t); } catch (e) { fail(`KaTeX: ${e.message}`, q); } });
 };
@@ -242,8 +262,9 @@ const int = (s) => (/^-?\d+$/.test(s) ? Number(s) : NaN);
 
 /* ------------------------------------------------- function notation */
 
-export function checkFunctionNotation(q, difficulty) {
-  meta(q, 'function-notation', difficulty); noExtras(q); renders(q);
+export function checkFunctionNotation(raw, difficulty) {
+  const q = asked(raw);
+  meta(raw, 'function-notation', difficulty); noExtras(q); renders(raw);
   let kind;
   const ev = /^Find ([fgh])\((-?\d+)\)$/.exec(instr(q));
   const rev = /^Find x when ([fgh])\(x\) = (-?\d+)$/.exec(instr(q));
@@ -373,8 +394,10 @@ const readComp = (s) => {
   return m[1] ? { outer: m[1], inner: m[2], arg: m[3], short: false } : { outer: m[4], inner: m[5], arg: m[6], short: true };
 };
 
-export function checkComposite(q, difficulty) {
-  meta(q, 'composite-functions', difficulty); noExtras(q); renders(q);
+export function checkComposite(raw, difficulty) {
+  const q = asked(raw);
+  renders(raw);
+  meta(raw, 'composite-functions', difficulty); noExtras(q);
   const lines = q.questionMath.split('\n');
   let kind;
   const ev = /^Find (\S+)$/.exec(instr(q));
@@ -569,8 +592,10 @@ const readOr = (s) => {
   return parts.every(Boolean) ? { xs: parts.map((p) => Number(p[1])), only: false } : null;
 };
 
-export function checkAbsolute(q, difficulty) {
-  meta(q, 'absolute-value', difficulty); noExtras(q); renders(q);
+export function checkAbsolute(raw, difficulty) {
+  const q = askedAbsolute(raw);
+  renders(raw);
+  meta(raw, 'absolute-value', difficulty); noExtras(q);
   must(q.questionMath.includes('\\lvert'), 'an absolute value', q);
   let kind;
   const ex = /^Find the value when x = (-?\d+)$/.exec(instr(q));

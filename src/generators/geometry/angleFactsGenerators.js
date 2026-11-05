@@ -861,8 +861,8 @@ export const generatePolygonInteriorAngles = (options = {}) => {
   const n = _.sample(pool);
   const angle = interiorAngleOf(n);
   return {
-    instruction: `Find the interior angle of a regular ${n}-sided polygon`,
-    questionMath: null,
+    instruction: 'Find the interior angle of this regular polygon',
+    questionText: `${n} sides`,
     answer: `${angle}^\\circ`,
     workingOut: `\\frac{180(${n}-2)}{${n}} = \\frac{${180 * (n - 2)}}{${n}} = ${angle}^\\circ`,
     visualization: { type: 'polygon', n, angleLabel: 'x', big: true },
@@ -951,8 +951,8 @@ export const generatePolygonExteriorAngles = (options = {}) => {
   const n = _.sample(pool);
   const angle = exteriorAngleOf(n);
   return {
-    instruction: `Find the exterior angle of a regular ${n}-sided polygon`,
-    questionMath: null,
+    instruction: 'Find the exterior angle of this regular polygon',
+    questionText: `${n} sides`,
     answer: `${angle}^\\circ`,
     workingOut: `360 \\div ${n} = ${angle}^\\circ`,
     visualization: { type: 'polygon', n, exterior: true, angleLabel: 'x', big: true },

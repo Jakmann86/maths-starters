@@ -131,7 +131,8 @@ function countsCore() {
 
   const regions = { ...parts, [hidden]: '?' };
   return {
-    instruction: `There are ${total} ${c.unit} altogether. ${ASK[hidden]}`,
+    instruction: ASK[hidden],
+    questionText: `There are ${total} ${c.unit} altogether.`,
     answer: String(parts[hidden]),
     answerUnits: `\\text{${c.unit}}`,
     workingOut:
@@ -160,9 +161,10 @@ function countsStretch() {
   const sum = a + b + neither;
 
   return {
-    instruction:
+    instruction: `How many ${c.verb} both?`,
+    questionText:
       `In a group of ${total} ${c.unit}, ${a} ${c.verb} ${c.a.phrase} and ${b} ${c.verb} ${c.b.phrase}. ` +
-      `${neither} ${c.verb} neither. How many ${c.verb} both?`,
+      `${neither} ${c.verb} neither.`,
     answer: String(x),
     answerUnits: `\\text{${c.unit}}`,
     workingOut:

@@ -34,6 +34,9 @@ function bumpOne(s) {
 const isDescribe = (q) => !q.visualization.solution;
 const swapWords = (s, a, b) => s.replace(new RegExp(`\\b(${a}|${b})\\b`), (w) => (w === a ? b : a));
 
+// Where the sentence saying what to do lives.
+const said = (q) => (q.questionText ? 'questionText' : 'instruction');
+
 const OPS = {
   'answer nudged': (q) => { const s = bumpOne(q.answer.replace(/\\frac\{1\}\{2\}/, 'HALF')); if (!s) return false; q.answer = s.replace('HALF', '\\frac{1}{2}'); },
   'answer coordinates swapped': (q) => {
@@ -77,21 +80,21 @@ const OPS = {
     const f = q.visualization;
     [f.shapes[0].pts, f.shapes[1].pts] = [f.shapes[1].pts, f.shapes[0].pts];
   },
-  'a number in the sentence changed': (q) => { const s = bumpOne(q.instruction); if (!s) return false; q.instruction = s; },
+  'a number in the sentence changed': (q) => { const s = bumpOne(q[said(q)]); if (!s) return false; q[said(q)] = s; },
   'a direction reversed': (q) => {
-    const s = q.instruction;
+    const s = q[said(q)];
     let t = /clockwise/.test(s) ? s.replace(/\b(anti)?clockwise/, (w) => (w === 'clockwise' ? 'anticlockwise' : 'clockwise'))
       : /right|left/.test(s) ? swapWords(s, 'right', 'left') : /up|down/.test(s) ? swapWords(s, 'up', 'down') : null;
     if (!t && /clockwise/.test(q.answer)) { q.answer = q.answer.replace(/\{ (anti)?clockwise\}/, (w) => (w.includes('anti') ? '{ clockwise}' : '{ anticlockwise}')); return undefined; }
     if (!t) return false;
-    q.instruction = t;
+    q[said(q)] = t;
   },
   'the axis named instead': (q) => {
-    if (!/the [xy]-axis/.test(q.instruction)) return false;
-    q.instruction = q.instruction.replace(/the ([xy])-axis/, (w, a) => `the line ${a === 'x' ? 'y' : 'x'} = 0`);
+    if (!/the [xy]-axis/.test(q[said(q)])) return false;
+    q[said(q)] = q[said(q)].replace(/the ([xy])-axis/, (w, a) => `the line ${a === 'x' ? 'y' : 'x'} = 0`);
   },
   'the scale factor changed': (q) => {
-    if (/scale factor/.test(q.instruction)) { q.instruction = q.instruction.replace(/scale factor (2|3|½)/, (w, k) => `scale factor ${{ 2: 3, 3: 2, '½': 2 }[k]}`); return undefined; }
+    if (/scale factor/.test(q[said(q)])) { q[said(q)] = q[said(q)].replace(/scale factor (2|3|½)/, (w, k) => `scale factor ${{ 2: 3, 3: 2, '½': 2 }[k]}`); return undefined; }
     if (!/scale factor/.test(q.answer)) return false;
     q.answer = q.answer.replace(/scale factor \} (2|3|\\frac\{1\}\{2\})/, (w, k) => `scale factor } ${{ 2: '3', 3: '2' }[k] ?? '2'}`);
   },
@@ -133,7 +136,7 @@ const OPS = {
     else if (f.solutionMirror) delete f.solutionMirror;
     else return false;
   },
-  'a hyphen for a minus sign': (q) => { if (!q.instruction.includes('−')) return false; q.instruction = q.instruction.replace('−', '-'); },
+  'a hyphen for a minus sign': (q) => { if (!q[said(q)].includes('−')) return false; q[said(q)] = q[said(q)].replace('−', '-'); },
   'a working number changed': (q) => { const s = bumpOne(q.workingOut.replace(/\\frac\{1\}\{2\}/, 'HALF')); if (!s) return false; q.workingOut = s.replace('HALF', '\\frac{1}{2}'); },
   'the working stops short': (q) => {
     const lines = q.workingOut.split('\n');

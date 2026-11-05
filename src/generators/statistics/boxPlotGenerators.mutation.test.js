@@ -88,7 +88,7 @@ const restsOn = (q) => {
   const d = q.metadata.difficulty;
   if (d === 'stretch') return 'q2';
   if (d === 'core') {
-    const v = Number(/than (\d+)/.exec(q.instruction)[1]);
+    const v = Number(/than (\d+)/.exec(q.questionText)[1]);
     return ['q1', 'q2', 'q3'].find((k) => q.visualization.plots[0][k] === v);
   }
   if (q.instruction.endsWith('median.')) return 'q2';
@@ -119,13 +119,13 @@ const READING_OPS = {
   },
   'core: group size changed': (q) => {
     if (q.metadata.difficulty !== 'core') return false;
-    q.instruction = q.instruction.replace(/ of (\d+) /, (m, n) => ` of ${Number(n) + 4} `);
+    q.questionText = q.questionText.replace(/^There are (\d+) /, (m, n) => `There are ${Number(n) + 4} `);
     return true;
   },
   'core: side flipped': (q) => {
     if (q.metadata.difficulty !== 'core') return false;
     const flip = { more: 'fewer', fewer: 'more', longer: 'less', less: 'longer', taller: 'shorter', shorter: 'taller', older: 'younger', younger: 'older' };
-    q.instruction = q.instruction.replace(/\b(more|fewer|longer|less|taller|shorter|older|younger) than/, (m, w) => `${flip[w]} than`);
+    q.questionText = q.questionText.replace(/\b(more|fewer|longer|less|taller|shorter|older|younger) than/, (m, w) => `${flip[w]} than`);
     return true;
   },
   'stretch: names swapped': (q) => {

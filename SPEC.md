@@ -80,6 +80,9 @@ so a pool saved before a rename still loads.
 Generators return this. The board adapts to it (`src/lib/questionView.js`) —
 do not change generator output to match the board's internal field names.
 
+**Any number a student needs goes in the question, not the instruction**
+(`DESIGN.md` "Instruction or question").
+
 ```js
 {
   instruction: 'Factorise',            // plain text, imperative
@@ -89,11 +92,12 @@ do not change generator output to match the board's internal field names.
                                         // the parts of a multi-part question,
                                         // listed beside the figure in the
                                         // instruction's regular type
-  questionMathCompact: undefined,      // true → render questionMath smaller
+  questionMathCompact: undefined,      // true → cap questionMath's size
                                         // (the "given" line of a reverse
                                         // question, e.g. "Volume = 1030 cm^3",
                                         // names the given, not the answer, so
-                                        // it shouldn't outsize it)
+                                        // it shouldn't outsize it, but keeps
+                                        // the same floor as any question)
   answer: '(x + 3)(x + 4)',
   answerUnits: undefined,              // 'cm' or '\\text{cm}^3' — never baked
                                         // into answer

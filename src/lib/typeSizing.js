@@ -51,14 +51,25 @@ function visualLength(str) {
   return s.length;
 }
 
+// One fraction and nothing else, one term on the top and one on the bottom:
+// \frac{15}{9y}, \frac{x^{5}}{x^{2}}. Stacked at display size it stands much
+// taller than any other single line, so its ceiling is lower. A bracket, a
+// sum or a second fraction is more to read, and sizes like any other line.
+const LONE_FRACTION = /^\s*-?\\frac\{((?:[^{}]|\{[^{}]*\})*)\}\{((?:[^{}]|\{[^{}]*\})*)\}\s*$/;
+export function isSimpleFraction(q) {
+  const m = LONE_FRACTION.exec(String(q || ''));
+  if (!m) return false;
+  // An index isn't a second term: x^{-2} is still one term.
+  const oneTerm = (t) => !/[+\-(]|\\frac|\\times|\\div/.test(t.replace(/\^\{[^{}]*\}/g, ''));
+  return oneTerm(m[1]) && oneTerm(m[2]);
+}
+
 // `compact` is for the "given quantity" line of a reverse question (e.g.
-// "Volume = 1030 cm^3") — it names the given, it isn't the thing being
-// solved, so it should read smaller than the figure and the answer it leads
-// to, not bigger. That only holds because every existing `compact` use
-// (solids-generators) shares its row with a figure: the figure carries the
-// visual weight, the compact line is a caption beside it.
+// "Volume = 1030 cm^3"). It names the given, so it stays below the display
+// size of a question, but the class needs its number to do the question, so it
+// has to read from the back of the room: the same floor as any other question.
 //
-// A skill with no `visualization` at all — Variation is the first — has no
+// A skill with no `visualization` at all (Coordinate geometry, say) has no
 // figure to defer to. Its compact line is the only text in the row, doing
 // the job a normal (non-compact) question does everywhere else in the app —
 // and everywhere else, the question reads larger than the answer, not
@@ -81,12 +92,13 @@ export function qSize(q, instr, compact, hasFigure = true) {
   // most of it. There the width term aims at about nine tenths instead
   // (0.6em a character — KaTeX digits run wide), and the 76px ceiling
   // does the capping.
-  const w = hasFigure && !compact
+  const w = hasFigure
     ? 150 / Math.max(longest, 3)
     : Math.min(109 / Math.max(longest, 7), 14);
   const floor = lines >= 3 ? 28 : 30;
   if (compact && hasFigure) {
-    return `clamp(${Math.round(floor * 0.7)}px,min(${(h * 0.6).toFixed(1)}cqh,${(w * 0.7).toFixed(1)}cqi),44px)`;
+    return `clamp(${floor}px,min(${(h * 0.6).toFixed(1)}cqh,${w.toFixed(1)}cqi),44px)`;
   }
-  return `clamp(${floor}px,min(${h}cqh,${w.toFixed(1)}cqi),76px)`;
+  const ceiling = isSimpleFraction(q) ? 54 : 76;
+  return `clamp(${floor}px,min(${h}cqh,${w.toFixed(1)}cqi),${ceiling}px)`;
 }

@@ -86,10 +86,6 @@ function subExpr(p, arg) {
   return terms.map((t, k) => (k === 0 ? `${t.neg ? '-' : ''}${t.body}` : ` ${t.neg ? '-' : '+'} ${t.body}`)).join('');
 }
 
-// The instruction is plain text, so a negative number there takes a real
-// minus sign, as in coordinateGeometryGenerators.
-const txt = (s) => s.replace(/-/g, '\u2212');
-
 const nz = (lo, hi) => { for (;;) { const n = _.random(lo, hi); if (n !== 0) return n; } };
 const arrow = () => Math.random() < 0.25;
 const def = (name, body, useArrow = arrow()) => (useArrow ? `${name} : x \\mapsto ${body}` : `${name}(x) = ${body}`);
@@ -123,8 +119,8 @@ export const generateFunctionNotation = (options = {}) => {
 function evaluate(name, p, n) {
   const v = at(p, n);
   return {
-    instruction: txt(`Find ${name}(${n})`),
-    questionMath: def(name, polyTex(p)),
+    instruction: 'Evaluate',
+    questionMath: `${def(name, polyTex(p))}${NL}${name}(${n})`,
     answer: String(v),
     workingOut: `${name}(${n}) = ${subTex(p, n)} = ${v}`,
   };
@@ -135,8 +131,8 @@ function reverseEval(name) {
   const t = nz(-6, 10);
   const k = a * t + b;
   return {
-    instruction: txt(`Find x when ${name}(x) = ${k}`),
-    questionMath: def(name, polyTex([b, a])),
+    instruction: 'Find x',
+    questionMath: `${def(name, polyTex([b, a]))}${NL}${name}(x) = ${k}`,
     answer: `x = ${t}`,
     workingOut: [`${polyTex([b, a])} = ${k}`, `${polyTex([0, a])} = ${k - b}`, `x = ${t}`].join(NL),
   };
@@ -290,8 +286,8 @@ function compositeValue(F, G, short) {
   // Numbers a class can do in their heads.
   if (Math.abs(mid) > 12 || Math.abs(v) > 150) return compositeValue(F, G, short);
   return {
-    instruction: txt(`Find ${comp(outer, inner, n, short)}`),
-    questionMath: [def(F, polyTex(pf)), def(G, polyTex(pg))].join(NL),
+    instruction: 'Evaluate',
+    questionMath: [def(F, polyTex(pf)), def(G, polyTex(pg)), comp(outer, inner, n, short)].join(NL),
     answer: String(v),
     workingOut: [`${inner}(${n}) = ${subTex(pi, n)} = ${mid}`, `${outer}(${mid}) = ${subTex(po, mid)} = ${v}`].join(NL),
   };
@@ -318,8 +314,8 @@ function compositeSolve(F, G, short) {
   const k = at(result, t);
   const label = comp(outer, inner, 'x', short);
   return {
-    instruction: txt(`Find x when ${label} = ${k}`),
-    questionMath: [def(F, polyTex(pf)), def(G, polyTex(pg))].join(NL),
+    instruction: 'Find x',
+    questionMath: [def(F, polyTex(pf)), def(G, polyTex(pg)), `${label} = ${k}`].join(NL),
     answer: `x = ${t}`,
     workingOut: [`${label} = ${polyTex(result)}`, `${polyTex(result)} = ${k}`, `x = ${t}`].join(NL),
   };
@@ -493,8 +489,8 @@ function absEvaluateX() {
     const v = at(p, x);
     if (v >= 0 && Math.random() < 0.7) continue;   // mostly a negative inside
     return {
-      instruction: txt(`Find the value when x = ${x}`),
-      questionMath: abs(p.length === 2 ? linTex(p[0], p[1]) : polyTex(p)),
+      instruction: 'Evaluate',
+      questionMath: `${abs(p.length === 2 ? linTex(p[0], p[1]) : polyTex(p))}${NL}x = ${x}`,
       answer: String(Math.abs(v)),
       workingOut: `${abs(subTex(p, x))} = ${abs(v)} = ${Math.abs(v)}`,
     };
@@ -514,8 +510,8 @@ function absEvaluateAB() {
   const e = _.sample(AB);
   const v = e.f(a, b);
   return {
-    instruction: txt(`Find the value when a = ${a} and b = ${b}`),
-    questionMath: e.tex,
+    instruction: 'Evaluate',
+    questionMath: `${e.tex}${NL}a = ${a},\\ b = ${b}`,
     answer: String(v),
     workingOut: `${e.tex} = ${v}`,
   };

@@ -246,8 +246,8 @@ function ambiguous() {
       ? `${deg(Ak)} + ${deg(dp1(r2))} < 180^\\circ`
       : `${deg(Ak)} + ${deg(dp1(r2))} > 180^\\circ`;
     return {
-      instruction: `In triangle ${name}, ${given[0]}, ${given[1]} and angle ${angleK} = ${Ak}°.`,
-      questionText: `Find the size of angle ${angleO}, giving every possible value to 1 decimal place.`,
+      instruction: `Find the size of angle ${angleO}, giving every possible value to 1 decimal place.`,
+      questionText: `In triangle ${name}, ${given[0]}, ${given[1]} and angle ${angleK} = ${Ak}°.`,
       answer: both ? `${deg(dp1(r1))} \\text{ or } ${deg(dp1(r2))}` : `${deg(dp1(r1))} \\text{ only}`,
       workingOut: [
         `\\frac{\\sin(${O})}{${b}} = \\frac{\\sin(${deg(Ak)})}{${a}}`,
@@ -392,8 +392,8 @@ function areaFindAngle() {
     const r1 = dp1(t1), r2 = dp1(180 - Number(r1));
     const given = _.shuffle([`${sideName(name, V, P)} = ${p} cm`, `${sideName(name, V, Q)} = ${q} cm`]);
     return {
-      instruction: `Triangle ${name} has area ${area} cm², ${given[0]} and ${given[1]}.`,
-      questionText: `Find the size of angle ${angleName(name, V, P, Q)}, giving every possible value to 1 decimal place.`,
+      instruction: `Find the size of angle ${angleName(name, V, P, Q)}, giving every possible value to 1 decimal place.`,
+      questionText: `Triangle ${name} has area ${area} cm², ${given[0]} and ${given[1]}.`,
       answer: `${deg(r1)} \\text{ or } ${deg(r2)}`,
       workingOut: [
         `\\frac{1}{2} \\times ${p} \\times ${q} \\times \\sin(${V}) = ${area}`,
@@ -501,12 +501,12 @@ function bearings() {
       `${atT} = 180^\\circ - ${deg(d)} = ${deg(T_)}`,
       `${SE}^2 = ${l1}^2 + ${l2}^2 - 2 \\times ${l1} \\times ${l2} \\times \\cos(${atT})`,
     ];
-    let answer, answerUnits, questionText;
+    let answer, answerUnits, instruction;
     if (ask === 'distance') {
       steps.push(`${SE} = ${sig3(dist)} \\text{ (3 s.f.)}`);
       answer = sig3(dist);
       answerUnits = '\\text{km}';
-      questionText = `Find the distance ${SE}. Give your answer to 3 significant figures.`;
+      instruction = `Find the distance ${SE}. Give your answer to 3 significant figures.`;
     } else {
       steps.push(
         `${SE} = ${trunc4(dist)}\\ldots`,
@@ -515,11 +515,11 @@ function bearings() {
         `${deg(brg(b1))} ${clockwise ? '+' : '-'} ${atS}${wrap} = ${deg(brg1(bearing))} \\text{ (1 d.p.)}`,
       );
       answer = deg(brg1(bearing));
-      questionText = `Find the bearing of ${E} from ${S}. Give your answer to 1 decimal place.`;
+      instruction = `Find the bearing of ${E} from ${S}. Give your answer to 1 decimal place.`;
     }
     return {
-      instruction: `${c.who} ${c.go} ${l1} km on a bearing of ${brg(b1)}° from ${c.from} ${S} to ${c.to1} ${T}. It then ${c.verb} ${l2} km on a bearing of ${brg(b2)}° to ${c.to2} ${E}.`,
-      questionText,
+      instruction,
+      questionText: `${c.who} ${c.go} ${l1} km on a bearing of ${brg(b1)}° from ${c.from} ${S} to ${c.to1} ${T}. It then ${c.verb} ${l2} km on a bearing of ${brg(b2)}° to ${c.to2} ${E}.`,
       answer,
       ...(answerUnits ? { answerUnits } : {}),
       workingOut: steps.join(NL),

@@ -7,9 +7,10 @@ import { polygonFromInteriorAngles } from '../lib/polygonFromAngles.js';
 // coordinates.
 // `scale` widens one figure type's width cap past the shared one — the bar
 // chart, which is height-bound and needs the room to grow sideways.
-function svgWrap(children, w, h, key, big, shown, noShrink = false, scale = 1, hug = false) {
+function svgWrap(children, w, h, key, big, shown, noShrink = false, scale = 1, hug = false, { drop = 0, capScale = 1 } = {}) {
   const capShown = noShrink ? false : shown;
-  const cap = capShown ? (big ? '41cqh' : '34cqh') : (big ? '64cqh' : '47cqh');
+  const capBase = capShown ? (big ? 41 : 34) : (big ? 64 : 47);
+  const cap = `${capBase * capScale}cqh`;
   // A drawing capped by height is letterboxed inside a wider box, and the
   // spare width sits between it and the question. `hug` narrows the box to
   // the drawing, so the question beside it gets that width back.
@@ -28,7 +29,8 @@ function svgWrap(children, w, h, key, big, shown, noShrink = false, scale = 1, h
         width: big
           ? `min(${70 * scale}cqi,${580 * scale}px${hugW})`
           : `min(${47 * scale}cqi,${346 * scale}px${hugW})`,
-        maxHeight: `min(${cap}, 100%)`,
+        maxHeight: drop ? `min(${cap}, calc(100% - ${drop}cqh))` : `min(${cap}, 100%)`,
+        ...(drop ? { marginTop: `${drop}cqh` } : {}),
         // Without the letterbox there is no margin left before the question.
         ...(hug ? { marginRight: '3cqi' } : {}),
       }}
@@ -37,6 +39,14 @@ function svgWrap(children, w, h, key, big, shown, noShrink = false, scale = 1, h
     </svg>
   );
 }
+
+// A 3D solid: a little larger than a flat figure, and dropped clear of the
+// instruction above it. Labels on a solid's top face sit right at the top of
+// the viewBox, where they otherwise run up against the instruction's last line.
+const solidWrap = (nodes, w, h, key, fig, shown) => svgWrap(nodes, w, h, key, fig.big, shown, false, 1.14, false, { drop: 3, capScale: 1.14 });
+
+// How far a line drawn on its own reaches from the origin in `coordinate-grid`.
+const GRID_REACH = 5;
 
 function figLine(key, x1, y1, x2, y2, extra) {
   return <line key={key} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--ink)" strokeWidth={3} strokeLinecap="square" {...extra} />;
@@ -423,7 +433,11 @@ export default function Figure({ fig, color, shown }) {
     // F = front face, B = back face; T/B = top/bottom, L/R = left/right.
     // Back is the front offset by (+45, -45) — that offset IS the projection.
     const FBL = [58, 158], FBR = [208, 158], FTR = [208, 63], FTL = [58, 63];
-    const BBL = [103, 113], BBR = [253, 113], BTR = [253, 18], BTL = [103, 18];
+    // Given the area of that front face, the depth is drawn shallower, so the
+    // three hidden edges clear the middle of the face and the area can sit in
+    // its true centre.
+    const OFF = fig.crossSectionLabel ? 30 : 45;
+    const BBL = [58 + OFF, 158 - OFF], BBR = [208 + OFF, 158 - OFF], BTR = [208 + OFF, 63 - OFF], BTL = [58 + OFF, 63 - OFF];
     const edge = (key, p, q, extra) => figLine(key, p[0], p[1], q[0], q[1], extra);
 
     // Whichever dimension the generator marks unknown gets the slot colour.
@@ -448,16 +462,11 @@ export default function Figure({ fig, color, shown }) {
           stroke="none"
         />
       );
-      // The true centre of the front face (133, 116) sits almost exactly on
-      // the hidden back-bottom-left vertex's projection — h1/h2/h3 all pass
-      // through that point, so a label there gets a hidden edge drawn right
-      // through it. The upper-right quarter of the face (right of h3, above
-      // h2) is the one region those three edges never cross, so the label
-      // sits there instead. It is given information rather than the
-      // unknown, so it takes ink, not the slot colour — the tint alone is
+      // In the true centre of the face. It is given information rather than
+      // the unknown, so it takes ink, not the slot colour — the tint alone is
       // enough to tie it to the face.
       if (fig.crossSectionLabel) {
-        nodes.push(figLabel('xsl', 155, 92, fig.crossSectionLabel, 'middle'));
+        nodes.push(figLabel('xsl', 137, 117, fig.crossSectionLabel, 'middle'));
       }
     }
 
@@ -501,9 +510,9 @@ export default function Figure({ fig, color, shown }) {
     // Sits just outside the midpoint of the bottom-right receding edge,
     // pushed along that edge's outward normal into clear space. .fig-svg has
     // overflow: visible, so a long label here is not clipped.
-    if (fig.d) nodes.push(figLabel('d', 245, 150, fig.d, 'start', labelColor('d')));
+    if (fig.d) nodes.push(figLabel('d', 223 + OFF / 2, 172 - OFF / 2, fig.d, 'start', labelColor('d')));
 
-    return svgWrap(nodes, 300, 195, 'cb', fig.big, shown);
+    return solidWrap(nodes, 300, 195, 'cb', fig, shown);
   }
 
   if (fig.type === 'cylinder') {
@@ -541,7 +550,7 @@ export default function Figure({ fig, color, shown }) {
       nodes.push(figLabel('rv', CX + RX / 2, TOP - RY - 8, fig.r, 'middle', col('r')));
     }
     if (fig.h) nodes.push(figLabel('hv', L - 10, (TOP + BOT) / 2 + 5, fig.h, 'end', col('h')));
-    return svgWrap(nodes, 210, 240, 'cy', fig.big, shown);
+    return solidWrap(nodes, 210, 240, 'cy', fig, shown);
   }
 
   if (fig.type === 'cone') {
@@ -581,7 +590,7 @@ export default function Figure({ fig, color, shown }) {
     // Slant height sits just outside the right-hand slant, pushed along that
     // edge's outward normal.
     if (fig.l) nodes.push(figLabel('lv', 151, 97, fig.l, 'start', col('l')));
-    return svgWrap(nodes, 210, 220, 'cn', fig.big, shown);
+    return solidWrap(nodes, 210, 220, 'cn', fig, shown);
   }
 
   if (fig.type === 'sphere') {
@@ -607,7 +616,7 @@ export default function Figure({ fig, color, shown }) {
       nodes.push(<circle key="c" cx={CX} cy={CY} r={4} fill="var(--ink)" />);
       nodes.push(figLabel('rv', CX + RAD / 2, CY - RAD - 8, fig.r, 'middle', col('r')));
     }
-    return svgWrap(nodes, 190, 190, 'sp', fig.big, shown);
+    return solidWrap(nodes, 190, 190, 'sp', fig, shown);
   }
 
   if (fig.type === 'prism') {
@@ -625,7 +634,7 @@ export default function Figure({ fig, color, shown }) {
     // at its bottom-left corner so b and ht sit on true horizontal/vertical
     // edges; the trapezium's parallel sides are its top and bottom.
     const front = isTrap
-      ? [[45, 165], [175, 165], [150, 90], [75, 90]]
+      ? [[45, 165], [175, 165], [160, 90], [60, 90]]
       : [[55, 165], [165, 165], [55, 75]];
     const rear = front.map(back);
     const pts = (ps) => ps.map((p) => p.join(',')).join(' ');
@@ -658,10 +667,12 @@ export default function Figure({ fig, color, shown }) {
     }
 
     if (isTrap) {
-      if (fig.a) nodes.push(figLabel('la', 112, 82, fig.a, 'middle', col('a')));
+      // On the top face, right of the hidden edge that crosses it.
+      if (fig.a) nodes.push(figLabel('la', 138, 80, fig.a, 'middle', col('a')));
       if (fig.b) nodes.push(figLabel('lb', 110, 188, fig.b, 'middle', col('b')));
-      if (fig.ht) nodes.push(figLine('hl', 110, 90, 110, 165, { strokeDasharray: '6 6', strokeWidth: 2 }));
-      if (fig.ht) nodes.push(figLabel('lh', 118, 132, fig.ht, 'start', col('ht')));
+      // Below the hidden back edge (y = 120), the one clear part of the face.
+      if (fig.ht) nodes.push(figLine('hl', 88, 90, 88, 165, { strokeDasharray: '6 6', strokeWidth: 2 }));
+      if (fig.ht) nodes.push(figLabel('lh', 95, 148, fig.ht, 'start', col('ht')));
       if (fig.L) nodes.push(figLabel('lL', 211, 157, fig.L, 'start', col('L')));
     } else {
       if (fig.b) nodes.push(figLabel('lb', 110, 188, fig.b, 'middle', col('b')));
@@ -674,7 +685,7 @@ export default function Figure({ fig, color, shown }) {
       const cy = front.reduce((s, p) => s + p[1], 0) / front.length;
       nodes.push(figLabel('xsl', cx, cy + 5, fig.crossSectionLabel, 'middle'));
     }
-    return svgWrap(nodes, 280, 205, 'pr', fig.big, shown);
+    return solidWrap(nodes, 280, 205, 'pr', fig, shown);
   }
 
   if (fig.type === 'pyramid') {
@@ -706,7 +717,7 @@ export default function Figure({ fig, color, shown }) {
     }
     if (fig.base) nodes.push(figLabel('lb', 130, 196, fig.base, 'middle', col('base')));
     if (fig.baseSide) nodes.push(figLabel('lbs', 232, 168, fig.baseSide, 'start', col('baseSide')));
-    return svgWrap(nodes, 285, 215, 'py', fig.big, shown);
+    return solidWrap(nodes, 285, 215, 'py', fig, shown);
   }
 
   if (fig.type === 'angle-rays') {
@@ -984,7 +995,11 @@ export default function Figure({ fig, color, shown }) {
     const nodes = [];
     const placed = [];
     let xCursor = 64;   // room for a side label left of the first shape
-    const sizes = ['left', 'right'].map((k) => (fig[k]?.big ? 150 : 92));
+    // A rectangle is drawn wide enough to hold its area label, the larger of
+    // the pair still visibly larger. A triangle's area sits underneath.
+    const areaLen = tri ? 0 : Math.max(0, ...['left', 'right'].map((k) => String(fig[k]?.area ?? '').length));
+    const areaW = areaLen ? areaLen * 10.5 + 30 : 0;
+    const sizes = ['left', 'right'].map((k) => (fig[k]?.big ? Math.max(150, areaW * 1.3) : Math.max(92, areaW)));
     const baseY = 30 + Math.max(...sizes) * (tri ? 1 : 0.6) + (fig.turn === 'quarter' ? 60 : 0);
     ['left', 'right'].forEach((which, w) => {
       const s = fig[which] ?? {};
@@ -2404,22 +2419,11 @@ export default function Figure({ fig, color, shown }) {
       while (x1 - x0 < y1 - y0) { if ((x1 - x0) % 2) x1 += 1; else x0 -= 1; }
       while (y1 - y0 < x1 - x0) { if ((y1 - y0) % 2) y1 += 1; else y0 -= 1; }
     } else {
-      // A line alone: fix a square window around its intercept and CLIP the
-      // line to it. Growing the window to contain the whole line is what made
-      // a gradient of -2 come out three times taller than it was wide.
-      const [ln] = lines;
-      if (ln.x !== undefined) {
-        x0 = Math.round(ln.x) - 5; x1 = Math.round(ln.x) + 5;
-        if (x0 > -1) { x0 = -1; x1 = 9; }
-        if (x1 < 1) { x1 = 1; x0 = -9; }
-        y0 = -5; y1 = 5;
-      } else {
-        const { c } = ln;
-        x0 = -5; x1 = 5;
-        y0 = Math.round(c) - 5; y1 = Math.round(c) + 5;
-        if (y0 > -1) { y0 = -1; y1 = 9; }
-        if (y1 < 1) { y1 = 1; y0 = -9; }
-      }
+      // A line alone: the same square window round the origin every time, and
+      // the line CLIPPED to it. The generators keep their lines near the
+      // origin, because a smaller window is what makes the numbers readable
+      // from the back of a room.
+      x0 = -GRID_REACH; x1 = GRID_REACH; y0 = -GRID_REACH; y1 = GRID_REACH;
     }
 
     const cell = 26;
@@ -2442,24 +2446,6 @@ export default function Figure({ fig, color, shown }) {
     }
     nodes.push(figLine('ax', X(x0), Y(0), X(x1), Y(0), { strokeWidth: 2.5 }));
     nodes.push(figLine('ay', X(0), Y(y0), X(0), Y(y1), { strokeWidth: 2.5 }));
-
-    // Axis numbers every square while the grid is small, every other once it
-    // is not, so they never collide at any span.
-    const stepX = x1 - x0 > 9 ? 2 : 1;
-    const stepY = y1 - y0 > 9 ? 2 : 1;
-    for (let x = Math.ceil(x0 / stepX) * stepX; x <= x1; x += stepX) {
-      if (x !== 0) nodes.push(figLabel(`nx${x}`, X(x), Y(0) + 17, String(x), 'middle', 'var(--ink)', 13));
-    }
-    for (let y = Math.ceil(y0 / stepY) * stepY; y <= y1; y += stepY) {
-      if (y !== 0) nodes.push(figLabel(`ny${y}`, X(0) - 7, Y(y) + 5, String(y), 'end', 'var(--ink)', 13));
-    }
-    // O only where the origin is a corner of the grid. With numbers running
-    // both sides of it, an O tucked under the axis reads as part of "-1".
-    if (x0 === 0 || y0 === 0) {
-      nodes.push(figLabel('lo', X(0) - 7, Y(0) + 17, 'O', 'end', 'var(--ink)', 14));
-    }
-    nodes.push(figLabel('lx', X(x1) + 12, Y(0) + 5, 'x', 'start', 'var(--ink)', 15));
-    nodes.push(figLabel('ly', X(0) + 9, Y(y1) - 6, 'y', 'start', 'var(--ink)', 15));
 
     // The line or segment is the subject of the question, so it takes the
     // slot colour, like every other `unknown` in this file.
@@ -2506,6 +2492,33 @@ export default function Figure({ fig, color, shown }) {
       );
     }
 
+    // Axis numbers every square while the grid is small, every other once it
+    // is not, so they never collide at any span.
+    const stepX = x1 - x0 > 10 ? 2 : 1;
+    const stepY = y1 - y0 > 10 ? 2 : 1;
+    // A bigger window draws smaller on the same board, so its labels grow in
+    // proportion and stay the same size on screen.
+    const zoom = Math.max(1, Math.max(x1 - x0, y1 - y0) / 10);
+    const NUM = 16 * zoom;
+    const signedNum = (v) => String(v).replace('-', '\u2212');
+    // Above the lines, with a halo in the ground colour, so a line running
+    // through a number never strikes it out.
+    const nums = [];
+    for (let x = Math.ceil(x0 / stepX) * stepX; x <= x1; x += stepX) {
+      if (x !== 0) nums.push(figLabel(`nx${x}`, X(x), Y(0) + NUM + 3, signedNum(x), 'middle', 'var(--ink)', NUM));
+    }
+    for (let y = Math.ceil(y0 / stepY) * stepY; y <= y1; y += stepY) {
+      if (y !== 0) nums.push(figLabel(`ny${y}`, X(0) - 6, Y(y) + NUM * 0.36, signedNum(y), 'end', 'var(--ink)', NUM));
+    }
+    nodes.push(<g key="nums" stroke="var(--ground)" strokeWidth={4} strokeLinejoin="round" style={{ paintOrder: 'stroke' }}>{nums}</g>);
+    // O only where the origin is a corner of the grid. With numbers running
+    // both sides of it, an O tucked under the axis reads as part of "-1".
+    if (x0 === 0 || y0 === 0) {
+      nodes.push(figLabel('lo', X(0) - 6, Y(0) + NUM + 3, 'O', 'end', 'var(--ink)', NUM));
+    }
+    nodes.push(figLabel('lx', X(x1) + 8, Y(0) + 6, 'x', 'start', 'var(--ink)', NUM * 1.1));
+    nodes.push(figLabel('ly', X(0) + 8, Y(y1) - 5, 'y', 'start', 'var(--ink)', NUM * 1.1));
+
     const cx = pts.length ? pts.reduce((s, q) => s + q.x, 0) / pts.length : 0;
     const cy = pts.length ? pts.reduce((s, q) => s + q.y, 0) / pts.length : 0;
     pts.forEach((p, i) => {
@@ -2516,13 +2529,14 @@ export default function Figure({ fig, color, shown }) {
       // straight onto the segment leaving it.
       const ux = p.x === cx ? 1 : Math.sign(p.x - cx);
       const uy = p.y === cy ? 1 : Math.sign(p.y - cy);
-      nodes.push(figLabel(`pl${i}`, X(p.x) + ux * 11, Y(p.y) - uy * 11 + 5, p.label,
-        ux >= 0 ? 'start' : 'end', 'var(--ink)', 16));
+      nodes.push(figLabel(`pl${i}`, X(p.x) + ux * 11, Y(p.y) - uy * 11 + 6, p.label,
+        ux >= 0 ? 'start' : 'end', 'var(--ink)', NUM * 1.15));
     });
 
     // noShrink, like magic-square: the grid is what has to be read after the
     // reveal, not decoration around an answer.
-    return svgWrap(nodes, W, H, 'cg', fig.big, shown, true);
+    // Allowed the full height of its row: the numbers are the question.
+    return svgWrap(nodes, W, H, 'cg', fig.big, shown, true, 1.2, false, { capScale: 1.5 });
   }
 
   // Transformations on a grid (Haese 20A-D, Rayner 11.3), drawn to scale
@@ -2668,7 +2682,7 @@ export default function Figure({ fig, color, shown }) {
         dots.push(<circle key={`nd${row}-${i}`} cx={x} cy={y} r={6} fill="var(--ink)" />);
       }
     }
-    return svgWrap([...lines, ...dots], W, 180, 'bp', fig.big, shown);
+    return svgWrap([...lines, ...dots], W, 180, 'bp', fig.big, shown, false, 1, true);
   }
 
   if (fig.type === 'growing-pattern') {
@@ -2677,18 +2691,21 @@ export default function Figure({ fig, color, shown }) {
     // `counts[row]` — not a to-scale rebuild of a specific real construction
     // (a genuine matchstick-squares chain needs step = 3 exactly; this
     // generator's step is any 2-9), so each motif is a schematic stand-in
-    // for "this many units" rather than a literal count of matches. Cell
-    // size shrinks with the row's count so even the widest term (up to the
-    // upper 20s) still fits the same box.
+    // for "this many units" rather than a literal count of matches. One cell
+    // size for all three rows, set by the longest (up to the upper 20s), so
+    // the marks don't change size from term to term. Each row is labelled and
+    // left-aligned, so the growth reads straight down the page.
     const { motif, counts = [] } = fig;
     if (!Array.isArray(counts) || counts.length < 1) return null;
-    const W = 280;
-    const rowY = [40, 100, 160].slice(0, counts.length);
+    const LEFT = 62;
+    const W = 360;
+    const rowY = [34, 95, 156].slice(0, counts.length);
+    const cell = Math.min(22, (W - LEFT - 4) / Math.max(...counts));
     const nodes = [];
     counts.forEach((n, row) => {
       const y = rowY[row];
-      const cell = Math.min(22, (W - 16) / n);
-      const startX = (W - n * cell) / 2 + cell / 2;
+      const startX = LEFT + cell / 2;
+      nodes.push(figLabel(`tm${row}`, 0, y + 6, `Term ${row + 1}`, 'start', 'var(--ink)', 17));
       for (let i = 0; i < n; i++) {
         const x = startX + i * cell;
         if (motif === 'matchstick-squares') {
@@ -2702,44 +2719,31 @@ export default function Figure({ fig, color, shown }) {
         }
       }
     });
-    return svgWrap(nodes, W, 190, 'gp', fig.big, shown);
+    return svgWrap(nodes, W, 190, 'gp', fig.big, shown, false, 1, true);
   }
 
   if (fig.type === 'dot-grid-pattern') {
-    // Terms 1-3 of a quadratic "continue the pattern" question (Haese
-    // 26D), one column each: an n×n dot grid (the n² part) plus a row of
-    // `extraDots` underneath (the constant +c part). The extra-dots row
-    // sits at the same fixed height in every column regardless of that
-    // column's grid size, so the one thing that visibly *doesn't* grow
-    // across terms 1-3 reads as clearly constant.
-    const { extraDots = 0, counts = [] } = fig;
-    if (!Array.isArray(counts) || counts.length < 1) return null;
-    const W = 280;
-    const spacing = 15;
-    const dotR = 4;
-    const gridTop = 30;
-    const extraY = gridTop + 3 * spacing + 24; // fixed baseline, sized for the largest (3x3) grid shown
+    // Terms 1-3 of a quadratic "continue the pattern" question (Haese 26D),
+    // each one solid block of identical dots, `cols` wide and `rows` tall,
+    // standing on a common baseline with its term number underneath.
+    //   terms   [[cols, rows], ...]
+    const { terms = [] } = fig;
+    if (!terms.length) return null;
+    const GAP = 17, COL = 74, BOTTOM = 25;
+    const tall = Math.max(...terms.map(([, rows]) => rows));
+    const base = 8 + (tall - 1) * GAP;
+    const W = terms.length * COL;
     const nodes = [];
-    counts.forEach((_count, col) => {
-      const n = col + 1; // term number
-      const cx = (W / (counts.length + 1)) * (col + 1);
-      const gridSpan = (n - 1) * spacing;
-      for (let row = 0; row < n; row++) {
-        for (let gcol = 0; gcol < n; gcol++) {
-          const x = cx - gridSpan / 2 + gcol * spacing;
-          const y = gridTop + row * spacing;
-          nodes.push(<circle key={`g${col}-${row}-${gcol}`} cx={x} cy={y} r={dotR} fill="var(--ink)" />);
+    terms.forEach(([cols, rows], t) => {
+      const cx = COL * (t + 0.5);
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          nodes.push(<circle key={`d${t}-${r}-${c}`} cx={cx + (c - (cols - 1) / 2) * GAP} cy={base - r * GAP} r={5.5} fill="var(--ink)" />);
         }
       }
-      if (extraDots > 0) {
-        const rowSpan = (extraDots - 1) * (spacing * 0.7);
-        for (let i = 0; i < extraDots; i++) {
-          const x = cx - rowSpan / 2 + i * (spacing * 0.7);
-          nodes.push(<circle key={`e${col}-${i}`} cx={x} cy={extraY} r={dotR * 0.75} fill="var(--ink)" />);
-        }
-      }
+      nodes.push(figLabel(`tm${t}`, cx, base + BOTTOM, `Term ${t + 1}`, 'middle', 'var(--ink)', 16));
     });
-    return svgWrap(nodes, W, 190, 'dg', fig.big, shown);
+    return svgWrap(nodes, W, base + BOTTOM + 6, 'dg', fig.big, shown, false, 1, true);
   }
 
   if (fig.type === 'table') {
@@ -3361,7 +3365,8 @@ export default function Figure({ fig, color, shown }) {
 
     // noShrink and hug, as `scatter`: the plot is what the answer is read
     // off, and it is wide and short.
-    return svgWrap(nodes, W, H, 'box-plot', fig.big, shown, true, 1.2, true);
+    // A worded question beside it (`beside`) needs more of the width.
+    return svgWrap(nodes, W, H, 'box-plot', fig.big, shown, true, fig.beside ? 0.95 : 1.2, true);
   }
 
   // The fourth data display: drawn to the data, like `pie-chart`. A gridline

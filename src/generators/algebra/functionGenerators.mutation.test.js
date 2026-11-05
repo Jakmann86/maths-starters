@@ -259,8 +259,10 @@ describe('Functions mutation test', () => {
     SKILLS.forEach(([g, check]) => {
       BANDS.forEach((band) => {
         for (let t = 0; t < PER_BAND; t += 1) {
-          const q = g({ difficulty: band });
-          check(q, band);
+          // Read back as one sentence, so the operators can reach its numbers.
+          const raw = g({ difficulty: band });
+          check(raw, band);
+          const q = g === gen.generateAbsoluteValue ? chk.askedAbsolute(raw) : chk.asked(raw);
           Object.entries(OPS).forEach(([name, op]) => {
             const m = _.cloneDeep(q);
             if (!op(m) || _.isEqual(m, q)) return;

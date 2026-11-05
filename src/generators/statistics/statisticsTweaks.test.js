@@ -91,9 +91,9 @@ describe('frequency-table-reading', () => {
     for (let t = 0; t < SAMPLES; t += 1) {
       const q = generateFrequencyTableReading({ difficulty: 'foundation' });
       parses(q);
-      distinct.add(q.instruction + JSON.stringify(q.visualization.rows));
+      distinct.add(q.instruction + q.questionText + JSON.stringify(q.visualization.rows));
       const { xs, fs } = readTable(q.visualization);
-      const m = q.instruction.match(/(more than|fewer than|at least) (\d+)/);
+      const m = (q.questionText ?? '').match(/(more than|fewer than|at least) (\d+)/);
       let want;
       if (m) {
         kinds.cond += 1;
@@ -133,7 +133,7 @@ describe('frequency-table-reading', () => {
       const hidden = fs.indexOf(null);
       expect(fs.filter((f) => f === null)).toHaveLength(1);
       expect(xs[hidden]).not.toBe(0);
-      const n = Number(q.instruction.match(/(\d+) (?:students|matches|houses|cars|nests)/)[1]);
+      const n = Number(q.questionText.match(/(\d+) (?:students|matches|houses|cars|nests)/)[1]);
       const missing = n - _.sum(fs.filter((f) => f !== null));
       expect(missing).toBeGreaterThanOrEqual(1);
       const full = fs.map((f) => (f === null ? missing : f));

@@ -103,10 +103,10 @@ function expected(q) {
     return key === 'CDB' ? `x = ${dp1(v[key])}^\\circ` : `x = ${sf3(v[key])}`;
   }
   const ints = (str) => (str.match(/\d+/g) ?? []).map(Number);
-  const text = q.instruction;
+  const text = q.questionText ?? q.instruction;
   if (text.startsWith('In triangle')) {
     const [name, s1, v1, s2, v2, ang, va] = /^In triangle (\w+), (\w+) = (\d+) cm, (\w+) = (\d+) cm and angle (\w+) = (\d+)°\.$/.exec(text).slice(1);
-    const ask = /angle (\w+),/.exec(q.questionText)[1];
+    const ask = /angle (\w+),/.exec(q.instruction)[1];
     const idx = (ch) => name.indexOf(ch);
     const opp = (nm) => idx([...name].find((ch) => !nm.includes(ch)));
     const s = [null, null, null], A = [null, null, null];
@@ -135,7 +135,7 @@ function expected(q) {
   if (!cw) d = 360 - d;
   const T = 180 - d;
   const dist = Math.sqrt(l1 ** 2 + l2 ** 2 - 2 * l1 * l2 * cosD(T));
-  if (q.questionText.startsWith('Find the distance')) return sf3(dist);
+  if (q.instruction.startsWith('Find the distance')) return sf3(dist);
   const alpha = Math.asin((l2 * sinD(T)) / dist) / R;
   const brg = (((cw ? b1 + alpha : b1 - alpha) % 360) + 360) % 360;
   return `${dp1(brg).padStart(5, '0')}^\\circ`;
@@ -297,7 +297,7 @@ const OPS = {
   // Sentences.
   'a number in the sentence changed': (q) => {
     if (q.visualization) return false;
-    const target = q.questionMath ? 'questionMath' : 'instruction';
+    const target = q.questionMath ? 'questionMath' : 'questionText';
     const hits = [...q[target].matchAll(/\d+/g)];
     if (!hits.length) return false;
     const before = expected(q);
@@ -312,22 +312,22 @@ const OPS = {
   // question with the same answer (equivalent); for the area it never is,
   // since the angle must lie between the two sides given.
   'the angle asked changed': (q) => {
-    const m = /angle ([A-Z]{3}),/.exec(q.questionText ?? '');
+    const m = /angle ([A-Z]{3}),/.exec(q.instruction ?? '');
     if (!m) return false;
-    const name = /triangle (\w+)/i.exec(q.instruction)[1];
+    const name = /triangle (\w+)/i.exec(q.questionText)[1];
     const v = _.sample([...name].filter((ch) => ch !== m[1][1]));
     const rest = [...name].filter((ch) => ch !== v);
     const before = expected(q);
-    q.questionText = q.questionText.replace(m[1], `${rest[0]}${v}${rest[1]}`);
-    if (!q.instruction.startsWith('In triangle')) return true;
+    q.instruction = q.instruction.replace(m[1], `${rest[0]}${v}${rest[1]}`);
+    if (!q.questionText.startsWith('In triangle')) return true;
     let after;
     try { after = expected(q); } catch { after = null; }
     return !(after !== null && after === before);
   },
   'from and to swapped': (q) => {
-    const m = /^Find the bearing of ([A-Z]) from ([A-Z])\./.exec(q.questionText ?? '');
+    const m = /^Find the bearing of ([A-Z]) from ([A-Z])\./.exec(q.instruction ?? '');
     if (!m) return false;
-    q.questionText = q.questionText.replace(`of ${m[1]} from ${m[2]}`, `of ${m[2]} from ${m[1]}`);
+    q.instruction = q.instruction.replace(`of ${m[1]} from ${m[2]}`, `of ${m[2]} from ${m[1]}`);
     return true;
   },
 };

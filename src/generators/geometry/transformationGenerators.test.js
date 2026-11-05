@@ -72,7 +72,7 @@ describe('Transformations', () => {
           const q = gen({ difficulty });
           const { kind } = checkTransformation(q, difficulty);
           mix[kind] = (mix[kind] ?? 0) + 1;
-          questions.add(JSON.stringify([q.instruction, q.questionMath, q.visualization.shapes, q.visualization.mirror]));
+          questions.add(JSON.stringify([q.instruction, q.questionText, q.questionMath, q.visualization.shapes, q.visualization.mirror]));
           answers.add(q.answer);
         }
         process.stdout.write(

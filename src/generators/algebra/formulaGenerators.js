@@ -6,10 +6,7 @@
 // other chapter migrated so far where a "harder version" section isn't a
 // separate skill.
 //
-// What's deliberately thin in this first pass: formula-substitution only
-// draws the circle figure (no cylinder/sphere shapes yet), formula-derivation
-// has one context (a savings account) rather than several, and elimination's
-// working-out always cross-multiplies (scale eq1 by |b2|, eq2 by |b1|) rather
+// What's deliberately thin in this first pass: elimination's working-out always cross-multiplies (scale eq1 by |b2|, eq2 by |b1|) rather
 // than finding the minimal scale factor a textbook would pick. All safe
 // simplifications, narrower than the full chapter but not wrong.
 
@@ -44,6 +41,7 @@ const TWO_VAR_FORMULAS = [
     substitutedForward: (r) => `C = 2\\pi \\times ${r}`,
     substitutedReverse: (C) => `r = \\frac{${C}}{2\\pi}`,
     range: [2, 25], decimals: 2, unitK: '\\text{cm}', unitU: '\\text{cm}',
+    figure: { type: 'circle', r: 'r' },
   },
   {
     formula: 'A = \\pi r^2', known: 'r', unknown: 'A',
@@ -52,7 +50,9 @@ const TWO_VAR_FORMULAS = [
     substitutedForward: (r) => `A = \\pi \\times ${r}^2`,
     substitutedReverse: (A) => `r = \\sqrt{\\frac{${A}}{\\pi}}`,
     range: [2, 20], decimals: 2, unitK: '\\text{cm}', unitU: '\\text{cm}^2',
+    figure: { type: 'circle', r: 'r' },
   },
+  // The surface area of a sphere, so it is drawn on a sphere, not a circle.
   {
     formula: 'A = 4\\pi r^2', known: 'r', unknown: 'A',
     forward: (r) => 4 * Math.PI * r * r,
@@ -60,6 +60,7 @@ const TWO_VAR_FORMULAS = [
     substitutedForward: (r) => `A = 4\\pi \\times ${r}^2`,
     substitutedReverse: (A) => `r = \\sqrt{\\frac{${A}}{4\\pi}}`,
     range: [2, 15], decimals: 2, unitK: '\\text{cm}', unitU: '\\text{cm}^2',
+    figure: { type: 'sphere', r: 'r' },
   },
 ];
 
@@ -92,7 +93,7 @@ export const generateFormulaSubstitution = (options = {}) => {
     answer: `r \\approx ${result}`,
     answerUnits: g.unitK,
     workingOut: [g.substitutedReverse(knownValue), `r \\approx ${result}`].join(NL),
-    visualization: { type: 'circle', r: 'r' },
+    visualization: g.figure,
     metadata: { topic: 'formula-substitution', difficulty, tags: ['algebra', 'formulae'] },
   };
 };
@@ -165,50 +166,121 @@ export const generateFormulaRearrangement = (options = {}) => {
 
 // ---------------------------------------------------------------------------
 // generateFormulaDerivation (Haese 7C)
-// One scenario for now (savings account, gain or loss) — a second context
-// is a straightforward extension later, not worth the unit-mismatch risk
-// of mixing $ and litres/points contexts in a first version.
+// One worded situation per context, each a starting value and a steady change.
+// The same sentence serves all three bands: Foundation fills in every number,
+// Core leaves the count as a letter, Stretch leaves all three as letters.
+//
+//   text     the situation, given its three quantities as strings
+//   letter   the subject of the formula, and `of` what it stands for
+//   vars     the letters Stretch uses for the start, the rate and the count;
+//            `count` is the one Core keeps
+//   sign     +1 or -1: whether the rate adds to the start or takes from it
+//   reversed the rate comes first, as a profit does: P = rn - s
+//   money    show the Foundation answer in pounds; otherwise `units`
+const DERIVATION_CONTEXTS = [
+  {
+    letter: 'A', of: 'the final amount', vars: ['P', 'x', 'n'], sign: 1, money: true,
+    start: [20, 80, 10], rate: [5, 50, 5], count: [4, 20],
+    text: (s, r, n) => `A savings account starts with £${s}. £${r} is deposited into it ${n} times.`,
+  },
+  {
+    letter: 'A', of: 'the final amount', vars: ['P', 'x', 'n'], sign: -1, money: true,
+    start: [40, 90, 10], rate: [5, 25, 5], count: [4, 12],
+    text: (s, r, n) => `A savings account starts with £${s}. £${r} is withdrawn from it ${n} times.`,
+  },
+  {
+    letter: 'C', of: 'the total cost', vars: ['F', 'r', 'm'], sign: 1, money: true,
+    start: [2, 6, 1], rate: [1, 3, 1], count: [3, 25],
+    text: (s, r, n) => `A taxi charges a fixed fee of £${s}, plus £${r} per mile. A journey is ${n} miles.`,
+  },
+  {
+    letter: 'C', of: 'the total cost', vars: ['F', 'r', 'h'], sign: 1, money: true,
+    start: [3, 8, 10], rate: [2, 6, 10], count: [2, 9],
+    text: (s, r, n) => `A plumber charges a call-out fee of £${s}, plus £${r} per hour. A job takes ${n} hours.`,
+  },
+  {
+    letter: 'C', of: 'the total cost', vars: ['B', 'p', 'n'], sign: 1, money: true,
+    start: [15, 45, 10], rate: [4, 15, 1], count: [12, 32],
+    text: (s, r, n) => `A school trip pays £${s} for a coach, plus £${r} for each of the ${n} students.`,
+  },
+  {
+    letter: 'P', of: 'the profit', vars: ['c', 'x', 'n'], sign: -1, reversed: true, money: true,
+    start: [2, 8, 10], rate: [2, 6, 1], count: [40, 90],
+    text: (s, r, n) => `A baker spends £${s} on ingredients, then sells ${n} cakes at £${r} each.`,
+  },
+  {
+    letter: 'V', of: 'the final volume', vars: ['a', 'r', 't'], sign: 1, units: 'litres',
+    start: [5, 30, 10], rate: [2, 12, 1], count: [3, 20],
+    text: (s, r, n) => `A tank holds ${s} litres of water. A tap adds ${r} litres per minute for ${n} minutes.`,
+  },
+  {
+    letter: 'V', of: 'the final volume', vars: ['a', 'r', 't'], sign: -1, units: 'litres',
+    start: [40, 90, 10], rate: [5, 20, 1], count: [3, 15],
+    text: (s, r, n) => `A tank holds ${s} litres of water. It drains at ${r} litres per minute for ${n} minutes.`,
+  },
+  {
+    letter: 'H', of: 'the final height', vars: ['a', 'r', 't'], sign: -1, units: 'cm',
+    start: [18, 40, 1], rate: [1, 3, 1], count: [2, 8],
+    text: (s, r, n) => `A candle is ${s} cm tall. It burns down ${r} cm every hour for ${n} hours.`,
+  },
+];
+
+const stepped = ([lo, hi, by = 1]) => _.random(lo, hi) * by;
+
 export const generateFormulaDerivation = (options = {}) => {
   const { difficulty = 'core' } = options;
-  const initial = _.random(20, 80) * 10;
-  const isGain = _.sample([true, false]);
-  const opWord = isGain ? 'deposited into' : 'withdrawn from';
-  const opSign = isGain ? '+' : '-';
-
-  if (difficulty === 'foundation') {
-    const rate = _.random(5, 50);
-    const count = _.random(4, 20);
-    const total = initial + (isGain ? 1 : -1) * rate * count;
-    return {
-      instruction: 'Write a formula for the final amount A, then work it out',
-      questionText: `A savings account starts with £${initial}. £${rate} is ${opWord} it ${count} times.`,
-      answer: `A = ${total}`,
-      workingOut: [`A = ${initial} ${opSign} ${rate} \\times ${count}`, `A = ${total}`].join(NL),
-      visualization: null,
-      metadata: { topic: 'formula-derivation', difficulty, tags: ['algebra', 'formulae'] },
-    };
-  }
-
-  if (difficulty === 'core') {
-    const rate = _.random(5, 50);
-    return {
-      instruction: 'Write a formula for the final amount A in terms of n',
-      questionText: `A savings account starts with £${initial}. £${rate} is ${opWord} it n times.`,
-      answer: `A = ${initial} ${opSign} ${rate}n`,
-      workingOut: `A = ${initial} ${opSign} ${rate} \\times n = ${initial} ${opSign} ${rate}n`,
-      visualization: null,
-      metadata: { topic: 'formula-derivation', difficulty, tags: ['algebra', 'formulae'] },
-    };
-  }
-
-  return {
-    instruction: 'Write a formula for the final amount A in terms of P, x and n',
-    questionText: `A savings account starts with £P. £x is ${opWord} it n times.`,
-    answer: `A = P ${opSign} xn`,
-    workingOut: `A = P ${opSign} x \\times n = P ${opSign} xn`,
-    visualization: null,
-    metadata: { topic: 'formula-derivation', difficulty, tags: ['algebra', 'formulae'] },
+  const ctx = _.sample(DERIVATION_CONTEXTS);
+  const { letter: L } = ctx;
+  const meta = { topic: 'formula-derivation', difficulty, tags: ['algebra', 'formulae'] };
+  // The two ways round: A = 800 - 25n, and P = 3n - 40.
+  const formula = (s, rn) => {
+    if (ctx.reversed) return `${L} = ${rn} - ${s}`;
+    return `${L} = ${s} ${ctx.sign > 0 ? '+' : '-'} ${rn}`;
   };
+
+  if (difficulty === 'stretch') {
+    const [s, r, n] = ctx.vars;
+    return {
+      instruction: `Write a formula for ${ctx.of} ${L} in terms of ${s}, ${r} and ${n}`,
+      questionText: ctx.text(s, r, n),
+      answer: formula(s, `${r}${n}`),
+      workingOut: formula(s, `${r} \\times ${n}`) + NL + formula(s, `${r}${n}`),
+      visualization: null,
+      metadata: meta,
+    };
+  }
+
+  // Redrawn until the total is a positive amount: an account can't be
+  // overdrawn, and a tank can't go below empty, in a question this simple.
+  for (;;) {
+    const s = stepped(ctx.start);
+    const r = stepped(ctx.rate);
+
+    if (difficulty === 'core') {
+      const n = ctx.vars[2];
+      return {
+        instruction: `Write a formula for ${ctx.of} ${L} in terms of ${n}`,
+        questionText: ctx.text(s, r, n),
+        answer: formula(s, `${r}${n}`),
+        workingOut: formula(s, `${r} \\times ${n}`) + NL + formula(s, `${r}${n}`),
+        visualization: null,
+        metadata: meta,
+      };
+    }
+
+    const n = _.random(ctx.count[0], ctx.count[1]);
+    const value = ctx.reversed ? r * n - s : s + ctx.sign * r * n;
+    if (value <= 0) continue;
+    return {
+      instruction: `Write a formula for ${ctx.of} ${L}, then work it out`,
+      questionText: ctx.text(s, r, n),
+      answer: `${L} = ${ctx.money ? '\\pounds ' : ''}${value}`,
+      ...(ctx.units ? { answerUnits: ctx.units } : {}),
+      workingOut: formula(s, `${r} \\times ${n}`) + NL + `${L} = ${value}`,
+      visualization: null,
+      metadata: meta,
+    };
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -292,13 +364,7 @@ const pointOf = (x, y) => `(${x}, ${y})`;
 
 // A square window around the crossing that always includes the origin, so
 // both axes are on screen — the same squaring-up the drawn-points grid does.
-const windowAround = (px, py) => {
-  let x0 = Math.min(-1, px - 3); let x1 = Math.max(1, px + 3);
-  let y0 = Math.min(-1, py - 3); let y1 = Math.max(1, py + 3);
-  while (x1 - x0 < y1 - y0) { if ((x1 - x0) % 2) x1 += 1; else x0 -= 1; }
-  while (y1 - y0 < x1 - x0) { if ((y1 - y0) % 2) y1 += 1; else y0 -= 1; }
-  return [x0, x1, y0, y1];
-};
+const GRAPH_WINDOW = [-5, 5, -5, 5];
 
 export const generateSimultaneousGraphical = (options = {}) => {
   const { difficulty = 'core' } = options;
@@ -332,8 +398,10 @@ export const generateSimultaneousGraphical = (options = {}) => {
 
   // On the board the crossing is never on an axis: there both lines run over
   // the very axis numbers the answer is read from.
-  const px = difficulty === 'foundation' ? _.sample([-2, -1, 1, 2, 3, 4]) : _.random(0, 4);
-  const py = difficulty === 'foundation' ? _.sample([-2, -1, 1, 2, 3, 4, 5, 6]) : _.random(0, 6);
+  // The crossing stays near the origin, inside the fixed window the Foundation
+  // graph is drawn on: squares big enough to read from the back of the room.
+  const px = difficulty === 'foundation' ? _.sample([-3, -2, -1, 1, 2, 3]) : _.random(0, 4);
+  const py = difficulty === 'foundation' ? _.sample([-3, -2, -1, 1, 2, 3]) : _.random(0, 6);
   const m1 = _.random(1, 3);
   const m2 = _.sample([-3, -2, -1, ...(difficulty === 'foundation' ? [] : [m1 === 1 ? 2 : 1])]);
   const c1 = py - m1 * px;
@@ -346,7 +414,7 @@ export const generateSimultaneousGraphical = (options = {}) => {
       questionMath,
       answer: answerOf(px, py),
       workingOut: `\\text{the lines cross at } ${pointOf(px, py)}${NL}${answerOf(px, py)}`,
-      visualization: { type: 'coordinate-grid', lines: [{ m: m1, c: c1 }, { m: m2, c: c2 }], window: windowAround(px, py), big: true },
+      visualization: { type: 'coordinate-grid', lines: [{ m: m1, c: c1 }, { m: m2, c: c2 }], window: GRAPH_WINDOW, big: true },
       metadata: meta,
     };
   }

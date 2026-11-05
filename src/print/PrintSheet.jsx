@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import MathDisplay from '../components/MathDisplay.jsx';
+import MathDisplay, { Prose } from '../components/MathDisplay.jsx';
 import Figure from '../components/Figure.jsx';
 import { buildSheets, PRESETS, MAX_VERSIONS } from './buildSheets.js';
 import './print.css';
@@ -216,7 +216,7 @@ export function PrintQuestion({ n, item, answers }) {
             // does: a KaTeX \\text{} line never wraps.
             q && (
               <div className="pq-q">
-                {qProse ? <span className="mprose">{q}</span>
+                {qProse ? <Prose text={q} />
                   : textOnly(q) ? textOnly(q).map((l) => <div key={l} className="mprose">{l}</div>)
                     : <MathDisplay math={q} />}
               </div>

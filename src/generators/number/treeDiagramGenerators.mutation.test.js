@@ -46,6 +46,9 @@ const bumpLabel = (s) => {
   return d && d[1] !== '9' ? `0.${Number(d[1]) + 1}` : null;
 };
 
+// Which line holds the set-up: with blank branches, the big text.
+const setupKey = (q) => (/^Find the probability/.test(q.instruction) ? 'questionText' : 'instruction');
+
 // Each operator mutates a deep copy in place, or returns false to skip.
 const OPERATORS = {
   'answer value nudged': (q) => {
@@ -97,17 +100,19 @@ const OPERATORS = {
     return true;
   },
   'with and without replacement swapped': (q) => {
-    if (!/replacement\.$/.test(q.instruction)) return false;
-    q.instruction = q.instruction.includes('without replacement')
-      ? q.instruction.replace('without replacement', 'with replacement')
-      : q.instruction.replace('with replacement', 'without replacement');
+    const k = setupKey(q);
+    if (!/replacement\.$/.test(q[k])) return false;
+    q[k] = q[k].includes('without replacement')
+      ? q[k].replace('without replacement', 'with replacement')
+      : q[k].replace('with replacement', 'without replacement');
     return true;
   },
   // Counts always differ (a !== b), so the swap always changes the bag.
   'bag counts swapped in the prose': (q) => {
-    const m = /holds (\d+) (.+) and (\d+) /.exec(q.instruction);
+    const k = setupKey(q);
+    const m = /holds (\d+) (.+) and (\d+) /.exec(q[k]);
     if (!m) return false;
-    q.instruction = q.instruction.replace(`holds ${m[1]} ${m[2]} and ${m[3]} `, `holds ${m[3]} ${m[2]} and ${m[1]} `);
+    q[k] = q[k].replace(`holds ${m[1]} ${m[2]} and ${m[3]} `, `holds ${m[3]} ${m[2]} and ${m[1]} `);
     return true;
   },
   'letters on the tree reversed': (q) => {
@@ -119,8 +124,10 @@ const OPERATORS = {
   // p + q = 1 on an independent tree, P(one) = P(same) at one half): that is
   // decided here, from the labels, by plain arithmetic — not by the checker.
   'ask swapped': (q) => {
-    const who = /whether (\S+) scores/.exec(q.instruction)?.[1] ?? '';
-    const clause = /^Find the probability that (.+)\.$/.exec(q.questionText)[1];
+    const k = setupKey(q);
+    const askKey = k === 'instruction' ? 'questionText' : 'instruction';
+    const who = /whether (\S+) scores/.exec(q[k])?.[1] ?? '';
+    const clause = /^Find the probability that (.+)\.$/.exec(q[askKey])[1];
     // Bag asks name the items; put the right plural into the bag pair.
     const plural = / ([a-z]+) are (different|the same) colou?rs?$/.exec(clause)?.[1];
     const pairs = ASK_PAIRS(who).map((pr) => (plural ? pr.map((x) => (typeof x === 'string' ? x.replace('counters', plural) : x)) : pr));
@@ -134,7 +141,7 @@ const OPERATORS = {
     const P = { XX: v(L.x) * v(L.xx), XY: v(L.x) * v(L.xy), YX: v(L.y) * v(L.yx), YY: v(L.y) * v(L.yy) };
     const sum = (paths) => paths.reduce((acc, k) => acc + P[k], 0);
     if (Math.abs(sum(before) - sum(after)) < 1e-12) return false;
-    q.questionText = `Find the probability that ${to}.`;
+    q[askKey] = `Find the probability that ${to}.`;
     return true;
   },
   'a number in the working nudged': (q) => {

@@ -106,10 +106,10 @@ const ONE = /^The box plot shows (?:the marks of some students in a test|the tim
 // Core: the sentence names the group size, the count noun, and a threshold
 // with the side it is on.
 const SIDES = [
-  [/^the marks of (\d+) students in a test\. About how many students scored (more|fewer) than (\d+) marks\?$/, { fewer: 'less' }],
-  [/^the times, in minutes, that (\d+) runners took to finish a race\. About how many runners took (longer|less) than (\d+) minutes\?$/, { longer: 'more' }],
-  [/^the heights, in cm, of (\d+) sunflower seedlings\. About how many seedlings were (taller|shorter) than (\d+) cm\?$/, { taller: 'more', shorter: 'less' }],
-  [/^the ages of (\d+) people at a concert\. About how many people were (older|younger) than (\d+)\?$/, { older: 'more', younger: 'less' }],
+  [/^the marks of some students in a test\.$/, /^There are (\d+) (students)\. About how many scored (more|fewer) than (\d+) marks\?$/, { fewer: 'less' }],
+  [/^the times, in minutes, that some runners took to finish a race\.$/, /^There are (\d+) (runners)\. About how many took (longer|less) than (\d+) minutes\?$/, { longer: 'more' }],
+  [/^the heights, in cm, of some sunflower seedlings\.$/, /^There are (\d+) (seedlings)\. About how many were (taller|shorter) than (\d+) cm\?$/, { taller: 'more', shorter: 'less' }],
+  [/^the ages of the people at a concert\.$/, /^There are (\d+) (people)\. About how many were (older|younger) than (\d+)\?$/, { older: 'more', younger: 'less' }],
 ];
 
 const TWO = [
@@ -149,12 +149,12 @@ export function checkReading(q, difficulty) {
     const head = 'The box plot shows ';
     must(q.instruction.startsWith(head), 'core instruction', q);
     const rest = q.instruction.slice(head.length);
-    const hit = SIDES.map(([re, map]) => [re.exec(rest), map]).find(([m]) => m);
-    must(hit, `instruction "${q.instruction}"`, q);
+    const hit = SIDES.map(([what, re, map]) => [what.test(rest) && re.exec(q.questionText ?? ''), map]).find(([m]) => m);
+    must(hit, `instruction "${q.instruction}", question "${q.questionText}"`, q);
     const [m, map] = hit;
     const N = Number(m[1]);
-    const side = map[m[2]] || m[2];
-    const v = Number(m[3]);
+    const side = map[m[3]] || m[3];
+    const v = Number(m[4]);
     must(N % 4 === 0, 'a group that splits into quarters', q);
     const at = ['q1', 'q2', 'q3'].filter((k) => p[k] === v);
     must(at.length === 1, `the threshold ${v} is one of the quartiles`, q);
@@ -167,7 +167,7 @@ export function checkReading(q, difficulty) {
     // so only the working can be wrong about the side.
     const frac = quarters === 2 ? '\\tfrac{1}{2}' : `\\tfrac{${quarters}}{4}`;
     const qname = { q1: 'Q_1', q2: '\\text{the median}', q3: 'Q_3' }[at[0]];
-    const count = /How many (\w+)/i.exec(q.instruction)[1];
+    const count = m[2];
     const where = side === 'more' ? 'are above' : 'are below';
     must(w[0] === `${v} \\text{ is } ${qname} \\text{, so } ${frac} \\text{ of the ${count} ${where} it}`, 'working names the quartile, fraction and side', q);
     must(w.at(-1) === `${frac} \\times ${N} = ${(N * quarters) / 4}`, 'working ends on the answer', q);

@@ -9,11 +9,10 @@
 // skip rather than a todo: it is power regression on a graphics calculator
 // against messy real data, and there is no version of it that fits a starter.
 //
-// Question shape. These are worded questions, but a prose sentence cannot go
-// through the maths renderer — hyphens become minus signs and the spacing
-// goes. So the sentence is split: `instruction` states the proportionality and
-// names the task, `questionMath` carries only the given pair, and
-// questionMathCompact marks it as a given rather than an answer (SPEC.md 3).
+// Question shape. These are worded questions, but students at the back of the
+// room need every number and the relationship itself, so all of that goes in
+// questionMath, line by line, with the relationship as M \propto t^2. The
+// instruction says the same relationship in words, for the teacher to read.
 //
 // `instruction` is plain text and never reaches the renderer, so it uses
 // Haese's word forms — "the square of t", "the square root of l" — rather than
@@ -107,9 +106,12 @@ export const generateDirectVariation = (options = {}) => {
 
   if (!reverse) {
     return {
-      instruction: `${D} is directly proportional to ${p.phrase(I)}. Find ${D} when ${I} = ${x2}`,
-      questionMath: `${D} = ${y1} \\text{ when } ${I} = ${x1}`,
-      questionMathCompact: true,
+      instruction: `${D} is directly proportional to ${p.phrase(I)}`,
+      questionMath: [
+        `${D} \\propto ${p.tex(I)}`,
+        `${D} = ${y1} \\text{ when } ${I} = ${x1}`,
+        `\\text{Find } ${D} \\text{ when } ${I} = ${x2}`,
+      ].join(NL),
       answer: String(y2),
       workingOut: [...setUp, `${D} = ${k} \\times ${texValue(x2, n)} = ${y2}`].join(NL),
       metadata: { topic: 'direct-variation', difficulty },
@@ -122,9 +124,12 @@ export const generateDirectVariation = (options = {}) => {
     : [`${p.tex(I)} = ${y2 / k}`, `${I} = ${x2}`];
 
   return {
-    instruction: `${D} is directly proportional to ${p.phrase(I)}. Find ${I} when ${D} = ${y2}`,
-    questionMath: `${D} = ${y1} \\text{ when } ${I} = ${x1}`,
-    questionMathCompact: true,
+    instruction: `${D} is directly proportional to ${p.phrase(I)}`,
+    questionMath: [
+      `${D} \\propto ${p.tex(I)}`,
+      `${D} = ${y1} \\text{ when } ${I} = ${x1}`,
+      `\\text{Find } ${I} \\text{ when } ${D} = ${y2}`,
+    ].join(NL),
     answer: String(x2),
     workingOut: [...setUp, `${y2} = ${k}${p.tex(I)}`, ...undo].join(NL),
     metadata: { topic: 'direct-variation', difficulty },
@@ -188,9 +193,12 @@ export const generateInverseVariation = (options = {}) => {
 
   if (!reverse) {
     return {
-      instruction: `${D} is inversely proportional to ${p.phrase(I)}. Find ${D} when ${I} = ${x2}`,
-      questionMath: `${D} = ${y1} \\text{ when } ${I} = ${x1}`,
-      questionMathCompact: true,
+      instruction: `${D} is inversely proportional to ${p.phrase(I)}`,
+      questionMath: [
+        `${D} \\propto \\frac{1}{${p.tex(I)}}`,
+        `${D} = ${y1} \\text{ when } ${I} = ${x1}`,
+        `\\text{Find } ${D} \\text{ when } ${I} = ${x2}`,
+      ].join(NL),
       answer: String(y2),
       workingOut: [...setUp, `${D} = \\frac{${k}}{${texValue(x2, n)}} = ${y2}`].join(NL),
       metadata: { topic: 'inverse-variation', difficulty },
@@ -202,9 +210,12 @@ export const generateInverseVariation = (options = {}) => {
     : [`${p.tex(I)} = ${k / y2}`, `${I} = ${x2}`];
 
   return {
-    instruction: `${D} is inversely proportional to ${p.phrase(I)}. Find ${I} when ${D} = ${y2}`,
-    questionMath: `${D} = ${y1} \\text{ when } ${I} = ${x1}`,
-    questionMathCompact: true,
+    instruction: `${D} is inversely proportional to ${p.phrase(I)}`,
+    questionMath: [
+      `${D} \\propto \\frac{1}{${p.tex(I)}}`,
+      `${D} = ${y1} \\text{ when } ${I} = ${x1}`,
+      `\\text{Find } ${I} \\text{ when } ${D} = ${y2}`,
+    ].join(NL),
     answer: String(x2),
     workingOut: [...setUp, `${y2} = \\frac{${k}}{${p.tex(I)}}`, ...undo].join(NL),
     metadata: { topic: 'inverse-variation', difficulty },

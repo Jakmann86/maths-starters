@@ -24,8 +24,10 @@
 // Decimals are tenths on every branch, so every product is a whole number of
 // hundredths and the arithmetic stays exact here and calculator-free there.
 //
-// FIELDS. `instruction` is the set-up (the bag, or what the tree shows);
-// `questionText` is the ask, so it renders at question size. The Probability
+// FIELDS. With a fully labelled tree `instruction` is the set-up (the bag, or
+// what the tree shows) and `questionText` the ask, so it renders at question
+// size. Stretch blanks the second branches, so the numbers in the set-up are
+// what the class works from: there the two swap. The Probability
 // strand is all-KaTeX, so the ask is set in the serif and the working and
 // answer lines go to KaTeX — `\frac` and `\text{}` throughout.
 
@@ -302,8 +304,10 @@ function build(t, ask, difficulty, hideSecond) {
     visualization.probs = { ...probs, xx: '', xy: '', yx: '', yy: '' };
   }
   return {
-    instruction: setupText(t),
-    questionText: askText(t, ask),
+    // With the second branches blank, the numbers in the set-up are what the
+    // class has to work from. A fully labelled tree already shows them all.
+    instruction: hideSecond ? askText(t, ask) : setupText(t),
+    questionText: hideSecond ? setupText(t) : askText(t, ask),
     answer: tex(ans),
     workingOut: working,
     visualization,

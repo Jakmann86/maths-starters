@@ -214,7 +214,7 @@ export function describeTex(r) {
 // Carry out: the object with vertex A lettered, the image drawn on reveal,
 // the answer A'. A corner two or more squares from both axes is lettered
 // when there is one, so A and A' stay clear of the numbers on the axes.
-function carryOut(r, { instruction, questionMath, showMirror, showCentre }, topic, difficulty) {
+function carryOut(r, { instruction = findA, questionText, questionMath, showMirror, showCentre }, topic, difficulty) {
   const clear = (p) => Math.abs(p[0]) >= 2 && Math.abs(p[1]) >= 2;
   const corners = _.range(r.object.length);
   const roomy = corners.filter((j) => clear(r.object[j]) && clear(r.image[j]));
@@ -222,6 +222,7 @@ function carryOut(r, { instruction, questionMath, showMirror, showCentre }, topi
   const A = r.object[i], A2 = r.image[i];
   return {
     instruction: txt(instruction),
+    ...(questionText ? { questionText: txt(questionText) } : {}),
     ...(questionMath ? { questionMath } : {}),
     answer: `A' = ${pt(A2)}`,
     workingOut: [`A = ${pt(A)}`, `A' = ${pt(A2)}`].join(NL),
@@ -268,7 +269,7 @@ export const generateTranslation = (options = {}) => {
   if (difficulty === 'foundation') {
     const sq = (n) => `${Math.abs(n)} square${Math.abs(n) === 1 ? '' : 's'}`;
     const parts = [dx ? `${sq(dx)} ${dx > 0 ? 'right' : 'left'}` : null, dy ? `${sq(dy)} ${dy > 0 ? 'up' : 'down'}` : null].filter(Boolean);
-    return carryOut(r, { instruction: `Translate the shape ${parts.join(' and ')}. ${findA}` }, topic, difficulty);
+    return carryOut(r, { questionText: `Translate the shape ${parts.join(' and ')}.` }, topic, difficulty);
   }
   if (difficulty === 'core') {
     return carryOut(r, { instruction: `Translate the shape by the column vector. ${findA}`, questionMath: vecTex(r.v) }, topic, difficulty);
@@ -288,7 +289,7 @@ export const generateReflection = (options = {}) => {
     return describe(r, topic, difficulty, { instruction: 'Shape A is reflected onto shape B. Write down the equation of the mirror line.', answer: lineTex(r.line) });
   }
   const r = makeReflection(difficulty === 'foundation' ? STRAIGHT : DIAGONAL);
-  return carryOut(r, { instruction: `Reflect the shape in ${lineName(r.line)}. ${findA}`, showMirror: true }, topic, difficulty);
+  return carryOut(r, { questionText: `Reflect the shape in ${lineName(r.line)}.`, showMirror: true }, topic, difficulty);
 };
 
 /* ------------------------------------------------------------- rotation */
@@ -302,7 +303,7 @@ export const generateRotation = (options = {}) => {
   const origin = difficulty === 'foundation';
   const r = makeRotation([90, -90, 180], origin ? ORIGIN : OFF_ORIGIN);
   const about = origin ? 'the origin' : pt(r.centre);
-  return carryOut(r, { instruction: `Rotate the shape ${turnName(r.angle)} about ${about}. ${findA}`, showCentre: !origin }, topic, difficulty);
+  return carryOut(r, { questionText: `Rotate the shape ${turnName(r.angle)} about ${about}.`, showCentre: !origin }, topic, difficulty);
 };
 
 /* ---------------------------------------------------------- enlargement */
@@ -315,7 +316,7 @@ export const generateEnlargement = (options = {}) => {
   const r = makeEnlargement(difficulty === 'stretch' ? [0.5] : [2, 3]);
   const carry = difficulty === 'foundation' || (difficulty === 'stretch' && Math.random() < 0.5);
   if (carry) {
-    return carryOut(r, { instruction: `Enlarge the shape by scale factor ${kText(r.k)}, centre ${pt(r.centre)}. ${findA}`, showCentre: true }, topic, difficulty);
+    return carryOut(r, { questionText: `Enlarge the shape by scale factor ${kText(r.k)}, centre ${pt(r.centre)}.`, showCentre: true }, topic, difficulty);
   }
   return describe(r, topic, difficulty);
 };

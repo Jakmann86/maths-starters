@@ -70,8 +70,8 @@ describe('horizontal-vertical-lines', () => {
     console.log(`horizontal-vertical-lines ${difficulty}: ${distinct.size} distinct, ${vertical} vertical`);
     expect(vertical).toBeGreaterThan(SAMPLES * 0.45);
     expect(vertical).toBeLessThan(SAMPLES * 0.55);
-    // Foundation's ceiling is 20 (see the generator), and it should reach it.
-    expect(distinct.size).toBeGreaterThanOrEqual(difficulty === 'foundation' ? 20 : 300);
+    // Foundation's ceiling is 16 (see the generator), and it should reach it.
+    expect(distinct.size).toBeGreaterThanOrEqual(difficulty === 'foundation' ? 16 : 300);
   });
 });
 

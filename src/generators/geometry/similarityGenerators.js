@@ -120,8 +120,8 @@ function namedSimilar() {
     const target = askOnSecond ? side(second, a) : side(first, a);
     const value = askOnSecond ? big[a] : small[a];
     return {
-      instruction: `Triangle ${first.join('')} is similar to triangle ${second.join('')}. ${given[0]}, ${given[1]} and ${given[2]}.`,
-      questionText: `Find ${target}.`,
+      instruction: `Find ${target}`,
+      questionText: `Triangle ${first.join('')} is similar to triangle ${second.join('')}. ${given[0]}, ${given[1]} and ${given[2]}.`,
       answer: `${target} = ${fmt(value)}`,
       answerUnits: '\\text{cm}',
       workingOut: [`k = ${frac(fmt(big[g]), fmt(small[g]))}`, `${target} = ${fmt(value)}`].join(NL),
@@ -146,8 +146,8 @@ function namedSimilar() {
   const target = askOnSecond ? edge(second, a) : edge([...n1], a);
   const value = askOnSecond ? bigSide[a] : smallSide[a];
   return {
-    instruction: `Rectangles ${n1} and ${second.join('')} are similar. ${given[0]}, ${given[1]} and ${given[2]}.`,
-    questionText: `Find ${target}.`,
+    instruction: `Find ${target}`,
+    questionText: `Rectangles ${n1} and ${second.join('')} are similar. ${given[0]}, ${given[1]} and ${given[2]}.`,
     answer: `${target} = ${fmt(value)}`,
     answerUnits: '\\text{cm}',
     workingOut: [`k = ${frac(fmt(bigSide[g]), fmt(smallSide[g]))}`, `${target} = ${fmt(value)}`].join(NL),
@@ -410,7 +410,7 @@ function trapeziumArea() {
   const labels = { [side[0]]: cm(AD), [side[1]]: cm(AD * (k - 1)) };
   return {
     instruction: `${name('DE')} is parallel to ${name('BC')}. Find the area of ${name('DBCE')}.`,
-    questionMath: `\\text{Area of triangle } ${name('ADE')} = ${fmt(small)}\\text{ cm}^2`,
+    questionMath: `\\text{Area of triangle } ${name('ADE')}${NL}= ${fmt(small)}\\text{ cm}^2`,
     questionMathCompact: true,
     answer: fmt(trap),
     answerUnits: '\\text{cm}^2',

@@ -43,6 +43,19 @@ function KatexLine({ tex }) {
   return <span className="mkatex" dangerouslySetInnerHTML={{ __html: current.html }} />;
 }
 
+// A worded question, set in KaTeX's serif without going through KaTeX. That
+// font has no ° glyph, so a degree sign is drawn as KaTeX draws ^\circ.
+export function Prose({ text }) {
+  const parts = String(text).split('°');
+  return (
+    <span className="mprose">
+      {parts.map((part, i) => (
+        <span key={i}>{i > 0 && <span className="mdeg">∘</span>}{part}</span>
+      ))}
+    </span>
+  );
+}
+
 export default function MathDisplay({ math }) {
   const raw = String(math == null ? '' : math);
   const lines = raw.split('\n');

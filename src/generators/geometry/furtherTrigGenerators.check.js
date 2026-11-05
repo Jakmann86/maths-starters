@@ -374,10 +374,10 @@ function readAngles(q) {
 
 function checkAmbiguous(q) {
   must(q.visualization === undefined && q.questionMath === undefined, 'stretch has no figure', q);
-  const m = AMBIG.exec(q.instruction);
-  must(m, `instruction "${q.instruction}"`, q);
-  const a = ASK_ANGLE.exec(q.questionText);
-  must(a, `question "${q.questionText}"`, q);
+  const m = AMBIG.exec(q.questionText);
+  must(m, `question "${q.questionText}"`, q);
+  const a = ASK_ANGLE.exec(q.instruction);
+  must(a, `instruction "${q.instruction}"`, q);
   const name = m[1];
   const { s, A, idx } = fromNames(q, name, [[m[2], Number(m[3])], [m[4], Number(m[5])]], [[m[6], Number(m[7])]]);
   must(shapeOf(s, A) === 'SSA', 'two sides and an angle not between them', q);
@@ -481,10 +481,10 @@ const AREA_SENT = new RegExp(`^Triangle ${TRI} has area (\\d+) cm², ([A-Z]{2}) 
 
 function checkAreaAngle(q) {
   must(q.visualization === undefined && q.questionMath === undefined, 'stretch has no figure', q);
-  const m = AREA_SENT.exec(q.instruction);
-  must(m, `instruction "${q.instruction}"`, q);
-  const a = ASK_ANGLE.exec(q.questionText);
-  must(a, `question "${q.questionText}"`, q);
+  const m = AREA_SENT.exec(q.questionText);
+  must(m, `question "${q.questionText}"`, q);
+  const a = ASK_ANGLE.exec(q.instruction);
+  must(a, `instruction "${q.instruction}"`, q);
   const name = m[1], area = Number(m[2]);
   const { s, idx } = fromNames(q, name, [[m[3], Number(m[4])], [m[5], Number(m[6])]], []);
   const ask = a[1];
@@ -627,8 +627,8 @@ const ASK_BRG = /^Find the bearing of ([A-Z]) from ([A-Z])\. Give your answer to
 
 function checkBearings(q) {
   must(q.questionMath === undefined, 'no question line', q);
-  const m = BEARING.exec(q.instruction);
-  must(m, `instruction "${q.instruction}"`, q);
+  const m = BEARING.exec(q.questionText);
+  must(m, `question "${q.questionText}"`, q);
   const [l1, b1, S, T, l2, b2, E] = [Number(m[3]), Number(m[4]), m[6], m[8], Number(m[10]), Number(m[11]), m[13]];
   must(new Set([S, T, E]).size === 3, 'three different points', q);
   must(m[2] === m[9], 'one verb for both legs', q);
@@ -642,14 +642,14 @@ function checkBearings(q) {
   must(Math.abs(atT - 90) >= 10 - 1e-9 && atT >= 30 - 1e-9 && atT <= 150 + 1e-9, `the turn at ${T} is ${atT}`, q);
   const env = { [S + E]: d, [E + S]: d, [`∠${S}${T}${E}`]: atT, [`∠${E}${T}${S}`]: atT, [`∠${T}${S}${E}`]: atS, [`∠${E}${S}${T}`]: atS };
   let kind;
-  const dm = ASK_DIST.exec(q.questionText ?? ''), bm = ASK_BRG.exec(q.questionText ?? '');
+  const dm = ASK_DIST.exec(q.instruction ?? ''), bm = ASK_BRG.exec(q.instruction ?? '');
   if (dm) {
     must(dm[1] === S + E, 'the distance asked runs from start to end', q);
     must(q.answerUnits === '\\text{km}' && roundsTo(d, q.answer, 'sf3'), `answer ${q.answer}, measured ${d}`, q);
     kind = 'bearings distance';
     checkWorking(q, env, q.answer);
   } else {
-    must(bm && bm[1] === E && bm[2] === S, `question "${q.questionText}"`, q);
+    must(bm && bm[1] === E && bm[2] === S, `instruction "${q.instruction}"`, q);
     must(atS < 90, 'the angle at the start is acute, so the sine rule finds it', q);
     const bearing = ((Math.atan2(Pe[0], Pe[1]) / RAD) + 360) % 360;
     const am = /^(\d{3}\.\d)\^\\circ$/.exec(q.answer);

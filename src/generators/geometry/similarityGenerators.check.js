@@ -145,9 +145,9 @@ function locate(name, shapes, rect) {
 
 function checkNamed(q) {
   must(q.visualization === undefined && q.questionMath === undefined, 'no figure', q);
-  const t = NAMED_TRI.exec(q.instruction), r = NAMED_RECT.exec(q.instruction);
+  const t = NAMED_TRI.exec(q.questionText), r = NAMED_RECT.exec(q.questionText);
   const m = t ?? r;
-  must(m, `instruction "${q.instruction}"`, q);
+  must(m, `question "${q.questionText}"`, q);
   const rect = Boolean(r);
   const shapes = [m[1], m[2]];
   must(new Set([...m[1], ...m[2]]).size === (rect ? 8 : 6), 'two shapes with different letters', q);
@@ -160,8 +160,8 @@ function checkNamed(q) {
   }
   const facts = [[m[3], Number(m[4])], [m[5], Number(m[6])], [m[7], Number(m[8])]].map(([nm, v]) => ({ nm, v, at: locate(nm, shapes, rect) }));
   must(facts.every((x) => x.at), 'every side named is a side of one shape', q);
-  const ask = /^Find ([A-Z]{2})\.$/.exec(q.questionText ?? '');
-  must(ask, `question "${q.questionText}"`, q);
+  const ask = /^Find ([A-Z]{2})$/.exec(q.instruction ?? '');
+  must(ask, `instruction "${q.instruction}"`, q);
   const target = locate(ask[1], shapes, rect);
   must(target, 'the side asked is a side', q);
   // k from the pair on both shapes; then the side matching the one asked.
@@ -375,7 +375,7 @@ export function checkSimilarAreasVolumes(q, difficulty) {
     const { name } = readTriangles(q);
     must(f.kind === 'A' && f.unknown === null, 'the A shape, no side unknown', q);
     must(q.instruction === `${name('DE')} is parallel to ${name('BC')}. Find the area of ${name('DBCE')}.`, 'instruction', q);
-    const m = new RegExp(`^\\\\text\\{Area of triangle \\} ${name('ADE')} = (\\d+(?:\\.\\d+)?)\\\\text\\{ cm\\}\\^2$`).exec(q.questionMath ?? '');
+    const m = new RegExp(`^\\\\text\\{Area of triangle \\} ${name('ADE')}\\n= (\\d+(?:\\.\\d+)?)\\\\text\\{ cm\\}\\^2$`).exec(q.questionMath ?? '');
     must(m && q.questionMathCompact === true, `given line "${q.questionMath}"`, q);
     const small = Number(m[1]);
     const base = segments(f.labels, 'A', null);

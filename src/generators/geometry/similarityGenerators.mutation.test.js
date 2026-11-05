@@ -58,9 +58,9 @@ const OPS = {
   },
   'a number in the sentence changed': (q) => {
     if (q.visualization) return false;
-    const hits = [...q.instruction.matchAll(/\d+(\.\d+)?/g)];
+    const hits = [...q.questionText.matchAll(/\d+(\.\d+)?/g)];
     const h = _.sample(hits);
-    q.instruction = q.instruction.slice(0, h.index) + String(Number(h[0]) + 1) + q.instruction.slice(h.index + h[0].length);
+    q.questionText = q.questionText.slice(0, h.index) + String(Number(h[0]) + 1) + q.questionText.slice(h.index + h[0].length);
   },
   // Swapping x with a label equal to the answer leaves the same numbers in
   // the same places: an equivalent mutant, skipped.
@@ -112,9 +112,9 @@ const OPS = {
     [f.vertices[i], f.vertices[j]] = [f.vertices[j], f.vertices[i]];
   },
   'second shape named in order': (q) => {
-    const m = /(similar to triangle|Rectangles [A-Z]{4} and) ([A-Z]{3,4})(?=\.| are)/.exec(q.instruction);
+    const m = /(similar to triangle|Rectangles [A-Z]{4} and) ([A-Z]{3,4})(?=\.| are)/.exec(q.questionText ?? '');
     if (!m || q.visualization) return false;
-    q.instruction = q.instruction.replace(`${m[1]} ${m[2]}`, `${m[1]} ${[...m[2]].sort().join('')}`);
+    q.questionText = q.questionText.replace(`${m[1]} ${m[2]}`, `${m[1]} ${[...m[2]].sort().join('')}`);
   },
   'a working number changed': (q) => {
     const lines = q.workingOut.split('\n');

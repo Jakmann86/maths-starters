@@ -30,10 +30,10 @@ const PROPERTY = {
   'a factor of 36': (x) => 36 % x === 0,
 };
 
-const BAG = /^A (bag|box|jar) holds (.+) (counters|marbles|cubes|beads)\. One is taken at random\.$/;
-const CARDS = /^Cards numbered 1 to (\d+) are shuffled and one is taken at random\.$/;
+const BAG = /^A (bag|box|jar) holds (.+) (counters|marbles|cubes|beads)\.$/;
+const CARDS = /^Cards are numbered 1 to (\d+)\. Find the probability that the number is (.+)\.$/;
 const SPINNER = 'The table shows the probabilities for a biased spinner.';
-const REVERSE = /^A (bag|box|jar) holds (\d+) ([a-z]+) (\w+) and some ([a-z]+) \4\. One is taken at random\. How many \5 \4 are there\?$/;
+const REVERSE = /^\\text\{(\d+) ([a-z]+) and some ([a-z]+) (\w+)\}\nP/;
 
 // "4 red, 7 blue and 3 green" → { red: 4, blue: 7, green: 3 }
 const readBag = (s) => Object.fromEntries([...s.matchAll(/(\d+) ([a-z]+)/g)].map((m) => [m[2], Number(m[1])]));
@@ -69,13 +69,13 @@ function check(q, difficulty) {
   }
 
   // Bag: one colour, "not X", or "X or Y".
-  let m = BAG.exec(q.instruction);
+  let m = BAG.exec(q.questionText ?? '');
   if (m) {
     const counts = readBag(m[2]);
     const colours = Object.keys(counts);
     const total = Object.values(counts).reduce((a, b) => a + b, 0);
     expect(new Set(Object.values(counts)).size, 'counts differ').toBe(colours.length);
-    const ask = /^Find the probability that it is (.+)\.$/.exec(q.questionText)[1];
+    const ask = /^One is taken at random\. Find the probability that it is (.+)\.$/.exec(q.instruction)[1];
     let k;
     let form;
     if (counts[ask] != null) { k = counts[ask]; form = 'one'; }
@@ -95,11 +95,11 @@ function check(q, difficulty) {
   }
 
   // Cards: list 1..n with the property.
-  m = CARDS.exec(q.instruction);
+  m = CARDS.exec(q.questionText ?? '');
   if (m) {
     expect(difficulty).toBe('core');
     const n = Number(m[1]);
-    const phrase = /^Find the probability that the number is (.+)\.$/.exec(q.questionText)[1];
+    const phrase = m[2];
     const test = PROPERTY[phrase];
     expect(test, phrase).toBeDefined();
     const k = Array.from({ length: n }, (_x, i) => i + 1).filter(test).length;
@@ -149,12 +149,13 @@ function check(q, difficulty) {
   }
 
   // Reverse bag: scale the given fraction up to the known count.
-  m = REVERSE.exec(q.instruction);
-  expect(m, q.instruction).toBeTruthy();
+  m = REVERSE.exec(q.questionMath);
+  expect(m, q.questionMath).toBeTruthy();
   expect(difficulty).toBe('stretch');
-  const [, , a, c1, , c2] = m;
+  const [, a, c1, c2] = m;
+  expect(q.instruction).toBe(`One is taken at random. How many ${c2} ${m[4]} are there?`);
   expect(c1).not.toBe(c2);
-  const pm = /^P\(\\text\{([a-z]+)\}\) = \\frac\{(\d+)\}\{(\d+)\}$/.exec(q.questionMath);
+  const pm = /^P\(\\text\{([a-z]+)\}\) = \\frac\{(\d+)\}\{(\d+)\}$/.exec(q.questionMath.split('\n')[1]);
   expect(pm, q.questionMath).toBeTruthy();
   expect(pm[1]).toBe(c1);
   const [p, d] = [Number(pm[2]), Number(pm[3])];

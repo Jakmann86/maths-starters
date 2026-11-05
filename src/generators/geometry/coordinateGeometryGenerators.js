@@ -73,9 +73,6 @@ const point = (x, y) => `(${x}, ${y})`;
 /** A value as it should appear inside a sum: -4 becomes (-4), not "+ -4". */
 const br = (v) => (v < 0 ? `(${v})` : String(v));
 
-/** A number for plain-text instruction: a true minus sign, as KaTeX gives questionMath. */
-const txt = (v) => String(v).replace('-', '−');
-
 const TRIPLES = pythagoreanTriples(70);
 
 /** sqrt(n) in exact simplified form. */
@@ -89,6 +86,18 @@ function surd(n) {
   return outside === 1 ? `\\sqrt{${inside}}` : `${outside}\\sqrt{${inside}}`;
 }
 
+/** How far the fixed line window reaches from the origin (Figure.jsx GRID_REACH). */
+const REACH = 5;
+
+/** Does y = (num/den)x + c pass through two whole-number points in the window? */
+function hasTwoGridCorners(num, den, c) {
+  const inWindow = _.range(-REACH + 1, REACH).filter((x) => {
+    const y = (num * x) / den + c;
+    return Number.isInteger(y) && Math.abs(y) < REACH;
+  });
+  return inWindow.length >= 2;
+}
+
 const gridOf = (a, b, labels = ['A', 'B']) => ({
   type: 'coordinate-grid',
   points: [{ x: a[0], y: a[1], label: labels[0] }, { x: b[0], y: b[1], label: labels[1] }],
@@ -100,16 +109,20 @@ const gridOf = (a, b, labels = ['A', 'B']) => ({
 /**
  * Two points a triple apart. `maxLeg` keeps the Foundation pair inside a grid
  * a teacher can actually read — the 7-24-25 triple puts a point at y = -27 and
- * the drawn grid is then fifty squares tall.
+ * the drawn grid is then fifty squares tall. `reach`, if given, keeps both
+ * points that close to the origin, for the same reason.
  */
-function triplePair(spread, maxLeg = 99) {
+function triplePair(spread, maxLeg = 99, reach = Infinity) {
   const usable = TRIPLES.filter((t) => t[0] <= maxLeg && t[1] <= maxLeg);
-  const [p, q] = _.shuffle(_.sample(usable).slice(0, 2));
-  const dx = _.sample([-1, 1]) * p;
-  const dy = _.sample([-1, 1]) * q;
-  const ax = _.random(-spread, spread);
-  const ay = _.random(-spread, spread);
-  return [[ax, ay], [ax + dx, ay + dy]];
+  for (;;) {
+    const [p, q] = _.shuffle(_.sample(usable).slice(0, 2));
+    const dx = _.sample([-1, 1]) * p;
+    const dy = _.sample([-1, 1]) * q;
+    const ax = _.random(-spread, spread);
+    const ay = _.random(-spread, spread);
+    const pts = [[ax, ay], [ax + dx, ay + dy]];
+    if (pts.flat().every((v) => Math.abs(v) <= reach)) return pts;
+  }
 }
 
 /* ------------------------------------------------------------ 12B distance */
@@ -144,7 +157,7 @@ export const generateDistanceBetweenPoints = (options = {}) => {
     }
   }
 
-  const [a, b] = difficulty === 'foundation' ? triplePair(2, 15) : triplePair(5);
+  const [a, b] = difficulty === 'foundation' ? triplePair(4, 8, 5) : triplePair(5);
   const dx = b[0] - a[0];
   const dy = b[1] - a[1];
   const d = Math.round(Math.sqrt(dx * dx + dy * dy));
@@ -392,13 +405,16 @@ export const generateEquationOfALine = (options = {}) => {
     // Read the gradient and the intercept off a drawn line. Gradients stay
     // countable by eye on a grid — a small whole number, or a fraction whose
     // run is at most 4 squares.
+    // The intercept stays near the origin, and the line must cross two grid
+    // corners inside the window, or there is nothing to count the gradient from.
     let den;
     let num;
+    let c;
     do {
       den = _.sample([1, 1, 2, 3, 4]);
       num = _.random(1, 3) * _.sample([-1, 1]);
-    } while (gcd(Math.abs(num), den) !== 1);
-    const c = _.random(-6, 6);
+      c = _.random(-3, 3);
+    } while (gcd(Math.abs(num), den) !== 1 || !hasTwoGridCorners(num, den, c));
     return {
       instruction: 'Find the equation of this line',
       answer: lineEquation(num, den, c),
@@ -555,9 +571,8 @@ export const generatePointOnLine = (options = {}) => {
     const x = _.random(-9, 9);
     const y = m * x + c;
     return {
-      instruction: `Find a, given that (${txt(x)}, a) lies on this line`,
-      questionMath: lineEquation(m, 1, c),
-      questionMathCompact: true,
+      instruction: 'Find a',
+      questionMath: `${lineEquation(m, 1, c)}${NL}${point(x, 'a')} \\text{ lies on this line}`,
       answer: `a = ${y}`,
       workingOut: [`a = ${m} \\times ${br(x)}${signed(c)}`, `a = ${y}`].join(NL),
       metadata: { topic: 'point-on-line', difficulty },
@@ -573,9 +588,8 @@ export const generatePointOnLine = (options = {}) => {
       const y = m * x + c;
       if (x === 0) continue;
       return {
-        instruction: `Find a, given that (a, ${txt(y)}) lies on this line`,
-        questionMath: lineEquation(m, 1, c),
-        questionMathCompact: true,
+        instruction: 'Find a',
+        questionMath: `${lineEquation(m, 1, c)}${NL}${point('a', y)} \\text{ lies on this line}`,
         answer: `a = ${x}`,
         workingOut: [
           `${y} = ${m}a${signed(c)}`,
@@ -597,9 +611,8 @@ export const generatePointOnLine = (options = {}) => {
     if (gcd(Math.abs(a), bb) !== 1) continue;
     const d = a * x + bb * k;
     return {
-      instruction: `Find k, given that (${txt(x)}, k) lies on this line`,
-      questionMath: generalForm(a, bb, d),
-      questionMathCompact: true,
+      instruction: 'Find k',
+      questionMath: `${generalForm(a, bb, d)}${NL}${point(x, 'k')} \\text{ lies on this line}`,
       answer: `k = ${k}`,
       workingOut: [
         `${a} \\times ${br(x)} + ${bb}k = ${d}`,
@@ -617,7 +630,7 @@ export const generatePointOnLine = (options = {}) => {
 //   stretch     where x = k or y = k meets y = mx + c    substitute, then
 //               (y = k needs solving for x)              give the point
 // Foundation has a real ceiling: k is a non-zero whole number on a readable
-// grid, two orientations, so 20 questions. k = 0 would sit on an axis and be
+// grid, two orientations, so 16 questions. k = 0 would sit on an axis and be
 // invisible; a wider k only moves the window.
 
 export const generateHorizontalVerticalLines = (options = {}) => {
@@ -625,7 +638,7 @@ export const generateHorizontalVerticalLines = (options = {}) => {
   const vertical = _.random(0, 1) === 1;
 
   if (difficulty === 'foundation') {
-    const k = _.sample([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]);
+    const k = _.sample([-4, -3, -2, -1, 1, 2, 3, 4]);
     return {
       instruction: 'Find the equation of this line',
       answer: vertical ? `x = ${k}` : `y = ${k}`,
