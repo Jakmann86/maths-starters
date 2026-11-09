@@ -105,7 +105,7 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
 }
 
 function SlotContent({ data, colorVar, revealed }) {
-  const { instr, q, qProse, qCompact, a, fig, parts } = data;
+  const { instr, q, qProse, qCompact, qScale, a, fig, parts } = data;
   const rowRef = useRef(null);
   const qRef = useRef(null);
   useFitToBox(qRef, rowRef, parts ? null : q, revealed);
@@ -130,7 +130,7 @@ function SlotContent({ data, colorVar, revealed }) {
                 {parts.map((p) => <div key={p}>{p}</div>)}
               </div>
             ) : (
-              <div ref={qRef} style={{ fontSize: `calc(${qProse ? pSize() : qSize(q, instr, qCompact, Boolean(fig))} * var(--fit, 1))` }}>
+              <div ref={qRef} style={{ fontSize: `calc(${qProse ? pSize() : qSize(q, instr, qCompact, Boolean(fig), qScale)} * var(--fit, 1))` }}>
                 {qProse
                   ? <Prose text={q} />
                   : <MathDisplay math={q} />}

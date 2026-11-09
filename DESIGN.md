@@ -110,8 +110,11 @@ text. The forces they are balancing:
 
 Decided so far: a lone fraction with one term over one term (`\\frac{15}{9y}`)
 has a 54px ceiling against everyone else's 76px, since stacked it stands far
-taller than any other single line (`isSimpleFraction`); and a `compact` given
-line has the same floor as any other question, because students need its number.
+taller than any other single line (`isSimpleFraction`); a `compact` given
+line has the same floor as any other question, because students need its number;
+and a skill can set `questionScale` in `skills.js` to shrink its question's
+growth terms and ceiling (not its floor). The two pair-of-equations
+simultaneous skills use 0.75, to leave the teacher room to write the working.
 
 So the current `qSize()` behaviour (grow to fill the space) is not the final
 word. Expect a tighter range: a ceiling on how big a short question grows, a

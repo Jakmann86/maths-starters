@@ -75,7 +75,12 @@ export function isSimpleFraction(q) {
 // and everywhere else, the question reads larger than the answer, not
 // smaller. So `hasFigure` says whether there's a figure for the compact line
 // to stay smaller than; without one, it sizes like any other question.
-export function qSize(q, instr, compact, hasFigure = true) {
+//
+// `scale` shrinks a skill's question below what the rules above would give,
+// for a skill whose working the teacher writes in the box beside it (a pair
+// of simultaneous equations). It scales the growth terms and the ceiling, not
+// the floor: a scaled question still reads from the back of the room.
+export function qSize(q, instr, compact, hasFigure = true, scale = 1) {
   const lines = String(q || '').split('\n').length;
   const longest = Math.max(...String(q || '').split('\n').map((l) => visualLength(l)), 1);
   const wordy = String(instr || '').length > 44;
@@ -92,13 +97,13 @@ export function qSize(q, instr, compact, hasFigure = true) {
   // most of it. There the width term aims at about nine tenths instead
   // (0.6em a character — KaTeX digits run wide), and the 76px ceiling
   // does the capping.
-  const w = hasFigure
+  const w = scale * (hasFigure
     ? 150 / Math.max(longest, 3)
-    : Math.min(109 / Math.max(longest, 7), 14);
+    : Math.min(109 / Math.max(longest, 7), 14));
   const floor = lines >= 3 ? 28 : 30;
   if (compact && hasFigure) {
-    return `clamp(${floor}px,min(${(h * 0.6).toFixed(1)}cqh,${w.toFixed(1)}cqi),44px)`;
+    return `clamp(${floor}px,min(${(h * 0.6 * scale).toFixed(1)}cqh,${w.toFixed(1)}cqi),${Math.round(44 * scale)}px)`;
   }
-  const ceiling = isSimpleFraction(q) ? 54 : 76;
-  return `clamp(${floor}px,min(${h}cqh,${w.toFixed(1)}cqi),${ceiling}px)`;
+  const ceiling = Math.round((isSimpleFraction(q) ? 54 : 76) * scale);
+  return `clamp(${floor}px,min(${+(h * scale).toFixed(2)}cqh,${w.toFixed(1)}cqi),${ceiling}px)`;
 }
