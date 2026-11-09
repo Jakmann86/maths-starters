@@ -16,6 +16,9 @@ import _ from 'lodash';
 const NL = '\n';
 const toSig3 = (n) => n.toPrecision(3); // string, so a significant trailing zero survives
 const round1 = (n) => Math.round(n * 10) / 10;
+// A value to 1 d.p. that really has a tenths digit: 12.0 would print as 12
+// and give Stretch a Core question.
+const oneDpValue = (lo, hi) => { for (;;) { const v = round1(_.random(lo, hi, true)); if (!Number.isInteger(v) && v < hi) return v; } };
 const toRad = (deg) => (deg * Math.PI) / 180;
 
 const RATIO_FN = { sin: Math.sin, cos: Math.cos, tan: Math.tan };
@@ -114,8 +117,8 @@ export const generateSohcahtoaFindAngle = (options = {}) => {
     numValue = _.random(2, maxV);
     denValue = _.random(2, maxV);
     if (oneDp) {
-      if (_.sample([true, false])) numValue = round1(_.random(2, maxV, true));
-      else denValue = round1(_.random(2, maxV, true));
+      if (_.sample([true, false])) numValue = oneDpValue(2, maxV);
+      else denValue = oneDpValue(2, maxV);
     }
   } else {
     // sin/cos: the leg (numerator) must stay strictly under the hypotenuse
@@ -123,12 +126,13 @@ export const generateSohcahtoaFindAngle = (options = {}) => {
     denValue = _.random(6, 30);
     numValue = _.random(2, denValue - 1);
     if (oneDp) {
-      if (_.sample([true, false])) denValue = round1(_.random(numValue + 1, 30, true));
-      else numValue = round1(_.random(2, denValue - 1, true));
+      if (numValue + 1 < 30 && _.sample([true, false])) denValue = oneDpValue(numValue + 1, 30);
+      else numValue = oneDpValue(2, denValue - 1);
     }
   }
 
-  const angleDeg = round1((INVERSE_FN[ratio](numValue / denValue) * 180) / Math.PI);
+  // To 1 d.p. with the decimal always shown: 66.0, not 66.
+  const angleDeg = ((INVERSE_FN[ratio](numValue / denValue) * 180) / Math.PI).toFixed(1);
 
   const numLetter = roles[num];
   const denLetter = roles[den];

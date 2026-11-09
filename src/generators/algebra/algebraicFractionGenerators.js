@@ -312,11 +312,11 @@ export const generateSimplifyFractionsFactorising = (options = {}) => {
         };
       }
 
-      // c1·x(x + p) over c2(x + p)
-      const c1 = _.random(2, 9);
-      const c2 = _.random(2, 15);
-      const g = gcd(c1, c2);
-      if (g < 2) continue;
+      // c1·x(x + p) over c2(x + p). The coefficients are redrawn here, not
+      // by going round the outer loop, which would redraw squareForm too
+      // and tip the mix towards the perfect square.
+      let c1, c2, g;
+      do { c1 = _.random(2, 9); c2 = _.random(2, 15); g = gcd(c1, c2); } while (g < 2);
       const a = c1 / g;
       const b = c2 / g;
       const answer = frac(monomial(a, { x: 1 }), String(b));

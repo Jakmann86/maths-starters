@@ -24,6 +24,15 @@ const TRIPLES = (() => {
   }
   return out;
 })();
+// A whole-number sloping side for a shape of height h whose side may lean
+// at most `room` along the base (the foot of the height must land where the
+// drawing puts it): longer than h, and sqrt(s^2 - h^2) < room. Up to `most`
+// longer than h, so it stays a tempting wrong choice. Null if none fits.
+const slopingSide = (h, room, most) => {
+  const fits = _.range(h + 1, h + most + 1).filter((s) => s * s - h * h < room * room);
+  return fits.length ? _.sample(fits) : null;
+};
+
 const triple = () => {
   const [a, b, c] = _.sample(TRIPLES);
   return _.random(0, 1) ? [a, b, c] : [b, a, c];
@@ -102,18 +111,20 @@ export const generateAreaTriangle = (options = {}) => {
     };
   }
 
-  let b, h;
+  let b, h, slant;
   do {
     b = _.random(2, 24);
     h = _.random(2, 24);
-  } while ((b * h) % 2 !== 0);
+    // A sloping side is given too at Core. It is longer than the
+    // perpendicular height, so it is a genuinely tempting wrong choice —
+    // this is the selection skill Rayner 4.1 is built around, not a harder
+    // calculation. It is the left side as drawn, so it leans less than the
+    // base is long: the height's foot is on the base.
+    slant = difficulty === 'core' ? slopingSide(h, b, 12) : 0;
+  } while ((b * h) % 2 !== 0 || slant === null);
   const A = (b * h) / 2;
 
   if (difficulty === 'core') {
-    // A sloping side is given too. It is longer than the perpendicular
-    // height, so it is a genuinely tempting wrong choice — this is the
-    // selection skill Rayner 4.1 is built around, not a harder calculation.
-    const slant = h + _.random(1, 12);
     return {
       instruction: 'Find the area of the triangle',
       answer: String(A),
@@ -139,12 +150,18 @@ export const generateAreaTriangle = (options = {}) => {
 export const generateAreaParallelogram = (options = {}) => {
   const { difficulty = 'core' } = options;
   const u = pick();
-  const b = _.random(2, 25);
-  const h = _.random(2, 20);
+  let b, h, slant;
+  do {
+    b = _.random(2, 25);
+    h = _.random(2, 20);
+    // At Core the left side is given too, as a distractor. The height is
+    // dropped from the top-left corner onto the base, so that side leans
+    // less than the base is long.
+    slant = difficulty === 'core' ? slopingSide(h, b, 12) : 0;
+  } while (slant === null);
   const A = b * h;
 
   if (difficulty === 'core') {
-    const slant = h + _.random(1, 12);
     return {
       instruction: 'Find the area of the parallelogram',
       answer: String(A),
@@ -181,16 +198,18 @@ export const generateAreaParallelogram = (options = {}) => {
 export const generateAreaTrapezium = (options = {}) => {
   const { difficulty = 'core' } = options;
   const u = pick();
-  let a, b, h;
+  let a, b, h, slant;
   do {
     a = _.random(2, 16);
     b = _.random(a + 1, a + 16);
     h = _.random(2, 18);
-  } while (((a + b) * h) % 2 !== 0);
+    // At Core the right side is given too, as a distractor. Both sides lean
+    // outward as drawn, so it leans less than the whole overhang b - a.
+    slant = difficulty === 'core' ? slopingSide(h, b - a, 10) : 0;
+  } while (((a + b) * h) % 2 !== 0 || slant === null);
   const A = ((a + b) * h) / 2;
 
   if (difficulty === 'core') {
-    const slant = h + _.random(1, 10);
     return {
       instruction: 'Find the area of the trapezium',
       answer: String(A),
@@ -242,7 +261,7 @@ export const generateAreaKite = (options = {}) => {
       instruction: 'Find the length of the shorter diagonal',
       answer: `x = ${d}`,
       answerUnits: `\\text{${u}}`,
-      workingOut: `\\frac{1}{2} \\times x \\times (x + ${k}) = ${A}${NL}x^2 + ${k}x = ${2 * A}${NL}x = ${d}`,
+      workingOut: `\\frac{1}{2} \\times x \\times (x + ${k}) = ${A}${NL}x^2 + ${k === 1 ? '' : k}x = ${2 * A}${NL}x = ${d}`,
       visualization: { type: 'kite', d1: 'x', d2: `x + ${k}`, area: `${A} ${u}²`, unknown: 'd1' },
       metadata: { topic: 'area-kite', difficulty },
     };
