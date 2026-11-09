@@ -25,6 +25,14 @@
   font-style: italic;
 }
 
+/* A vector's name (vecLabel in Figure.jsx): bold upright, as KaTeX sets
+   \mathbf{a} in the question. */
+.fig-vec {
+  font-family: KaTeX_Main, 'Times New Roman', serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
 /* A degree sign, drawn as KaTeX's raised ∘ (see labelRuns in Figure.jsx). */
 .fig-deg {
   font-size: 0.7em;
