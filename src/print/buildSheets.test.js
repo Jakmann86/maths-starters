@@ -7,7 +7,7 @@
 //
 // Run: npx vitest run src/print/buildSheets.test.js
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { buildSheets, PER_PAGE, PRESETS } from './buildSheets';
 
 const BOXES = [
@@ -97,6 +97,16 @@ describe('buildSheets', () => {
     const nullGen = (id, band) => (id === 'volume-cuboid' ? null : gen(id, band));
     const [page] = buildSheets(boxes, { layout: 'half', perBox: 1, versions: 1 }, nullGen);
     expect(page.halves[0].questions.map((q) => q.skillId)).toEqual(['index-laws']);
+  });
+
+  it('leaves out a skill whose generator throws, and prints the rest', () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { gen } = counter();
+    const throwing = (id, band) => { if (id === 'volume-cuboid') throw new Error('broken'); return gen(id, band); };
+    const [page] = buildSheets(BOXES, { layout: 'half', perBox: 1, versions: 1 }, throwing);
+    expect(page.halves[0].questions.map((q) => q.skillId)).toEqual(['index-laws', 'pythagoras-hypotenuse', 'tree-diagrams']);
+    expect(log).toHaveBeenCalled();
+    log.mockRestore();
   });
 
   it('redraws a repeat within a version, and gives up rather than looping', () => {
