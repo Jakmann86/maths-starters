@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import MathDisplay, { Prose } from './MathDisplay.jsx';
 import Figure from './Figure.jsx';
+import ErrorBoundary from './ErrorBoundary.jsx';
 import { iSize, pSize, qSize } from '../lib/typeSizing.js';
 
 // qSize() estimates a question's width from its source, and KaTeX's serif
@@ -35,11 +36,22 @@ function useFitToBox(innerRef, rowRef, content, revealed) {
   }, [innerRef, rowRef, content, revealed]);
 }
 
+// What a box shows when its question could not be made or drawn: the
+// eyebrow and buttons stay, so # brings another. The empty answer band keeps
+// the box's grid rows as they are.
+function Failed() {
+  return (
+    <>
+      <div className="slot-body">
+        <div className="slot-failed">This question didn’t load. Press # for another.</div>
+      </div>
+      <div className="slot-answer" />
+    </>
+  );
+}
+
 export default function Slot({ label, colorVar, data, revealed, onRegenSame, onRegen, onSwap }) {
-  const { topic, instr, q, qProse, qCompact, a, fig, parts } = data;
-  const rowRef = useRef(null);
-  const qRef = useRef(null);
-  useFitToBox(qRef, rowRef, parts ? null : q, revealed);
+  const { topic } = data;
 
   return (
     <section className="slot" style={{ '--c': colorVar }}>
@@ -80,6 +92,26 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
         </span>
       </div>
 
+      {/* A question that throws while drawing (a figure or KaTeX string the
+          renderer cannot handle) is caught here, so it empties this box
+          only. A new question in the box (`data`) tries again. */}
+      {data.failed ? <Failed /> : (
+        <ErrorBoundary name={`box: ${topic}`} resetKey={data} fallback={<Failed />}>
+          <SlotContent data={data} colorVar={colorVar} revealed={revealed} />
+        </ErrorBoundary>
+      )}
+    </section>
+  );
+}
+
+function SlotContent({ data, colorVar, revealed }) {
+  const { instr, q, qProse, qCompact, a, fig, parts } = data;
+  const rowRef = useRef(null);
+  const qRef = useRef(null);
+  useFitToBox(qRef, rowRef, parts ? null : q, revealed);
+
+  return (
+    <>
       <div className="slot-body">
         <div className="slot-instr" style={{ fontSize: iSize(instr) }}>{instr}</div>
         <div className="slot-row" ref={rowRef}>
@@ -121,6 +153,6 @@ export default function Slot({ label, colorVar, data, revealed, onRegenSame, onR
       <div className={`slot-answer${revealed ? ' is-revealed' : ''}`}>
         <div className="answer-value"><MathDisplay math={a} /></div>
       </div>
-    </section>
+    </>
   );
 }

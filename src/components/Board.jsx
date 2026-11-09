@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Header from './Header.jsx';
 import Slot from './Slot.jsx';
+import ErrorBoundary from './ErrorBoundary.jsx';
 import TopicPanel from './TopicPanel.jsx';
 import PrintSheet from '../print/PrintSheet.jsx';
-import { generateForSkill, skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
+import { skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
 import { loadPool, savePool, togglePool, drawBoxTopics, pickSwapTopic } from '../curriculum/topicPool.js';
 import { preloadKatex } from '../lib/katexLoader.js';
-import { questionView } from '../lib/questionView.js';
+import { boxView } from '../lib/safeGenerate.js';
 import './Board.css';
 
 const SLOT_COLORS = ['var(--slot-1)', 'var(--slot-2)', 'var(--slot-3)', 'var(--slot-4)'];
@@ -20,9 +21,9 @@ const MIXED = ['foundation', 'core', 'core', 'stretch'];
 const INITIAL_DIFF = 1;
 const bandFor = (diff, i) => (diff === 3 ? MIXED[i] : BANDS[diff]);
 
-function slotData(skillId, band) {
-  return questionView(generateForSkill(skillId, band), skillId);
-}
+// A generator that throws on every try leaves its box empty with a note
+// (Slot.jsx), not the board blank: the teacher presses # for another.
+const slotData = (skillId, band) => boxView(skillId, band);
 
 // A fresh draw: 4 topics at random from the pool (SPEC.md §1, §5), each starting at its topic's first skill.
 // Used on mount and by "New questions" — every draw is independent, no memory of
@@ -39,6 +40,15 @@ function drawBoxes(pool, diff) {
 // at the new band, same skills).
 function refreshBoxes(boxes, diff) {
   return boxes.map((b, i) => ({ ...b, data: slotData(b.skillId, bandFor(diff, i)) }));
+}
+
+function PrintFailed({ onClose }) {
+  return (
+    <div className="print-failed" role="alert">
+      <span>The print sheet didn’t load.</span>
+      <button type="button" onClick={onClose}>Back to the board</button>
+    </div>
+  );
 }
 
 export default function Board() {
@@ -231,11 +241,14 @@ export default function Board() {
 
       {/* What is printed is what is on the board: each box's skill at that
           box's band, with fresh numbers. */}
-      <PrintSheet
-        open={printOpen}
-        boxes={boxes.map((b, i) => ({ skillId: b.skillId, band: bandFor(diff, i) }))}
-        onClose={closePrint}
-      />
+      {/* A print screen that fails to draw closes back to the board. */}
+      <ErrorBoundary name="print" resetKey={printOpen} fallback={<PrintFailed onClose={closePrint} />}>
+        <PrintSheet
+          open={printOpen}
+          boxes={boxes.map((b, i) => ({ skillId: b.skillId, band: bandFor(diff, i) }))}
+          onClose={closePrint}
+        />
+      </ErrorBoundary>
     </div>
   );
 }
