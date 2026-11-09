@@ -413,7 +413,9 @@ export const generateVectorGeometry = (options = {}) => {
     const sideName = V.indexOf(U) < V.indexOf(W) ? `${U}${W}` : `${W}${U}`;
     instruction = difficulty === 'core'
       ? `${shape} ${name} is the midpoint of ${sideName}. Write this vector in terms of ${vn[0]} and ${vn[1]}.`
-      : `${shape} ${name} lies on ${sideName} with ${U}${name} : ${name}${W} = ${m} : ${k}. Write this vector in terms of ${vn[0]} and ${vn[1]}.`;
+      : `${shape} ${name} lies on ${sideName}. Write this vector in terms of ${vn[0]} and ${vn[1]}.`;
+    // The ratio is a number the student needs, so it goes in the question.
+    if (difficulty === 'stretch') point.ratioTex = `${U}${name} : ${name}${W} = ${m} : ${k}`;
   } else {
     instruction = `${V.join('')} is a ${layout}. Write this vector in terms of ${vn[0]} and ${vn[1]}.`;
   }
@@ -511,7 +513,7 @@ export const generateVectorGeometry = (options = {}) => {
   const toFig = (f) => f[0] / f[1];
   return {
     instruction,
-    questionMath: arrow(X, Y),
+    questionMath: point?.ratioTex ? `${point.ratioTex}${NL}${arrow(X, Y)}` : arrow(X, Y),
     answer: `${arrow(X, Y)} = ${answer}`,
     workingOut: lines.join(NL),
     visualization: {

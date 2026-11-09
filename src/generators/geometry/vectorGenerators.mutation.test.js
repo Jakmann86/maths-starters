@@ -57,9 +57,9 @@ const OPS = {
     p.t = p.t === 0.5 ? 0.25 : 0.5;
   },
   'the ratio turned round': (q) => {
-    const m = / = (\d) : (\d)\./.exec(q.instruction);
+    const m = / = (\d) : (\d)\n/.exec(q.questionMath ?? '');
     if (!m || m[1] === m[2]) return false;
-    q.instruction = q.instruction.replace(/ = (\d) : (\d)\./, ` = ${m[2]} : ${m[1]}.`);
+    q.questionMath = q.questionMath.replace(/ = (\d) : (\d)\n/, ` = ${m[2]} : ${m[1]}\n`);
   },
   'a coefficient changed in the answer': (q) => {
     if (!/\\frac\{\d\}\{\d\}/.test(q.answer)) return false;

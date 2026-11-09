@@ -411,8 +411,10 @@ function geometry(q, band) {
       t = 1 / 2;
       kind = tri ? 'midpoint, triangle' : 'midpoint, parallelogram';
     } else {
-      const m = new RegExp(`^${shape.replace('.', '\\.')} ${P.name} lies on ${side} with ${A}${P.name} : ${P.name}${B} = (\\d) : (\\d)\\. ${tail.replace('.', '\\.')}$`).exec(q.instruction);
-      must(m, `instruction "${q.instruction}"`, q);
+      must(q.instruction === `${shape} ${P.name} lies on ${side}. ${tail}`, `instruction "${q.instruction}"`, q);
+      // The ratio is in the question, on the line above the vector asked for.
+      const m = new RegExp(`^${A}${P.name} : ${P.name}${B} = (\\d) : (\\d)\n`).exec(q.questionMath ?? '');
+      must(m, `the ratio in the question: ${q.questionMath}`, q);
       const [r, s] = [Number(m[1]), Number(m[2])];
       must(r !== s && r > 0 && s > 0, 'an unequal ratio', q);
       t = r / (r + s);
@@ -421,7 +423,9 @@ function geometry(q, band) {
     must(Math.abs(P.t - t) < EPS, 'the point is drawn where the sentence puts it', q);
     pt[P.name] = [pt[A][0] + t * (pt[B][0] - pt[A][0]), pt[A][1] + t * (pt[B][1] - pt[A][1])];
   }
-  const m = /^\\overrightarrow\{([A-Z])([A-Z])\}$/.exec(q.questionMath ?? '');
+  const asked = (q.questionMath ?? '').split('\n').pop();
+  must(band === 'stretch' ? q.questionMath.split('\n').length === 2 : !q.questionMath.includes('\n'), 'the vector asked for, under the ratio at Stretch', q);
+  const m = /^\\overrightarrow\{([A-Z])([A-Z])\}$/.exec(asked);
   must(m && pt[m[1]] && pt[m[2]] && m[1] !== m[2], `the vector asked for: ${q.questionMath}`, q);
   const [X, Y] = [m[1], m[2]];
   must(!f.arrows.some((a) => a.from === X && a.to === Y), 'not one of the arrows drawn', q);

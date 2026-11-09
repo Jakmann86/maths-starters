@@ -9,7 +9,8 @@
 // - Magnitude at Foundation draws its vector from the Pythagorean pairs with
 //   legs up to 24, in either order and any signs: 432.
 // - Parallel vectors at Foundation is k (seven values) times a vector with
-//   components up to 5: 700.
+//   components up to 5: 700 (the floor sits a little under: 6,000 draws
+//   can miss one).
 // - Vectors in geometry at Foundation is a vector between two corners of a
 //   triangle or a parallelogram, over three sets of corner letters and
 //   three pairs of vector names: 126.
@@ -36,7 +37,7 @@ const FLOOR = {
   'column-vectors': { foundation: 3900, core: 5500, stretch: 5500 },
   'vector-arithmetic': { foundation: 5500, core: 5500, stretch: 5500 },
   'vector-magnitude': { foundation: 432, core: 1600, stretch: 5500 },
-  'parallel-vectors': { foundation: 700, core: 1400, stretch: 5300 },
+  'parallel-vectors': { foundation: 680, core: 1400, stretch: 5300 },
   'vector-geometry': { foundation: 126, core: 950, stretch: 3700 },
 };
 
