@@ -29,7 +29,7 @@ export default function TopicPanel({ open, selected, onToggle, onSelectAll, onSe
           </div>
           <span className="topic-panel-spacer" />
           <button type="button" className="topic-panel-btn" onClick={onSelectAll}>All</button>
-          <button type="button" className="topic-panel-btn" onClick={onSelectNone}>None</button>
+          <button type="button" className="topic-panel-btn" onClick={onSelectNone}>Clear</button>
           <button type="button" className="topic-panel-btn topic-panel-btn--primary" onClick={onClose}>Done</button>
         </div>
 

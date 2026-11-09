@@ -214,7 +214,7 @@ fullscreen. See §5 for the actions.
 ### 7.2 Topic panel
 
 A right-hand sheet opened from the header's topics segment. Topics grouped by
-strand (§2.1), each a toggle row with a 20px square tick box; All / None /
+strand (§2.1), each a toggle row with a 20px square tick box; All / Clear /
 Done in its header. Each tap saves the pool (§2.3) and the panel stays open,
 so several topics can be toggled in one visit. Done draws a fresh four if the
 selection changed.
