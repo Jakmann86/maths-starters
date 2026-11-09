@@ -39,3 +39,20 @@ button:focus-visible {
   outline: 2px solid var(--slot-1);
   outline-offset: 2px;
 }
+
+/* App.jsx: the board crashed outright. */
+.app-crashed {
+  display: grid;
+  place-content: center;
+  gap: 16px;
+  min-height: 100vh;
+  font-size: 24px;
+  color: var(--ink);
+  background: var(--ground);
+  text-align: center;
+}
+.app-crashed button {
+  justify-self: center;
+  font: inherit;
+  padding: 8px 20px;
+}

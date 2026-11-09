@@ -16,6 +16,7 @@
 //         page; more run on to the next page.
 
 import { generateForSkill } from '../curriculum/skills.js';
+import { safeGenerate } from '../lib/safeGenerate.js';
 import { questionView } from '../lib/questionView.js';
 
 export const PER_PAGE = 8;
@@ -33,7 +34,10 @@ export const PRESETS = {
 // ceiling, like a cube's one parameter, can genuinely run out).
 const REDRAWS = 6;
 
-function questionsFor(boxes, perBox, gen) {
+function questionsFor(boxes, perBox, rawGen) {
+  // A generator that throws prints nothing for that question rather than
+  // stopping the whole sheet (safeGenerate.js).
+  const gen = (id, band) => safeGenerate(id, band, rawGen);
   const out = [];
   // A box with no skill (an empty pool, a stale topic name) prints nothing,
   // rather than a numbered blank.
@@ -42,7 +46,8 @@ function questionsFor(boxes, perBox, gen) {
     for (let k = 0; k < perBox; k += 1) {
       let q = gen(skillId, band);
       for (let t = 0; t < REDRAWS && q && seen.has(key(q)); t += 1) q = gen(skillId, band);
-      if (q) seen.add(key(q));
+      if (!q) continue;
+      seen.add(key(q));
       out.push({ skillId, band, view: questionView(q, skillId) });
     }
   });

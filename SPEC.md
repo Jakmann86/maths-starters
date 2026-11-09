@@ -149,6 +149,24 @@ Always opening a topic on its first skill is deliberate: a long topic takes
 several presses of ↻ to reach its later skills, which is the price of the
 teacher choosing topics rather than skills.
 
+### 5.1 When a question fails
+
+The board is in front of a class, so one broken question never blanks it.
+
+- **A generator that throws** is tried again (three tries in all, since
+  most throws are one unlucky random draw). If every try throws, that box
+  keeps its eyebrow and buttons and says "This question didn't load. Press
+  # for another." (`src/lib/safeGenerate.js`). Each failure is logged to the
+  console with its skill and band.
+- **A question that throws while drawing** (a figure config or KaTeX string
+  the renderer cannot handle) is caught by an error boundary around that
+  box's content and shows the same note. A new question in the box tries
+  again (`src/components/ErrorBoundary.jsx`, `Slot.jsx`).
+- **The print screen** leaves out a question whose generator throws, and
+  if the screen itself fails to draw it offers a way back to the board.
+- **Anything else** (the header, the topic panel) falls back to a page
+  with a Reload button rather than a blank screen (`App.jsx`).
+
 ## 6. Maths rendering
 
 **Every question and answer line renders in KaTeX** (`MathDisplay.jsx`), in
