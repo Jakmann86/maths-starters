@@ -2751,11 +2751,18 @@ export default function Figure({ fig, color, shown }) {
       const r = LAYOUT[(i + 1) % LAYOUT.length];
       nodes.push(figLine(`vd${i}`, q[0], q[1], r[0], r[1], { strokeLinecap: 'round' }));
     });
-    // An arrowhead at the middle of its side, its label just outside it.
+    // An arrowhead at the middle of its side, its label just outside it. A
+    // point near the middle of the same side moves them along, clear of its
+    // dot and its letter.
     (fig.arrows ?? []).forEach((v, i) => {
       const [a, b] = [at[v.from], at[v.to]];
       const [ux, uy] = unitVec(b[0] - a[0], b[1] - a[1]);
-      const [mx, my] = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      let s = 0.5;
+      (fig.points ?? []).forEach((p) => {
+        const t = p.on[0] === v.from && p.on[1] === v.to ? p.t : p.on[0] === v.to && p.on[1] === v.from ? 1 - p.t : null;
+        if (t !== null && Math.abs(t - 0.5) < 0.2) s = t >= 0.5 ? 0.25 : 0.75;
+      });
+      const [mx, my] = [a[0] + (b[0] - a[0]) * s, a[1] + (b[1] - a[1]) * s];
       nodes.push(arrowHead(`vh${i}`, mx + ux * 7, my + uy * 7, ux, uy, 'var(--ink)', 15));
       let [nx, ny] = [-uy, ux];
       if (nx * (mx - G[0]) + ny * (my - G[1]) < 0) [nx, ny] = [-nx, -ny];
