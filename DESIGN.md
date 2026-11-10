@@ -115,6 +115,9 @@ line has the same floor as any other question, because students need its number;
 and a skill can set `questionScale` in `skills.js` to shrink its question's
 growth terms and ceiling (not its floor). The two pair-of-equations
 simultaneous skills use 0.75, to leave the teacher room to write the working.
+The sizer counts a log by what it shows, not its source (`\log_{2}` is
+about as wide as "log2", not eight characters), so log questions size like
+any other line.
 
 So the current `qSize()` behaviour (grow to fill the space) is not the final
 word. Expect a tighter range: a ceiling on how big a short question grows, a

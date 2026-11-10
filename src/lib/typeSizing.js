@@ -30,6 +30,10 @@ function visualLength(str) {
     .replace(/\\text\{([^}]*)\}/g, '$1')
     .replace(/\\,|\\;|\\!/g, ' ')
     .replace(/\\ /g, ' ')
+    // A log's base is a small subscript: \log_{2} is about four characters
+    // wide on screen (log₂), not the eight it takes to write.
+    .replace(/\\log_\{([^{}]*(?:\{[^{}]*\})?[^{}]*)\}/g, 'log$1')
+    .replace(/\\log/g, 'log')
     // An index sits small and raised; its braces take no room. Dropped
     // before the \frac rule below, which can't see past nested braces —
     // \frac{2^{8}}{2^{7}} otherwise counted as its full source length.

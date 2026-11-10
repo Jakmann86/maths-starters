@@ -370,6 +370,65 @@ to or from a point dividing a side in a ratio m : n (Haese 24H question 6,
 Rayner 11.2 question 8). The working takes the route round the shape and
 never the whole third side of the triangle, which is what is being found.
 
+## Logarithms — Haese 31A–E
+
+Year 10, IGCSE 0607 (syllabus 3.10). Rayner has no logarithms chapter. Base
+10 is written plain, as "log", the way Haese 31D and the exam papers write
+it; every other base carries its subscript. A Number topic, after Indices,
+since a log is read as the power that gives a number. The graph of y = log x
+(31B) and the graphics-calculator equations of 31B question 4 are left out;
+31B's inverses are the Stretch of the first skill.
+
+**Logarithmic and index form** — Haese 31A questions 1, 2, 4–6, 31B Example
+3. Foundation: a whole-number power either way round, 2^5 = 32 and
+log_2 32 = 5. Core: negative and fractional powers (5^−2 = 1/25,
+27^(1/3) = 3, 8^(−1/3) = 1/2). Stretch: make x the subject, from an index
+(y = 3^(2x), y = 5 × 2^x) or from a log (w = log_5(2x), y = 3 log_2 x).
+
+**Evaluating logarithms** — Haese 31A question 3, 31D.1. Foundation: whole
+answers, with log 1 = 0 and log_a a = 1 among them. Core: the reciprocals,
+as fractions or terminating decimals, for negative answers (log_2(1/8),
+log 0.001). Stretch: fractional answers through a root in the argument
+(log_2 √8, log_3(1/√27), log_2(4√2)), a power as the base (log_4 8 = 3/2)
+or a root as the base (log_√2 4 = 4).
+
+**Writing as a single logarithm** — Haese 31C question 1, 31D.1 question 2.
+Foundation: one law, two terms. Core: coefficients (3 log_5 2 + 2 log_5 3)
+or three terms. Stretch: a whole number to write as a log first
+(1 + log_3 4, 2 − log 5), or ½ or ⅓ in front (½ log 9 = log 3). The answer
+is never a power of the base, which would simplify to a number.
+
+**Logarithms in terms of p and q** — Haese 31C question 2, Example 5.
+Foundation: one law (log 21 = p + q, log(3/7) = q − p, log 49 = 2p). Core:
+powers of both (log(7/9) = p − 2q). Stretch: a power of the base folded in
+(log_2 56 = p + 3, log(0.21) = p + q − 2). The given numbers are primes that
+don't divide the base, so p, q and 1 are independent and the answer is the
+only one.
+
+**Equations without logarithms** — Haese 31C question 3, 31D.2 questions
+2–3. Foundation: one law (log_2 y = 3 log_2 u → y = u^3), or straight from
+the definition (log D = 2x + 1 → D = 10^(2x + 1)), which Haese sets before
+the laws. Core: two terms with coefficients, or a single negative one
+(y = u^2 v^3, y = u^3 / v^2, y = 1/u^2). Stretch: a whole number among the
+logs (log_7 y = 1 + 2 log_7 v → y = 7v^2), or ½ or ⅓ in front
+(y = √v / u^2).
+
+**Solving exponential equations with logarithms** — Haese 31E questions
+1–4. Every answer to 3 significant figures (the IGCSE default; Haese's
+exercise asks for 4). Foundation: 10^x = b, so x = log b. Core: a^x = b by
+x = log b / log a, with decimal bases bracketed as Haese prints them,
+(1.05)^x, and negative answers. Stretch: half equations (k × a^x = b,
+a^(mx + c) = b) and half worded growth and decay models (bees, bacteria,
+savings, a car's value, a medicine): find t when P reaches a value.
+
+**Solving logarithmic equations** — Haese 31E question 8, Challenge 2b.
+Foundation: log_2 x = 5, or the base unknown, log_x 64 = 3. Core: a negative
+or fractional right-hand side (log_5 x = −2, log_8 x = 2/3), or a linear
+argument kept as clean as Haese's (log_5(2x) = −1; a whole answer when the
+power is positive). Stretch: combine with a number first
+(log_2 x + log_2 3 = 4 → x = 16/3), or two logs of x
+(log_2 x + log_2(x + 2) = 3 → x = 2, the negative root rejected).
+
 ---
 
 ## Not yet calibrated
