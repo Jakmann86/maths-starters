@@ -8,12 +8,13 @@
 let katexPromise = null;
 let katexModule = null;
 
-// The faces a starter actually uses: upright and italic maths, plus the
+// The faces a starter actually uses: upright, bold and italic maths, plus the
 // delimiter sizes behind \sqrt and \left( \right). Fonts only download on
 // first use, so without this each new glyph family (the first root, the
 // first bracket) pops in late.
 const KATEX_FONTS = [
   '400 1em KaTeX_Main',
+  '700 1em KaTeX_Main',          // \mathbf vectors, and their figure labels
   'italic 400 1em KaTeX_Math',
   '400 1em KaTeX_Size1',
   '400 1em KaTeX_Size2',

@@ -96,6 +96,24 @@ function figLabel(key, x, y, text, anchor = 'middle', color = 'var(--ink)', font
   );
 }
 
+// A vector's name, set as the question sets \mathbf{a}: bold and upright
+// in KaTeX's own serif (.fig-vec), not the maths italic of a lone letter.
+function vecLabel(key, x, y, text, anchor = 'middle', color = 'var(--ink)', fontSize = 20) {
+  return (
+    <text key={key} x={x} y={y} textAnchor={anchor} className="fig-label fig-vec" fill={color} style={{ fontSize }}>
+      {text}
+    </text>
+  );
+}
+
+// A filled arrowhead with its tip at (x, y), pointing along (ux, uy).
+function arrowHead(key, x, y, ux, uy, color, size = 13) {
+  const [px, py] = [-uy, ux];
+  const bx = x - ux * size, by = y - uy * size;
+  const pts = [[x, y], [bx + px * size * 0.45, by + py * size * 0.45], [bx - px * size * 0.45, by - py * size * 0.45]];
+  return <polygon key={key} points={pts.map((q) => q.join(',')).join(' ')} fill={color} />;
+}
+
 // Figure labels are plain SVG text, not KaTeX (see fig.a etc. above, e.g.
 // '3 cm') — so an angleLabel written in LaTeX-ish form ('35\circ') needs its
 // degree command swapped for the literal symbol before it can be drawn. The
@@ -2652,6 +2670,122 @@ export default function Figure({ fig, color, shown }) {
     if (fig.centre) dot('cen', fig.centre, 'var(--ink)');
     if (shown && fig.solutionCentre) dot('scen', fig.solutionCentre, color);
     return svgWrap(nodes, Math.round(W), Math.round(H), 'tg', fig.big, shown, true);
+  }
+
+  if (fig.type === 'vector-grid') {
+    // Column vectors on a squared grid, drawn to the data: each arrow runs
+    // between grid points, so its x-step and y-step can be counted. No axes:
+    // a vector has no position. Config:
+    //   arrows    [{ from: [x, y], to: [x, y], label: 'a' }]   on the question
+    //   solution  the same, drawn in the slot colour on reveal
+    //   points    [{ at: [x, y], name: 'A' }]                 lettered dots
+    const arrows = fig.arrows ?? [], sol = fig.solution ?? [], pts = fig.points ?? [];
+    const all = [...arrows, ...sol].flatMap((v) => [v.from, v.to]).concat(pts.map((p) => p.at));
+    let x0 = Math.min(...all.map((p) => p[0])) - 1, x1 = Math.max(...all.map((p) => p[0])) + 1;
+    let y0 = Math.min(...all.map((p) => p[1])) - 1, y1 = Math.max(...all.map((p) => p[1])) + 1;
+    // Landscape, at least 10 squares by 6, so it fills the box beside the
+    // question rather than standing in a tall narrow strip.
+    while (x1 - x0 < 10) { x0 -= 1; if (x1 - x0 < 10) x1 += 1; }
+    while (y1 - y0 < 6) { y0 -= 1; if (y1 - y0 < 6) y1 += 1; }
+    const cell = Math.min(40, 520 / (x1 - x0), 280 / (y1 - y0));
+    const P = 20;
+    const W = (x1 - x0) * cell + 2 * P, H = (y1 - y0) * cell + 2 * P;
+    const X = (x) => P + (x - x0) * cell;
+    const Y = (y) => P + (y1 - y) * cell;
+    const nodes = [];
+    for (let x = x0; x <= x1; x += 1) nodes.push(figLine(`gx${x}`, X(x), Y(y0), X(x), Y(y1), { strokeWidth: 1, strokeOpacity: 0.22 }));
+    for (let y = y0; y <= y1; y += 1) nodes.push(figLine(`gy${y}`, X(x0), Y(y), X(x1), Y(y), { strokeWidth: 1, strokeOpacity: 0.22 }));
+    const arrow = (key, v, stroke) => {
+      const [ax, ay, bx, by] = [X(v.from[0]), Y(v.from[1]), X(v.to[0]), Y(v.to[1])];
+      const [ux, uy] = unitVec(bx - ax, by - ay);
+      const out = [
+        <line key={key} x1={ax} y1={ay} x2={bx - ux * 12} y2={by - uy * 12} stroke={stroke} strokeWidth={4} />,
+        arrowHead(`${key}h`, bx, by, ux, uy, stroke, 16),
+      ];
+      if (v.label) {
+        // Beside the middle, on the side away from the grid's centre.
+        const [mx, my] = [(ax + bx) / 2, (ay + by) / 2];
+        let [nx, ny] = [-uy, ux];
+        if (nx * (mx - W / 2) + ny * (my - H / 2) < 0) [nx, ny] = [-nx, -ny];
+        out.push(vecLabel(`${key}l`, mx + nx * 20, my + ny * 20 + 9, v.label, 'middle', stroke, 28));
+      }
+      return out;
+    };
+    arrows.forEach((v, i) => nodes.push(...arrow(`va${i}`, v, 'var(--ink)')));
+    if (shown) sol.forEach((v, i) => nodes.push(...arrow(`vs${i}`, v, color)));
+    pts.forEach((p, i) => {
+      nodes.push(<circle key={`vp${i}`} cx={X(p.at[0])} cy={Y(p.at[1])} r={4.5} fill="var(--ink)" />);
+      nodes.push(figLabel(`vpl${i}`, X(p.at[0]) - 9, Y(p.at[1]) - 9, p.name, 'end', 'var(--ink)', 24));
+    });
+    return svgWrap(nodes, W, H, 'vg', fig.big, shown, true);
+  }
+
+  if (fig.type === 'vector-diagram') {
+    // A shape with vectors along its sides, for writing one vector in terms
+    // of others. Schematic (convention 7): each layout's geometry is fixed.
+    //   layout    'triangle'      vertices [O, A, B]: O bottom left, A top,
+    //                             B bottom right
+    //             'parallelogram' vertices [A, B, C, D]: A bottom left, then
+    //                             anticlockwise
+    //   vertices  their names, in that order
+    //   arrows    [{ from: 'O', to: 'A', label: 'a' }] along a side
+    //   points    [{ name: 'M', on: ['A', 'B'], t: 0.5 }]  a dot t of the way
+    //             from the first vertex to the second
+    //   solution  [{ from: 'O', to: 'M' }] the vector asked for, dashed in
+    //             the slot colour on reveal
+    const LAYOUT = {
+      triangle: [[40, 196], [170, 34], [320, 196]],
+      parallelogram: [[40, 196], [250, 196], [330, 46], [120, 46]],
+    }[fig.layout];
+    if (!LAYOUT) return null;
+    const at = {};
+    fig.vertices.forEach((name, i) => { at[name] = LAYOUT[i]; });
+    (fig.points ?? []).forEach((p) => {
+      const [a, b] = p.on.map((n) => at[n]);
+      at[p.name] = [a[0] + (b[0] - a[0]) * p.t, a[1] + (b[1] - a[1]) * p.t];
+    });
+    const G = [LAYOUT.reduce((t, q) => t + q[0], 0) / LAYOUT.length, LAYOUT.reduce((t, q) => t + q[1], 0) / LAYOUT.length];
+    const W = 360, H = 232;
+    const nodes = [];
+    LAYOUT.forEach((q, i) => {
+      const r = LAYOUT[(i + 1) % LAYOUT.length];
+      nodes.push(figLine(`vd${i}`, q[0], q[1], r[0], r[1], { strokeLinecap: 'round' }));
+    });
+    // An arrowhead at the middle of its side, its label just outside it. A
+    // point near the middle of the same side moves them along, clear of its
+    // dot and its letter.
+    (fig.arrows ?? []).forEach((v, i) => {
+      const [a, b] = [at[v.from], at[v.to]];
+      const [ux, uy] = unitVec(b[0] - a[0], b[1] - a[1]);
+      let s = 0.5;
+      (fig.points ?? []).forEach((p) => {
+        const t = p.on[0] === v.from && p.on[1] === v.to ? p.t : p.on[0] === v.to && p.on[1] === v.from ? 1 - p.t : null;
+        if (t !== null && Math.abs(t - 0.5) < 0.2) s = t >= 0.5 ? 0.25 : 0.75;
+      });
+      const [mx, my] = [a[0] + (b[0] - a[0]) * s, a[1] + (b[1] - a[1]) * s];
+      nodes.push(arrowHead(`vh${i}`, mx + ux * 7, my + uy * 7, ux, uy, 'var(--ink)', 15));
+      let [nx, ny] = [-uy, ux];
+      if (nx * (mx - G[0]) + ny * (my - G[1]) < 0) [nx, ny] = [-nx, -ny];
+      nodes.push(vecLabel(`vl${i}`, mx + nx * 22, my + ny * 22 + 9, v.label, 'middle', 'var(--ink)', 28));
+    });
+    if (shown) {
+      (fig.solution ?? []).forEach((v, i) => {
+        const [a, b] = [at[v.from], at[v.to]];
+        const [ux, uy] = unitVec(b[0] - a[0], b[1] - a[1]);
+        nodes.push(<line key={`vs${i}`} x1={a[0]} y1={a[1]} x2={b[0] - ux * 12} y2={b[1] - uy * 12} stroke={color} strokeWidth={3} strokeDasharray="8,6" />);
+        nodes.push(arrowHead(`vsh${i}`, b[0], b[1], ux, uy, color, 14));
+      });
+    }
+    // Vertex names outward from the centre; a point on a side gets a dot and
+    // its name outward from the centre too.
+    const name = (key, n, q, dot) => {
+      const [ox, oy] = unitVec(q[0] - G[0], q[1] - G[1]);
+      if (dot) nodes.push(<circle key={`${key}d`} cx={q[0]} cy={q[1]} r={5} fill="var(--ink)" />);
+      nodes.push(figLabel(key, q[0] + ox * 22, q[1] + oy * 22 + 8, n, 'middle', 'var(--ink)', 24));
+    };
+    fig.vertices.forEach((n) => name(`vn${n}`, n, at[n], false));
+    (fig.points ?? []).forEach((p) => name(`vp${p.name}`, p.name, at[p.name], true));
+    return svgWrap(nodes, W, H, 'vd', fig.big, shown, true);
   }
 
   if (fig.type === 'branching-pattern') {

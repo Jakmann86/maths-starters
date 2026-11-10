@@ -335,6 +335,41 @@ case of three: reflection in y = x or y = −x, a quarter turn about a
 centre off the origin, scale factor ½. A translation has no harder case,
 so it stops at Core.
 
+## Vectors — Haese 24A–H and Rayner 11.1–11.5
+
+Year 10, IGCSE 0607. Vectors are bold (\mathbf{a}) as the books and exam
+papers print them; a vector between points is \overrightarrow{AB}. Haese's
+scale drawings with bearings (24A) and the wind, river and aircraft problems
+of 24C–D are left out: they are bearings and trigonometry, not vectors.
+
+**Column vectors** — Haese 24E, Rayner 11.2, 11.4. Foundation: read an arrow
+off a squared grid. Core: the vector from one point to another, from their
+coordinates (Haese Examples 8–9), sometimes the reverse direction. Stretch:
+one end and the vector given, find the other end.
+
+**Adding and scaling vectors** — Haese 24E.2, 24F, Rayner 11.3. Foundation:
+a + b, a − b. Core: scalar multiples, 2a − 3b. Stretch: solve a vector
+equation for x (Rayner 11.3 questions 25–36), kx ± v = u or u − kx = v.
+
+**Magnitude** — Haese 24E.2, Rayner 11.5. Foundation: a whole-number length
+from a Pythagorean pair. Core: an exact length, given in simplest surd form
+(√45 = 3√5), as chosen for this topic; half the Core lengths need the
+simplifying step. Stretch: the length of a combination, |a − 2b|, or the
+distance between two points: find the vector first.
+
+**Parallel vectors** — Haese 24G, Rayner 11.2. Foundation: one vector is k
+times the other, find k. Core: a missing component that makes two vectors
+parallel (Haese 24G question 2). Stretch: three points on a straight line,
+find a missing coordinate (Haese 24G questions 5 and 7).
+
+**Vectors in geometry** — Haese 24B, 24H, Rayner 11.1 Example 2 and 11.2.
+Foundation: a vector between two corners of a triangle OAB (OA = a, OB = b)
+or a parallelogram ABCD (AB = a, AD = b): a negative, an equal side, or a
+route through a corner. Core: to or from the midpoint of a side. Stretch:
+to or from a point dividing a side in a ratio m : n (Haese 24H question 6,
+Rayner 11.2 question 8). The working takes the route round the shape and
+never the whole third side of the triangle, which is what is being found.
+
 ---
 
 ## Not yet calibrated

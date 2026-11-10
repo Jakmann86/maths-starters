@@ -20,6 +20,7 @@ import * as functions from '../generators/algebra/functionGenerators';
 import * as furtherTrig from '../generators/geometry/furtherTrigGenerators';
 import * as similarity from '../generators/geometry/similarityGenerators';
 import * as transformations from '../generators/geometry/transformationGenerators';
+import * as vectors from '../generators/geometry/vectorGenerators';
 import * as angleFacts from '../generators/geometry/angleFactsGenerators';
 import * as sequences from '../generators/algebra/sequencesGenerators';
 import * as cubicSeq from '../generators/algebra/cubicSequenceGenerators';
@@ -353,6 +354,38 @@ export const skills = {
     label: 'Describing a transformation',
     topic: 'Transformations',
     generate: (opts) => transformations.generateDescribeTransformation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 24A-H, Rayner 11.1-11.5: vectors (bearings problems left out) ---
+  'column-vectors': {
+    label: 'Column vectors',
+    topic: 'Vectors',
+    generate: (opts) => vectors.generateColumnVectors(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'vector-arithmetic': {
+    label: 'Adding and scaling vectors',
+    topic: 'Vectors',
+    generate: (opts) => vectors.generateVectorArithmetic(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'vector-magnitude': {
+    label: 'Magnitude of a vector',
+    topic: 'Vectors',
+    generate: (opts) => vectors.generateVectorMagnitude(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'parallel-vectors': {
+    label: 'Parallel vectors',
+    topic: 'Vectors',
+    generate: (opts) => vectors.generateParallelVectors(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'vector-geometry': {
+    label: 'Vectors in geometry',
+    topic: 'Vectors',
+    generate: (opts) => vectors.generateVectorGeometry(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1281,6 +1314,7 @@ export const STRANDS = [
       'Further trigonometry',
       'Similarity',
       'Transformations',
+      'Vectors',
       'Circle theorems',
     ],
   },
