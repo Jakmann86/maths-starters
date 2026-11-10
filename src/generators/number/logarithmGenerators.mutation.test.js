@@ -2,14 +2,15 @@
 // generator output; the checker must reject every broken copy.
 //
 // Equivalent mutants are skipped by rule: letters swapped in an answer that
-// uses them equally (y = uv), and p and q swapped when their coefficients
-// are equal (in the answer, or in the givens they name). Every operator was checked by hand to be killed for its own
-// reason (MUTANT_REASONS=1 lists them).
+// uses them equally (y = uv); p and q swapped when their coefficients are
+// equal (in the answer, or in the givens they name); and a given the answer
+// never uses, nudged to another prime. Every operator was checked by hand
+// to be killed for its own reason (MUTANT_REASONS=1 lists them).
 //
 // Run: npx vitest run src/generators/number/logarithmGenerators.mutation.test.js
 
 import { describe, expect, it } from 'vitest';
-import { bandMove, generic, mutants } from '../harness.check';
+import { GENERIC, bandMove, bump, generic, mutants } from '../harness.check';
 import { checkLog, value } from './logarithmGenerators.check';
 
 const IDS = ['log-index-form', 'evaluate-logs', 'log-single', 'log-in-terms', 'log-remove', 'log-solve-exponential', 'log-equations'];
@@ -17,8 +18,19 @@ const IDS = ['log-index-form', 'evaluate-logs', 'log-single', 'log-in-terms', 'l
 const swapLetters = (s, a, b) => s.replace(new RegExp(`[${a}${b}]`, 'g'), (c) => (c === a ? b : a));
 
 const OPS = {
-  ...generic('answer nudged', 'question line nudged', 'a working number nudged', 'the working stops short', 'metadata changed', 'units changed'),
+  ...generic('answer nudged', 'a working number nudged', 'the working stops short', 'metadata changed', 'units changed'),
   'moved to another band': bandMove(),
+  // A given the answer never uses can be nudged to another fair prime and
+  // the question is still right: that copy is equivalent, so only the
+  // target line is nudged there.
+  'question line nudged': (q) => {
+    const unused = q.metadata.topic === 'log-in-terms' && !(q.answer.includes('p') && q.answer.includes('q'));
+    if (!unused) return GENERIC['question line nudged'](q);
+    const [givens, target] = q.questionMath.split('\n');
+    const t = bump(target);
+    if (!t) return false;
+    q.questionMath = `${givens}\n${t}`;
+  },
   'question and answer swapped': (q) => {
     if (!/form$/.test(q.instruction)) return false;
     [q.questionMath, q.answer] = [q.answer, q.questionMath];
