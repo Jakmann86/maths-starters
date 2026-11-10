@@ -725,6 +725,9 @@ export const skills = {
     topic: 'Simultaneous equations',
     generate: (opts) => formulae.generateSimultaneousEquations(opts),
     difficulties: ['foundation', 'core', 'stretch'],
+    // A pair of equations set at full display size filled the box and left
+    // the teacher nowhere to write the working (questionScale, typeSizing.js).
+    questionScale: 0.75,
   },
   // --- Y9 Unit 2 do-nows: solving simultaneous equations graphically ---
   'simultaneous-graphical': {
@@ -732,6 +735,9 @@ export const skills = {
     topic: 'Simultaneous equations',
     generate: (opts) => formulae.generateSimultaneousGraphical(opts),
     difficulties: ['foundation', 'core', 'stretch'],
+    // A pair of equations set at full display size filled the box and left
+    // the teacher nowhere to write the working (questionScale, typeSizing.js).
+    questionScale: 0.75,
   },
   // Last in 'Simultaneous equations': the worded problem comes after the
   // two methods it relies on.

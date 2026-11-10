@@ -19,6 +19,7 @@ export function questionView(q, skillId) {
     qProse: q.questionMath == null && q.questionText != null,
     parts: q.questionParts ?? null,
     qCompact: q.questionMathCompact === true,
+    qScale: getSkill(skillId)?.questionScale ?? 1,
     a: q.answerUnits ? `${q.answer}\\text{ }${unitsTex(q.answerUnits)}` : q.answer,
     fig: q.visualization,
   };
