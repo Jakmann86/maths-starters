@@ -370,6 +370,44 @@ to or from a point dividing a side in a ratio m : n (Haese 24H question 6,
 Rayner 11.2 question 8). The working takes the route round the shape and
 never the whole third side of the triangle, which is what is being found.
 
+## Probability — Haese 25B–E, G, J
+
+IGCSE 0607 10.2–10.6, alongside `simple-probability` (25A, F) and
+`tree-diagrams` (25H, I). Fractions are the count over the total, then
+simplified; estimated probabilities are exact decimals. The ask sits in the
+question, beside any table, and carries the numbers; the instruction names
+the set-up.
+
+**Relative frequency** — 25B. Foundation: one event from a count (a coin,
+a drawing pin, an archer, a late bus). Core: from a frequency table, one
+outcome or two together. Stretch: a frequency missing, with the number of
+spins given, or two people's results pooled.
+
+**Two-way tables** — 25C. Foundation: one cell, or a whole row or column.
+Core: a union (row + column − the cell), or a table printed with its totals
+and one cell blank. Stretch: given a row or a column (Example 3 d, e).
+
+**Expectation** — 25D. Foundation: np from a given probability, or from a
+fair dice. Core: the probability first, from an experiment or a bag. Stretch:
+an expected score from points and probabilities (question 7b), or the
+number of trials back from the expected count.
+
+**Sample spaces** — 25E, F. Foundation: a filled two-dice (or dice and
+spinner) grid of totals or products, counted. Core: the grid headed but
+empty, filled on reveal, including differences. Stretch: three coins listed,
+or a probability given that something has happened (Example 7c), read from a
+filled grid. The pools are small by nature, about 230 and 300 questions.
+
+**Independent events** — 25G. Foundation: P(A and B) = P(A) × P(B), in
+fractions or tenths. Core: with complements (both miss, one but not the
+other). Stretch: exactly one, or at least one, without the tree that
+`tree-diagrams` draws.
+
+**Either or** — 25J. Foundation: mutually exclusive outcomes of a spinner,
+added, or the one left. Core: overlapping events on numbered cards or a pack
+of 52, by P(A) + P(B) − P(A and B). Stretch: the addition rule with the
+probabilities given, forwards or back to P(A and B).
+
 ## Profit and interest — Haese 10B, 10C, 10F
 
 IGCSE 0607 1.8. Every question is worded, as Haese's are; money is in
