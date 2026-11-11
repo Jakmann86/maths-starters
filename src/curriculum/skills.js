@@ -37,6 +37,8 @@ import * as ch6 from '../generators/number/chapter6Generators';
 import * as fracPow from '../generators/number/fractionalPowerGenerators';
 import * as indexLaws from '../generators/number/indexLawGenerators';
 import * as logs from '../generators/number/logarithmGenerators';
+import * as money from '../generators/number/moneyGenerators';
+import * as speed from '../generators/number/speedGenerators';
 import * as rational from '../generators/number/rationalNumberGenerators';
 import * as bidmas from '../generators/number/orderOfOperationsGenerators';
 import * as stats from '../generators/statistics/averagesGenerators';
@@ -1053,6 +1055,38 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 10B, 10C, 10F: profit and interest; 10G, 10H: speed ---
+  'profit-loss': {
+    label: 'Profit and loss',
+    topic: 'Profit and interest',
+    generate: (opts) => money.generateProfitLoss(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'simple-interest': {
+    label: 'Simple interest',
+    topic: 'Profit and interest',
+    generate: (opts) => money.generateSimpleInterest(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'compound-interest': {
+    label: 'Compound interest',
+    topic: 'Profit and interest',
+    generate: (opts) => money.generateCompoundInterest(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'speed-distance-time': {
+    label: 'Speed, distance and time',
+    topic: 'Speed, distance and time',
+    generate: (opts) => speed.generateSpeedDistanceTime(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'travel-graphs': {
+    label: 'Travel graphs',
+    topic: 'Speed, distance and time',
+    generate: (opts) => speed.generateTravelGraphs(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 31A–E: logarithms ---
   'log-index-form': {
     label: 'Logarithmic and index form',
@@ -1336,7 +1370,7 @@ export const generateForSkill = (id, wanted = 'core') => {
  * Within a strand, topics run in Haese chapter order.
  */
 export const STRANDS = [
-  { name: 'Number', topics: ['Rational numbers', 'Order of operations', 'Indices', 'Logarithms', 'Standard form', 'Surds', 'Percentages'] },
+  { name: 'Number', topics: ['Rational numbers', 'Order of operations', 'Indices', 'Logarithms', 'Standard form', 'Surds', 'Percentages', 'Profit and interest', 'Speed, distance and time'] },
   {
     name: 'Algebra',
     topics: [

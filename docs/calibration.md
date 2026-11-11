@@ -370,6 +370,49 @@ to or from a point dividing a side in a ratio m : n (Haese 24H question 6,
 Rayner 11.2 question 8). The working takes the route round the shape and
 never the whole third side of the triangle, which is what is being found.
 
+## Profit and interest — Haese 10B, 10C, 10F
+
+IGCSE 0607 1.8. Every question is worded, as Haese's are; money is in
+pounds, worked in whole pence, and compound growth in exact arithmetic, so a
+nearest-penny answer is never a floating-point accident.
+
+**Profit and loss** — Haese 10B, 10D question 9. Foundation: bought for £C
+and marked up or down by p%, the selling price (Examples 1 and 2). Core:
+bought for £C, sold for £S, the percentage profit or loss, which the student
+names (Examples 3 and 4). Stretch: sold for £S at a p% profit or loss, the
+cost price, a reverse percentage.
+
+**Simple interest** — Haese 10C. Foundation: I = Prn for whole years.
+Core: the total to repay or the value at the end, with the time in months
+or years. Stretch: the rate, the time or the principal back from the
+interest (Examples 6, 9 and 10, Review 10A question 10). Answers are exact:
+no rounded rates or times.
+
+**Compound interest** — Haese 10F. Foundation: the value after n years, to
+the nearest penny. Core: the interest earned, or a depreciating asset's
+value (questions 9 and 10 turned forwards). Stretch: the amount to invest now
+for a target (Example 20), or the annual rate from the start and end values
+(Example 21), to 1 decimal place.
+
+## Speed, distance and time — Haese 10G, 10H
+
+IGCSE 0607 1.13.
+
+**Speed, distance and time** — Haese 10G. Foundation: two of speed,
+distance and time in whole hours, find the third. Core: times in hours and
+minutes (the answer to a time question in hours and minutes), or converting
+between m/s and km/h (question 10). Stretch: the average speed of a journey
+in two parts, given two distances or two times (Example 23, questions 7–9).
+Averages come out whole or to 1 decimal place exactly.
+
+**Travel graphs** — Haese 10H, on the `travel-graph` figure. Every corner
+sits on a gridline. Foundation: read the distance at a time, or the length
+of the stop. Core: the speed of one part, or the average speed out to the
+furthest point, stop included, in km/h. Stretch: a round trip's average
+speed, stops included, or two travellers, the second leaving later and
+passing the first at a grid point: where, or when (questions 2 and 3).
+Walks and bike rides are timed in minutes, drives in hours.
+
 ## Logarithms — Haese 31A–E
 
 Year 10, IGCSE 0607 (syllabus 3.10). Rayner has no logarithms chapter. Base
