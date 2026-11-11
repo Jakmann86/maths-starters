@@ -257,6 +257,35 @@ Foundation: the asymptotes of `k/(x − a)`, or k from a point on `y = k/x`
 which has to be rewritten as `b + k/(x − a)` first; or k from the
 asymptotes and a point.
 
+## Quadratic graphs — Haese 21D–H
+
+Bands set from how Haese escalates; not yet reviewed in class. A topic of
+its own after Quadratic equations. Drawn graphs use `coordinate-grid` with
+`curves`, so they are to scale: every intercept the question reads sits on a
+gridline, and the window holds the intercepts and vertex, not always the
+y-intercept.
+
+**Substituting** — 21D. Foundation: monic, x positive. Core: a leading
+coefficient, often negative, and x negative. Stretch: x from y, a quadratic
+to solve, sometimes with one root.
+
+**Vertex from turning point form** — 21E. Foundation: one shift,
+`y = x² + k` or `y = (x − h)²`, either way up. Core: both shifts, a = ±1.
+Stretch: a non-unit a, and the y-intercept too.
+
+**Axes intercepts** — 21F. Foundation: x-intercepts from factorised form.
+Core: from expanded monic, factorised first. Stretch: both axes from a
+non-monic or negative-leading quadratic, sometimes with a fractional root.
+
+**Line of symmetry and vertex** — 21G. Foundation: midway between the
+x-intercepts, read off a drawn graph or from factorised form. Core:
+`x = −b/2a`, the answer often a fraction. Stretch: the vertex.
+
+**Finding a quadratic function** — 21H. Foundation: a = 1, from the
+x-intercepts (given or drawn) or the vertex. Core: the vertex and the
+y-intercept, in turning point form. Stretch: the vertex and another point,
+or the x-intercepts and another point to expanded form.
+
 ## The sine and cosine rules — Haese 29B–F and Rayner 10
 
 **Sine rule** — Haese 29C. Foundation: a side from its pair of angles.
