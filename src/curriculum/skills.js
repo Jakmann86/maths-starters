@@ -7,6 +7,7 @@
 // Declaring a band the generator ignores is a lie the board can't detect —
 // see MIGRATION.md issue 5.
 
+import * as further from '../generators/algebra/furtherAlgebraGenerators';
 import * as expressions from '../generators/algebra/expressionsGenerators';
 import * as factorising from '../generators/algebra/factorisingGenerators';
 import * as equations from '../generators/algebra/equationGenerators';
@@ -99,6 +100,12 @@ export const skills = {
     generate: (opts) => expressions.generateExpandPerfectSquare(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'expand-further': {
+    label: 'Further expansion',
+    topic: 'Expanding brackets',
+    generate: (opts) => further.generateExpandFurther(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 
   // --- Haese 1G: factorising with common factors (Y9 Unit 2 do-nows) ---
   // First in the topic: taking out the HCF is the move every later
@@ -117,6 +124,12 @@ export const skills = {
     label: 'Factorising a difference of two squares',
     topic: 'Factorising',
     generate: (opts) => factorising.generateDifferenceOfTwoSquares(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'factorise-perfect-square': {
+    label: 'Perfect squares',
+    topic: 'Factorising',
+    generate: (opts) => further.generateFactorisePerfectSquare(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -141,6 +154,12 @@ export const skills = {
     label: 'Factorising: ax² + bx + c',
     topic: 'Factorising',
     generate: (opts) => factorising.generateFactoriseSplittingMiddle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'factorise-fully': {
+    label: 'Factorising fully',
+    topic: 'Factorising',
+    generate: (opts) => further.generateFactoriseFully(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -245,6 +264,12 @@ export const skills = {
     label: 'Multiplying and dividing algebraic fractions',
     topic: 'Algebraic fractions',
     generate: (opts) => algFrac.generateMultiplyDivideFractions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'add-algebraic-fractions': {
+    label: 'Adding and subtracting fractions',
+    topic: 'Algebraic fractions',
+    generate: (opts) => further.generateAddAlgebraicFractions(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -715,6 +740,12 @@ export const skills = {
     label: 'Formula rearrangement',
     topic: 'Formulae',
     generate: (opts) => formulae.generateFormulaRearrangement(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'rearrange-harder': {
+    label: 'Harder rearranging',
+    topic: 'Formulae',
+    generate: (opts) => further.generateRearrangeHarder(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'formula-derivation': {

@@ -101,6 +101,37 @@ Also `43 × 37 = 40² − 3²`, and evaluating `18 × 22`, `49 × 51` without a
 calculator. That last form is a good starter question and unlike anything
 currently in the pool.
 
+## Further algebra — Haese 1E, 1I, 1M, 7D, 16C–D
+
+Bands set from how Haese escalates; not yet reviewed in class.
+
+**Further expansion** — Haese 1E. Foundation: a monic bracket times a
+quadratic, `(x + a)(x² + bx + c)`. Core: three monic brackets, or
+`(x + a)³`. Stretch: coefficients — a cube of `(px + q)`, a linear times a
+quadratic, or three brackets. Answers in descending powers.
+
+**Perfect squares** — Haese 1I. Foundation: `x² ± 2ax + a²`, in a mix of
+letters. Core: a coefficient, `(px + q)²`. Stretch: a common factor first,
+`k(px + q)²`, including a negative k.
+
+**Factorising fully** — Haese 1M. Foundation: a common factor, then the
+difference of two squares. Core: a number or x out first, then a monic
+quadratic. Stretch: a negative first term with monic brackets, or a common
+factor then a non-monic quadratic.
+
+**Harder rearranging** — Haese 7D. Foundation: the subject under a square
+or a square root (`y = ax² + b`, `y = a√x`, `y = √(x/a)`). Core: the
+subject in a denominator (`y = a/(x + b)`, `y = a/x + b`). Stretch: the
+subject appears twice, so it has to be collected and factorised
+(`y = (x + a)/(x − b)`, `ax + b = cxy`).
+
+**Adding and subtracting algebraic fractions** — Haese 16C–D. Foundation:
+single terms over number denominators. Core: binomial numerators over
+number denominators, subtraction needing the bracket. Stretch: letters in
+the denominator, `p/(x + a) ± q/(x + b)` or `p/x ± q/(x + b)`, the
+denominator left in factors. Answers in lowest terms, a negative leading
+numerator taken out in front.
+
 ## Solving linear equations — Haese 3A
 
 Five stages across 3A.1 and 3A.2.
