@@ -125,6 +125,45 @@ const plainAngleLabel = (label) => String(label).replace(/\^?\\circ/g, '°').rep
 // (1.4 + 0.05 x 3 is 1.5500000000000003), and no trailing zeros.
 const fmtAxis = (v) => String(Number(v.toFixed(2)));
 
+// Gridded first-quadrant axes for a figure drawn to its data (`scatter`,
+// `travel-graph`): light gridlines every `step`, numbered every `every`
+// steps, heavier axes, and titles. Wide and short: in a slot these figures
+// are bound by height, so every unit of plot height costs text size. At 156
+// high the numbers draw at about 17px on a 1080p board, and still about
+// 11px at 1366 x 768.
+function gridAxes(xa, ya, FS, PW = 400, PH = 156) {
+  const CHAR = 10.5;           // a tick number's width per character at FS
+  const yNums = [];
+  for (let v = ya.min; v <= ya.max + 1e-9; v += ya.step * (ya.every || 1)) yNums.push(fmtAxis(v));
+  const LEFT = Math.max(...yNums.map((s) => s.length)) * CHAR + 16;
+  const TOP = 34, BOTTOM = 58, RIGHT = 18;
+  const W = LEFT + PW + RIGHT;
+  const H = TOP + PH + BOTTOM;
+  const X = (x) => LEFT + ((x - xa.min) / (xa.max - xa.min)) * PW;
+  const Y = (y) => TOP + PH - ((y - ya.min) / (ya.max - ya.min)) * PH;
+
+  const nodes = [];
+  const nx = Math.round((xa.max - xa.min) / xa.step);
+  const ny = Math.round((ya.max - ya.min) / ya.step);
+  for (let i = 0; i <= nx; i += 1) {
+    const v = xa.min + i * xa.step;
+    const major = i % (xa.every || 1) === 0;
+    nodes.push(figLine(`gx${i}`, X(v), TOP, X(v), TOP + PH, { strokeWidth: 1, strokeOpacity: major ? 0.26 : 0.12 }));
+    if (major) nodes.push(figLabel(`nx${i}`, X(v), TOP + PH + 21, fmtAxis(v), 'middle', 'var(--ink)', FS));
+  }
+  for (let j = 0; j <= ny; j += 1) {
+    const v = ya.min + j * ya.step;
+    const major = j % (ya.every || 1) === 0;
+    nodes.push(figLine(`gy${j}`, LEFT, Y(v), LEFT + PW, Y(v), { strokeWidth: 1, strokeOpacity: major ? 0.26 : 0.12 }));
+    if (major) nodes.push(figLabel(`ny${j}`, LEFT - 7, Y(v) + 6, fmtAxis(v), 'end', 'var(--ink)', FS));
+  }
+  nodes.push(figLine('ax', LEFT, TOP + PH, LEFT + PW, TOP + PH, { strokeWidth: 2.5 }));
+  nodes.push(figLine('ay', LEFT, TOP - 6, LEFT, TOP + PH, { strokeWidth: 2.5 }));
+  if (xa.title) nodes.push(figLabel('xt', LEFT + PW / 2, TOP + PH + 50, xa.title, 'middle', 'var(--ink)', FS));
+  if (ya.title) nodes.push(figLabel('yt', 4, TOP - 14, ya.title, 'start', 'var(--ink)', FS));
+  return { nodes, X, Y, W, H, LEFT, TOP, PW, PH };
+}
+
 function unitVec(dx, dy) {
   const len = Math.hypot(dx, dy) || 1;
   return [dx / len, dy / len];
@@ -3330,40 +3369,8 @@ export default function Figure({ fig, color, shown }) {
   if (fig.type === 'scatter') {
     const { xAxis: xa, yAxis: ya } = fig;
     const pts = fig.points || [];
-    // Wide and short: in a slot this figure is bound by height, so every unit
-    // of plot height costs text size. At 156 high the numbers draw at about
-    // 17px on a 1080p board, and still about 11px at 1366 x 768.
     const FS = 17;               // tick numbers, titles and names
-    const CHAR = 10.5;           // a tick number's width per character at FS
-    const PW = 400, PH = 156;    // the plot, to scale within each axis
-    const yNums = [];
-    for (let v = ya.min; v <= ya.max + 1e-9; v += ya.step * (ya.every || 1)) yNums.push(fmtAxis(v));
-    const LEFT = Math.max(...yNums.map((s) => s.length)) * CHAR + 16;
-    const TOP = 34, BOTTOM = 58, RIGHT = 18;
-    const W = LEFT + PW + RIGHT;
-    const H = TOP + PH + BOTTOM;
-    const X = (x) => LEFT + ((x - xa.min) / (xa.max - xa.min)) * PW;
-    const Y = (y) => TOP + PH - ((y - ya.min) / (ya.max - ya.min)) * PH;
-
-    const nodes = [];
-    const nx = Math.round((xa.max - xa.min) / xa.step);
-    const ny = Math.round((ya.max - ya.min) / ya.step);
-    for (let i = 0; i <= nx; i += 1) {
-      const v = xa.min + i * xa.step;
-      const major = i % (xa.every || 1) === 0;
-      nodes.push(figLine(`gx${i}`, X(v), TOP, X(v), TOP + PH, { strokeWidth: 1, strokeOpacity: major ? 0.26 : 0.12 }));
-      if (major) nodes.push(figLabel(`nx${i}`, X(v), TOP + PH + 21, fmtAxis(v), 'middle', 'var(--ink)', FS));
-    }
-    for (let j = 0; j <= ny; j += 1) {
-      const v = ya.min + j * ya.step;
-      const major = j % (ya.every || 1) === 0;
-      nodes.push(figLine(`gy${j}`, LEFT, Y(v), LEFT + PW, Y(v), { strokeWidth: 1, strokeOpacity: major ? 0.26 : 0.12 }));
-      if (major) nodes.push(figLabel(`ny${j}`, LEFT - 7, Y(v) + 6, fmtAxis(v), 'end', 'var(--ink)', FS));
-    }
-    nodes.push(figLine('ax', LEFT, TOP + PH, LEFT + PW, TOP + PH, { strokeWidth: 2.5 }));
-    nodes.push(figLine('ay', LEFT, TOP - 6, LEFT, TOP + PH, { strokeWidth: 2.5 }));
-    if (xa.title) nodes.push(figLabel('xt', LEFT + PW / 2, TOP + PH + 50, xa.title, 'middle', 'var(--ink)', FS));
-    if (ya.title) nodes.push(figLabel('yt', 4, TOP - 14, ya.title, 'start', 'var(--ink)', FS));
+    const { nodes, X, Y, W, H, LEFT, TOP, PH } = gridAxes(xa, ya, FS);
 
     // The line of best fit, clipped to the plot box.
     if (fig.line) {
@@ -3434,6 +3441,37 @@ export default function Figure({ fig, color, shown }) {
     // noShrink: the graph is what the answer is read off, as with the bar
     // chart. hug: it is height-bound in a slot, so the box narrows to it.
     return svgWrap(nodes, W, H, 'scatter', fig.big, shown, true, 1, true);
+  }
+
+  // A distance-time graph (Haese 10H), drawn to the data on the same gridded
+  // axes as `scatter`: a journey is read off it, so every corner sits on a
+  // gridline. `journeys`: [{ name, points: [[t, d], ...] }], each a polyline
+  // in time order; with two, each carries its name at its last point.
+  // `reading` ({ x, y }) draws dashed reading lines to both axes on reveal.
+  if (fig.type === 'travel-graph') {
+    const { xAxis: xa, yAxis: ya, journeys = [] } = fig;
+    const FS = 17;
+    const { nodes, X, Y, W, H, LEFT, TOP, PW, PH } = gridAxes(xa, ya, FS);
+    journeys.forEach((j, k) => {
+      const d = j.points.map(([t, y], i) => `${i ? 'L' : 'M'}${X(t)} ${Y(y)}`).join(' ');
+      nodes.push(<path key={`j${k}`} d={d} fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinejoin="round" strokeDasharray={k === 1 ? '9 6' : undefined} />);
+      if (journeys.length > 1 && j.name) {
+        // To the right of its last point if there is room, so it never sits
+        // on its own line; otherwise just above that point.
+        const [t, y] = j.points[j.points.length - 1];
+        const room = X(t) + 10 + j.name.length * 10 < LEFT + PW;
+        if (room) nodes.push(figLabel(`jn${k}`, X(t) + 9, Y(y) + 6, j.name, 'start', 'var(--ink)', FS));
+        else nodes.push(figLabel(`jn${k}`, X(t), Y(y) - 9, j.name, 'end', 'var(--ink)', FS));
+      }
+    });
+    if (shown && fig.reading) {
+      const { x, y } = fig.reading;
+      const dash = { stroke: color, strokeWidth: 2.5, strokeDasharray: '7 5' };
+      nodes.push(<line key="rv" x1={X(x)} y1={TOP + PH} x2={X(x)} y2={Y(y)} {...dash} />);
+      nodes.push(<line key="rh" x1={LEFT} y1={Y(y)} x2={X(x)} y2={Y(y)} {...dash} />);
+      nodes.push(<circle key="rp" cx={X(x)} cy={Y(y)} r={5} fill={color} />);
+    }
+    return svgWrap(nodes, W, H, 'travel-graph', fig.big, shown, true, 1, true);
   }
 
   // A box plot, drawn to the data on a gridded scale like `scatter`: a plot

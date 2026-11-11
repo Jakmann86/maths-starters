@@ -250,10 +250,11 @@ Established conventions:
   `parallel-transversal` keeps fixed geometry, so its generator puts each
   angle in a wedge of its own kind.
 - **Data displays are the exception.** `coordinate-grid`, `transform-grid`,
-  `stem-leaf` and `pie-chart` are drawn to the data, because there the
-  geometry *is* the data: a pie chart's sectors are in proportion, a
-  stem-and-leaf's leaves line up into columns, a shape on a grid sits on
-  the coordinates the question reads off it.
+  `stem-leaf`, `pie-chart`, `scatter` and `travel-graph` are drawn to the
+  data, because there the geometry *is* the data: a pie chart's sectors are
+  in proportion, a stem-and-leaf's leaves line up into columns, a shape on a
+  grid sits on the coordinates the question reads off it, and a journey's
+  corners sit on the gridlines it is read from.
 
 ### 8. Generators are verified by substituting the answer back
 
