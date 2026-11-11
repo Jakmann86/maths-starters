@@ -36,6 +36,7 @@ import * as pct from '../generators/number/percentageGenerators';
 import * as ch6 from '../generators/number/chapter6Generators';
 import * as fracPow from '../generators/number/fractionalPowerGenerators';
 import * as indexLaws from '../generators/number/indexLawGenerators';
+import * as logs from '../generators/number/logarithmGenerators';
 import * as rational from '../generators/number/rationalNumberGenerators';
 import * as bidmas from '../generators/number/orderOfOperationsGenerators';
 import * as stats from '../generators/statistics/averagesGenerators';
@@ -1052,6 +1053,50 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 31A–E: logarithms ---
+  'log-index-form': {
+    label: 'Logarithmic and index form',
+    topic: 'Logarithms',
+    generate: (opts) => logs.generateLogIndexForm(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'evaluate-logs': {
+    label: 'Evaluating logarithms',
+    topic: 'Logarithms',
+    generate: (opts) => logs.generateEvaluateLogs(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'log-single': {
+    label: 'Writing as a single logarithm',
+    topic: 'Logarithms',
+    generate: (opts) => logs.generateLogSingle(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'log-in-terms': {
+    label: 'Logarithms in terms of p and q',
+    topic: 'Logarithms',
+    generate: (opts) => logs.generateLogInTerms(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'log-remove': {
+    label: 'Equations without logarithms',
+    topic: 'Logarithms',
+    generate: (opts) => logs.generateLogRemove(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'log-solve-exponential': {
+    label: 'Solving exponential equations with logarithms',
+    topic: 'Logarithms',
+    generate: (opts) => logs.generateLogSolveExponential(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'log-equations': {
+    label: 'Solving logarithmic equations',
+    topic: 'Logarithms',
+    generate: (opts) => logs.generateLogEquations(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 6D: standard form ---
   'standard-form-write': {
     label: 'Writing in standard form',
@@ -1291,7 +1336,7 @@ export const generateForSkill = (id, wanted = 'core') => {
  * Within a strand, topics run in Haese chapter order.
  */
 export const STRANDS = [
-  { name: 'Number', topics: ['Rational numbers', 'Order of operations', 'Indices', 'Standard form', 'Surds', 'Percentages'] },
+  { name: 'Number', topics: ['Rational numbers', 'Order of operations', 'Indices', 'Logarithms', 'Standard form', 'Surds', 'Percentages'] },
   {
     name: 'Algebra',
     topics: [

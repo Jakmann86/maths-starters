@@ -214,11 +214,11 @@
     { "id": "30C", "ch": 30, "unit": "Variation and power modelling", "lesson": "Variation modelling", "page": 615, "skills": [], "status": "skip" },
     { "id": "30D", "ch": 30, "unit": "Variation and power modelling", "lesson": "Power modelling", "page": 619, "skills": [], "status": "skip" },
 
-    { "id": "31A", "ch": 31, "unit": "Logarithms", "lesson": "Logarithms in base a", "page": 625, "skills": [], "status": "todo" },
-    { "id": "31B", "ch": 31, "unit": "Logarithms", "lesson": "The logarithmic function", "page": 627, "skills": [], "status": "todo" },
-    { "id": "31C", "ch": 31, "unit": "Logarithms", "lesson": "Rules for logarithms", "page": 629, "skills": [], "status": "todo" },
-    { "id": "31D", "ch": 31, "unit": "Logarithms", "lesson": "Logarithms in base 10", "page": 630, "skills": [], "status": "todo" },
-    { "id": "31E", "ch": 31, "unit": "Logarithms", "lesson": "Exponential and logarithmic equations", "page": 634, "skills": [], "status": "todo" },
+    { "id": "31A", "ch": 31, "unit": "Logarithms", "lesson": "Logarithms in base a", "page": 625, "skills": ["log-index-form", "evaluate-logs"], "status": "ready" },
+    { "id": "31B", "ch": 31, "unit": "Logarithms", "lesson": "The logarithmic function", "page": 627, "skills": ["log-index-form"], "status": "ready" },
+    { "id": "31C", "ch": 31, "unit": "Logarithms", "lesson": "Rules for logarithms", "page": 629, "skills": ["log-single", "log-in-terms", "log-remove"], "status": "ready" },
+    { "id": "31D", "ch": 31, "unit": "Logarithms", "lesson": "Logarithms in base 10", "page": 630, "skills": ["log-single", "log-remove"], "status": "ready" },
+    { "id": "31E", "ch": 31, "unit": "Logarithms", "lesson": "Exponential and logarithmic equations", "page": 634, "skills": ["log-solve-exponential", "log-equations"], "status": "ready" },
 
     { "id": "32A", "ch": 32, "unit": "Inequalities", "lesson": "Solving one variable inequalities with technology", "page": 639, "skills": [], "status": "skip" },
     { "id": "32B", "ch": 32, "unit": "Inequalities", "lesson": "Linear inequality regions", "page": 641, "skills": [], "status": "todo" },

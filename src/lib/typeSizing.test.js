@@ -18,4 +18,10 @@ describe('qSize', () => {
     expect(qSize('\\frac{x + 1}{3}', 'Simplify', false, false)).toMatch(/,76px\)$/);
     expect(qSize('3x + 2', 'Simplify', false, false)).toMatch(/,76px\)$/);
   });
+
+  it('measures a log by what it shows, not its source', () => {
+    // log₂ x + log₂(x + 6) = 4 is as wide on screen as any 24-character line.
+    expect(qSize('\\log_{2} x + \\log_{2}(x + 6) = 4', 'Solve', false, false))
+      .toBe(qSize('abcd x + abcd(x + 6) = 4', 'Solve', false, false));
+  });
 });
