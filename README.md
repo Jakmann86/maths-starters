@@ -53,7 +53,7 @@ src/
   generators/              pure functions returning question data, with tests
   lib/                     KaTeX loader, type sizing, question → view mapping
   print/                   printable exit ticket / practice / homework sheets
-  dev/                     dev-only test pages (math-test.html, print-test.html)
+  dev/                     dev-only test pages (math-test.html, print-test.html, size-test.html)
 docs/calibration.md        how the textbooks escalate each topic
 reference/                 original design export; read-only history
 ```

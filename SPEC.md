@@ -225,7 +225,9 @@ Not shipped to teachers. `math-test.html` renders a fixed list of LaTeX cases
 (fractions, roots, degrees, ...) so KaTeX output and warnings can be checked in
 one place. `print-test.html` draws every skill
 at every band in both print layouts, so overflow is measured rather than
-spotted.
+spotted. `size-test.html` draws three fixed mixed boards (real Slots, real
+questions) at 1366 × 768 and 1920 × 1080, and its query string overrides the
+question size range (`?spread=1.5`, `?ceil=45`) to try spreads on a board.
 
 ### 7.4 Print — over the board
 

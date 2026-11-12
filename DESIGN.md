@@ -108,22 +108,28 @@ text. The forces they are balancing:
 - **Room to write.** If possible, leave space in a box for the teacher to
   write working on the board.
 
-Decided so far: a lone fraction with one term over one term (`\\frac{15}{9y}`)
-has a 54px ceiling against everyone else's 76px, since stacked it stands far
-taller than any other single line (`isSimpleFraction`); a `compact` given
-line has the same floor as any other question, because students need its number;
-and a skill can set `questionScale` in `skills.js` to shrink its question's
-growth terms and ceiling (not its floor). The two pair-of-equations
-simultaneous skills use 0.75, to leave the teacher room to write the working.
-The sizer counts a log by what it shows, not its source (`\log_{2}` is
-about as wide as "log2", not eight characters), so log questions size like
-any other line.
+Decided so far: the range lives in one place, `Q_RANGE` and `P_RANGE` at
+the top of `typeSizing.js`, under one rule: the biggest and smallest
+question on a board differ by no more than about 1.75 : 1, and a worded
+question sits one step (÷ 1.25) below the maths. The maths runs from 32px
+(30px for three or more lines) to 50px; a worded question from 26px to 40px.
+A lone fraction with one term over one term (`\\frac{15}{9y}`) has a 36px
+ceiling, since stacked it stands far taller than any other single line
+(`isSimpleFraction`). A `compact` given line beside a figure keeps its own
+44px cap and has the same floor as any other question, because students need
+its number. The height growth terms are scaled with the ceiling (`grow`,
+50/76), so one, two and three lines still step; the width term is not, as it
+is what keeps a long line in its box. A skill can set `questionScale` in
+`skills.js` to shrink its question's growth terms and ceiling (not its
+floor). The two pair-of-equations simultaneous skills use 0.75, to leave the
+teacher room to write the working. The sizer counts a log by what it shows,
+not its source (`\log_{2}` is about as wide as "log2", not eight
+characters), so log questions size like any other line.
 
-So the current `qSize()` behaviour (grow to fill the space) is not the final
-word. Expect a tighter range: a ceiling on how big a short question grows, a
-floor for long ones. Don't tune `qSize()` / `iSize()` / `pSize()` in passing
-while working on something else — ask, as the user is calibrating this on a
-real board.
+The range is being tried on real boards at `/size-test.html` (dev only),
+whose query string overrides it (`?spread=1.5`, `?ceil=45`). Don't tune
+`qSize()` / `iSize()` / `pSize()` in passing while working on something
+else — ask, as the user is calibrating this on a real board.
 
 ## Slot anatomy
 

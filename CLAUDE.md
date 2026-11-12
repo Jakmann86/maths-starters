@@ -87,7 +87,8 @@ src/
   lib/           katexLoader.js  typeSizing.js  questionView.js
   print/         PrintSheet.jsx  buildSheets.js  print.css
   dev/           MathTestPage.jsx (math-test.html), PrintTestPage.jsx
-                 (print-test.html) — dev only
+                 (print-test.html), SizeTestPage.jsx (size-test.html)
+                 — dev only
 docs/            calibration.md — how the textbooks escalate, per topic
 ```
 

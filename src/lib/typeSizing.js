@@ -2,6 +2,43 @@
 // line length, in cqh/cqi units — see DESIGN.md "Type sizing is computed, not
 // scaled". Do not replace with a fixed type scale.
 
+// The size range of the question maths and of a worded question, in one place.
+//
+// The rule: on one board, the biggest question and the smallest differ by no
+// more than about 1.75 : 1, so a mixed board (a short sum beside a three-line
+// pair of equations, a lone fraction beside a worded question) looks in
+// proportion. A worded question sits one step (÷ 1.25) below the maths: it is
+// a sentence to read, not an expression to take in at a glance.
+//
+//   floor      the smallest a question is ever set, so the back row can read it
+//   floor3     the floor for three or more lines, which need the height
+//   ceiling    the largest a question grows to (before questionScale)
+//   fraction   the ceiling for a lone fraction (isSimpleFraction), which stands
+//              far taller than any other single line
+//   compactCap the ceiling for a compact given line beside a figure
+//   grow       scales the cqh growth terms with the ceiling (ceiling / 76, the
+//              old ceiling), so one, two and three lines still step down in
+//              size instead of all meeting the ceiling together
+//
+// The dev page /size-test.html can override these from its query string;
+// the app itself only ever reads these defaults.
+export const Q_RANGE = Object.freeze({
+  floor: 32,
+  floor3: 30,
+  ceiling: 50,
+  fraction: 36,
+  compactCap: 44,
+  grow: 50 / 76,
+});
+
+// A worded question: clamp(floor, grow cqh, ceiling), one step below the
+// maths (Q_RANGE ÷ 1.25, rounded).
+export const P_RANGE = Object.freeze({
+  floor: 26,
+  grow: 7.75,
+  ceiling: 40,
+});
+
 export function iSize(instr) {
   return String(instr || '').length > 44
     ? 'clamp(17px,min(6cqh,3cqi),27px)'
@@ -12,8 +49,8 @@ export function iSize(instr) {
 // to take in at a glance, so it is set a step above the instruction rather
 // than at display size, in the regular-weight serif (.mprose). cqh resolves
 // against the slot: `.slot-question` is an inline-size container only.
-export function pSize() {
-  return 'clamp(20px,6.2cqh,30px)';
+export function pSize(range = P_RANGE) {
+  return `clamp(${range.floor}px,${range.grow}cqh,${range.ceiling}px)`;
 }
 
 function visualLength(str) {
@@ -84,11 +121,16 @@ export function isSimpleFraction(q) {
 // for a skill whose working the teacher writes in the box beside it (a pair
 // of simultaneous equations). It scales the growth terms and the ceiling, not
 // the floor: a scaled question still reads from the back of the room.
-export function qSize(q, instr, compact, hasFigure = true, scale = 1) {
+//
+// `range` is Q_RANGE unless the dev size-test page is trying another spread.
+export function qSize(q, instr, compact, hasFigure = true, scale = 1, range = Q_RANGE) {
   const lines = String(q || '').split('\n').length;
   const longest = Math.max(...String(q || '').split('\n').map((l) => visualLength(l)), 1);
   const wordy = String(instr || '').length > 44;
-  const h = lines >= 3 ? 10 : lines === 2 ? 15 : wordy ? 19 : 24;
+  // The height term steps with the line count. Scaled by `grow` with the
+  // ceiling: unscaled, at 1080p one and two lines both overshot the 50px
+  // ceiling and came out the same size.
+  const h = range.grow * (lines >= 3 ? 10 : lines === 2 ? 15 : wordy ? 19 : 24);
   // cqi here is the question's own box (`.slot-question` is an inline-size
   // container), not the slot: beside a figure that is only the width left
   // over. Without a figure the two are the same width (cqi measures inside
@@ -99,15 +141,17 @@ export function qSize(q, instr, compact, hasFigure = true, scale = 1) {
   // Beside a figure the box is narrow, so the whole-slot rule — which fills
   // about two thirds of the width and caps at 14cqi for short lines — wastes
   // most of it. There the width term aims at about nine tenths instead
-  // (0.6em a character — KaTeX digits run wide), and the 76px ceiling
-  // does the capping.
+  // (0.6em a character — KaTeX digits run wide), and the ceiling does the
+  // capping. The width term is not scaled by `grow`: it is what keeps a long
+  // line inside the box, and scaling it would shrink a long line below the
+  // size it fits at.
   const w = scale * (hasFigure
     ? 150 / Math.max(longest, 3)
     : Math.min(109 / Math.max(longest, 7), 14));
-  const floor = lines >= 3 ? 28 : 30;
+  const floor = lines >= 3 ? range.floor3 : range.floor;
   if (compact && hasFigure) {
-    return `clamp(${floor}px,min(${(h * 0.6 * scale).toFixed(1)}cqh,${w.toFixed(1)}cqi),${Math.round(44 * scale)}px)`;
+    return `clamp(${floor}px,min(${(h * 0.6 * scale).toFixed(1)}cqh,${w.toFixed(1)}cqi),${Math.round(range.compactCap * scale)}px)`;
   }
-  const ceiling = Math.round((isSimpleFraction(q) ? 54 : 76) * scale);
+  const ceiling = Math.round((isSimpleFraction(q) ? range.fraction : range.ceiling) * scale);
   return `clamp(${floor}px,min(${+(h * scale).toFixed(2)}cqh,${w.toFixed(1)}cqi),${ceiling}px)`;
 }
