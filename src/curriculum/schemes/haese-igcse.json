@@ -61,10 +61,10 @@
     { "id": "7F", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Problem solving", "page": 164, "skills": ["simultaneous-problem-solving"], "status": "ready" },
 
     { "id": "8A", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Pythagoras' theorem", "page": 170, "skills": ["pythagoras-hypotenuse", "pythagoras-missing-side"], "status": "ready" },
-    { "id": "8B", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "The converse of Pythagoras' theorem", "page": 176, "skills": [], "status": "todo" },
+    { "id": "8B", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "The converse of Pythagoras' theorem", "page": 176, "skills": ["pythagoras-converse"], "status": "ready" },
     { "id": "8C", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Problem solving", "page": 177, "skills": ["pythagoras-isosceles"], "status": "ready" },
-    { "id": "8D", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Circle problems", "page": 181, "skills": [], "status": "todo" },
-    { "id": "8E", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Three-dimensional problems", "page": 185, "skills": ["pythagoras-3d-diagonal"], "status": "todo" },
+    { "id": "8D", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Circle problems", "page": 181, "skills": ["chord-perpendicular-bisector", "tangent-length"], "status": "ready" },
+    { "id": "8E", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Three-dimensional problems", "page": 185, "skills": ["pythagoras-3d"], "status": "ready" },
 
     { "id": "9A", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Length", "page": 192, "skills": [], "status": "todo" },
     { "id": "9B", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Perimeter", "page": 194, "skills": ["perimeter-rectangle", "perimeter-compound"], "status": "ready" },

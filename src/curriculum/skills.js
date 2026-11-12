@@ -16,6 +16,7 @@ import * as magicSquares from '../generators/puzzles/magicSquareGenerators';
 import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 import * as arithmagon from '../generators/puzzles/arithmagonGenerators';
 import * as pythagoras from '../generators/geometry/pythagorasGenerators';
+import * as pythProblems from '../generators/geometry/pythagorasProblemsGenerators';
 import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 import * as functions from '../generators/algebra/functionGenerators';
 import * as furtherTrig from '../generators/geometry/furtherTrigGenerators';
@@ -320,10 +321,22 @@ export const skills = {
     generate: (opts) => pythagoras.generatePythagorasMissingSide(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'pythagoras-converse': {
+    label: 'Pythagoras: is it right-angled?',
+    topic: 'Pythagoras and trigonometry',
+    generate: (opts) => pythProblems.generatePythagorasConverse(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'pythagoras-isosceles': {
     label: 'Pythagoras: isosceles triangles',
     topic: 'Pythagoras and trigonometry',
     generate: (opts) => pythagoras.generatePythagorasIsosceles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'pythagoras-3d': {
+    label: 'Pythagoras in three dimensions',
+    topic: 'Pythagoras and trigonometry',
+    generate: (opts) => pythProblems.generatePythagoras3d(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
