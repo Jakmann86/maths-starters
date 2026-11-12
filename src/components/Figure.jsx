@@ -2454,6 +2454,8 @@ export default function Figure({ fig, color, shown }) {
     const seg = fig.segment || null;
     // Lines are { m, c } for y = mx + c, or { x } for a vertical line. `lines`
     // draws several (solving graphically); `line` is the one-line shorthand.
+    // `curves` are quadratics, { a, b, c } for y = ax^2 + bx + c; a curve
+    // needs a `window`, since no rule here knows which part of it matters.
     const lines = fig.lines || (fig.line ? [fig.line] : []);
     let x0; let x1; let y0; let y1;
 
@@ -2535,6 +2537,52 @@ export default function Figure({ fig, color, shown }) {
         />
       );
     });
+    // Quadratic curves, { a, b, c } for y = ax^2 + bx + c, in the slot colour
+    // like a line. Sampled finely and clipped to the window by hand: a
+    // clipPath needs a document-unique id, and four boxes share a page.
+    (fig.curves || []).forEach(({ a, b, c }, ci) => {
+      const f = (x) => a * x * x + b * x + c;
+      const inY = (y) => y >= y0 - 1e-9 && y <= y1 + 1e-9;
+      const N = Math.max(80, (x1 - x0) * 24);
+      const runs = [];
+      let run = null;
+      let prev = null;
+      for (let i = 0; i <= N; i += 1) {
+        const x = x0 + ((x1 - x0) * i) / N;
+        const y = f(x);
+        if (inY(y)) {
+          if (!run) {
+            run = [];
+            // Entering the window: start on its edge, not one step inside.
+            if (prev) {
+              const edge = prev[1] > y1 ? y1 : y0;
+              run.push([prev[0] + ((x - prev[0]) * (edge - prev[1])) / (y - prev[1]), edge]);
+            }
+            runs.push(run);
+          }
+          run.push([x, y]);
+        } else if (run) {
+          const [px, py] = prev;
+          const edge = y > y1 ? y1 : y0;
+          run.push([px + ((x - px) * (edge - py)) / (y - py), edge]);
+          run = null;
+        }
+        prev = [x, y];
+      }
+      runs.forEach((r, ri) => {
+        if (r.length < 2) return;
+        nodes.push(
+          <polyline
+            key={`cv${ci}-${ri}`}
+            points={r.map(([x, y]) => `${X(x).toFixed(1)},${Y(y).toFixed(1)}`).join(' ')}
+            fill="none"
+            stroke={color}
+            strokeWidth={3}
+            strokeLinejoin="round"
+          />
+        );
+      });
+    });
     if (seg) {
       nodes.push(
         <line
@@ -2593,7 +2641,9 @@ export default function Figure({ fig, color, shown }) {
     // noShrink, like magic-square: the grid is what has to be read after the
     // reveal, not decoration around an answer.
     // Allowed the full height of its row: the numbers are the question.
-    return svgWrap(nodes, W, H, 'cg', fig.big, shown, true, 1.2, false, { capScale: 1.5 });
+    // `hug` for a graph with a question beside it: a tall window is capped by
+    // height, and the letterbox round it would leave the question a sliver.
+    return svgWrap(nodes, W, H, 'cg', fig.big, shown, true, 1.2, Boolean(fig.hug), { capScale: 1.5 });
   }
 
   // Transformations on a grid (Haese 20A-D, Rayner 11.3), drawn to scale

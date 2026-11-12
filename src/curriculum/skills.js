@@ -28,6 +28,7 @@ import * as cubicSeq from '../generators/algebra/cubicSequenceGenerators';
 import * as formulae from '../generators/algebra/formulaGenerators';
 import * as inequalities from '../generators/algebra/inequalityGenerators';
 import * as quadEq from '../generators/algebra/quadraticEquationGenerators';
+import * as quadGraph from '../generators/algebra/quadraticGraphGenerators';
 import * as solids from '../generators/geometry/solidsGenerators';
 import * as area from '../generators/geometry/areaGenerators';
 import * as perim from '../generators/geometry/perimeterGenerators';
@@ -181,6 +182,38 @@ export const skills = {
     label: 'Solving quadratics with the formula',
     topic: 'Quadratic equations',
     generate: (opts) => quadEq.generateSolveQuadraticFormula(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 21D-H: quadratic functions and their graphs ---
+  'quadratic-substitution': {
+    label: 'Substituting into a quadratic',
+    topic: 'Quadratic graphs',
+    generate: (opts) => quadGraph.generateQuadraticSubstitution(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'quadratic-vertex-form': {
+    label: 'Vertex from turning point form',
+    topic: 'Quadratic graphs',
+    generate: (opts) => quadGraph.generateQuadraticVertexForm(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'quadratic-intercepts': {
+    label: 'Axes intercepts',
+    topic: 'Quadratic graphs',
+    generate: (opts) => quadGraph.generateQuadraticIntercepts(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'quadratic-symmetry': {
+    label: 'Line of symmetry and vertex',
+    topic: 'Quadratic graphs',
+    generate: (opts) => quadGraph.generateQuadraticSymmetry(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'quadratic-find-function': {
+    label: 'Finding a quadratic function',
+    topic: 'Quadratic graphs',
+    generate: (opts) => quadGraph.generateQuadraticFindFunction(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1454,6 +1487,7 @@ export const STRANDS = [
       'Simultaneous equations',
       'Algebraic fractions',
       'Quadratic equations',
+      'Quadratic graphs',
       'Arithmetic and geometric sequences',
       'Quadratic and cubic sequences',
       'Variation',
