@@ -123,7 +123,12 @@ export function isSimpleFraction(q) {
 // the floor: a scaled question still reads from the back of the room.
 //
 // `range` is Q_RANGE unless the dev size-test page is trying another spread.
-export function qSize(q, instr, compact, hasFigure = true, scale = 1, range = Q_RANGE) {
+//
+// `max` is a plain ceiling in px, for a skill with several lines of working
+// beside it (harder rearranging): the question grows as it would, but no
+// further than `max`. Unlike `scale` it leaves a long line alone, which is
+// already narrower than the cap, rather than shrinking it further.
+export function qSize(q, instr, compact, hasFigure = true, scale = 1, range = Q_RANGE, max = Infinity) {
   const lines = String(q || '').split('\n').length;
   const longest = Math.max(...String(q || '').split('\n').map((l) => visualLength(l)), 1);
   const wordy = String(instr || '').length > 44;
@@ -150,8 +155,8 @@ export function qSize(q, instr, compact, hasFigure = true, scale = 1, range = Q_
     : Math.min(109 / Math.max(longest, 7), 14));
   const floor = lines >= 3 ? range.floor3 : range.floor;
   if (compact && hasFigure) {
-    return `clamp(${floor}px,min(${(h * 0.6 * scale).toFixed(1)}cqh,${w.toFixed(1)}cqi),${Math.round(range.compactCap * scale)}px)`;
+    return `clamp(${floor}px,min(${(h * 0.6 * scale).toFixed(1)}cqh,${w.toFixed(1)}cqi),${Math.round(Math.min(range.compactCap * scale, max))}px)`;
   }
-  const ceiling = Math.round((isSimpleFraction(q) ? range.fraction : range.ceiling) * scale);
+  const ceiling = Math.round(Math.min((isSimpleFraction(q) ? range.fraction : range.ceiling) * scale, max));
   return `clamp(${floor}px,min(${+(h * scale).toFixed(2)}cqh,${w.toFixed(1)}cqi),${ceiling}px)`;
 }

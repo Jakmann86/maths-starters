@@ -83,14 +83,25 @@ The board has two readers, and the size rules apply to them differently.
 ## Instruction or question
 
 The instruction is smaller and greyer, and the teacher can read it out. The
-question is what students read from the back of the room. So:
+question is what students read from the back of the room. At board size the
+grey instruction is large enough for the class to read too.
 
-- **Any number a student needs to do the question goes in the question**
-  (`questionMath` or `questionText`) or on the figure. "Enlarge by scale factor
-  3", "There are 49 houses altogether", "Find the 10th term": all question.
+**There is no single rule; it is decided topic by topic**, for what looks
+best on the board. The one constant is that the mathematics itself (an
+expression, an equation, a formula) is set in KaTeX. A line of KaTeX that is
+mostly words in `\text{}` tends to look poor, so:
+
+- **Words and conditions can go in the instruction**, numbers and all, where
+  that reads better: "Find the value of y when x = −3", "Find b and c given
+  the vertex (5, −4)" (Quadratic graphs), with the formula alone in KaTeX. A
+  negative number in an instruction takes a true minus sign (U+2212), not a
+  hyphen.
+- **Elsewhere the number stays in the question** where it is the thing being
+  worked on: "Enlarge by scale factor 3", "Find the 10th term", a value on
+  a figure. Those topics are not changed until the user looks at them.
 - **What they can infer stays in the instruction**: the context ("the table
-  shows the times people took to finish a race"), the task with no number in
-  it ("Find x"), and the form of the answer ("to 3 significant figures").
+  shows the times people took to finish a race"), the task ("Find x"), and
+  the form of the answer ("to 3 significant figures").
 - A count the figure already shows is not a needed number. "The marks of 11
   students" beside the 11 marks can stay in the instruction.
 
@@ -122,7 +133,16 @@ its number. The height growth terms are scaled with the ceiling (`grow`,
 is what keeps a long line in its box. A skill can set `questionScale` in
 `skills.js` to shrink its question's growth terms and ceiling (not its
 floor). The two pair-of-equations simultaneous skills use 0.75, to leave the
-teacher room to write the working. The sizer counts a log by what it shows,
+teacher room to write the working.
+
+A skill can also set `questionMax`, a plain ceiling in px that leaves the
+rest of the sizing alone (a long line, already narrower, is not shrunk
+further, as `questionScale` would). The user picked 46px, the size a
+Foundation or Core negative-fractions question renders at on a 1080p board,
+as right for a question with several steps of working that the back of the
+room can still read. It is applied by judgement, skill by skill: so far
+harder rearranging, substituting into a quadratic and finding a quadratic
+function. The sizer counts a log by what it shows,
 not its source (`\log_{2}` is about as wide as "log2", not eight
 characters), so log questions size like any other line.
 

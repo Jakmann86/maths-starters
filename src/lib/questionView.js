@@ -20,6 +20,7 @@ export function questionView(q, skillId) {
     parts: q.questionParts ?? null,
     qCompact: q.questionMathCompact === true,
     qScale: getSkill(skillId)?.questionScale ?? 1,
+    qMax: getSkill(skillId)?.questionMax ?? Infinity,
     a: q.answerUnits ? `${q.answer}\\text{ }${unitsTex(q.answerUnits)}` : q.answer,
     fig: q.visualization,
   };

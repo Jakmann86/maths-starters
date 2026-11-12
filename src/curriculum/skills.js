@@ -191,6 +191,8 @@ export const skills = {
     topic: 'Quadratic graphs',
     generate: (opts) => quadGraph.generateQuadraticSubstitution(opts),
     difficulties: ['foundation', 'core', 'stretch'],
+    // Several lines of working go beside it (questionMax, typeSizing.js).
+    questionMax: 46,
   },
   'quadratic-vertex-form': {
     label: 'Vertex from turning point form',
@@ -215,6 +217,8 @@ export const skills = {
     topic: 'Quadratic graphs',
     generate: (opts) => quadGraph.generateQuadraticFindFunction(opts),
     difficulties: ['foundation', 'core', 'stretch'],
+    // Several lines of working go beside it (questionMax, typeSizing.js).
+    questionMax: 46,
   },
 
     // --- Haese 3A: solving linear equations ---
@@ -781,6 +785,10 @@ export const skills = {
     topic: 'Formulae',
     generate: (opts) => further.generateRearrangeHarder(opts),
     difficulties: ['foundation', 'core', 'stretch'],
+    // Several lines of working go beside it, so the equation is capped at
+    // the size of a negative-fractions question on a 1080p board rather
+    // than filling the box (questionMax, typeSizing.js).
+    questionMax: 46,
   },
   'formula-derivation': {
     label: 'Formula derivation',

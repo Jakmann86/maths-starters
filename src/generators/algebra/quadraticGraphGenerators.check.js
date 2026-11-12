@@ -103,16 +103,17 @@ function readGraph(fig) {
 /* ---------------------------------------------------------- substitution */
 
 function checkSubstitution(q, band) {
-  const [l1, l2] = lines(q.questionMath);
-  must(lines(q.questionMath).length === 2, 'two question lines');
+  // The formula is the whole question; the value given is in the
+  // instruction, in words, with a true minus sign.
+  const [l1] = lines(q.questionMath);
+  must(lines(q.questionMath).length === 1, 'one question line: the formula');
   const f = tri(rhs(l1));
   form(rhs(l1), EXPANDED, 'expanded');
   must(q.visualization === null, 'no figure');
   if (band !== 'stretch') {
-    must(q.instruction === 'Find the value of y', 'instruction');
-    const m = /^\\text\{when \} x = (-?\d+)$/.exec(l2);
-    must(m, `the x given: ${l2}`);
-    const x = Number(m[1]);
+    const m = new RegExp(`^Find the value of y when x = (${INUM})$`).exec(q.instruction);
+    must(m, `the x given: ${q.instruction}`);
+    const x = num(m[1]);
     must(band === 'foundation' ? x > 0 && f.a === 1 : x < 0, 'the band of x');
     if (band === 'core') must(f.a !== 1, 'a leading coefficient at Core');
     const y = at(f, x);
@@ -123,11 +124,10 @@ function checkSubstitution(q, band) {
     lastIs(q, q.answer);
     return { kind: band === 'foundation' ? 'x positive' : 'x negative' };
   }
-  must(q.instruction === 'Find the value or values of x', 'instruction');
   must(f.a === 1, 'monic at Stretch');
-  const m = /^\\text\{when \} y = (-?\d+)$/.exec(l2);
-  must(m, `the y given: ${l2}`);
-  const k = Number(m[1]);
+  const m = new RegExp(`^Find the value or values of x when y = (${INUM})$`).exec(q.instruction);
+  must(m, `the y given: ${q.instruction}`);
+  const k = num(m[1]);
   const g = { ...f, c: f.c - k };
   const want = realRoots(g);
   must(want.length > 0 && want.every((r) => Number.isInteger(Math.round(r)) && close(r, Math.round(r))), 'whole roots');
@@ -271,7 +271,22 @@ function checkSymmetry(q, band) {
 /* --------------------------------------------------------- find function */
 
 // "vertex (h, k), \; y-intercept d" and friends, parsed into what is given.
-const GIVEN = /^(?:\\text\{vertex \} \((-?\d+), (-?\d+)\)|x\\text\{-intercepts \} (-?\d+) \\text\{ and \} (-?\d+))(?:, \\; y\\text\{-intercept \} (-?\d+)|, \\text\{ through \} \((-?\d+), (-?\d+)\))?$/;
+// A number in an instruction: Archivo, so a true minus sign. A hyphen there
+// is a bug (it reads as a dash), so NUM does not accept one.
+const INUM = '\u2212?\\d+';
+const num = (t) => Number(t.replace('\u2212', '-'));
+const PT = `\\((${INUM}), (${INUM})\\)`;
+// What the instruction gives, after the task: the vertex or the
+// x-intercepts, then perhaps a y-intercept or a point.
+const GIVEN = new RegExp(`^(?:the vertex ${PT}|the x-intercepts (${INUM}) and (${INUM}))(?: and the y-intercept (${INUM})|,? and the point ${PT})?$`);
+// "Find b and c given the vertex (5, −4)": the task, and what is given.
+const task = (instr) => {
+  const m = /^(Find [a-z, ]+ and [a-z]) given (.+)$/.exec(instr);
+  must(m, `task and given: ${instr}`);
+  const g = GIVEN.exec(m[2]);
+  must(g, `given: ${m[2]}`);
+  return { ask: m[1], m: [g[0], ...g.slice(1).map((t) => (t === undefined ? undefined : num(t)))] };
+};
 
 function checkFindFunction(q, band) {
   must(q.answer.startsWith('y = '), 'an equation');
@@ -311,10 +326,9 @@ function checkFindFunction(q, band) {
       sameFn(g, f);
       return { kind: 'graph' };
     }
-    const [l1, l2] = lines(q.questionMath);
-    must(l1 === 'y = x^2 + bx + c' && q.instruction === 'Find b and c', 'the form asked');
-    const m = GIVEN.exec(l2);
-    must(m && m[5] === undefined && m[6] === undefined, `given: ${l2}`);
+    const { ask, m } = task(q.instruction);
+    must(q.questionMath === 'y = x^2 + bx + c' && ask === 'Find b and c', 'the form asked');
+    must(m[5] === undefined && m[6] === undefined, `given: ${q.instruction}`);
     if (m[1] !== undefined) {
       const [h, k] = vertex(f);
       must(h === Number(m[1]) && close(k, Number(m[2])), 'the vertex given');
@@ -326,11 +340,10 @@ function checkFindFunction(q, band) {
   }
 
   must(q.visualization === null, 'no figure');
-  const [l1, l2] = lines(q.questionMath);
-  const m = GIVEN.exec(l2 ?? '');
-  must(lines(q.questionMath).length === 2 && m, `given: ${l2}`);
+  const l1 = q.questionMath;
+  const { ask, m } = task(q.instruction);
   if (m[1] !== undefined) {
-    must(l1 === 'y = a(x - h)^2 + k' && q.instruction === 'Find a, h and k', 'the form asked');
+    must(l1 === 'y = a(x - h)^2 + k' && ask === 'Find a, h and k', 'the form asked');
     form(ans, TURNING, 'turning point');
     const [h, k] = vertex(f);
     must(h === Number(m[1]) && close(k, Number(m[2])) && h !== 0, 'the vertex given');
@@ -347,7 +360,7 @@ function checkFindFunction(q, band) {
     return { kind: 'vertex and a point' };
   }
   must(band === 'stretch' && m[6] !== undefined, 'intercepts and a point at Stretch');
-  must(l1 === 'y = ax^2 + bx + c' && q.instruction === 'Find a, b and c', 'the form asked');
+  must(l1 === 'y = ax^2 + bx + c' && ask === 'Find a, b and c', 'the form asked');
   form(ans, EXPANDED, 'expanded');
   must(f.a !== 1, 'a found, not 1');
   sameList([Number(m[3]), Number(m[4])], realRoots(f), 'the x-intercepts given');
@@ -371,7 +384,11 @@ export function checkQuadraticGraphs(q, band) {
   const run = CHECKS[q.metadata?.topic];
   must(run, `unknown topic ${q.metadata?.topic}`);
   must(q.metadata.difficulty === band, 'metadata band');
-  must(!/\d/.test(q.instruction), `a digit in the instruction: ${q.instruction}`);
+  // Only substitution and finding the function give a value in the
+  // instruction, in words; the other topics' instructions never hold one.
+  const gives = ['quadratic-substitution', 'quadratic-find-function'].includes(q.metadata.topic);
+  if (!gives) must(!/\d/.test(q.instruction), `a digit in the instruction: ${q.instruction}`);
+  must(!/-/.test(q.instruction.replace(/[a-z]-intercept/g, '')), `a hyphen for a minus sign: ${q.instruction}`);
   [q.questionMath, q.answer, q.workingOut].forEach((s) => s !== undefined && compiles(s));
   return run(q, band);
 }

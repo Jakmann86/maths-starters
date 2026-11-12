@@ -80,8 +80,10 @@ so a pool saved before a rename still loads.
 Generators return this. The board adapts to it (`src/lib/questionView.js`) —
 do not change generator output to match the board's internal field names.
 
-**Any number a student needs goes in the question, not the instruction**
-(`DESIGN.md` "Instruction or question").
+**Where a given number goes is decided topic by topic**: the mathematics is
+always in KaTeX, and words and conditions ("when x = −3") may go in the
+instruction where that reads better (`DESIGN.md` "Instruction or
+question").
 
 ```js
 {

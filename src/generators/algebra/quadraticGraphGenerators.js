@@ -61,6 +61,10 @@ const turning = (a, h, k) => {
 };
 
 const pt = (x, y) => `(${x}, ${y})`;
+// The same in the instruction, which is Archivo, not KaTeX: a true minus
+// sign, not the hyphen KaTeX would have turned into one.
+const minus = (v) => String(v).replace('-', '\u2212');
+const ptText = (x, y) => `(${minus(x)}, ${minus(y)})`;
 
 /** The roots in Haese's form, smaller first. */
 const rootList = (p, q) => (p === q ? `${p}` : `${Math.min(p, q)} \\text{ and } ${Math.max(p, q)}`);
@@ -123,8 +127,10 @@ export const generateQuadraticSubstitution = (options = {}) => {
     const x = F ? _.random(1, 6) : -_.random(1, 5);
     const y = a * x * x + b * x + c;
     return {
-      instruction: 'Find the value of y',
-      questionMath: `y = ${quad(a, b, c)}${NL}\\text{when } x = ${x}`,
+      // The condition is words, so it goes with the instruction; KaTeX
+      // keeps the formula alone.
+      instruction: `Find the value of y when x = ${minus(x)}`,
+      questionMath: `y = ${quad(a, b, c)}`,
       answer: `y = ${y}`,
       workingOut: [
         `y = ${subst(a, b, c, x)}`,
@@ -146,8 +152,8 @@ export const generateQuadraticSubstitution = (options = {}) => {
   const c = pq + k;
   if (b === 0 || c === 0) return generateQuadraticSubstitution(options);
   return {
-    instruction: 'Find the value or values of x',
-    questionMath: `y = ${quad(1, b, c)}${NL}\\text{when } y = ${k}`,
+    instruction: `Find the value or values of x when y = ${minus(k)}`,
+    questionMath: `y = ${quad(1, b, c)}`,
     answer: p === q ? `x = ${p}` : `x = ${Math.min(p, q)} \\text{ or } ${Math.max(p, q)}`,
     workingOut: [
       `${quad(1, b, c)} = ${k}`,
@@ -405,8 +411,8 @@ export const generateQuadraticFindFunction = (options = {}) => {
       const b = -2 * h;
       const c = h * h + k;
       return {
-        instruction: 'Find b and c',
-        questionMath: `y = x^2 + bx + c${NL}\\text{vertex } ${pt(h, k)}`,
+        instruction: `Find b and c given the vertex ${ptText(h, k)}`,
+        questionMath: 'y = x^2 + bx + c',
         answer: `y = ${quad(1, b, c)}`,
         workingOut: `y = ${turning(1, h, k)}${NL}y = ${quad(1, b, c)}`,
         visualization: null,
@@ -420,10 +426,10 @@ export const generateQuadraticFindFunction = (options = {}) => {
       const c = p * q;
       if (kind === 'graph' && q - p > 4) continue;
       return {
-        instruction: kind === 'graph' ? 'Find the equation of the curve' : 'Find b and c',
-        questionMath: kind === 'graph'
-          ? 'y = x^2 + bx + c'
-          : `y = x^2 + bx + c${NL}x\\text{-intercepts } ${p} \\text{ and } ${q}`,
+        instruction: kind === 'graph'
+          ? 'Find the equation of the curve'
+          : `Find b and c given the x-intercepts ${minus(p)} and ${minus(q)}`,
+        questionMath: 'y = x^2 + bx + c',
         answer: `y = ${quad(1, b, c)}`,
         workingOut: `y = ${factored(1, p, q)}${NL}y = ${quad(1, b, c)}`,
         visualization: kind === 'graph' ? { ...graphOf(1, p, q), hug: true } : null,
@@ -441,8 +447,8 @@ export const generateQuadraticFindFunction = (options = {}) => {
     const d = a * h * h + k;
     if (d === 0) return generateQuadraticFindFunction(options);
     return {
-      instruction: 'Find a, h and k',
-      questionMath: `y = a(x - h)^2 + k${NL}\\text{vertex } ${pt(h, k)}, \\; y\\text{-intercept } ${d}`,
+      instruction: `Find a, h and k given the vertex ${ptText(h, k)} and the y-intercept ${minus(d)}`,
+      questionMath: 'y = a(x - h)^2 + k',
       answer: `y = ${turning(a, h, k)}`,
       workingOut: [
         `y = ${tpBody(h, k)}`,
@@ -468,8 +474,8 @@ export const generateQuadraticFindFunction = (options = {}) => {
       const y = a * (x - h) ** 2 + k;
       if (Math.abs(y) > 60) continue;
       return {
-        instruction: 'Find a, h and k',
-        questionMath: `y = a(x - h)^2 + k${NL}\\text{vertex } ${pt(h, k)}, \\text{ through } ${pt(x, y)}`,
+        instruction: `Find a, h and k given the vertex ${ptText(h, k)} and the point ${ptText(x, y)}`,
+        questionMath: 'y = a(x - h)^2 + k',
         answer: `y = ${turning(a, h, k)}`,
         workingOut: [
           `y = ${tpBody(h, k)}`,
@@ -492,8 +498,8 @@ export const generateQuadraticFindFunction = (options = {}) => {
     const C = a * p * q;
     if (B === 0 || C === 0) continue;
     return {
-      instruction: 'Find a, b and c',
-      questionMath: `y = ax^2 + bx + c${NL}x\\text{-intercepts } ${p} \\text{ and } ${q}, \\text{ through } ${pt(x, y)}`,
+      instruction: `Find a, b and c given the x-intercepts ${minus(p)} and ${minus(q)}, and the point ${ptText(x, y)}`,
+      questionMath: 'y = ax^2 + bx + c',
       answer: `y = ${quad(a, B, C)}`,
       workingOut: [
         `y = a${factored(1, p, q)}`,

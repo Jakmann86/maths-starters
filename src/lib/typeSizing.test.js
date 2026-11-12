@@ -24,6 +24,17 @@ describe('qSize', () => {
     expect(qSize('\\log_{2} x + \\log_{2}(x + 6) = 4', 'Solve', false, false))
       .toBe(qSize('abcd x + abcd(x + 6) = 4', 'Solve', false, false));
   });
+
+  it('caps a question at max without shrinking anything else', () => {
+    const q = 'y = -2x^2 - 9x - 11';
+    const full = qSize(q, 'Find y', false, false);
+    const capped = qSize(q, 'Find y', false, false, 1, Q_RANGE, 46);
+    expect(capped.endsWith(',46px)')).toBe(true);
+    // Same floor and growth terms: only the ceiling moves.
+    expect(capped.replace(/,\d+px\)$/, '')).toBe(full.replace(/,\d+px\)$/, ''));
+    // A cap above the usual ceiling changes nothing.
+    expect(qSize(q, 'Find y', false, false, 1, Q_RANGE, 200)).toBe(full);
+  });
 });
 
 // clamp(Apx, ..., Bpx) -> [A, B]

@@ -38,6 +38,18 @@ const OPS = {
     const m = nums[Math.floor(Math.random() * nums.length)];
     q.questionMath = q.questionMath.slice(0, m.index) + (Number(m[0]) + 1) + q.questionMath.slice(m.index + m[0].length);
   },
+  // Substitution and finding the function give their values in the
+  // instruction, so a wrong one there must be caught too.
+  'a number in the instruction nudged': (q) => {
+    const nums = [...q.instruction.matchAll(/\d+/g)];
+    if (!nums.length) return false;
+    const m = nums[Math.floor(Math.random() * nums.length)];
+    q.instruction = q.instruction.slice(0, m.index) + (Number(m[0]) + 1) + q.instruction.slice(m.index + m[0].length);
+  },
+  'a hyphen for a minus sign in the instruction': (q) => {
+    if (!q.instruction.includes('\u2212')) return false;
+    q.instruction = q.instruction.replace('\u2212', '-');
+  },
   'moved to another band': bandMove(),
   'a sign flipped in the answer': (q) => {
     const m = / ([+-]) /.exec(q.answer);
