@@ -1,6 +1,6 @@
 // src/generators/number/chapter6Generators.test.js
 //
-// Substitute-the-answer-back checks for the six Haese Chapter 6 generators
+// Substitute-the-answer-back checks for the eight Haese Chapter 6 generators
 // (indices, standard form, surds). The check here is the strongest available
 // for pure algebra: both the printed question and the printed answer are
 // reduced to a number — sqrt, then frac, then powers — and required to agree
@@ -23,6 +23,8 @@ import {
   generateSurdsSimplify,
   generateRationaliseDenominator,
   generateSurdsExpand,
+  generateSurdsAdd,
+  generateSurdsMultiply,
 } from './chapter6Generators';
 import { exactOf, vequal, compiles } from './latexArithmetic.check';
 
@@ -252,37 +254,6 @@ describe('standard-form-calculate', () => {
   });
 });
 
-describe('surds-simplify', () => {
-  it.each(BANDS)('is correct at %s', (difficulty) => {
-    const distinct = new Set();
-    let coefficients = 0;
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const q = generateSurdsSimplify({ difficulty });
-      checkNoForbiddenTokens(q);
-      checkAnswersItsOwnQuestion(q);
-      distinct.add(q.answer);
-
-      // No simplified surd ever leaves a square factor under the root.
-      const roots = [...q.answer.matchAll(/\\sqrt\{(\d+)\}/g)].map((mm) => Number(mm[1]));
-      roots.forEach((n) => expect(isSquareFree(n), `${q.answer}: sqrt{${n}} not square-free`).toBe(true));
-
-      if (difficulty === 'stretch') {
-        // Collecting like surds only works once both are simplified —
-        // confirm the working shows a genuinely common radicand.
-        const inner = q.answer.match(/\\sqrt\{(\d+)\}$/);
-        expect(inner, q.answer).toBeTruthy();
-        if (/^\d/.test(q.questionMath) || /\+ \d/.test(q.questionMath)) coefficients += 1;
-      }
-    }
-    expect(distinct.size).toBeGreaterThan(1);
-    // Half of Stretch puts a coefficient on the surds (3\sqrt{8} + 2\sqrt{18}).
-    if (difficulty === 'stretch') {
-      expect(coefficients / SAMPLES).toBeGreaterThan(0.4);
-      expect(coefficients / SAMPLES).toBeLessThan(0.55);
-    }
-  });
-});
-
 describe('rationalise-denominator', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
     const distinct = new Set();
@@ -363,35 +334,146 @@ describe('rationalise-denominator', () => {
   });
 });
 
-// Read back by latexArithmetic.check.js, which multiplies surds exactly, so
-// the expanded answer must equal the printed brackets term for term.
+/* ------------------------------------------------------------------ surds */
+//
+// Every surd skill is checked the same way: the printed question and the
+// printed answer are both read back by latexArithmetic.check.js, which
+// handles surds exactly, and must be equal. The answer must also be in
+// simplest form: every root square-free, no coefficient of 1 written, no
+// two terms with the same root, constant first and then roots ascending.
+// Then each band's own structure is checked against the question text.
+
+const roots = (tex) => [...String(tex).matchAll(/\\sqrt\{(\d+)\}/g)].map((mm) => Number(mm[1]));
+const squareFactor = (n) => { let k = 1; for (let d = 2; d * d <= n; d++) if (n % (d * d) === 0) k = d; return k; };
+const isPrimeN = (n) => n > 1 && [...Array(n).keys()].slice(2).every((d) => n % d !== 0);
+
+const checkSurdAnswer = (q) => {
+  checkNoForbiddenTokens(q);
+  expect(vequal(exactOf(q.questionMath), exactOf(q.answer)), `${q.questionMath} = ${q.answer}`).toBe(true);
+  const r = roots(q.answer);
+  r.forEach((n) => expect(isSquareFree(n), `${q.answer}: sqrt{${n}}`).toBe(true));
+  expect(new Set(r).size, q.answer).toBe(r.length);
+  expect([...r].sort((x, y) => x - y), q.answer).toEqual(r);
+  // a constant, if any, comes first
+  expect(q.answer.replace(/\d*\\sqrt\{\d+\}/g, 's'), q.answer).toMatch(/^-?(\d+|s)( [+-] s)*$/);
+  expect(q.answer).not.toMatch(/(^|[^\d])1\\sqrt/);
+  expect(q.answer).not.toMatch(/(^|[^\d])0\\sqrt/);
+};
+
+const runSurds = (gen, topic, difficulty, perQuestion) => {
+  const distinct = new Set();
+  for (let i = 0; i < SAMPLES; i += 1) {
+    const q = gen({ difficulty });
+    expect(q.metadata).toEqual({ topic, difficulty });
+    if (!distinct.has(q.questionMath)) { compiles(q.questionMath); compiles(q.answer); compiles(q.workingOut); }
+    distinct.add(q.questionMath);
+    checkSurdAnswer(q);
+    perQuestion(q);
+  }
+  console.log(`${topic} ${difficulty}: ${distinct.size} distinct`);
+  return distinct.size;
+};
+
+describe('surds-simplify', () => {
+  it.each(BANDS)('is correct at %s', (difficulty) => {
+    const n = runSurds(generateSurdsSimplify, 'surds-simplify', difficulty, (q) => {
+      const m = q.questionMath.match(/^(\d*)\\sqrt\{(\d+)\}$/);
+      expect(m, q.questionMath).toBeTruthy();
+      const k = squareFactor(Number(m[2]));
+      expect(k).toBeGreaterThan(1);
+      if (difficulty === 'foundation') expect(isPrimeN(k), q.questionMath).toBe(true);
+      if (difficulty === 'core') expect(isPrimeN(k), q.questionMath).toBe(false);
+      expect(m[1] !== '', q.questionMath).toBe(difficulty === 'stretch');
+    });
+    // Foundation and Core have real ceilings — a prime square factor with the
+    // root up to 200 (about 50), a composite one up to 600 (about 50). A
+    // root in the thousands is not a better question.
+    expect(n).toBeGreaterThan(difficulty === 'stretch' ? 150 : 40);
+  });
+});
+
+describe('surds-add', () => {
+  it.each(BANDS)('is correct at %s', (difficulty) => {
+    let twoLeft = 0, three = 0;
+    const n = runSurds(generateSurdsAdd, 'surds-add', difficulty, (q) => {
+      const terms = q.questionMath.split(/ (?=[+-] )/);
+      const r = roots(q.questionMath);
+      expect(r.length).toBe(terms.length);
+      const toSimplify = r.filter((v) => squareFactor(v) > 1).length;
+      if (terms.length === 3) three += 1;
+      if (difficulty === 'foundation') {
+        expect(toSimplify).toBe(0);
+        expect(new Set(r).size).toBe(1);
+      }
+      if (difficulty === 'core') {
+        expect(terms.length).toBe(2);
+        expect(toSimplify).toBeGreaterThan(0);
+        expect(q.questionMath).not.toMatch(/\d\\sqrt/);
+      }
+      if (difficulty === 'stretch') {
+        expect(terms.length).toBe(3);
+        expect(toSimplify).toBeGreaterThan(1);
+        if (roots(q.answer).length === 2) twoLeft += 1;
+        else expect(q.questionMath).toMatch(/ - /);
+      }
+      expect(roots(q.answer).length).toBeGreaterThan(0);
+    });
+    if (difficulty === 'foundation') expect(three / SAMPLES).toBeGreaterThan(0.25);
+    if (difficulty === 'stretch') expect(twoLeft / SAMPLES).toBeGreaterThan(0.25);
+    expect(n).toBeGreaterThan(difficulty === 'core' ? 50 : 300);
+  });
+});
+
+describe('surds-multiply', () => {
+  it.each(BANDS)('is correct at %s', (difficulty) => {
+    const kinds = { times: 0, div: 0, square: 0 };
+    const n = runSurds(generateSurdsMultiply, 'surds-multiply', difficulty, (q) => {
+      const kind = /\\div|\\frac/.test(q.questionMath) ? 'div' : /\^2/.test(q.questionMath) ? 'square' : 'times';
+      kinds[kind] += 1;
+      const coeffs = /\d\\sqrt/.test(q.questionMath);
+      expect(coeffs, q.questionMath).toBe(difficulty === 'stretch');
+      // Foundation leaves nothing to simplify; Core always does.
+      const plain = q.answer.match(/^\\sqrt\{(\d+)\}$|^\d+$/);
+      if (difficulty === 'foundation') expect(plain, q.answer).toBeTruthy();
+      if (difficulty === 'core') expect(q.answer, q.answer).toMatch(/^\d+\\sqrt\{\d+\}$/);
+    });
+    expect(kinds.div / SAMPLES).toBeGreaterThan(0.2);
+    if (difficulty === 'stretch') expect(kinds.square / SAMPLES).toBeGreaterThan(0.2);
+    else expect(kinds.square).toBe(0);
+    expect(n).toBeGreaterThan(difficulty === 'foundation' ? 25 : 300);
+  });
+});
+
 describe('surds-expand', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
-    const distinct = new Set();
-    let conjugates = 0;
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const q = generateSurdsExpand({ difficulty });
-      expect(q.metadata.topic).toBe('surds-expand');
-      checkNoForbiddenTokens(q);
-      if (!distinct.has(q.questionMath)) { compiles(q.questionMath); compiles(q.answer); compiles(q.workingOut); }
-      distinct.add(q.questionMath);
-      expect(vequal(exactOf(q.questionMath), exactOf(q.answer)), `${q.questionMath} = ${q.answer}`).toBe(true);
-
-      // constant first, then one simplified surd
-      expect(q.answer, q.answer).toMatch(/^(-?\d+( [+-] \d*\\sqrt\{\d+\})?|-?\d*\\sqrt\{\d+\})$/);
-      expect(q.answer).not.toMatch(/(^|[^\d])1\\sqrt/);
-      [...q.answer.matchAll(/\\sqrt\{(\d+)\}/g)].forEach((mm) => expect(isSquareFree(Number(mm[1])), q.answer).toBe(true));
-      if (!/sqrt/.test(q.answer)) conjugates += 1;
-
-      const roots = new Set([...q.questionMath.matchAll(/\\sqrt\{(\d+)\}/g)].map((mm) => mm[1]));
-      if (difficulty === 'stretch') expect(roots.size, q.questionMath).toBe(2);
-      else expect(roots.size, q.questionMath).toBe(1);
-      if (difficulty === 'foundation') expect(q.questionMath).not.toMatch(/\d\\sqrt/);
-      if (difficulty === 'core') expect(q.questionMath).toMatch(/\d\\sqrt/);
-    }
-    console.log(`surds-expand ${difficulty}: ${distinct.size} distinct, ${conjugates} with no surd left`);
-    expect(distinct.size).toBeGreaterThan(difficulty === 'foundation' ? 300 : 1000);
-    // A conjugate pair, whose surds cancel, comes up at Foundation about one time in four.
-    if (difficulty === 'foundation') expect(conjugates / SAMPLES).toBeGreaterThan(0.2);
+    let same = 0, different = 0, cancels = 0;
+    const kinds = { coeff: 0, twoSurd: 0, square: 0 };
+    const n = runSurds(generateSurdsExpand, 'surds-expand', difficulty, (q) => {
+      const brackets = [...q.questionMath.matchAll(/\(([^()]*)\)/g)].map((mm) => mm[1]);
+      const r = new Set(roots(q.questionMath));
+      if (r.size === 1) same += 1; else different += 1;
+      if (!/sqrt/.test(q.answer)) cancels += 1;
+      if (difficulty === 'foundation') {
+        expect(q.questionMath, q.questionMath).toMatch(/^\\sqrt\{\d+\}\([^()]+\)$/);
+        expect(brackets).toHaveLength(1);
+      }
+      if (difficulty === 'core') {
+        expect(brackets).toHaveLength(2);
+        expect(q.questionMath).not.toMatch(/\d\\sqrt/);
+        brackets.forEach((b) => expect(roots(b)).toHaveLength(1));
+      }
+      if (difficulty === 'stretch') {
+        if (/\^2$/.test(q.questionMath)) kinds.square += 1;
+        else if (brackets.every((b) => roots(b).length === 2)) kinds.twoSurd += 1;
+        else { kinds.coeff += 1; expect(q.questionMath).toMatch(/\d\\sqrt/); }
+      }
+    });
+    console.log(`  same ${same}, different ${different}, no surd left ${cancels}`);
+    // the same surd and different surds both come up regularly
+    expect(same / SAMPLES).toBeGreaterThan(0.3);
+    expect(different / SAMPLES).toBeGreaterThan(0.3);
+    if (difficulty === 'core') expect(cancels / SAMPLES).toBeGreaterThan(0.08);
+    if (difficulty === 'stretch') Object.values(kinds).forEach((v) => expect(v / SAMPLES).toBeGreaterThan(0.25));
+    expect(n).toBeGreaterThan(difficulty === 'foundation' ? 80 : 800);
   });
 });

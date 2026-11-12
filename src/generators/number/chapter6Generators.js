@@ -286,127 +286,301 @@ const SIMPLIFIABLE = _.range(8, 601).filter((n) => {
   return k > 1 && m > 1;
 });
 
+// Every surd skill asks the same kind of question at every band, so a
+// teacher on Mixed (or printing a sheet that ramps) can put any surd
+// subtopic in any box. The band changes how much work the question takes,
+// never what it practises:
+//
+//   surds-simplify   √12            →  √72 (largest square factor is not
+//                                       the first one spotted)  →  3√20
+//   surds-add        √5 + √5        →  √12 + √3  →  three terms, coefficients
+//   surds-multiply   √3 × √5        →  √6 × √8 = 4√3  →  2√6 × 3√10, (2√3)²
+//   surds-expand     √3(2 + √3)     →  (√3 + 2)(√5 - 1)  →  coefficients,
+//                                       two surds per bracket, squares
+//   rationalise-denominator  (below)
+//
+// Answers are collected and written constant first, then each surd in
+// increasing order of radicand, every root in simplest form.
+
+// A surd expression as terms [c, r], meaning c√r (r = 1 for a constant).
+// collect() simplifies every root and adds like terms; zero terms go.
+const collect = (terms) => {
+  const by = new Map();
+  terms.forEach(([c, r]) => {
+    const [k, m] = simplifySurd(r);
+    by.set(m, (by.get(m) || 0) + c * k);
+  });
+  return [...by].filter(([, c]) => c !== 0).sort((x, y) => x[0] - y[0]).map(([m, c]) => [c, m]);
+};
+// one term, signed after the first; a coefficient of 1 on a root is dropped
+const termTex = ([c, r], first) => {
+  const body = surd(Math.abs(c), r);
+  if (first) return c < 0 ? `-${body}` : body;
+  return `${c < 0 ? '-' : '+'} ${body}`;
+};
+// terms as written, uncollected — for the question's own brackets
+const written = (terms) => terms.map((t, i) => termTex(t, i === 0)).join(' ');
+const simplest = (terms) => written(collect(terms)) || '0';
+const times = (A, B) => A.flatMap(([c1, r1]) => B.map(([c2, r2]) => [c1 * c2, r1 * r2]));
+const isPrime = (n) => n > 1 && _.range(2, n).every((d) => n % d !== 0);
+const NONSQUARE = (max) => _.range(2, max + 1).filter((n) => Math.sqrt(n) % 1 !== 0);
+const signed = (max) => _.sample([..._.range(-max, 0), ..._.range(1, max + 1)]);
+
+/* -------------------------------------------------------- simplifying surds */
+//
+//   foundation  one prime square factor:          √12, √50, √98
+//   core        a composite square factor, so the first factor found is
+//               not the largest:                  √72 = 6√2, not 2√18
+//   stretch     a coefficient outside as well:    3√20 = 6√5, 2√72 = 12√2
+
 export const generateSurdsSimplify = (options = {}) => {
   const { difficulty = 'core' } = options;
-
-  if (difficulty === 'foundation') {
-    const n = _.sample(SIMPLIFIABLE.filter((v) => v <= 400));
-    const [k, m] = simplifySurd(n);
-    return {
-      instruction: 'Write in simplest surd form',
-      questionMath: `\\sqrt{${n}}`,
-      answer: surd(k, m),
-      workingOut: `${n} = ${k * k} \\times ${m}${NL}\\sqrt{${n}} = \\sqrt{${k * k}} \\times \\sqrt{${m}} = ${surd(k, m)}`,
-      metadata: { topic: 'surds-simplify', difficulty },
-    };
-  }
-
-  if (difficulty === 'core') {
-    // Multiply first, then simplify (Haese Exercise 6F).
-    let a, b, prod, k, m;
-    do {
-      a = _.random(2, 30); b = _.random(2, 30);
-      prod = a * b;
-      [k, m] = simplifySurd(prod);
-    } while (k === 1 || m === 1 || prod > 600);
-    return {
-      instruction: 'Write in simplest surd form',
-      questionMath: `\\sqrt{${a}} \\times \\sqrt{${b}}`,
-      answer: surd(k, m),
-      workingOut: `\\sqrt{${a}} \\times \\sqrt{${b}} = \\sqrt{${prod}}${NL}${prod} = ${k * k} \\times ${m}${NL}= ${surd(k, m)}`,
-      metadata: { topic: 'surds-simplify', difficulty },
-    };
-  }
-
-  // Collect like surds, which only works once each is simplified. Half the
-  // time each surd carries a coefficient (3\sqrt{8} + 2\sqrt{18}), which
-  // multiplies into the number pulled out of the root.
-  const withCoeff = _.random(0, 1) === 1;
-  let n1, n2, k1, m1, k2, m2, c1, c2;
-  do {
-    n1 = _.sample(SIMPLIFIABLE); n2 = _.sample(SIMPLIFIABLE);
-    [k1, m1] = simplifySurd(n1);
-    [k2, m2] = simplifySurd(n2);
-    [c1, c2] = withCoeff ? [_.random(1, 5), _.random(2, 5)] : [1, 1];
-  } while (m1 !== m2 || n1 === n2 || c1 * k1 + c2 * k2 > 40 || (withCoeff && n1 > 200) || (withCoeff && n2 > 200));
-  const lead = (c, n) => `${c === 1 ? '' : c}\\sqrt{${n}}`;
-  const [t1, t2] = [surd(c1 * k1, m1), surd(c2 * k2, m2)];
+  const pool = {
+    foundation: SIMPLIFIABLE.filter((n) => n <= 200 && isPrime(simplifySurd(n)[0])),
+    core: SIMPLIFIABLE.filter((n) => !isPrime(simplifySurd(n)[0])),
+    stretch: SIMPLIFIABLE.filter((n) => n <= 300 && simplifySurd(n)[1] <= 15),
+  }[difficulty];
+  const n = _.sample(pool);
+  const [k, m] = simplifySurd(n);
+  const c = difficulty === 'stretch' ? _.random(2, 5) : 1;
+  const lead = c === 1 ? '' : c;
   return {
     instruction: 'Write in simplest surd form',
-    questionMath: `${lead(c1, n1)} + ${lead(c2, n2)}`,
-    answer: surd(c1 * k1 + c2 * k2, m1),
-    workingOut: `${lead(c1, n1)} = ${t1},\\ ${lead(c2, n2)} = ${t2}${NL}${t1} + ${t2} = ${surd(c1 * k1 + c2 * k2, m1)}`,
+    questionMath: `${lead}\\sqrt{${n}}`,
+    answer: surd(c * k, m),
+    workingOut: `${n} = ${k * k} \\times ${m}${NL}${lead}\\sqrt{${n}} = ${lead}${c === 1 ? '' : ' \\times '}\\sqrt{${k * k}} \\times \\sqrt{${m}} = ${surd(c * k, m)}`,
     metadata: { topic: 'surds-simplify', difficulty },
+  };
+};
+
+/* ----------------------------------------------- adding and subtracting surds */
+//
+//   foundation  like surds as given:   √5 + √5,  5√3 - 2√3,  2√7 + √7 - 4√7
+//   core        two roots, at least one to simplify before they are like:
+//               √12 + √3,  √50 - √8
+//   stretch     three terms with coefficients and a subtraction, all to
+//               simplify; one time in three two different surds remain:
+//               2√12 - √27 + √75,  √8 + √12 + √18
+
+export const generateSurdsAdd = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  let terms, answerTerms;
+
+  if (difficulty === 'foundation') {
+    const m = _.sample(SQUAREFREE.filter((v) => v <= 15));
+    const count = _.random(0, 2) === 0 ? 3 : 2;
+    do {
+      terms = _.range(count).map((i) => [(i === 0 ? 1 : _.sample([1, -1])) * _.sample([1, 1, 2, 3, 4, 5, 6, 7, 8, 9]), m]);
+      answerTerms = collect(terms);
+    } while (answerTerms.length !== 1 || answerTerms[0][0] < 1);
+  } else if (difficulty === 'core') {
+    const m = _.sample([2, 3, 5, 6, 7]);
+    let k1, k2, minus;
+    do {
+      [k1, k2] = [_.random(1, 6), _.random(1, 6)];
+      minus = _.random(0, 2) === 0;
+    } while (k1 === k2 || (k1 === 1 && k2 === 1) || k1 * k1 * m > 200 || k2 * k2 * m > 200 || (minus && k1 <= k2));
+    // coefficient 1 on the roots as written; the simplifying makes it like
+    terms = [[1, k1 * k1 * m], [minus ? -1 : 1, k2 * k2 * m]];
+    answerTerms = collect(terms);
+  } else {
+    const two = _.random(0, 2) === 0;
+    const bases = two ? _.sortBy(_.sampleSize([2, 3, 5], 2)) : [_.sample([2, 3, 5, 6, 7])];
+    do {
+      const ms = two ? _.shuffle([...bases, _.sample(bases)]) : [bases[0], bases[0], bases[0]];
+      terms = ms.map((m, i) => {
+        let k;
+        do { k = _.random(1, 5); } while (k * k * m > 200);
+        const c = two ? 1 : _.random(1, 4);
+        return [(i === 0 ? 1 : _.sample([1, -1])) * c, k * k * m];
+      });
+      answerTerms = collect(terms);
+    } while (
+      terms.filter(([, r]) => simplifySurd(r)[0] > 1).length < 2
+      || new Set(terms.map(([, r]) => r)).size < 3
+      || answerTerms.length !== bases.length
+      || answerTerms.some(([c]) => c < 1)
+      || (!two && terms.every(([c]) => c > 0))
+    );
+  }
+
+  const answer = simplest(terms);
+  const each = terms.filter(([, r]) => simplifySurd(r)[0] > 1)
+    .map(([c, r]) => `${surd(Math.abs(c), r)} = ${surd(Math.abs(c) * simplifySurd(r)[0], simplifySurd(r)[1])}`);
+  const step = written(terms.map(([c, r]) => { const [k, m] = simplifySurd(r); return [c * k, m]; }));
+  return {
+    instruction: 'Write in simplest surd form',
+    questionMath: written(terms),
+    answer,
+    workingOut: `${each.length ? `${each.join(',\\ ')}${NL}` : ''}${step} = ${answer}`,
+    metadata: { topic: 'surds-add', difficulty },
+  };
+};
+
+/* ---------------------------------------------- multiplying and dividing surds */
+//
+//   foundation  nothing to simplify after:  √3 × √5,  √7 × √7,  √15 ÷ √3
+//   core        simplify after:             √6 × √8 = 4√3,  √96 ÷ √2 = 4√3
+//   stretch     coefficients as well:       2√6 × 3√10 = 12√15,  (2√3)²,
+//               12√30 over 4√6 = 3√5
+
+export const generateSurdsMultiply = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const roll = _.random(0, 3);
+  let questionMath, answer, workingOut;
+
+  if (difficulty === 'foundation') {
+    const primes = [2, 3, 5, 7, 11, 13];
+    if (roll === 0) {
+      const a = _.sample(SQUAREFREE.filter((v) => v <= 15));
+      questionMath = `\\sqrt{${a}} \\times \\sqrt{${a}}`;
+      answer = String(a);
+      workingOut = `\\sqrt{${a}} \\times \\sqrt{${a}} = \\sqrt{${a * a}} = ${a}`;
+    } else {
+      let a, b;
+      do { [a, b] = _.sampleSize(primes, 2); } while (a * b > 70);
+      if (roll === 1) {
+        questionMath = `\\sqrt{${a * b}} \\div \\sqrt{${b}}`;
+        answer = `\\sqrt{${a}}`;
+        workingOut = `\\sqrt{${a * b}} \\div \\sqrt{${b}} = \\sqrt{${a * b} \\div ${b}} = \\sqrt{${a}}`;
+      } else {
+        questionMath = `\\sqrt{${a}} \\times \\sqrt{${b}}`;
+        answer = `\\sqrt{${a * b}}`;
+        workingOut = `\\sqrt{${a}} \\times \\sqrt{${b}} = \\sqrt{${a} \\times ${b}} = \\sqrt{${a * b}}`;
+      }
+    }
+  } else if (difficulty === 'core') {
+    if (roll === 0) {
+      // √(bq) ÷ √b = √q, and √q simplifies
+      let b, q;
+      do {
+        b = _.sample([2, 3, 5, 6, 7]);
+        q = _.sample(SIMPLIFIABLE.filter((v) => v <= 100));
+      } while (b * q > 300);
+      const [k, m] = simplifySurd(q);
+      questionMath = `\\sqrt{${b * q}} \\div \\sqrt{${b}}`;
+      answer = surd(k, m);
+      workingOut = `\\sqrt{${b * q}} \\div \\sqrt{${b}} = \\sqrt{${q}}${NL}= ${answer}`;
+    } else {
+      let a, b, k, m;
+      do {
+        [a, b] = [_.sample(NONSQUARE(30)), _.sample(NONSQUARE(30))];
+        [k, m] = simplifySurd(a * b);
+      } while (k === 1 || m === 1 || a * b > 600);
+      questionMath = `\\sqrt{${a}} \\times \\sqrt{${b}}`;
+      answer = surd(k, m);
+      workingOut = `\\sqrt{${a}} \\times \\sqrt{${b}} = \\sqrt{${a * b}}${NL}${a * b} = ${k * k} \\times ${m}${NL}= ${answer}`;
+    }
+  } else if (roll === 0) {
+    const p = _.random(2, 6);
+    const a = _.sample(SQUAREFREE.filter((v) => v <= 15));
+    questionMath = `(${p}\\sqrt{${a}})^2`;
+    answer = String(p * p * a);
+    workingOut = `(${p}\\sqrt{${a}})^2 = ${p}^2 \\times (\\sqrt{${a}})^2 = ${p * p} \\times ${a} = ${answer}`;
+  } else if (roll === 1) {
+    // (pq√(bt)) over (q√b) = p√t, with √t sometimes simplifying
+    let b, t, p, q;
+    do {
+      b = _.sample([2, 3, 5, 6, 7]);
+      t = _.sample(NONSQUARE(30));
+      [p, q] = [_.random(2, 5), _.random(2, 5)];
+    } while (b * t > 200);
+    const [k, m] = simplifySurd(t);
+    questionMath = `\\frac{${p * q}\\sqrt{${b * t}}}{${q}\\sqrt{${b}}}`;
+    answer = surd(p * k, m);
+    workingOut = `${p * q} \\div ${q} = ${p},\\ \\sqrt{${b * t}} \\div \\sqrt{${b}} = \\sqrt{${t}}${NL}= ${p}\\sqrt{${t}}${k === 1 ? '' : ` = ${answer}`}`;
+  } else {
+    let a, b, p, q, k, m;
+    do {
+      [a, b] = [_.sample(NONSQUARE(20)), _.sample(NONSQUARE(20))];
+      [p, q] = [_.random(2, 5), _.random(2, 5)];
+      [k, m] = simplifySurd(a * b);
+    } while (a === b || k === 1 || m === 1 || a * b > 300);
+    questionMath = `${p}\\sqrt{${a}} \\times ${q}\\sqrt{${b}}`;
+    answer = surd(p * q * k, m);
+    workingOut = `${p} \\times ${q} = ${p * q},\\ \\sqrt{${a}} \\times \\sqrt{${b}} = \\sqrt{${a * b}}${NL}= ${p * q}\\sqrt{${a * b}}${k === 1 ? '' : ` = ${answer}`}`;
+  }
+
+  return {
+    instruction: 'Write in simplest surd form',
+    questionMath,
+    answer,
+    workingOut,
+    metadata: { topic: 'surds-multiply', difficulty },
   };
 };
 
 /* ------------------------------------------------- expanding brackets with surds */
 //
-//   foundation  (\sqrt{a} + p)(\sqrt{a} + q), sometimes a conjugate pair
-//               whose surds cancel
-//   core        coefficients on the surds: (2\sqrt{7} + 3)(\sqrt{7} - 1)
-//   stretch     two different surds: (\sqrt{5} + \sqrt{3})(\sqrt{5} + 2\sqrt{3})
-//
-// Every answer is written constant first, as c + k\sqrt{m}.
+//   foundation  a single bracket, the same surd or a different one inside:
+//               √3(2 + √3),  √2(√5 - 3)
+//   core        double brackets, the same surd in both or two different
+//               ones, sometimes a conjugate pair whose surds cancel:
+//               (√3 + 2)(√3 - 5),  (√2 + 1)(√5 - 3),  (√7 + 2)(√7 - 2)
+//   stretch     coefficients on the surds, a surd in both terms of each
+//               bracket, or a bracket squared; a product of roots may need
+//               simplifying: (2√3 + 1)(√6 - 2),  (√5 + √3)(√5 - 2√3),
+//               (3√2 - 1)²
 
-// c + k\sqrt{m}, dropping whichever part is zero.
-const surdSum = (c, k, m) => {
-  if (k === 0) return String(c);
-  const s = surd(Math.abs(k), m);
-  if (c === 0) return k < 0 ? `-${s}` : s;
-  return `${c} ${k < 0 ? '-' : '+'} ${s}`;
-};
-// one term inside a bracket: k\sqrt{m} or a plain number, signed after the first
-const bterm = (k, m, first) => {
-  const body = m === 1 ? String(Math.abs(k)) : surd(Math.abs(k), m);
-  if (first) return k < 0 ? `-${body}` : body;
-  return `${k < 0 ? '-' : '+'} ${body}`;
-};
+// a bracket of two terms, the order shuffled so the surd is not always first
+const pair = (s, k) => (_.random(0, 2) === 0 ? [k, s] : [s, k]);
 
 export const generateSurdsExpand = (options = {}) => {
   const { difficulty = 'core' } = options;
+  const primes = [2, 3, 5, 7];
+  let left, right, questionMath;
 
-  if (difficulty === 'stretch') {
-    // (m\sqrt{a} + n\sqrt{b})(r\sqrt{a} + s\sqrt{b}), a and b distinct primes so
-    // \sqrt{ab} is already simplest.
-    let a, b, m, n, r, t;
-    do {
-      [a, b] = _.sortBy(_.sampleSize([2, 3, 5, 7, 11], 2));
-      [m, r] = [_.random(1, 3), _.random(1, 3)];
-      [n, t] = [_.sample([-3, -2, -1, 1, 2, 3]), _.sample([-3, -2, -1, 1, 2, 3])];
-    } while (a * b > 40);
-    const c = m * r * a + n * t * b;
-    const k = m * t + n * r;
-    const answer = surdSum(c, k, a * b);
-    return {
-      instruction: 'Expand and simplify',
-      questionMath: `(${bterm(m, a, true)} ${bterm(n, b)})(${bterm(r, a, true)} ${bterm(t, b)})`,
-      answer,
-      workingOut: `${m * r * a} ${bterm(m * t, a * b)} ${bterm(n * r, a * b)} ${bterm(n * t * b, 1)}${NL}= ${answer}`,
-      metadata: { topic: 'surds-expand', difficulty },
-    };
-  }
-
-  // (m\sqrt{a} + p)(n\sqrt{a} + q) = mna + pq + (mq + np)\sqrt{a}
-  const a = _.sample(SQUAREFREE.filter((v) => v <= 13));
-  let m = 1, n = 1, p, q;
-  if (difficulty === 'core') {
-    do { m = _.random(1, 4); n = _.random(1, 3); } while (m === 1 && n === 1);
-    p = _.sample([-6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6]);
-    q = _.sample([-6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6]);
+  if (difficulty === 'foundation') {
+    const a = _.sample(primes);
+    const b = _.random(0, 1) ? a : _.sample(primes.filter((v) => v !== a));
+    left = [[1, a]];
+    right = pair([1, b], [signed(9), 1]);
+    if (right[0][0] < 0) right[0][0] = -right[0][0];
+    questionMath = `\\sqrt{${a}}(${written(right)})`;
+  } else if (difficulty === 'core') {
+    const [a, b] = _.random(0, 1) ? [_.sample(primes), null] : _.sampleSize(primes, 2);
+    const p = signed(6);
+    const q = b === null && _.random(0, 2) === 0 ? -p : signed(6);
+    left = [[1, a], [p, 1]];
+    right = [[1, b ?? a], [q, 1]];
+    questionMath = `(${written(left)})(${written(right)})`;
   } else {
-    p = _.random(1, 7);
-    // one in four is a conjugate pair, where the surds cancel
-    q = _.random(0, 3) === 0 ? -p : _.sample([-7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7].filter((v) => v !== -p));
+    const roots = [2, 3, 5, 6, 7, 10];
+    const roll = _.random(0, 2);
+    let square = false;
+    do {
+      const [a, b] = _.sampleSize(roots, 2);
+      if (roll === 0) {
+        // (m√a + p)(n√b + q), same or different surds, a coefficient > 1
+        const bb = _.random(0, 1) ? a : b;
+        left = [[_.random(1, 3), a], [signed(5), 1]];
+        right = [[_.random(1, 3), bb], [signed(5), 1]];
+        if (left[0][0] === 1 && right[0][0] === 1) left[0][0] = 2;
+      } else if (roll === 1) {
+        // (m√a + n√b)(r√a + s√b)
+        left = [[_.random(1, 3), a], [signed(3), b]];
+        right = [[_.random(1, 3), a], [signed(3), b]];
+      } else {
+        // a square: (m√a ± p)² or (√a ± √b)²
+        square = true;
+        left = _.random(0, 1) ? [[_.random(1, 3), a], [signed(5), 1]] : [[1, a], [signed(2), b]];
+        right = left;
+      }
+    } while (collect(times(left, right)).length === 0 || Math.max(...collect(times(left, right)).map(([c]) => Math.abs(c))) > 99);
+    questionMath = square ? `(${written(left)})^2` : `(${written(left)})(${written(right)})`;
   }
-  const c = m * n * a + p * q;
-  const k = m * q + n * p;
-  const answer = surdSum(c, k, a);
+
+  const raw = times(left, right);
+  const answer = simplest(raw);
+  const expanded = written(raw.map(([c, r]) => {
+    const [k, m] = simplifySurd(r);
+    return [c * k, m];
+  }));
   return {
     instruction: 'Expand and simplify',
-    questionMath: `(${bterm(m, a, true)} ${bterm(p, 1)})(${bterm(n, a, true)} ${bterm(q, 1)})`,
+    questionMath,
     answer,
-    workingOut: `${m * n * a} ${bterm(m * q, a)} ${bterm(n * p, a)} ${bterm(p * q, 1)}${NL}= ${answer}`,
+    workingOut: `${expanded}${NL}= ${answer}`,
     metadata: { topic: 'surds-expand', difficulty },
   };
 };

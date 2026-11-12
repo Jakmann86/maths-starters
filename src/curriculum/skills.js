@@ -1211,10 +1211,24 @@ export const skills = {
   },
 
   // --- Haese 6E-6H: surds ---
+  // Each surd skill asks the same kind of question at every band (see
+  // chapter6Generators.js), so Mixed can put any of them in any box.
   'surds-simplify': {
     label: 'Simplifying surds',
     topic: 'Surds',
     generate: (opts) => ch6.generateSurdsSimplify(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'surds-add': {
+    label: 'Adding and subtracting surds',
+    topic: 'Surds',
+    generate: (opts) => ch6.generateSurdsAdd(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'surds-multiply': {
+    label: 'Multiplying and dividing surds',
+    topic: 'Surds',
+    generate: (opts) => ch6.generateSurdsMultiply(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'surds-expand': {

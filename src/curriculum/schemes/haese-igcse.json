@@ -49,7 +49,7 @@
     { "id": "6C", "ch": 6, "unit": "Exponents and surds", "lesson": "Zero and negative indices", "page": 129, "skills": ["indices-zero-negative"], "status": "ready" },
     { "id": "6D", "ch": 6, "unit": "Exponents and surds", "lesson": "Standard form", "page": 131, "skills": ["standard-form-write", "standard-form-calculate"], "status": "ready" },
     { "id": "6E", "ch": 6, "unit": "Exponents and surds", "lesson": "Surds", "page": 134, "skills": [], "status": "todo" },
-    { "id": "6F", "ch": 6, "unit": "Exponents and surds", "lesson": "Properties of surds", "page": 137, "skills": ["surds-simplify"], "status": "ready" },
+    { "id": "6F", "ch": 6, "unit": "Exponents and surds", "lesson": "Properties of surds", "page": 137, "skills": ["surds-simplify", "surds-add", "surds-multiply"], "status": "ready" },
     { "id": "6G", "ch": 6, "unit": "Exponents and surds", "lesson": "Multiplication of surds", "page": 139, "skills": ["surds-expand"], "status": "ready" },
     { "id": "6H", "ch": 6, "unit": "Exponents and surds", "lesson": "Division by surds", "page": 142, "skills": ["rationalise-denominator"], "status": "ready" },
 
