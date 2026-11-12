@@ -9,15 +9,15 @@
     { "id": "1B", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "The product (a+b)(c+d)", "page": 33, "skills": ["expand-double-brackets"], "status": "ready" },
     { "id": "1C", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Difference of two squares", "page": 35, "skills": ["difference-of-two-squares", "difference-of-two-squares-numeric"], "status": "ready" },
     { "id": "1D", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Perfect squares expansion", "page": 37, "skills": ["expand-perfect-square"], "status": "ready" },
-    { "id": "1E", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Further expansion", "page": 39, "skills": ["expand-triple-brackets"], "status": "todo" },
+    { "id": "1E", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Further expansion", "page": 39, "skills": ["expand-further"], "status": "ready" },
     { "id": "1F", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Algebraic common factors", "page": 40, "skills": ["factorise-common-factor"], "status": "ready" },
     { "id": "1G", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Factorising with common factors", "page": 42, "skills": ["factorise-common-factor"], "status": "ready" },
     { "id": "1H", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Difference of two squares factorisation", "page": 45, "skills": ["factorise-difference-of-two-squares"], "status": "ready" },
-    { "id": "1I", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Perfect squares factorisation", "page": 47, "skills": [], "status": "todo" },
+    { "id": "1I", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Perfect squares factorisation", "page": 47, "skills": ["factorise-perfect-square"], "status": "ready" },
     { "id": "1J", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Expressions with four terms", "page": 48, "skills": ["factorise-grouping"], "status": "ready" },
     { "id": "1K", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Factorising x² + bx + c", "page": 49, "skills": ["factorise-monic"], "status": "ready" },
     { "id": "1L", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Splitting the middle term", "page": 51, "skills": ["factorise-splitting-middle"], "status": "ready" },
-    { "id": "1M", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Miscellaneous factorisation", "page": 54, "skills": [], "status": "todo" },
+    { "id": "1M", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Miscellaneous factorisation", "page": 54, "skills": ["factorise-fully"], "status": "ready" },
 
     { "id": "2A", "ch": 2, "unit": "Sets", "lesson": "Set notation", "page": 57, "skills": ["venn-notation"], "status": "ready" },
     { "id": "2B", "ch": 2, "unit": "Sets", "lesson": "Special number sets", "page": 60, "skills": ["rational-or-irrational"], "status": "ready" },
@@ -56,7 +56,7 @@
     { "id": "7A", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Formula substitution", "page": 148, "skills": ["formula-substitution"], "status": "ready" },
     { "id": "7B", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Formula rearrangement", "page": 150, "skills": ["formula-rearrangement"], "status": "ready" },
     { "id": "7C", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Formula derivation", "page": 153, "skills": ["formula-derivation"], "status": "ready" },
-    { "id": "7D", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "More difficult rearrangements", "page": 155, "skills": [], "status": "todo" },
+    { "id": "7D", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "More difficult rearrangements", "page": 155, "skills": ["rearrange-harder"], "status": "ready" },
     { "id": "7E", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Simultaneous equations", "page": 158, "skills": ["simultaneous-equations", "simultaneous-graphical"], "status": "ready" },
     { "id": "7F", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Problem solving", "page": 164, "skills": ["simultaneous-problem-solving"], "status": "ready" },
 
@@ -117,8 +117,8 @@
 
     { "id": "16A", "ch": 16, "unit": "Algebraic fractions", "lesson": "Simplifying algebraic fractions", "page": 339, "skills": ["simplify-algebraic-fractions", "simplify-fractions-factorising"], "status": "ready" },
     { "id": "16B", "ch": 16, "unit": "Algebraic fractions", "lesson": "Multiplying and dividing algebraic fractions", "page": 344, "skills": ["multiply-divide-algebraic-fractions"], "status": "ready" },
-    { "id": "16C", "ch": 16, "unit": "Algebraic fractions", "lesson": "Adding and subtracting algebraic fractions", "page": 346, "skills": [], "status": "todo" },
-    { "id": "16D", "ch": 16, "unit": "Algebraic fractions", "lesson": "More complicated fractions", "page": 348, "skills": [], "status": "todo" },
+    { "id": "16C", "ch": 16, "unit": "Algebraic fractions", "lesson": "Adding and subtracting algebraic fractions", "page": 346, "skills": ["add-algebraic-fractions"], "status": "ready" },
+    { "id": "16D", "ch": 16, "unit": "Algebraic fractions", "lesson": "More complicated fractions", "page": 348, "skills": ["add-algebraic-fractions"], "status": "ready" },
 
     { "id": "17A", "ch": 17, "unit": "Continuous data", "lesson": "The mean of continuous data", "page": 354, "skills": ["estimated-mean", "table-averages"], "status": "ready" },
     { "id": "17B", "ch": 17, "unit": "Continuous data", "lesson": "Histograms", "page": 355, "skills": [], "status": "todo" },
