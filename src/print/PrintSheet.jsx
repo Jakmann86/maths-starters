@@ -23,7 +23,15 @@ export default function PrintSheet({ open, boxes, onClose }) {
   const [title, setTitle] = useState(PRESETS.exit.title);
   const [versions, setVersions] = useState(1);
   const [answers, setAnswers] = useState(false);
+  // seed 0 prints the board's own questions as version A; "New numbers"
+  // moves it on, and from then on everything is fresh. Reopening the screen
+  // starts again from the board, which may have changed in between.
   const [seed, setSeed] = useState(0);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setSeed(0);
+  }
 
   const { layout, perBox, date } = PRESETS[preset];
   const boxKey = JSON.stringify(boxes);
@@ -31,7 +39,7 @@ export default function PrintSheet({ open, boxes, onClose }) {
   // questions with their answers rather than new questions. `seed` is the
   // "New numbers" button.
   const pages = useMemo(
-    () => (open ? buildSheets(boxes, { layout, perBox, versions }) : []),
+    () => (open ? buildSheets(boxes, { layout, perBox, versions, fromBoard: seed === 0 }) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- boxKey stands for boxes
     [open, boxKey, layout, perBox, versions, seed],
   );

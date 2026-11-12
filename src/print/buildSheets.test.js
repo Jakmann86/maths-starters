@@ -134,4 +134,44 @@ describe('buildSheets', () => {
       expect(q.view.a).toBeTruthy();
     }));
   });
+
+  describe('fromBoard', () => {
+    const boardView = (i) => ({ instr: `board ${i}`, q: '', a: String(i) });
+    const WITH_VIEWS = BOXES.map((b, i) => ({ ...b, view: boardView(i) }));
+
+    it('opens version A with the board\'s own questions', () => {
+      const { gen } = counter();
+      const [page] = buildSheets(WITH_VIEWS, { layout: 'half', perBox: 1, versions: 1, fromBoard: true }, gen);
+      expect(page.halves[0].questions.map((q) => q.view.instr)).toEqual(['board 0', 'board 1', 'board 2', 'board 3']);
+    });
+
+    it('draws versions B onwards fresh', () => {
+      const { gen } = counter();
+      const pages = buildSheets(WITH_VIEWS, { layout: 'half', perBox: 1, versions: 2, fromBoard: true }, gen);
+      const b = pages[0].halves[1];
+      expect(b.letter).toBe('B');
+      expect(b.questions.every((q) => !q.view.instr.startsWith('board'))).toBe(true);
+    });
+
+    it('keeps the board question first and draws the rest of each box fresh', () => {
+      const { gen } = counter();
+      const [page] = buildSheets(WITH_VIEWS, { layout: 'full', ...PRESETS.practice, versions: 1, fromBoard: true }, gen);
+      const instrs = page.sheet.questions.map((q) => q.view.instr);
+      expect(instrs.filter((t, i) => i % 2 === 0)).toEqual(['board 0', 'board 1', 'board 2', 'board 3']);
+      expect(instrs.filter((t, i) => i % 2 === 1).some((t) => t.startsWith('board'))).toBe(false);
+    });
+
+    it('ignores the board when fromBoard is off ("New numbers")', () => {
+      const { gen } = counter();
+      const [page] = buildSheets(WITH_VIEWS, { layout: 'half', perBox: 1, versions: 1 }, gen);
+      expect(page.halves[0].questions.some((q) => q.view.instr.startsWith('board'))).toBe(false);
+    });
+
+    it('draws fresh for a box whose board question failed', () => {
+      const { gen } = counter();
+      const boxes = WITH_VIEWS.map((b, i) => (i === 1 ? { ...b, view: { ...b.view, failed: true } } : b));
+      const [page] = buildSheets(boxes, { layout: 'half', perBox: 1, versions: 1, fromBoard: true }, gen);
+      expect(page.halves[0].questions[1].view.instr).toMatch(/^volume-cuboid core/);
+    });
+  });
 });
