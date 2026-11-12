@@ -50,6 +50,7 @@ import * as dataTypes from '../generators/statistics/dataTypesGenerators';
 import * as sets from '../generators/number/setsGenerators';
 import * as probability from '../generators/number/probabilityGenerators';
 import * as trees from '../generators/number/treeDiagramGenerators';
+import * as probMore from '../generators/number/probabilityTopicsGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
@@ -1206,11 +1207,51 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 25B-G: from experiments, tables and sample spaces ---
+  'relative-frequency': {
+    label: 'Relative frequency',
+    topic: 'Probability',
+    generate: (opts) => probMore.generateRelativeFrequency(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'two-way-tables': {
+    label: 'Two-way tables',
+    topic: 'Probability',
+    generate: (opts) => probMore.generateTwoWayTables(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'expectation': {
+    label: 'Expectation',
+    topic: 'Probability',
+    generate: (opts) => probMore.generateExpectation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'sample-spaces': {
+    label: 'Sample spaces',
+    topic: 'Probability',
+    generate: (opts) => probMore.generateSampleSpaces(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'independent-events': {
+    label: 'Independent events',
+    topic: 'Probability',
+    generate: (opts) => probMore.generateIndependentEvents(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 25H-I: tree diagrams ---
   'tree-diagrams': {
     label: 'Tree diagrams',
     topic: 'Probability',
     generate: (opts) => trees.generateTreeDiagrams(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 25J: mutually exclusive or not ---
+  'either-or': {
+    label: 'Either or: the addition rule',
+    topic: 'Probability',
+    generate: (opts) => probMore.generateEitherOr(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 

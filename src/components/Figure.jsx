@@ -2950,10 +2950,14 @@ export default function Figure({ fig, color, shown }) {
     // The header strip takes a light wash of the slot colour — the same
     // treatment the cuboid's cross-section face gets, so the two read as the
     // same idea.
-    if (fig.header === 'row') {
+    // `both`: a two-way table or a sample-space grid, headed along the top
+    // and down the side; the corner cell is part of both strips.
+    if (fig.header === 'row' || fig.header === 'both') {
       nodes.push(<rect key="hb" x={0} y={0} width={W} height={CH} fill={color} fillOpacity={0.12} stroke="none" />);
-    } else if (fig.header === 'column') {
-      nodes.push(<rect key="hb" x={0} y={0} width={widths[0]} height={H} fill={color} fillOpacity={0.12} stroke="none" />);
+    }
+    if (fig.header === 'column' || fig.header === 'both') {
+      const y = fig.header === 'both' ? CH : 0;
+      nodes.push(<rect key="hc" x={0} y={y} width={widths[0]} height={H - y} fill={color} fillOpacity={0.12} stroke="none" />);
     }
     rows.forEach((row, r) => {
       row.forEach((cell, c) => {
@@ -2969,9 +2973,11 @@ export default function Figure({ fig, color, shown }) {
     });
     // A table with a solution is read after the reveal, so like the magic
     // square it keeps its size rather than shrinking for the answer band.
+    // `shrink` opts out: a seven-row sample-space grid kept at full size
+    // runs into the answer band on a 1366 board.
     // Cells are set lighter than other labels (.fig-table): a table's digits
     // are small, and at the heavy weight 6 and 8 fill in and look alike.
-    return svgWrap([<g key="tg" className="fig-table">{nodes}</g>], W, H, 'tb', fig.big, shown, Boolean(solution));
+    return svgWrap([<g key="tg" className="fig-table">{nodes}</g>], W, H, 'tb', fig.big, shown, Boolean(solution) && !fig.shrink);
   }
 
   if (fig.type === 'stem-leaf') {
