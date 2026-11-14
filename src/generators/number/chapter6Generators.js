@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import { gcd } from '../shared';
 
+import { generateRationalOrNot } from './rationalNumberGenerators';
+
 const NL = '\n';
 const frac = (n, d) => {
   const g = (a, b) => (b === 0 ? a : g(b, a % b));
@@ -141,121 +143,175 @@ const plain = (num, exp) => {
   return out.replace(/\.?0+$/, '');
 };
 
+// Skill-ladder review: four skills, each holding one direction or one
+// operation across its bands.
+//
+//   standard-form-write             F large     C small        S awkward: 45 × 10^3, 0.0004 × 10^5
+//   standard-form-ordinary          F 10^+      C 10^-         S large powers, many zeros
+//   standard-form-multiply-divide   F ×, no carry  C × with a carry, or ÷ exactly  S ÷ needing adjustment
+//   standard-form-add-subtract      F same power   C powers one apart              S two or three apart
+
+const sfMeta = (topic, difficulty) => ({ topic, difficulty });
+
 export const generateStandardFormWrite = (options = {}) => {
   const { difficulty = 'core' } = options;
+  const meta = sfMeta('standard-form-write', difficulty);
   const num = _.random(11, 9999);
-  // The band is about the SIGN of the standard-form exponent, not the raw
-  // shift: 9999 x 10^-1 is 999.9, which is not a small number. The exponent
-  // works out as exp + (digits - 1), so a small number needs exp <= -digits.
   const digits = String(num).length;
-  const exp = difficulty === 'foundation'
-    ? _.random(1, 7)
-    : _.random(-8, -digits);
 
   if (difficulty === 'stretch') {
-    // Backwards: given standard form, write it out in full.
-    const e2 = _.random(-5, 5);
+    // Already "a × 10^n", but a is not between 1 and 10: too big or too small.
+    const e = _.random(-6, 8);
+    const big = _.random(0, 1) === 1;
+    // a = num × 10^shift, with a >= 10 (big) or a < 1 (small).
+    const shift = big ? _.random(-(digits - 2), 0) : -(digits + _.random(0, 2));
+    const a = plain(num, shift);
     return {
-      instruction: 'Write as an ordinary number',
-      questionMath: sf(num, e2),
-      answer: plain(num, e2),
-      workingOut: `\\text{move the decimal point } ${Math.abs(toStandard(num, e2).exponent)} \\text{ place${Math.abs(toStandard(num, e2).exponent) === 1 ? '' : 's'} to the ${toStandard(num, e2).exponent < 0 ? 'left' : 'right'}}${NL}= ${plain(num, e2)}`,
-      metadata: { topic: 'standard-form-write', difficulty },
+      instruction: 'Write in standard form',
+      questionMath: `${a} \\times 10^{${e}}`,
+      answer: sf(num, shift + e),
+      workingOut: `${a} = ${sf(num, shift)}${NL}${sf(num, shift)} \\times 10^{${e}} = ${sf(num, shift + e)}`,
+      metadata: meta,
     };
   }
 
+  // The band is about the SIGN of the standard-form exponent, not the raw
+  // shift: 9999 x 10^-1 is 999.9, which is not a small number.
+  const exp = difficulty === 'foundation' ? _.random(1, 7) : _.random(-8, -digits);
   return {
     instruction: 'Write in standard form',
     questionMath: plain(num, exp),
     answer: sf(num, exp),
     workingOut: `\\text{a number between 1 and 10, times a power of 10}${NL}= ${sf(num, exp)}`,
-    metadata: { topic: 'standard-form-write', difficulty },
+    metadata: meta,
   };
 };
 
-export const generateStandardFormCalculate = (options = {}) => {
+export const generateStandardFormOrdinary = (options = {}) => {
   const { difficulty = 'core' } = options;
+  const meta = sfMeta('standard-form-ordinary', difficulty);
+  const num = _.random(11, 999);
+  const digits = String(num).length;
+  // The standard-form exponent wanted, then the raw one that gives it.
+  const target = {
+    foundation: _.random(1, 6),
+    core: -_.random(1, 6),
+    stretch: _.sample([1, -1]) * _.random(8, 12),
+  }[difficulty];
+  const e = target - (digits - 1);
+  const { exponent } = toStandard(num, e);
+  return {
+    instruction: 'Write as an ordinary number',
+    questionMath: sf(num, e),
+    answer: plain(num, e),
+    workingOut: `\\text{move the decimal point } ${Math.abs(exponent)} \\text{ place${Math.abs(exponent) === 1 ? '' : 's'} to the ${exponent < 0 ? 'left' : 'right'}}${NL}= ${plain(num, e)}`,
+    metadata: meta,
+  };
+};
 
-  if (difficulty === 'foundation') {
-    const [a, b] = [_.random(2, 9), _.random(2, 9)];
-    const [e1, e2] = [_.random(-6, 8), _.random(-6, 8)];
+export const generateStandardFormMultiplyDivide = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const meta = sfMeta('standard-form-multiply-divide', difficulty);
+  const instruction = 'Work out, giving your answer in standard form';
+  const [e1, e2] = [_.random(-6, 8), _.random(-6, 8)];
+
+  if (difficulty === 'foundation' || (difficulty === 'core' && _.random(0, 1))) {
+    // Foundation: the digits multiply to under 10. Core: 10 or more, so the
+    // answer is adjusted back into standard form.
+    let a; let b;
+    do { [a, b] = [_.random(2, 9), _.random(2, 9)]; } while (difficulty === 'foundation' ? a * b >= 10 : a * b < 10);
+    const adjust = a * b >= 10 ? `${NL}${a * b} \\times 10^{${e1 + e2}} = ${sf(a * b, e1 + e2)}` : '';
     return {
-      instruction: 'Work out, giving your answer in standard form',
+      instruction,
       questionMath: `(${a} \\times 10^{${e1}}) \\times (${b} \\times 10^{${e2}})`,
       answer: sf(a * b, e1 + e2),
-      workingOut: `${a} \\times ${b} = ${a * b},\\ 10^{${e1}} \\times 10^{${e2}} = 10^{${e1 + e2}}${NL}${a * b} \\times 10^{${e1 + e2}} = ${sf(a * b, e1 + e2)}`,
-      metadata: { topic: 'standard-form-calculate', difficulty },
-    };
-  }
-
-  if (difficulty === 'core' && _.random(0, 1)) {
-    // The quotient of the numbers is below 1 (4.2 / 6 = 0.7), so the answer
-    // has to be adjusted back into standard form — the step that catches
-    // people. The dividend's digits are b x q, so the division is exact.
-    let b, q;
-    do { b = _.random(2, 9); q = _.random(1, 9); } while (b * q < 10);
-    const [e1, e2] = [_.random(-4, 9), _.random(-6, 5)];
-    const dividend = sf(b * q, e1 - 1);
-    return {
-      instruction: 'Work out, giving your answer in standard form',
-      questionMath: `(${dividend}) \\div (${b} \\times 10^{${e2}})`,
-      answer: sf(q, e1 - e2 - 1),
-      workingOut: `${toStandard(b * q, -1).mantissa} \\div ${b} = 0.${q},\\ 10^{${e1}} \\div 10^{${e2}} = 10^{${e1 - e2}}${NL}0.${q} \\times 10^{${e1 - e2}} = ${sf(q, e1 - e2 - 1)}`,
-      metadata: { topic: 'standard-form-calculate', difficulty },
+      workingOut: `${a} \\times ${b} = ${a * b},\\ 10^{${e1}} \\times 10^{${e2}} = 10^{${e1 + e2}}${adjust || `${NL}= ${sf(a * b, e1 + e2)}`}`,
+      metadata: meta,
     };
   }
 
   if (difficulty === 'core') {
-    const b = _.random(2, 9);
-    const q = _.random(2, 9);
-    const a = b * q;                       // exact division by construction
-    const [e1, e2] = [_.random(-4, 9), _.random(-6, 5)];
+    // Divides exactly, and stays between 1 and 10.
+    let b; let q;
+    do { [b, q] = [_.random(2, 4), _.random(2, 9)]; } while (b * q >= 10);
     return {
-      instruction: 'Work out, giving your answer in standard form',
-      questionMath: `(${a} \\times 10^{${e1}}) \\div (${b} \\times 10^{${e2}})`,
+      instruction,
+      questionMath: `(${b * q} \\times 10^{${e1}}) \\div (${b} \\times 10^{${e2}})`,
       answer: sf(q, e1 - e2),
-      workingOut: `${a} \\div ${b} = ${q},\\ 10^{${e1}} \\div 10^{${e2}} = 10^{${e1 - e2}}${NL}= ${sf(q, e1 - e2)}`,
-      metadata: { topic: 'standard-form-calculate', difficulty },
+      workingOut: `${b * q} \\div ${b} = ${q},\\ 10^{${e1}} \\div 10^{${e2}} = 10^{${e1 - e2}}${NL}= ${sf(q, e1 - e2)}`,
+      metadata: meta,
     };
   }
 
-  // Adding: the powers have to be matched first, which multiplying never
-  // requires. This is the band that catches people. Half the time the powers
-  // are large (10^21, 10^-18), so writing both numbers out in full, adding,
-  // and converting back isn't a practical way round matching the powers.
-  const e = _.random(0, 1)
-    ? _.random(-5, 7)
-    : _.sample([_.random(12, 30), _.random(-30, -12)]);
-  const gap = _.random(1, 3);
-  const n1 = _.random(11, 89);             // n1 x 10^e
-  const E2 = toStandard(1, e + gap).exponent;    // the larger power of ten
-  const shifted = plain(n1, e - E2);             // the smaller term rewritten to that power
+  // Stretch: the quotient of the numbers is below 1 (4.2 / 6 = 0.7), so the
+  // answer has to be adjusted back into standard form.
+  let b; let q;
+  do { b = _.random(2, 9); q = _.random(1, 9); } while (b * q < 10);
+  const dividend = sf(b * q, e1 - 1);
+  return {
+    instruction,
+    questionMath: `(${dividend}) \\div (${b} \\times 10^{${e2}})`,
+    answer: sf(q, e1 - e2 - 1),
+    workingOut: `${toStandard(b * q, -1).mantissa} \\div ${b} = 0.${q},\\ 10^{${e1}} \\div 10^{${e2}} = 10^{${e1 - e2}}${NL}0.${q} \\times 10^{${e1 - e2}} = ${sf(q, e1 - e2 - 1)}`,
+    metadata: meta,
+  };
+};
+
+export const generateStandardFormAddSubtract = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const meta = sfMeta('standard-form-add-subtract', difficulty);
+  const instruction = 'Work out, giving your answer in standard form';
+
+  if (difficulty === 'foundation') {
+    // The same power: add or subtract the numbers, adjusting if the sum
+    // reaches 10.
+    const e = _.random(-8, 9);
+    const n1 = _.random(11, 89);
+    const n2 = _.random(11, 89);
+    const sub = _.random(0, 1) === 1 && n1 !== n2;
+    const [big, small] = sub ? [Math.max(n1, n2), Math.min(n1, n2)] : [n1, n2];
+    const res = sub ? big - small : big + small;
+    return {
+      instruction,
+      questionMath: `(${sf(big, e - 1)}) ${sub ? '-' : '+'} (${sf(small, e - 1)})`,
+      answer: sf(res, e - 1),
+      workingOut: `${plain(big, -1)} ${sub ? '-' : '+'} ${plain(small, -1)} = ${plain(res, -1)}${NL}${
+        res >= 10 && res < 100 ? `= ${sf(res, e - 1)}` : `${plain(res, -1)} \\times 10^{${e}} = ${sf(res, e - 1)}`}`,
+      metadata: meta,
+    };
+  }
+
+  // Core: powers one apart. Stretch: two to four apart, and half the time
+  // the powers are large, so writing both out in full is no way round it.
+  const e = difficulty === 'core' || _.random(0, 1) ? _.random(-5, 7) : _.sample([_.random(12, 30), _.random(-30, -12)]);
+  // n1 is two digits, so its standard-form power is e + 1: the raw gap is
+  // one more than the gap between the two standard-form powers.
+  const gap = (difficulty === 'core' ? 1 : _.random(2, 3)) + 1;
+  const n1 = _.random(11, 89);                       // n1 x 10^e, the smaller
+  const E2 = toStandard(1, e + gap).exponent;        // the larger power of ten
+  const shifted = plain(n1, e - E2);
   const convert = toStandard(n1, e).exponent === E2 ? '' : `${sf(n1, e)} = ${shifted} \\times 10^{${E2}}${NL}`;
 
-  // Half the time the smaller number is taken away from the larger, which
-  // matches the powers the same way. The larger always comes first and is
-  // genuinely larger, so the answer stays positive.
   if (_.random(0, 1)) {
     let n2;
     do { n2 = _.random(2, 9); } while (n2 * 10 ** gap <= n1);
     const diff = n2 * 10 ** gap - n1;
     return {
-      instruction: 'Work out, giving your answer in standard form',
+      instruction,
       questionMath: `(${sf(n2, e + gap)}) - (${sf(n1, e)})`,
       answer: sf(diff, e),
       workingOut: `${convert}${n2} - ${shifted} = ${plain(diff, e - E2)}${NL}= ${sf(diff, e)}`,
-      metadata: { topic: 'standard-form-calculate', difficulty },
+      metadata: meta,
     };
   }
-
-  const n2 = _.random(2, 9);               // n2 x 10^(e+gap)
+  const n2 = _.random(2, 9);
   const total = n1 + n2 * 10 ** gap;
   return {
-    instruction: 'Work out, giving your answer in standard form',
+    instruction,
     questionMath: `(${sf(n1, e)}) + (${sf(n2, e + gap)})`,
     answer: sf(total, e),
     workingOut: `${convert}${shifted} + ${n2} = ${plain(total, e - E2)}${NL}= ${sf(total, e)}`,
-    metadata: { topic: 'standard-form-calculate', difficulty },
+    metadata: meta,
   };
 };
 
@@ -335,6 +391,11 @@ const signed = (max) => _.sample([..._.range(-max, 0), ..._.range(1, max + 1)]);
 
 export const generateSurdsSimplify = (options = {}) => {
   const { difficulty = 'core' } = options;
+  // Skill-ladder review: "rational or irrational?" no longer has a box of
+  // its own; it is one Foundation question in three here.
+  if (difficulty === 'foundation' && _.random(0, 2) === 0) {
+    return { ...generateRationalOrNot({ difficulty: 'foundation' }), metadata: { topic: 'surds-simplify', difficulty } };
+  }
   const pool = {
     foundation: SIMPLIFIABLE.filter((n) => n <= 200 && isPrime(simplifySurd(n)[0])),
     core: SIMPLIFIABLE.filter((n) => !isPrime(simplifySurd(n)[0])),

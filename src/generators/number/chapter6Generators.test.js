@@ -19,7 +19,9 @@ import { describe, expect, it } from 'vitest';
 import {
   generateIndicesZeroNegative,
   generateStandardFormWrite,
-  generateStandardFormCalculate,
+  generateStandardFormOrdinary,
+  generateStandardFormMultiplyDivide,
+  generateStandardFormAddSubtract,
   generateSurdsSimplify,
   generateRationaliseDenominator,
   generateSurdsExpand,
@@ -169,88 +171,113 @@ describe('indices-zero-negative', () => {
   });
 });
 
+// The four standard-form skills from the skill-ladder review.
+const SF = /^(-?\d+(?:\.\d+)?) \\times 10\^\{(-?\d+)\}$/;
+const mantissaOk = (tex) => {
+  const m = tex.match(SF);
+  expect(m, tex).toBeTruthy();
+  const v = Math.abs(Number(m[1]));
+  expect(v >= 1 && v < 10, tex).toBe(true);
+  return Number(m[2]);
+};
+const runSf = (gen, topic, difficulty, perQuestion) => {
+  const distinct = new Set();
+  for (let i = 0; i < SAMPLES; i += 1) {
+    const q = gen({ difficulty });
+    expect(q.metadata).toEqual({ topic, difficulty });
+    if (!distinct.has(q.questionMath)) { compiles(q.questionMath); compiles(q.answer); compiles(q.workingOut); }
+    checkNoForbiddenTokens(q);
+    checkAnswersItsOwnQuestion(q);
+    distinct.add(q.questionMath);
+    perQuestion(q);
+  }
+  return distinct.size;
+};
+const exactOfSum = (tex) => {
+  const [, a1, op, a2] = tex.match(/^\((.*)\) ([+-]) \((.*)\)$/);
+  const [t1, t2] = [a1, a2].map(exactSf);
+  const e = Math.min(t1[1], t2[1]);
+  const [v1, v2] = [t1[0] * 10n ** BigInt(t1[1] - e), t2[0] * 10n ** BigInt(t2[1] - e)];
+  return { op, t1, t2, v1, v2, sum: [op === '+' ? v1 + v2 : v1 - v2, e] };
+};
+
 describe('standard-form-write', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
-    const distinct = new Set();
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const q = generateStandardFormWrite({ difficulty });
-      checkNoForbiddenTokens(q);
-      checkAnswersItsOwnQuestion(q);
-      distinct.add(q.questionMath);
-
-      // Whichever side is in standard form, its mantissa is in [1, 10) —
-      // and, for foundation/core, its sign proxies the large/small split
-      // this generator is explicitly built around (see the module comment
-      // on 9999 x 10^-1).
-      const sfSide = difficulty === 'stretch' ? q.questionMath : q.answer;
-      const m = sfSide.match(/^(-?\d+(?:\.\d+)?) \\times 10\^\{(-?\d+)\}$/);
-      expect(m, sfSide).toBeTruthy();
-      const mantissa = Math.abs(Number(m[1]));
-      expect(mantissa).toBeGreaterThanOrEqual(1);
-      expect(mantissa).toBeLessThan(10);
-
-      // An ordinary number never ends in a redundant zero after the point.
-      if (difficulty === 'stretch') expect(q.answer, q.questionMath).not.toMatch(/\.\d*0$|\.$/);
-
+    const n = runSf(generateStandardFormWrite, 'standard-form-write', difficulty, (q) => {
+      expect(q.instruction).toBe('Write in standard form');
+      mantissaOk(q.answer);
       if (difficulty === 'foundation') expect(evalLatex(q.questionMath)).toBeGreaterThanOrEqual(1);
       if (difficulty === 'core') expect(evalLatex(q.questionMath)).toBeLessThan(1);
-    }
-    expect(distinct.size).toBeGreaterThan(SAMPLES / 2);
+      if (difficulty === 'stretch') {
+        // Already a × 10^n, with a outside [1, 10).
+        const m = q.questionMath.match(SF);
+        expect(m, q.questionMath).toBeTruthy();
+        const a = Number(m[1]);
+        expect(a >= 10 || a < 1, q.questionMath).toBe(true);
+        expect(exactEqual(exactSf(q.questionMath.replace(/^(\d+)(?= )/, '$1.0').replace(/^0\./, '0.')) ?? [0n, 0], exactSf(q.answer)) || closeEnough(evalLatex(q.questionMath), evalLatex(q.answer))).toBe(true);
+      }
+    });
+    expect(n).toBeGreaterThan(SAMPLES / 2);
   });
 });
 
-describe('standard-form-calculate', () => {
+describe('standard-form-ordinary', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
-    const distinct = new Set();
-    let large = 0, subtract = 0, adjust = 0;
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const q = generateStandardFormCalculate({ difficulty });
-      checkNoForbiddenTokens(q);
-      checkAnswersItsOwnQuestion(q);
-      distinct.add(q.questionMath);
+    const n = runSf(generateStandardFormOrdinary, 'standard-form-ordinary', difficulty, (q) => {
+      expect(q.instruction).toBe('Write as an ordinary number');
+      const e = mantissaOk(q.questionMath);
+      expect(q.answer, q.questionMath).toMatch(/^\d+(\.\d*[1-9])?$/); // no trailing zero after a point
+      if (difficulty === 'foundation') expect(e >= 1 && e <= 6).toBe(true);
+      if (difficulty === 'core') expect(e <= -1 && e >= -6).toBe(true);
+      if (difficulty === 'stretch') expect(Math.abs(e) >= 8).toBe(true);
+    });
+    expect(n).toBeGreaterThan(SAMPLES / 3);
+  });
+});
 
-      const m = q.answer.match(/^(-?\d+(?:\.\d+)?) \\times 10\^\{(-?\d+)\}$/);
-      expect(m, q.answer).toBeTruthy();
-      const mantissa = Math.abs(Number(m[1]));
-      expect(mantissa).toBeGreaterThanOrEqual(1);
-      expect(mantissa).toBeLessThan(10);
-
+describe('standard-form-multiply-divide', () => {
+  it.each(BANDS)('is correct at %s', (difficulty) => {
+    let divide = 0;
+    const n = runSf(generateStandardFormMultiplyDivide, 'standard-form-multiply-divide', difficulty, (q) => {
+      mantissaOk(q.answer);
+      const m = q.questionMath.match(/^\((\d+(?:\.\d+)?) \\times 10\^\{-?\d+\}\) (\\times|\\div) \((\d+) \\times/);
+      expect(m, q.questionMath).toBeTruthy();
+      const [a, op, b] = [Number(m[1]), m[2], Number(m[3])];
+      if (op === '\\div') divide += 1;
+      if (difficulty === 'foundation') { expect(op).toBe('\\times'); expect(a * b).toBeLessThan(10); }
       if (difficulty === 'core') {
-        // Half of Core divides numbers whose quotient is below 1 (4.2 / 6),
-        // so the answer has to be adjusted back into standard form.
-        const [d1, d2] = q.questionMath.match(/^\((\d+(?:\.\d+)?) .*\) \\div \((\d+) /).slice(1).map(Number);
-        if (d1 < d2) adjust += 1;
+        if (op === '\\times') expect(a * b).toBeGreaterThanOrEqual(10);
+        else { expect(Number.isInteger(a / b) && a / b < 10 && a / b >= 1, q.questionMath).toBe(true); }
       }
+      if (difficulty === 'stretch') { expect(op).toBe('\\div'); expect(a / b).toBeLessThan(1); }
+    });
+    if (difficulty === 'core') { expect(divide / SAMPLES).toBeGreaterThan(0.3); expect(divide / SAMPLES).toBeLessThan(0.7); }
+    // Foundation: six digit pairs multiply to under 10, on any two powers
+    // (about 1,350); that is its real size.
+    expect(n).toBeGreaterThan(difficulty === 'foundation' ? 1200 : SAMPLES / 3);
+  });
+});
 
-      if (difficulty === 'stretch') {
-        expect(q.questionMath).toMatch(/\\times 10\^\{-?\d+\}\) [+-] \(/);
-        // Exact sum or difference, since floats can't separate values near 10^-30.
-        const [, a1, op, a2] = q.questionMath.match(/^\((.*)\) ([+-]) \((.*)\)$/);
-        const [t1, t2] = [a1, a2].map(exactSf);
-        const e = Math.min(t1[1], t2[1]);
-        const [v1, v2] = [t1[0] * 10n ** BigInt(t1[1] - e), t2[0] * 10n ** BigInt(t2[1] - e)];
-        if (op === '-') { subtract += 1; expect(v1 > v2, q.questionMath).toBe(true); }
-        const sum = [op === '+' ? v1 + v2 : v1 - v2, e];
-        expect(exactEqual(sum, exactSf(q.answer)), `${q.questionMath} = ${q.answer}`).toBe(true);
-        if (Math.abs(Number(m[2])) >= 12) large += 1;
-        // No redundant "X x 10^E = X x 10^E" conversion line when both
-        // terms already share a power. Anchored to whole lines, so a genuine
-        // subtraction such as 5 - 2.5 = 2.5 is not mistaken for one.
-        expect(q.workingOut).not.toMatch(/(^|\n)(\S.*) = \2(?=\n|$)/);
-      }
-    }
-    expect(distinct.size).toBeGreaterThan(SAMPLES / 2);
-    // Roughly half of Stretch uses powers too large to write out in full,
-    // and roughly half subtracts rather than adds.
-    if (difficulty === 'stretch') {
-      expect(large / SAMPLES).toBeGreaterThan(0.4);
-      expect(subtract / SAMPLES).toBeGreaterThan(0.45);
-      expect(subtract / SAMPLES).toBeLessThan(0.55);
-    }
-    if (difficulty === 'core') {
-      expect(adjust / SAMPLES).toBeGreaterThan(0.45);
-      expect(adjust / SAMPLES).toBeLessThan(0.55);
-    }
+describe('standard-form-add-subtract', () => {
+  it.each(BANDS)('is correct at %s', (difficulty) => {
+    let large = 0; let subtract = 0;
+    const n = runSf(generateStandardFormAddSubtract, 'standard-form-add-subtract', difficulty, (q) => {
+      const e = mantissaOk(q.answer);
+      const { op, t1, t2, v1, v2, sum } = exactOfSum(q.questionMath);
+      if (op === '-') { subtract += 1; expect(v1 > v2, q.questionMath).toBe(true); }
+      expect(exactEqual(sum, exactSf(q.answer)), `${q.questionMath} = ${q.answer}`).toBe(true);
+      // The gap between the two standard-form powers.
+      const pw = (t) => t[1] + String(t[0]).length - 1;
+      const gap = Math.abs(pw(t1) - pw(t2));
+      if (difficulty === 'foundation') expect(gap).toBe(0);
+      if (difficulty === 'core') expect(gap).toBe(1);
+      if (difficulty === 'stretch') expect(gap >= 2 && gap <= 3, q.questionMath).toBe(true);
+      if (Math.abs(e) >= 12) large += 1;
+      expect(q.workingOut).not.toMatch(/(^|\n)(\S.*) = \2(?=\n|$)/);
+    });
+    if (difficulty === 'stretch') expect(large / SAMPLES).toBeGreaterThan(0.4);
+    if (difficulty !== 'foundation') expect(subtract / SAMPLES).toBeGreaterThan(0.4);
+    expect(n).toBeGreaterThan(SAMPLES / 4);
   });
 });
 
@@ -374,9 +401,37 @@ const runSurds = (gen, topic, difficulty, perQuestion) => {
   return distinct.size;
 };
 
+// Foundation carries the folded-in "rational or irrational?" question one
+// time in three (skill-ladder review): checked here item by item.
+const RATIONAL_Q = 'Which of these numbers are rational?';
+const isRationalItem = (t) => {
+  if (/\\pi/.test(t)) return false;
+  const m = t.match(/^-?\\sqrt\{(\d+)\}$/);
+  if (m) return Number.isInteger(Math.sqrt(Number(m[1])));
+  expect(t, t).toMatch(/^-?(\d+(\.\d+)?|\\frac\{\d+\}\{\d+\})$/);
+  return true;
+};
+const simplifyOrRational = (difficulty) => {
+  const gen = (opts) => {
+    for (;;) {
+      const q = generateSurdsSimplify(opts);
+      if (q.instruction !== RATIONAL_Q) return q;
+      expect(difficulty).toBe('foundation');
+      expect(q.metadata).toEqual({ topic: 'surds-simplify', difficulty });
+      const items = q.questionMath.split(',\\quad ');
+      expect(items.length).toBe(5);
+      expect(q.answer).toBe(items.filter(isRationalItem).join(',\\quad '));
+      folded += 1;
+    }
+  };
+  return gen;
+};
+let folded = 0;
+
 describe('surds-simplify', () => {
   it.each(BANDS)('is correct at %s', (difficulty) => {
-    const n = runSurds(generateSurdsSimplify, 'surds-simplify', difficulty, (q) => {
+    folded = 0;
+    const n = runSurds(simplifyOrRational(difficulty), 'surds-simplify', difficulty, (q) => {
       const m = q.questionMath.match(/^(\d*)\\sqrt\{(\d+)\}$/);
       expect(m, q.questionMath).toBeTruthy();
       const k = squareFactor(Number(m[2]));
@@ -385,6 +440,8 @@ describe('surds-simplify', () => {
       if (difficulty === 'core') expect(isPrimeN(k), q.questionMath).toBe(false);
       expect(m[1] !== '', q.questionMath).toBe(difficulty === 'stretch');
     });
+    if (difficulty === 'foundation') expect(folded / SAMPLES).toBeGreaterThan(0.3);
+    else expect(folded).toBe(0);
     // Foundation and Core have real ceilings — a prime square factor with the
     // root up to 200 (about 50), a composite one up to 600 (about 50). A
     // root in the thousands is not a better question.
