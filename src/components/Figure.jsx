@@ -2650,7 +2650,8 @@ export default function Figure({ fig, color, shown }) {
   // like coordinate-grid: the squares are what the student counts.
   //   shapes     [{ pts: [[x, y], ...], name?, vertex? }] the objects, in ink.
   //              `name` is written inside ('A', 'B'); `vertex` is
-  //              { index, text } for a lettered corner.
+  //              { index, text } for a lettered corner. A shape of one
+  //              point is drawn as a lettered dot alone.
   //   solution   shapes drawn only on reveal, in the slot colour
   //   mirror     a line: { x }, { y } or { m, c } (y = x is { m: 1, c: 0 });
   //              mirrorLabel its equation, drawn dashed. solutionMirror is
@@ -2717,8 +2718,10 @@ export default function Figure({ fig, color, shown }) {
     if (shown && fig.solutionMirror) nodes.push(...lineOf('smir', fig.solutionMirror, fig.solutionMirrorLabel, color));
 
     const drawShape = (s, k, stroke, fillOpacity) => {
+      // A single point is a lettered dot alone, with no outline.
+      const lone = s.pts.length === 1;
       const pts = s.pts.map(([x, y]) => `${X(x)},${Y(y)}`).join(' ');
-      nodes.push(<polygon key={`sh${k}`} points={pts} fill={stroke} fillOpacity={fillOpacity} stroke={stroke} strokeWidth={3} strokeLinejoin="round" />);
+      if (!lone) nodes.push(<polygon key={`sh${k}`} points={pts} fill={stroke} fillOpacity={fillOpacity} stroke={stroke} strokeWidth={3} strokeLinejoin="round" />);
       const G = [s.pts.reduce((t, p) => t + p[0], 0) / s.pts.length, s.pts.reduce((t, p) => t + p[1], 0) / s.pts.length];
       if (s.name) {
         // Inside, at the centre, when there is room; a thin shape has its
@@ -2738,7 +2741,8 @@ export default function Figure({ fig, color, shown }) {
       }
       if (s.vertex) {
         const p = s.pts[s.vertex.index];
-        const out = unitVec(p[0] - G[0], -(p[1] - G[1]));
+        // A lone point has no outward side: its letter goes up and right.
+        const out = lone ? unitVec(1, -1) : unitVec(p[0] - G[0], -(p[1] - G[1]));
         // Pushed out from the shape, in whichever of eight directions points
         // most nearly outward without landing on an axis's numbers (below
         // the x-axis, left of the y-axis) or on the axis itself.
