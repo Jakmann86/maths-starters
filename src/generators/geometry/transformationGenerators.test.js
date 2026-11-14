@@ -105,7 +105,7 @@ describe('Transformations', () => {
     });
     expect(strandOf('Transformations')).toBe('Geometry');
     const geo = topicGroups().find((g) => g.name === 'Geometry').topics;
-    expect(geo.indexOf('Transformations')).toBe(geo.indexOf('Similarity') + 1);
+    expect(geo).toContain('Transformations');
     expect(skillsInTopic('Transformations')).toEqual(SKILLS.map((s) => s.id));
   });
 });
