@@ -13,10 +13,17 @@
 //
 //   line-of-best-fit
 //     foundation  read an estimate off a drawn line, x to y
-//     core        the mean point (x̄, ȳ) from a table of data — the point a
+//     core        read an estimate, x to y, and say whether it is
+//                 interpolation or extrapolation
+//     stretch     read an estimate either way, then judge it with a reason:
+//                 inside the data it is reliable, outside it is not
+//
+//   mean-point    the mean point (x̄, ȳ) from a table of data — the point a
 //                 line of best fit is drawn through (Haese 23B)
-//     stretch     read an estimate either way, then judge it: inside the data
-//                 it is reliable, outside it is not (extrapolation)
+//     foundation  four or five pairs
+//     core        six or seven pairs
+//     stretch     backwards: the mean point given, one value in the table
+//                 missing
 //
 // STRENGTH. Correlation is generated to a target r and only ever in clear
 // cases: strong |r| >= 0.85, weak 0.4 <= |r| <= 0.75, none |r| < 0.2. Nothing
@@ -332,8 +339,12 @@ function leastSquares(pts) {
 
 export const generateLineOfBestFit = (options = {}) => {
   const { difficulty = 'core' } = options;
-  if (difficulty === 'core') return meanPoint();
   return readLine(difficulty);
+};
+
+export const generateMeanPoint = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  return meanPoint(difficulty);
 };
 
 // A line through two grid crossings, with points scattered about it. The
@@ -441,16 +452,18 @@ function readLine(difficulty) {
     }
     const lo = show(L.dataLo, c.x.dp), hi = show(L.dataHi, c.x.dp);
     // Interpolation and extrapolation are the Y9 scheme's words (Unit 4 L18).
-    const verdict = reliable
-      ? 'reliable (interpolation)'
-      : 'not reliable (extrapolation)';
+    const core = difficulty === 'core';
+    const verdict = core
+      ? (reliable ? 'interpolation' : 'extrapolation')
+      : reliable ? 'reliable: inside the data (interpolation)' : 'not reliable: outside the data (extrapolation)';
     // The units sit inside the answer here, ahead of the verdict, so
     // answerUnits is not used.
     const valueTex = out.answerUnits ? `${out.answer}\\text{ ${axis.unit.post}}` : out.answer;
     return {
       instruction: `The scatter graph shows ${c.set(n)}.`,
-      questionText: `${ask} Is this reliable?`,
-      answer: `${valueTex}${NL}\\text{${verdict}}`,
+      questionText: `${ask} ${core ? 'Is this interpolation or extrapolation?' : 'Is this reliable? Give a reason.'}`,
+      // At Core the word goes on the same line, so the graph keeps its room.
+      answer: core ? `${valueTex}\\text{, ${verdict}}` : `${valueTex}${NL}\\text{${verdict}}`,
       workingOut:
         `\\text{${c.x.phrase}: data from } ${lo} \\text{ to } ${hi}${NL}` +
         `x = ${show(r.x, c.x.dp)} \\text{ is ${reliable ? 'inside' : 'outside'} that range}`,
@@ -460,13 +473,15 @@ function readLine(difficulty) {
   }
 }
 
-// Haese 23B: the mean point, from a table. Both means come out whole.
-function meanPoint() {
+// Haese 23B: the mean point, from a table. Both means come out whole. At
+// Stretch one value in the table is a letter, k, and the mean point is
+// given: the total is n times the mean, less the values that are there.
+function meanPoint(difficulty) {
   for (;;) {
     // Small whole numbers only: the means are found by hand, and a row of
     // car values (11831, 10975, ...) is a long division, not a starter.
     const c = _.sample(SCATTER_CONTEXTS.filter((k) => k.dir !== 'none' && k.x.dp === 0 && k.y.dp === 0 && k.y.step < 100));
-    const n = _.random(5, 7);
+    const n = difficulty === 'foundation' ? _.random(4, 5) : difficulty === 'core' ? _.random(6, 7) : _.random(5, 7);
     const sign = c.dir === 'positive' ? 1 : -1;
     const pts = cloud(c, n, sign, 'strong');
     // Whole-number data, as a table prints it.
@@ -475,20 +490,40 @@ function meanPoint() {
     if (new Set(xs).size < n) continue;
     const mx = _.sum(xs) / n, my = _.sum(ys) / n;
     const head = (a) => a.title;
+    const table = (xr, yr) => ({
+      type: 'table',
+      header: 'column',
+      big: true,
+      rows: [[head(c.x), ...xr.map(String)], [head(c.y), ...yr.map(String)]],
+    });
+    if (difficulty !== 'stretch') {
+      return {
+        instruction: `The table shows ${c.set(n)}.`,
+        questionText: 'Find the mean point, which the line of best fit should pass through.',
+        answer: `(${mx}, ${my})`,
+        workingOut:
+          `\\bar{x} = \\frac{${xs.join(' + ')}}{${n}} = ${mx}${NL}` +
+          `\\bar{y} = \\frac{${ys.join(' + ')}}{${n}} = ${my}`,
+        visualization: table(xs, ys),
+        metadata: { topic: 'mean-point', difficulty },
+      };
+    }
+    const inX = Math.random() < 0.5;
+    const row = inX ? xs : ys;
+    const j = _.random(0, n - 1);
+    const k = row[j];
+    const others = row.filter((_v, i) => i !== j);
+    const m = inX ? mx : my;
+    const shown = row.map((v, i) => (i === j ? 'k' : v));
     return {
       instruction: `The table shows ${c.set(n)}.`,
-      questionText: 'Find the mean point, which the line of best fit should pass through.',
-      answer: `(${mx}, ${my})`,
+      questionText: `The mean point is (${mx}, ${my}). Find k.`,
+      answer: `k = ${k}`,
       workingOut:
-        `\\bar{x} = \\frac{${xs.join(' + ')}}{${n}} = ${mx}${NL}` +
-        `\\bar{y} = \\frac{${ys.join(' + ')}}{${n}} = ${my}`,
-      visualization: {
-        type: 'table',
-        header: 'column',
-        big: true,
-        rows: [[head(c.x), ...xs.map(String)], [head(c.y), ...ys.map(String)]],
-      },
-      metadata: { topic: 'line-of-best-fit', difficulty: 'core' },
+        `\\text{total} = ${m} \\times ${n} = ${m * n}${NL}` +
+        `k = ${m * n} - (${others.join(' + ')}) = ${k}`,
+      visualization: inX ? table(shown, ys) : table(xs, shown),
+      metadata: { topic: 'mean-point', difficulty },
     };
   }
 }

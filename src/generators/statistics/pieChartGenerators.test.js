@@ -1,6 +1,6 @@
 // src/generators/statistics/pieChartGenerators.test.js
 //
-// Substitute-the-answer-back checks for pie-charts. Every answer is
+// Substitute-the-answer-back checks for pie-charts and pie-chart-angles. Every answer is
 // recomputed from the figure config and the printed instruction — the
 // angle off each sector's drawn `note`, the total out of the prose, the
 // frequencies out of the table rows — never from the generator's variables.
@@ -8,7 +8,7 @@
 // Run: npx vitest run src/generators/statistics/pieChartGenerators.test.js
 
 import { describe, expect, it } from 'vitest';
-import { generatePieCharts } from './pieChartGenerators';
+import { generatePieCharts, generatePieChartAngles } from './pieChartGenerators';
 import katex from 'katex';
 
 const rendersInKatex = (line) => {
@@ -69,10 +69,28 @@ const solve = (q) => {
 
   if (fig.type === 'table') {
     const body = fig.rows.slice(1);
-    const total = body.reduce((acc, r) => acc + Number(r[1]), 0);
     const name = text.match(/sector angle for (\w+) on a pie chart/)[1];
     const row = body.find((r) => r[0] === name);
-    return [`${whole(Number(row[1]), 360, total)}^\\circ`, 'core'];
+    expect(body.filter((r) => r[0] === name)).toHaveLength(1);
+    if (fig.rows[0][1] === 'Percentage') {
+      // Percentages, one perhaps missing: it is 100 minus the rest.
+      expect(text).toMatch(/, as percentages\. /);
+      const blanks = body.filter((r) => r[1] === '?');
+      expect(blanks.length <= 1 && (blanks.length === 0 || blanks[0] === row)).toBe(true);
+      const known = body.filter((r) => r[1] !== '?').map((r) => Number(/^(\d+)%$/.exec(r[1])[1]));
+      const p = row[1] === '?' ? 100 - known.reduce((a, b) => a + b, 0) : Number(row[1].slice(0, -1));
+      if (row[1] !== '?') expect(known.reduce((a, b) => a + b, 0)).toBe(100);
+      expect(p).toBeGreaterThan(0);
+      return [`${whole(p, 360, 100)}^\\circ`, row[1] === '?' ? 'percent missing' : 'percent'];
+    }
+    const total = body.reduce((acc, r) => acc + Number(r[1]), 0);
+    if (/to the nearest degree$/.test(text)) {
+      const exact = (Number(row[1]) * 360) / total;
+      expect(Number.isInteger(exact)).toBe(false);
+      expect(Math.abs(exact - Math.floor(exact) - 0.5)).toBeGreaterThan(1e-9);
+      return [`${Math.round(exact)}^\\circ`, 'any total'];
+    }
+    return [`${whole(Number(row[1]), 360, total)}^\\circ`, 'divides 360'];
   }
 
   checkChart(fig);
@@ -102,17 +120,20 @@ const solve = (q) => {
   return [String(whole(degOf(target.note), total, 360)), 'foundation'];
 };
 
-describe('pie-charts', () => {
-  const expected = { foundation: ['foundation'], core: ['core'], stretch: ['scale', 'missing-angle'] };
+const SKILLS = {
+  'pie-charts': [generatePieCharts, { foundation: ['foundation'], core: ['missing-angle'], stretch: ['scale'] }],
+  'pie-chart-angles': [generatePieChartAngles, { foundation: ['divides 360'], core: ['any total'], stretch: ['percent', 'percent missing'] }],
+};
 
+Object.entries(SKILLS).forEach(([topic, [gen, expected]]) => describe(topic, () => {
   Object.entries(expected).forEach(([band, variants]) => {
     it(`${band}: answer recomputed from the board`, () => {
       const answers = new Set();
       const questions = new Set();
       const seen = {};
       for (let i = 0; i < SAMPLES; i += 1) {
-        const q = generatePieCharts({ difficulty: band });
-        expect(q.metadata).toEqual({ topic: 'pie-charts', difficulty: band });
+        const q = gen({ difficulty: band });
+        expect(q.metadata).toEqual({ topic, difficulty: band });
         checkText(q);
         const [answer, variant] = solve(q);
         expect(variants).toContain(variant);
@@ -122,10 +143,12 @@ describe('pie-charts', () => {
         answers.add(q.answer);
         questions.add(JSON.stringify([q.instruction, q.questionText, q.visualization]));
       }
-      // Stretch samples its two variants 50/50; both must actually turn up.
+      // A band with two variants samples them 50/50; both must turn up.
       variants.forEach((v) => expect(seen[v] / SAMPLES).toBeGreaterThan(variants.length > 1 ? 0.45 : 0.99));
-      expect(answers.size).toBeGreaterThan(40);
+      // Percentages that are multiples of 5 give only 18 angles, 18° to
+      // 198°: the real ceiling of the answers there.
+      expect(answers.size).toBeGreaterThan(topic === 'pie-chart-angles' && band === 'stretch' ? 9 : 40);
       expect(questions.size).toBeGreaterThan(SAMPLES * 0.95);
     });
   });
-});
+}));

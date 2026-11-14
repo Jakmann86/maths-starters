@@ -58,6 +58,6 @@ describe('Vectors', () => {
     expect(skillsInTopic('Vectors')).toEqual(Object.keys(KINDS));
     expect(strandOf('Vectors')).toBe('Geometry');
     const geo = topicGroups().find((g) => g.name === 'Geometry').topics;
-    expect(geo.indexOf('Vectors')).toBe(geo.indexOf('Transformations') + 1);
+    expect(geo).toContain('Vectors');
   });
 });

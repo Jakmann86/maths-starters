@@ -1,4 +1,4 @@
-// Mutation test for the modal-class and stem-and-leaf harness. Each operator
+// Mutation test for the modal-class, median-class and stem-and-leaf harness. Each operator
 // breaks real generator output; the checker must reject every broken copy.
 //
 // Equivalent mutants are avoided by aiming each operator where it must
@@ -19,7 +19,7 @@ const OPS = {
   'moved to another band': bandMove(),
   'the tallest class tied': (q) => {
     const f = q.visualization;
-    if (f.type !== 'table' || q.metadata.difficulty === 'stretch' || q.metadata.difficulty === 'core') return false;
+    if (f.type !== 'table' || q.metadata.difficulty === 'stretch' || q.metadata.topic === 'median-class') return false;
     const fs = f.rows.slice(1).map((r) => Number(r[1]));
     const top = Math.max(...fs);
     const second = Math.max(...fs.filter((v) => v !== top));
@@ -87,7 +87,7 @@ const OPS = {
 
 describe('Data display mutation test', () => {
   it('rejects every broken copy', () => {
-    const tally = mutants({ skills: ['modal-class', 'stem-and-leaf-averages'], check: checkDataDisplay, ops: OPS });
+    const tally = mutants({ skills: ['modal-class', 'median-class', 'stem-and-leaf-averages'], check: checkDataDisplay, ops: OPS });
     Object.entries(tally).forEach(([name, r]) => expect(r.survivors.slice(0, 2), name).toEqual([]));
     expect(Object.keys(tally).sort()).toEqual(Object.keys(OPS).sort());
   });

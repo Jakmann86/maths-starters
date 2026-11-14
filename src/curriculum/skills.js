@@ -1451,6 +1451,12 @@ export const skills = {
     generate: (opts) => displays.generateModalClass(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'median-class': {
+    label: 'Class containing the median',
+    topic: 'Averages',
+    generate: (opts) => displays.generateMedianClass(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'table-averages': {
     label: 'Mean, mode and median from a table',
     topic: 'Averages',
@@ -1471,9 +1477,15 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'pie-charts': {
-    label: 'Pie charts',
+    label: 'Reading pie charts',
     topic: 'Representing data',
     generate: (opts) => pie.generatePieCharts(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'pie-chart-angles': {
+    label: 'Drawing pie charts',
+    topic: 'Representing data',
+    generate: (opts) => pie.generatePieChartAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'bar-charts': {
@@ -1520,6 +1532,12 @@ export const skills = {
     generate: (opts) => scatter.generateLineOfBestFit(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'mean-point': {
+    label: 'The mean point',
+    topic: 'Scatter graphs',
+    generate: (opts) => scatter.generateMeanPoint(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 };
 
 export const skillIds = Object.keys(skills);
@@ -1559,10 +1577,27 @@ export const generateForSkill = (id, wanted = 'core') => {
  * skill sits in this file and where a teacher sees it on screen are different
  * decisions, and adding a skill should never silently reshuffle the panel.
  *
- * Within a strand, topics run in Haese chapter order.
+ * Within a strand, topics run in the textbook's order: by the first Haese
+ * section (haese-igcse.json) that uses one of their skills. A topic the
+ * book takes as assumed knowledge, with no section of its own (order of
+ * operations, fractions), goes first in its strand. topicOrder.test.js holds
+ * the panel to that rule.
  */
 export const STRANDS = [
-  { name: 'Number', topics: ['Rational numbers', 'Order of operations', 'Indices', 'Logarithms', 'Standard form', 'Surds', 'Percentages', 'Profit and interest', 'Speed, distance and time'] },
+  {
+    name: 'Number',
+    topics: [
+      'Order of operations',
+      'Rational numbers',
+      'Surds',
+      'Indices',
+      'Standard form',
+      'Percentages',
+      'Profit and interest',
+      'Speed, distance and time',
+      'Logarithms',
+    ],
+  },
   {
     name: 'Algebra',
     topics: [
@@ -1573,12 +1608,12 @@ export const STRANDS = [
       'Formulae',
       'Simultaneous equations',
       'Algebraic fractions',
+      'Functions',
       'Quadratic equations',
       'Quadratic graphs',
       'Arithmetic and geometric sequences',
       'Quadratic and cubic sequences',
       'Variation',
-      'Functions',
     ],
   },
   {
@@ -1586,14 +1621,14 @@ export const STRANDS = [
     topics: [
       'Angle facts',
       'Parallel lines and polygons',
+      'Pythagoras and trigonometry',
       'Coordinate geometry',
       'Straight-line graphs',
-      'Pythagoras and trigonometry',
-      'Further trigonometry',
       'Similarity',
       'Transformations',
       'Vectors',
       'Circle theorems',
+      'Further trigonometry',
     ],
   },
   { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Surface area', 'Volume'] },

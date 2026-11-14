@@ -687,6 +687,38 @@ power is positive). Stretch: combine with a number first
 
 ---
 
+## Skill-ladder review: statistics
+
+Changes Joakim decided in the November 2026 skill-ladder review. Rows still
+"To decide" were left alone.
+
+- **Types of data**: F qualitative or quantitative; C qualitative, discrete
+  or continuous; S the edge cases (shoe size, shirt number, hours of
+  sunshine), four variables with a Reason column filled in on reveal.
+- **Averages from a list** (Joakim's ladder): F one measure at a time
+  (mean, mode, median or range); C all four, as parts (a)–(d); S
+  backwards, x found from a given mean, median, range or mode. For the
+  median and the range the list is given in order, so x has one place.
+- **Reading a frequency table**: F read and add; C the total of value ×
+  frequency; S backwards, the missing frequency from that total, with the
+  number asked not given.
+- **Cumulative frequency tables**: F discrete; C grouped; S grouped with
+  gaps in both columns, so frequencies come from cumulative ones.
+- **Modal class** and **Class containing the median** split. Modal: F four
+  or five classes; C six, with a close second; S from a cumulative table.
+  Median: F a total of 30 or under; C a total of 50 to 100; S from a
+  cumulative table.
+- **Averages from a stem-and-leaf plot**: F the median of a short plot, odd
+  count; C the median with an even count; S the mean of 15 to 20 values.
+- **Pie charts** split. Reading: F a frequency from a labelled angle; C the
+  same with one angle withheld (360 minus the rest first); S the scale
+  from one known frequency. Drawing: F a total that divides 360; C any
+  total, to the nearest degree; S from percentages, one sometimes missing.
+- **Line of best fit**: F read an estimate; C estimate and say
+  interpolation or extrapolation; S estimate either way and judge
+  reliability with a reason. **The mean point** is its own skill: F four or
+  five pairs; C six or seven; S the mean point given, a missing value k.
+
 ## Not yet calibrated
 
 **Factorising x² + bx + c (Haese 1K)** and **splitting the middle term (1L)**

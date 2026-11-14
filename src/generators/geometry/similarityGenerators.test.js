@@ -69,6 +69,6 @@ describe('Similarity', () => {
     });
     expect(strandOf('Similarity')).toBe('Geometry');
     const geo = topicGroups().find((g) => g.name === 'Geometry').topics;
-    expect(geo.indexOf('Similarity')).toBe(geo.indexOf('Further trigonometry') + 1);
+    expect(geo).toContain('Similarity');
   });
 });

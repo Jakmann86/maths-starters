@@ -230,8 +230,8 @@ const sameUnit = (got, unit, inline) => (unit.pre
   : !got.pre && got.post === (inline ? unit.post : undefined));
 
 export function checkLineOfBestFit(q, difficulty) {
+  if (q.metadata?.topic === 'mean-point') return checkMeanPoint(q, difficulty);
   must(q.metadata?.topic === 'line-of-best-fit' && q.metadata?.difficulty === difficulty, 'metadata', q);
-  if (difficulty === 'core') return checkMeanPoint(q);
 
   const { pts, xa, ya, dir } = checkScatterFig(q, 0.7);
   must(dir !== 0, 'a line of best fit only where there is a trend', q);
@@ -261,11 +261,11 @@ export function checkLineOfBestFit(q, difficulty) {
   // The question: which way it reads, and the value it gives.
   const lead = difficulty === 'foundation' ? 'Use the line of best fit to estimate' : 'Estimate';
   const [xp, xb] = PHRASE[xa.title], [yp, yb] = PHRASE[ya.title];
-  const tail = difficulty === 'foundation' ? '' : ' Is this reliable?';
+  const tail = { foundation: '', core: ' Is this interpolation or extrapolation?', stretch: ' Is this reliable? Give a reason.' }[difficulty];
   const fromX = new RegExp(`^${lead} ${esc(yp)} when ${esc(xp)} ${xb} (.+)\\.${esc(tail)}$`).exec(q.questionText);
   const fromY = new RegExp(`^${lead} ${esc(xp)} when ${esc(yp)} ${yb} (.+)\\.${esc(tail)}$`).exec(q.questionText);
   must(Boolean(fromX) !== Boolean(fromY), `the ask reads one way: "${q.questionText}"`, q);
-  if (difficulty === 'foundation') must(fromX, 'foundation reads from x', q);
+  if (difficulty !== 'stretch') must(fromX, 'foundation and core read from x', q);
   let gx, gy;
   if (fromX) {
     gx = parseGiven(fromX[1], unitOf(xa.title));
@@ -306,31 +306,39 @@ export function checkLineOfBestFit(q, difficulty) {
   must(w1 && near(num(w1[1]), lo) && near(num(w1[2]), hi), `working gives the data's x range ${lo} to ${hi}`, q);
   const w2 = /^x = ([\d.]+) \\text\{ is (inside|outside) that range\}$/.exec(wl[1] ?? '');
   must(w2 && near(num(w2[1]), gx) && w2[2] === (inside ? 'inside' : 'outside'), 'working places the reading', q);
-  const al = q.answer.split('\n');
-  must(al.length === 2, 'stretch answer has two lines', q);
+  const core = difficulty === 'core';
+  const al = core ? q.answer.split('\\text{, ') : q.answer.split('\n');
+  if (core) al[1] = al[1] === undefined ? undefined : `\\text{${al[1]}`;
+  must(al.length === 2, core ? 'the value, then the word on the same line' : 'stretch answer has two lines', q);
   const got = answerValue(al[0]);
   must(got && sameUnit(got, unit, true) && near(got.v, want), `answer ${al[0]} should be ${want}`, q);
-  must(q.answerUnits === undefined, 'stretch keeps units inline', q);
-  must(al[1] === (inside ? '\\text{reliable (interpolation)}' : '\\text{not reliable (extrapolation)}'),
-    `verdict should be ${inside ? 'reliable' : 'not reliable'}`, q);
+  must(q.answerUnits === undefined, 'units kept inline', q);
+  const verdict = difficulty === 'core'
+    ? (inside ? '\\text{interpolation}' : '\\text{extrapolation}')
+    : (inside ? '\\text{reliable: inside the data (interpolation)}' : '\\text{not reliable: outside the data (extrapolation)}');
+  must(al[1] === verdict, `verdict should be ${verdict}`, q);
   return { inside, fromX: Boolean(fromX) };
 }
 
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-function checkMeanPoint(q) {
+function checkMeanPoint(q, difficulty) {
+  must(q.metadata?.difficulty === difficulty, 'metadata', q);
   const f = q.visualization;
   must(f?.type === 'table' && f.header === 'column' && f.big === true, 'a table', q);
   const [xr, yr] = f.rows;
   must(f.rows.length === 2 && xr.length === yr.length, 'two equal rows', q);
   must(DIRECTION[`${xr[0]}|${yr[0]}`] !== undefined && DIRECTION[`${xr[0]}|${yr[0]}`] !== 0, 'a context with a trend', q);
+  const n = xr.length - 1;
+  must(difficulty === 'foundation' ? n >= 4 && n <= 5 : difficulty === 'core' ? n >= 6 && n <= 7 : n >= 5 && n <= 7, 'the number of pairs for the band', q);
+  if (difficulty === 'stretch') return checkMeanPointBack(q, xr, yr);
   const xs = xr.slice(1).map(Number), ys = yr.slice(1).map(Number);
   must(xs.every(Number.isInteger) && ys.every(Number.isInteger), 'whole-number data', q);
   must([...xs, ...ys].every((v) => v < 1000), 'values small enough to add by hand', q);
   must(new Set(xs).size === xs.length, 'distinct x values', q);
   must(/^The table shows .+\.$/.test(q.instruction), 'set-up sentence', q);
   must(countIn(q.instruction) === xs.length, 'count matches the table', q);
-  must(q.questionText === 'Find the mean point, which the line of best fit should pass through.', 'core ask', q);
+  must(q.questionText === 'Find the mean point, which the line of best fit should pass through.', 'the ask', q);
   const mx = mean(xs), my = mean(ys);
   must(Number.isInteger(mx) && Number.isInteger(my), 'whole-number means', q);
   must(q.answer === `(${mx}, ${my})`, `answer should be (${mx}, ${my})`, q);
@@ -345,4 +353,29 @@ function checkMeanPoint(q) {
     must(Number(mm[2]) === vs.length && Number(mm[3]) === m && terms.reduce((a, b) => a + b, 0) / Number(mm[2]) === m, 'working balances', q);
   });
   return { n: xs.length };
+}
+
+// Stretch: k in one row, the mean point in the sentence.
+function checkMeanPointBack(q, xr, yr) {
+  const cells = [...xr.slice(1), ...yr.slice(1)];
+  must(cells.filter((v) => v === 'k').length === 1, 'one value is k', q);
+  must(/^The table shows .+\.$/.test(q.instruction) && countIn(q.instruction) === xr.length - 1, 'set-up sentence', q);
+  const m = /^The mean point is \((\d+), (\d+)\)\. Find k\.$/.exec(q.questionText);
+  must(m, 'the mean point given', q);
+  const [mx, my] = [Number(m[1]), Number(m[2])];
+  const inX = xr.includes('k');
+  const row = (inX ? xr : yr).slice(1);
+  const mean = inX ? mx : my;
+  const n = row.length;
+  const others = row.filter((v) => v !== 'k').map(Number);
+  const k = mean * n - others.reduce((a, b) => a + b, 0);
+  must(Number.isInteger(k) && k >= 0, 'a whole k', q);
+  must(q.answer === `k = ${k}`, `answer should be k = ${k}`, q);
+  // The other row's mean is the other coordinate, as printed.
+  const other = (inX ? yr : xr).slice(1).map(Number);
+  must(mean === (inX ? mx : my) && other.reduce((a, b) => a + b, 0) / n === (inX ? my : mx), 'the other coordinate is that row\'s mean', q);
+  const xs = inX ? row.map((v) => (v === 'k' ? k : Number(v))) : xr.slice(1).map(Number);
+  must(new Set(xs).size === n, 'distinct x values', q);
+  must(q.workingOut === `\\text{total} = ${mean} \\times ${n} = ${mean * n}\n` + `k = ${mean * n} - (${others.join(' + ')}) = ${k}`, 'working', q);
+  return { n, missing: inX ? 'x' : 'y' };
 }
