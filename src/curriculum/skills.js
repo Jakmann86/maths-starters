@@ -1032,24 +1032,48 @@ export const skills = {
     generate: (opts) => pct.generatePercentageOfAmount(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'reverse-percentages': {
+    label: 'Reverse percentages',
+    topic: 'Percentages',
+    generate: (opts) => pct.generateReversePercentages(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'percentage-multiplier': {
-    label: 'Percentage multipliers',
+    label: 'Finding a multiplier',
     topic: 'Percentages',
     generate: (opts) => pct.generatePercentageMultiplier(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'multiplier-to-percentage': {
+    label: 'Reading a multiplier as a change',
+    topic: 'Percentages',
+    generate: (opts) => pct.generateMultiplierToPercentage(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'percentage-change': {
-    label: 'Percentage increase and decrease',
+    label: 'Increasing or decreasing by a percentage',
     topic: 'Percentages',
     generate: (opts) => pct.generatePercentageChange(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'percentage-change-find': {
+    label: 'Percentage change, profit and loss',
+    topic: 'Percentages',
+    generate: (opts) => pct.generatePercentageChangeFind(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 
   // --- Y9 do-nows: rational numbers ---
-  'fdp-conversions': {
-    label: 'Fractions, decimals and percentages',
+  'decimal-percent-to-fraction': {
+    label: 'Decimals and percentages to fractions',
     topic: 'Rational numbers',
-    generate: (opts) => rational.generateFdpConversions(opts),
+    generate: (opts) => rational.generateDecimalPercentToFraction(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'fraction-to-decimal-percent': {
+    label: 'Fractions to decimals and percentages',
+    topic: 'Rational numbers',
+    generate: (opts) => rational.generateFractionToDecimalPercent(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'recurring-decimals': {
@@ -1058,16 +1082,16 @@ export const skills = {
     generate: (opts) => rational.generateRecurringDecimals(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'rational-or-irrational': {
-    label: 'Rational or irrational?',
+  'negative-fractions-add': {
+    label: 'Adding and subtracting negative fractions',
     topic: 'Rational numbers',
-    generate: (opts) => rational.generateRationalOrNot(opts),
+    generate: (opts) => rational.generateNegativeFractionsAdd(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'negative-fractions': {
-    label: 'Calculating with negative fractions',
+  'negative-fractions-multiply': {
+    label: 'Multiplying and dividing negative fractions',
     topic: 'Rational numbers',
-    generate: (opts) => rational.generateNegativeFractions(opts),
+    generate: (opts) => rational.generateNegativeFractionsMultiply(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1222,10 +1246,22 @@ export const skills = {
     generate: (opts) => ch6.generateStandardFormWrite(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'standard-form-calculate': {
-    label: 'Calculating in standard form',
+  'standard-form-ordinary': {
+    label: 'Standard form as an ordinary number',
     topic: 'Standard form',
-    generate: (opts) => ch6.generateStandardFormCalculate(opts),
+    generate: (opts) => ch6.generateStandardFormOrdinary(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'standard-form-multiply-divide': {
+    label: 'Multiplying and dividing in standard form',
+    topic: 'Standard form',
+    generate: (opts) => ch6.generateStandardFormMultiplyDivide(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'standard-form-add-subtract': {
+    label: 'Adding and subtracting in standard form',
+    topic: 'Standard form',
+    generate: (opts) => ch6.generateStandardFormAddSubtract(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 

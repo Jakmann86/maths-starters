@@ -507,6 +507,47 @@ added, or the one left. Core: overlapping events on numbered cards or a pack
 of 52, by P(A) + P(B) − P(A and B). Stretch: the addition rule with the
 probabilities given, forwards or back to P(A and B).
 
+## Skill-ladder review: number
+
+Changes Joakim decided in the November 2026 skill-ladder review. Rows still
+"To decide" were left alone.
+
+- **Percentages** is six skills, each holding one task:
+  - *Percentage of an amount*: F friendly percentages (10%, 25%, …); C any
+    whole percentage that is not one of those, over 100% a quarter of the
+    time; S a half percentage (12.5%, 7.5%).
+  - *Reverse percentages* (new): F 10% or 50% of it known; C any friendly
+    percentage, so 1% first; S the amount after an increase or decrease.
+  - *Finding a multiplier*: F a whole percentage; C an awkward one (45.9%,
+    or past 100%); S two changes as one multiplier.
+  - *Reading a multiplier as a change* (new): F × 1.15; C × 1.075;
+    S two multipliers in turn as one overall change.
+  - *Increasing or decreasing by a percentage*: F one step; C two steps;
+    S the same change compounded over several years.
+  - *Percentage change, profit and loss* (new): F a whole-number change;
+    C to one decimal place; S the cost price from a selling price and a
+    profit or loss.
+- **Fractions, decimals and percentages** split by direction. Decimals and
+  percentages to fractions: F 0.35, 6%; C three places, or 12.5% and its
+  family; S any other half percentage. Fractions to decimals and
+  percentages: F halves to twenty-fifths; C sixteenths, fortieths, 125ths;
+  S mixed numbers.
+- **Rational or irrational?** no longer has its own box: it is one
+  Foundation question in three in Simplifying surds.
+- **Negative fractions** split. Adding and subtracting: F one denominator
+  divides the other, simplify first; C different denominators; S three
+  terms. Multiplying and dividing: F one product; C a division, simplify
+  first; S a square in the product.
+- **Standard form** is four skills. Writing in standard form: F large;
+  C small; S already a × 10ⁿ but with a outside 1 to 10 (45 × 10³,
+  0.0004 × 10⁵). As an ordinary number (new): F positive power; C negative;
+  S powers of 8 to 12. Multiplying and dividing: F × with no carry; C ×
+  with a carry, or ÷ exactly; S ÷ needing adjustment. Adding and
+  subtracting: F the same power; C powers one apart; S two or three apart.
+- **Simplifying surds** already held one task after Joakim's own surds
+  rework (prime square factor, composite square factor, a coefficient), so
+  its bands were kept as he wrote them.
+
 ## Profit and interest — Haese 10B, 10C, 10F
 
 IGCSE 0607 1.8. Every question is worded, as Haese's are; money is in
