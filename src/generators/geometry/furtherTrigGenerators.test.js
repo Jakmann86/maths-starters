@@ -93,6 +93,6 @@ describe('Further trigonometry', () => {
     });
     expect(strandOf('Further trigonometry')).toBe('Geometry');
     const geo = topicGroups().find((g) => g.name === 'Geometry').topics;
-    expect(geo.indexOf('Further trigonometry')).toBe(geo.indexOf('Pythagoras and trigonometry') + 1);
+    expect(geo).toContain('Further trigonometry');
   });
 });

@@ -59,7 +59,7 @@ const OPS = {
 
 describe('Algebraic fractions mutation test', () => {
   it('rejects every broken copy', () => {
-    const tally = mutants({ skills: ['simplify-algebraic-fractions', 'simplify-fractions-factorising', 'multiply-divide-algebraic-fractions'], check: checkAlgebraicFraction, ops: OPS, perBand: 100 });
+    const tally = mutants({ skills: ['simplify-algebraic-fractions', 'simplify-fractions-factorising', 'multiply-algebraic-fractions', 'divide-algebraic-fractions'], check: checkAlgebraicFraction, ops: OPS, perBand: 100 });
     Object.entries(tally).forEach(([name, r]) => expect(r.survivors.slice(0, 2), name).toEqual([]));
     expect(Object.keys(tally).sort()).toEqual(Object.keys(OPS).sort());
   });

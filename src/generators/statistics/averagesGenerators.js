@@ -24,48 +24,32 @@ const uniqueMode = (xs) => {
 
 /* ------------------------------------------------------ averages from a list
  *
- * Foundation  order the list and read a value off it: mode or range
+ * Foundation  one measure at a time: the mean, the mode, the median or the
+ *             range of a short list, every answer whole
  * Core        all four from one data set, as parts (a)-(d): mean, mode,
  *             median, range — odd n, every answer whole
- * Stretch     mean or median over an even n, where the mean gains a decimal
- *             and the median has to be averaged from the two middle values
- *
- * Previously Foundation asked all four measures and Core asked only mean and
- * median, so stepping the board up removed mode and range altogether, and the
- * only change to the mean was that its answer grew a decimal.
+ * Stretch     backwards: the mean, median, range or mode is given, and one
+ *             value x is missing. For the median and the range the list is
+ *             given in order, so x has one place it can be.
  * ---------------------------------------------------------------------- */
 
 export const generateAveragesFromList = (options = {}) => {
   const { difficulty = 'core' } = options;
   if (difficulty === 'core') return allFourFromList();
-  const even = difficulty === 'stretch';
-  const measure = difficulty === 'foundation'
-    ? _.sample(['mode', 'range'])
-    : _.sample(['mean', 'median']);
+  if (difficulty === 'stretch') return missingFromAverage();
+  const measure = _.sample(['mean', 'mode', 'median', 'range']);
 
   let xs;
   let sorted;
   let mode;
   for (;;) {
-    const n = even ? _.sample([6, 8, 10]) : _.sample([5, 7, 9]);
+    const n = _.sample([5, 7, 9]);
     xs = _.times(n, () => _.random(1, 20));
     sorted = [...xs].sort((a, b) => a - b);
     mode = uniqueMode(xs);
-    const total = _.sum(xs);
-
     if (measure === 'mode' && mode === null) continue;
     if (measure === 'range' && sorted[n - 1] - sorted[0] < 4) continue;
-    if (measure === 'mean') {
-      if (!even && total % n !== 0) continue;
-      // Stretch means must genuinely need the decimal place, or the band is
-      // Core with a longer list.
-      if (even && ((total * 10) % n !== 0 || total % n === 0)) continue;
-    }
-    if (measure === 'median' && even && sorted[n / 2 - 1] === sorted[n / 2]) {
-      // With the two middle values equal, the averaging step the band exists
-      // to test is invisible.
-      continue;
-    }
+    if (measure === 'mean' && _.sum(xs) % n !== 0) continue;
     break;
   }
 
@@ -74,32 +58,22 @@ export const generateAveragesFromList = (options = {}) => {
   const base = { questionMath: showList(xs), metadata: { topic: 'averages-from-list', difficulty } };
 
   if (measure === 'mean') {
-    const tenths = (total * 10) / n;
     return {
       ...base,
       instruction: 'Find the mean',
-      answer: dp1(tenths),
-      workingOut: [
-        `\\text{sum} = ${total}`,
-        `\\text{mean} = \\frac{${total}}{${n}}`,
-        `= ${dp1(tenths)}`,
-      ].join(NL),
+      answer: String(total / n),
+      workingOut: [`\\text{sum} = ${total}`, `\\text{mean} = \\frac{${total}}{${n}} = ${total / n}`].join(NL),
     };
   }
   if (measure === 'median') {
     const m = median(sorted);
-    const shown = Number.isInteger(m) ? String(m) : dp1(Math.round(m * 10));
-    const last = even
-      ? `\\text{median} = \\frac{${sorted[n / 2 - 1]} + ${sorted[n / 2]}}{2} = ${shown}`
-      : `\\text{median} = ${shown}`;
     return {
       ...base,
       instruction: 'Find the median',
-      answer: shown,
+      answer: String(m),
       workingOut: [
         `\\text{ordered: } ${showList(sorted)}`,
-        `n = ${n}, \\frac{n + 1}{2} = ${(n + 1) / 2}`,
-        last,
+        `\\text{median} = \\text{the } ${(n + 1) / 2}\\text{th value} = ${m}`,
       ].join(NL),
     };
   }
@@ -121,6 +95,89 @@ export const generateAveragesFromList = (options = {}) => {
     ].join(NL),
   };
 };
+
+/* Stretch: the average is given and x is to be found. */
+function missingFromAverage() {
+  const measure = _.sample(['mean', 'median', 'range', 'mode']);
+  const meta = { topic: 'averages-from-list', difficulty: 'stretch' };
+  for (;;) {
+    if (measure === 'mean') {
+      const n = _.random(5, 8);
+      const mean = _.random(4, 16);
+      const known = _.times(n - 1, () => _.random(1, 25));
+      const x = mean * n - _.sum(known);
+      if (x < 1 || x > 30) continue;
+      return {
+        instruction: 'Find x',
+        questionMath: `\\text{mean} = ${mean}${NL}${showList(_.shuffle([...known, 'x']))}`,
+        answer: `x = ${x}`,
+        workingOut: [
+          `\\text{total} = ${mean} \\times ${n} = ${mean * n}`,
+          `x = ${mean * n} - ${_.sum(known)} = ${x}`,
+        ].join(NL),
+        metadata: meta,
+      };
+    }
+    if (measure === 'median') {
+      // An even count, in order, x one of the two middle values: the median
+      // is halfway between x and its partner.
+      const n = _.sample([6, 8]);
+      const sorted = _.times(n, () => _.random(1, 25)).sort((a, b) => a - b);
+      const k = _.sample([n / 2 - 1, n / 2]);
+      const partner = sorted[k === n / 2 ? n / 2 - 1 : n / 2];
+      const x = sorted[k];
+      if (x === partner || new Set(sorted).size < n - 1) continue;
+      const m = (x + partner) / 2;
+      const shown = Number.isInteger(m) ? String(m) : m.toFixed(1);
+      const list = sorted.map((v, i) => (i === k ? 'x' : v));
+      return {
+        instruction: 'The values are in order. Find x',
+        questionMath: `\\text{median} = ${shown}${NL}${showList(list)}`,
+        answer: `x = ${x}`,
+        workingOut: [
+          `\\frac{${k < partnerIndex(n, k) ? `x + ${partner}` : `${partner} + x`}}{2} = ${shown}`,
+          `x = 2 \\times ${shown} - ${partner} = ${x}`,
+        ].join(NL),
+        metadata: meta,
+      };
+    }
+    if (measure === 'range') {
+      // In order, x at one end: the range from the other end.
+      const n = _.random(5, 7);
+      const sorted = _.times(n, () => _.random(1, 25)).sort((a, b) => a - b);
+      const top = Math.random() < 0.5;
+      const range = sorted[n - 1] - sorted[0];
+      if (range < 5 || sorted[0] === sorted[1] || sorted[n - 1] === sorted[n - 2]) continue;
+      const x = top ? sorted[n - 1] : sorted[0];
+      const list = sorted.map((v, i) => (i === (top ? n - 1 : 0) ? 'x' : v));
+      return {
+        instruction: 'The values are in order. Find x',
+        questionMath: `\\text{range} = ${range}${NL}${showList(list)}`,
+        answer: `x = ${x}`,
+        workingOut: top
+          ? `x - ${sorted[0]} = ${range}${NL}x = ${sorted[0]} + ${range} = ${x}`
+          : `${sorted[n - 1]} - x = ${range}${NL}x = ${sorted[n - 1]} - ${range} = ${x}`,
+        metadata: meta,
+      };
+    }
+    // Mode: two values appear twice already; the given mode says which one
+    // x must be.
+    const [a, b, ...rest] = _.sampleSize(_.range(1, 26), _.random(5, 7));
+    const mode = _.sample([a, b]);
+    const list = _.shuffle([a, a, b, b, ...rest, 'x']);
+    return {
+      instruction: 'Find x',
+      questionMath: `\\text{mode} = ${mode}${NL}${showList(list)}`,
+      answer: `x = ${mode}`,
+      workingOut: [
+        `${Math.min(a, b)} \\text{ and } ${Math.max(a, b)} \\text{ each appear twice}`,
+        `\\text{for the mode to be } ${mode}, x = ${mode}`,
+      ].join(NL),
+      metadata: meta,
+    };
+  }
+}
+const partnerIndex = (n, k) => (k === n / 2 ? n / 2 - 1 : n / 2);
 
 /* Core: one list, four parts. The four answers are kept distinct from one
    another, so a student who finds the median and writes it down as the mean

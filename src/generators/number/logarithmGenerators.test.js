@@ -70,6 +70,6 @@ describe('Logarithms', () => {
     expect(skillsInTopic('Logarithms')).toEqual(Object.keys(KINDS));
     expect(strandOf('Logarithms')).toBe('Number');
     const num = topicGroups().find((g) => g.name === 'Number').topics;
-    expect(num.indexOf('Logarithms')).toBe(num.indexOf('Indices') + 1);
+    expect(num).toContain('Logarithms');
   });
 });

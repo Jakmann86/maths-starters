@@ -164,14 +164,8 @@ const pickMonicRoots = (difficulty) => {
     // both positive, small — mental factorisation (Haese 1K Q1–3)
     return { p: _.random(1, 7), q: _.random(1, 7) };
   }
-  if (difficulty === 'stretch') {
-    // larger magnitudes, less obvious pairs (Haese 1K Q4–5, harder rows)
-    return {
-      p: _.sample([-1, 1]) * _.random(4, 12),
-      q: _.sample([-1, 1]) * _.random(4, 12),
-    };
-  }
-  // core: modest magnitude, at least one negative (Haese 1K Q4–5)
+  // core and stretch: modest magnitude, at least one negative (Haese 1K
+  // Q4–5). Stretch puts a common number factor in front (below).
   return { p: randNonZero(-9, 9), q: randNonZero(-9, 9) };
 };
 
@@ -188,15 +182,22 @@ export const generateFactoriseMonic = (options = {}) => {
 
   const b = p + q;
   const c = p * q;
+  // Stretch (skill-ladder review): a common number factor comes out first,
+  // leaving the monic quadratic, Haese 1M's first move. Now and then the
+  // factor is negative.
+  const k = difficulty === 'stretch' ? _.sample([2, 2, 3, 3, 4, 5, -1, -2]) : 1;
 
-  const questionMath = joinTerms(leadTerm(1, 'x^2'), laterTerm(b, 'x'), laterTerm(c));
-  const answer = `${bracket(1, p)}${bracket(1, q)}`;
+  const monic = joinTerms(leadTerm(1, 'x^2'), laterTerm(b, 'x'), laterTerm(c));
+  const questionMath = joinTerms(leadTerm(k, 'x^2'), laterTerm(k * b, 'x'), laterTerm(k * c));
+  const front = k === 1 ? '' : k === -1 ? '-' : `${k}`;
+  const answer = `${front}${bracket(1, p)}${bracket(1, q)}`;
+  const pairs = `\\text{two numbers with sum } ${b} \\text{ and product } ${c}`;
 
   return {
     instruction: 'Factorise',
     questionMath,
     answer,
-    workingOut: `\\text{two numbers with sum } ${b} \\text{ and product } ${c}`,
+    workingOut: k === 1 ? pairs : [`${front}(${monic})`, pairs, answer].join(NL),
     metadata: { topic: 'factorise-monic', difficulty },
   };
 };
@@ -361,10 +362,54 @@ const twoLetterGrouping = (difficulty) => {
   };
 };
 
+// Stretch only: four letters and no numbers at all (skill-ladder review),
+// (u ± v)(w ± z) expanded and shuffled, so half the time the printed pairs
+// share nothing and the terms must be regrouped first: ax + bn + an + bx.
+const FOUR_LETTERS = [['a', 'b', 'x', 'y'], ['a', 'b', 'm', 'n'], ['p', 'q', 'x', 'y'], ['a', 'b', 'c', 'd'], ['h', 'k', 'x', 'y'], ['m', 'n', 'p', 'q']];
+
+const term = (sign, a, b) => ({ sign, text: [a, b].sort().join('') });
+
+const fourLetterGrouping = (difficulty) => {
+  const [u, v, w, z] = _.sample(FOUR_LETTERS);
+  const s1 = _.sample([1, -1]);
+  const s2 = _.sample([1, -1]);
+  const terms = [term(1, u, w), term(s2, u, z), term(s1, v, w), term(s1 * s2, v, z)];
+  // Grouped in print order (pairs 0-1 and 2-3 share u and v), or shuffled
+  // so that the first pair shares nothing.
+  const regroup = Math.random() < 0.5;
+  let order = [0, 1, 2, 3];
+  // Every order whose first pair shares no letter, led by a positive term.
+  if (regroup) {
+    order = _.sample([[0, 3, 1, 2], [0, 3, 2, 1], [1, 2, 0, 3], [1, 2, 3, 0], [3, 0, 2, 1], [3, 0, 1, 2], [2, 1, 3, 0], [2, 1, 0, 3]]
+      .filter((o) => terms[o[0]].sign > 0));
+  }
+  const show = (t, first) => (first ? `${t.sign < 0 ? '-' : ''}${t.text}` : `${t.sign < 0 ? '-' : '+'} ${t.text}`);
+  const line = (ts) => ts.map((t, i) => show(t, i === 0)).join(' ');
+  const br = (a, sign, b) => `(${a} ${sign < 0 ? '-' : '+'} ${b})`;
+  const first = br(u, s1, v);
+  const second = br(w, s2, z);
+  const answer = [first, second].sort().join('');
+  return {
+    instruction: 'Factorise',
+    questionMath: line(order.map((i) => terms[i])),
+    answer,
+    workingOut: [
+      ...(regroup ? [line(terms)] : []),
+      `${u}${second} ${s1 < 0 ? '-' : '+'} ${v}${second}`,
+      answer,
+    ].join(NL),
+    metadata: { topic: 'factorise-grouping', difficulty },
+  };
+};
+
 export const generateFactoriseGrouping = (options = {}) => {
   const { difficulty = 'core' } = options;
 
-  if (_.random(0, 1)) return twoLetterGrouping(difficulty);
+  if (difficulty === 'stretch') {
+    const kind = _.random(0, 2);
+    if (kind === 0) return twoLetterGrouping(difficulty);
+    if (kind === 1) return fourLetterGrouping(difficulty);
+  } else if (_.random(0, 1)) return twoLetterGrouping(difficulty);
 
   let m, r, n, s;
   do {

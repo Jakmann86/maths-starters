@@ -4,7 +4,8 @@
 //
 //   16A.1  generateSimplifyAlgebraicFraction     cancel a monomial fraction
 //   16A.2  generateSimplifyFractionsFactorising  factorise first, then cancel
-//   16B    generateMultiplyDivideFractions       multiply and divide
+//   16B    generateMultiplyAlgebraicFractions    multiply
+//   16B    generateDivideAlgebraicFractions      divide
 //
 // Every line of workingOut is an expression equal to the question, so the
 // verification harness can evaluate the question, the answer and every
@@ -358,162 +359,120 @@ export const generateSimplifyFractionsFactorising = (options = {}) => {
 };
 
 /* ------------------------------------------------------------------ *
- * 16B — multiplying and dividing
+ * 16B — multiplying, and dividing: two skills (skill-ladder review), each
+ * with the same three gears, so a band never swaps the operation.
  *
- * Foundation  multiply two monomial fractions   x/4 x 8/y
- * Core        divide, so reciprocate first      6/x / 2/x^2
- * Stretch     factorise, then cancel across     (3x - 9)/6 x 12/(x^2 - 9)
+ * Foundation  single terms, no indices           x/4 x 8/y,  6/x / 2/y
+ * Core        indices to add or subtract         x^2/4 x 6/x^3
+ * Stretch     factorise, then cancel across      (x^2 - 9)/6 x 4/(x + 3)
  * ------------------------------------------------------------------ */
 
-export const generateMultiplyDivideFractions = (options = {}) => {
-  const { difficulty = 'core' } = options;
+/** x·y for monomial terms { c, powers }. */
+const mulTerms = (x, y) => {
+  const powers = { ...x.powers };
+  Object.keys(y.powers).forEach((k) => { powers[k] = (powers[k] || 0) + y.powers[k]; });
+  return { c: x.c * y.c, powers };
+};
+const mono = (t) => monomial(t.c, t.powers);
 
-  if (difficulty === 'foundation') {
-    for (;;) {
-      const [v1, v2] = _.sampleSize(VARS, 2);
-      const term = () => {
-        const powers = {};
-        const e1 = _.random(0, 2);
-        const e2 = _.random(0, 1);
-        if (e1) powers[v1] = e1;
-        if (e2) powers[v2] = e2;
-        return { c: _.random(1, 8), powers };
-      };
-      const A = term();
-      const B = term();
-      const C = term();
-      const D = term();
-
-      // Each fraction handed to the student is already in lowest terms, the
-      // way a textbook prints it — all the cancelling belongs after the
-      // multiplication, not before it.
-      const lowest = (x, y) => !reduceMonomials(x.c, x.powers, y.c, y.powers).changed;
-      if (!lowest(A, B) || !lowest(C, D)) continue;
-      if (monomial(B.c, B.powers) === '1' || monomial(D.c, D.powers) === '1') continue;
-      // An algebra topic should not serve a purely numeric fraction.
-      const hasVar = [A, B, C, D].some((t) => Object.keys(t.powers).length > 0);
-      if (!hasVar) continue;
-
-      const mul = (x, y) => {
-        const powers = { ...x.powers };
-        Object.keys(y.powers).forEach((k) => { powers[k] = (powers[k] || 0) + y.powers[k]; });
-        return { c: x.c * y.c, powers };
-      };
-      const N = mul(A, C);
-      const Dn = mul(B, D);
-      const rr = reduceMonomials(N.c, N.powers, Dn.c, Dn.powers);
-      const answer = frac(rr.num, rr.den);
-      if (answer === '1' || !rr.changed) continue;
-      if (N.c > 40 || Dn.c > 40) continue;
-
-      const q = `\\frac{${monomial(A.c, A.powers)}}{${monomial(B.c, B.powers)}}`
-        + ` \\times \\frac{${monomial(C.c, C.powers)}}{${monomial(D.c, D.powers)}}`;
-      return {
-        instruction: 'Simplify',
-        questionMath: q,
-        answer,
-        workingOut: [
-          `\\frac{${monomial(A.c, A.powers)} \\times ${monomial(C.c, C.powers)}}`
-            + `{${monomial(B.c, B.powers)} \\times ${monomial(D.c, D.powers)}}`,
-          frac(monomial(N.c, N.powers), monomial(Dn.c, Dn.powers)),
-          answer,
-        ].join(NL),
-        metadata: { topic: 'multiply-divide-algebraic-fractions', difficulty },
-      };
-    }
-  }
-
-  if (difficulty === 'core') {
-    for (;;) {
-      const v = _.sample(VARS);
-      const byWholeNumber = _.random(0, 3) === 0;   // 8/p / 2, Haese 16B Q2j
-      const A = { c: _.random(1, 9), powers: _.random(0, 2) ? { [v]: _.random(1, 2) } : {} };
-      const B = { c: _.random(1, 6), powers: _.random(0, 2) ? { [v]: _.random(1, 2) } : {} };
-      const C = byWholeNumber
-        ? { c: _.random(2, 6), powers: {} }
-        : { c: _.random(1, 6), powers: _.random(0, 2) ? { [v]: _.random(1, 3) } : {} };
-      const D = byWholeNumber ? { c: 1, powers: {} } : { c: _.random(1, 6), powers: _.random(0, 2) ? { [v]: _.random(1, 3) } : {} };
-
-      // A/B / (C/D)  =  A/B x D/C
-      const num = { c: A.c * D.c, powers: {} };
-      const den = { c: B.c * C.c, powers: {} };
-      [A.powers, D.powers].forEach((ps) => Object.keys(ps).forEach((k) => {
-        num.powers[k] = (num.powers[k] || 0) + ps[k];
-      }));
-      [B.powers, C.powers].forEach((ps) => Object.keys(ps).forEach((k) => {
-        den.powers[k] = (den.powers[k] || 0) + ps[k];
-      }));
-
-      const rr = reduceMonomials(num.c, num.powers, den.c, den.powers);
-      const answer = frac(rr.num, rr.den);
-      if (answer === '1' || !rr.changed) continue;
-      if (num.c > 40 || den.c > 40) continue;
-
-      // Same rule as Foundation: both given fractions are already in lowest
-      // terms. A denominator of 1 is allowed here and collapses via frac(),
-      // which is how Haese's `3 \div 1/x` shape appears.
-      // An algebra topic should not serve a purely numeric fraction.
-      const hasVar = [A, B, C, D].some((t) => Object.keys(t.powers).length > 0);
-      if (!hasVar) continue;
-      const lowest = (x, y) => !reduceMonomials(x.c, x.powers, y.c, y.powers).changed;
-      if (!lowest(A, B) || !lowest(C, D)) continue;
-
-      const left = frac(monomial(A.c, A.powers), monomial(B.c, B.powers));
-      const rightQ = byWholeNumber
-        ? monomial(C.c, C.powers)
-        : frac(monomial(C.c, C.powers), monomial(D.c, D.powers));
-      const rightR = frac(monomial(D.c, D.powers), monomial(C.c, C.powers));
-      if (left === rightQ) continue;
-
-      return {
-        instruction: 'Simplify',
-        questionMath: `${left} \\div ${rightQ}`,
-        answer,
-        workingOut: [
-          `${left} \\times ${rightR}`,
-          frac(monomial(num.c, num.powers), monomial(den.c, den.powers)),
-          answer,
-        ].join(NL),
-        metadata: { topic: 'multiply-divide-algebraic-fractions', difficulty },
-      };
-    }
-  }
-
-  // stretch — one fraction carries a common factor, the other a difference of
-  // two squares, and the shared bracket cancels across the multiplication.
+/**
+ * A/B (x or ÷) C/D with monomials. Foundation keeps every index at 1; Core
+ * needs an index of 2 or more somewhere. Dividing sometimes divides by a
+ * whole number (Haese 16B Q2j).
+ */
+function monomialProduct(op, difficulty) {
+  const F = difficulty === 'foundation';
   for (;;) {
-    const p = _.random(2, 8);
-    const k = _.random(1, 6);          // the answer's coefficient
-    const b = _.random(2, 12);
-    const product = k * b;
-    const divisors = _.range(2, 7).filter((n) => product % n === 0 && product / n <= 24);
-    if (!divisors.length) continue;
-    const a = _.sample(divisors);
-    const c = product / a;
-    const cancelPlus = _.random(0, 1) === 1;   // which bracket cancels
-    const shared = cancelPlus ? p : -p;        // (x + p) or (x - p)
-    const left = cancelPlus ? -p : p;          // the one that survives
+    const [v1, v2] = _.sampleSize(VARS, 2);
+    const term = (max = 1) => {
+      const powers = {};
+      const e1 = _.random(0, F ? 1 : max);
+      const e2 = _.random(0, 1);
+      if (e1) powers[v1] = e1;
+      if (e2) powers[v2] = e2;
+      return { c: _.random(1, 8), powers };
+    };
+    const byNumber = op === 'divide' && _.random(0, 3) === 0;
+    const A = term(2);
+    const B = term(2);
+    const C = byNumber ? { c: _.random(2, 6), powers: {} } : term(3);
+    const D = byNumber ? { c: 1, powers: {} } : term(3);
 
-    const dots = `x^2 - ${p * p}`;
-    const linearNum = expandLinear(a, shared);
-    const answer = frac(String(k), `${bare(left)}`);
+    // Each given fraction is in lowest terms, as a textbook prints it.
+    const lowest = (x, y) => !reduceMonomials(x.c, x.powers, y.c, y.powers).changed;
+    if (!lowest(A, B) || !lowest(C, D)) continue;
+    if (mono(B) === '1' || (!byNumber && mono(D) === '1')) continue;
+    if (![A, B, C, D].some((t) => Object.keys(t.powers).length > 0)) continue;
+    const indices = [A, B, C, D].flatMap((t) => Object.values(t.powers));
+    if (!F && !indices.some((e) => e >= 2)) continue;
 
-    const dotsFirst = _.random(0, 1) === 1;
-    const fA = `\\frac{${linearNum}}{${b}}`;
-    const fB = `\\frac{${c}}{${dots}}`;
-    const wA = `\\frac{${a}${bracket(shared)}}{${b}}`;
-    const wB = `\\frac{${c}}{${bracket(p)}${bracket(-p)}}`;
+    const [N, Dn] = op === 'multiply' ? [mulTerms(A, C), mulTerms(B, D)] : [mulTerms(A, D), mulTerms(B, C)];
+    const rr = reduceMonomials(N.c, N.powers, Dn.c, Dn.powers);
+    const answer = frac(rr.num, rr.den);
+    if (answer === '1' || !rr.changed) continue;
+    if (N.c > 40 || Dn.c > 40) continue;
 
+    const left = frac(mono(A), mono(B));
+    const right = byNumber ? mono(C) : frac(mono(C), mono(D));
+    if (op === 'divide' && left === right) continue;
+    const first = op === 'multiply'
+      ? `\\frac{${mono(A)} \\times ${mono(C)}}{${mono(B)} \\times ${mono(D)}}`
+      : `${left} \\times ${frac(mono(D), mono(C))}`;
     return {
       instruction: 'Simplify',
-      questionMath: dotsFirst ? `${fB} \\times ${fA}` : `${fA} \\times ${fB}`,
+      questionMath: `${left} ${op === 'multiply' ? '\\times' : '\\div'} ${right}`,
       answer,
-      workingOut: [
-        dotsFirst ? `${wB} \\times ${wA}` : `${wA} \\times ${wB}`,
-        `\\frac{${a * c}${bracket(shared)}}{${b}${bracket(p)}${bracket(-p)}}`,
-        answer,
-      ].join(NL),
-      metadata: { topic: 'multiply-divide-algebraic-fractions', difficulty },
+      workingOut: [first, frac(mono(N), mono(Dn)), answer].join(NL),
+      metadata: { topic: `${op}-algebraic-fractions`, difficulty },
     };
   }
+}
+
+/** n(x + c), or x + c alone when n is 1: a top that stays factorised. */
+const scaled = (n, c) => (n === 1 ? bare(c) : `${n}${bracket(c)}`);
+
+/**
+ * Stretch: a quadratic to factorise, then the shared bracket cancels
+ * across. The quadratic is a difference of two squares or a trinomial, and
+ * sits on top of the first fraction; for multiplying, the linear bracket is
+ * below the second, for dividing, above it, so it cancels after the flip.
+ * Either way the answer is n(x + r)/d.
+ */
+function factorisingProduct(op, difficulty) {
+  for (;;) {
+    const p = _.sample([-1, 1]) * _.random(1, 7);
+    const dots = _.random(0, 1) === 1;
+    const r = dots ? -p : _.sample([-1, 1]) * _.random(1, 7);
+    if (r === p || r === -p && !dots) continue;
+    const a = _.random(2, 9);   // the first denominator
+    const b = _.random(2, 9);   // the second fraction's number
+    const g = gcd(a, b);
+    if (g === 1) continue;       // something has to cancel in the numbers too
+    const quad = expandQuadratic(p, r);
+    const fA = `\\frac{${quad}}{${a}}`;
+    const fB = op === 'multiply' ? `\\frac{${b}}{${bare(p)}}` : `\\frac{${bare(p)}}{${b}}`;
+    const top = scaled(b / g, r);
+    const answer = a / g === 1 ? top : `\\frac{${top}}{${a / g}}`;
+    return {
+      instruction: 'Simplify',
+      questionMath: `${fA} ${op === 'multiply' ? '\\times' : '\\div'} ${fB}`,
+      answer,
+      workingOut: [
+        `\\frac{${bracket(p)}${bracket(r)}}{${a}} \\times \\frac{${b}}{${bare(p)}}`,
+        `\\frac{${b}${bracket(p)}${bracket(r)}}{${a}${bracket(p)}}`,
+        answer,
+      ].join(NL),
+      metadata: { topic: `${op}-algebraic-fractions`, difficulty },
+    };
+  }
+}
+
+export const generateMultiplyAlgebraicFractions = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  return difficulty === 'stretch' ? factorisingProduct('multiply', difficulty) : monomialProduct('multiply', difficulty);
+};
+
+export const generateDivideAlgebraicFractions = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  return difficulty === 'stretch' ? factorisingProduct('divide', difficulty) : monomialProduct('divide', difficulty);
 };

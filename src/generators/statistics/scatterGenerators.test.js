@@ -1,5 +1,5 @@
-// Substitute-the-answer-back harness for scatter-correlation and
-// line-of-best-fit. Every answer is recomputed from the plotted points, the
+// Substitute-the-answer-back harness for scatter-correlation,
+// line-of-best-fit and mean-point. Every answer is recomputed from the plotted points, the
 // drawn line, the axis titles and the printed sentences — see
 // scatterGenerators.check.js. scatterGenerators.mutation.test.js shows the
 // checker fails when it should.
@@ -7,7 +7,7 @@
 // Run: npx vitest run src/generators/statistics/scatterGenerators.test.js
 
 import { describe, expect, it } from 'vitest';
-import { generateScatterCorrelation, generateLineOfBestFit } from './scatterGenerators';
+import { generateScatterCorrelation, generateLineOfBestFit, generateMeanPoint } from './scatterGenerators';
 import { checkCorrelation, checkLineOfBestFit } from './scatterGenerators.check';
 import { generateForSkill, getSkill, strandOf } from '../../curriculum/skills';
 
@@ -25,7 +25,7 @@ const run = (name, gen, check) => describe(name, () => {
         const s = check(q, difficulty);
         questions.add(JSON.stringify([q.instruction, q.questionText, q.visualization]));
         answers.add(q.answer + (q.answerUnits ?? ''));
-        const key = s.strength ?? (s.inside === undefined ? (s.odd ? 'outlier' : 'mean point') : s.inside ? 'inside' : 'outside');
+        const key = s.strength ?? (s.inside === undefined ? (s.odd ? 'outlier' : s.missing ? `missing ${s.missing}` : 'mean point') : s.inside ? 'inside' : 'outside');
         tally[key] = (tally[key] ?? 0) + 1;
       }
       process.stdout.write(`${name} ${difficulty}: ${questions.size} distinct questions, ${answers.size} distinct answers; ${JSON.stringify(tally)}\n`);
@@ -36,16 +36,18 @@ const run = (name, gen, check) => describe(name, () => {
 
 run('scatter-correlation', generateScatterCorrelation, checkCorrelation);
 run('line-of-best-fit', generateLineOfBestFit, checkLineOfBestFit);
+run('mean-point', generateMeanPoint, checkLineOfBestFit);
 
 describe('catalogue', () => {
   it('serves both skills in the Scatter graphs topic of the statistics strand', () => {
-    ['scatter-correlation', 'line-of-best-fit'].forEach((id) => {
+    ['scatter-correlation', 'line-of-best-fit', 'mean-point'].forEach((id) => {
       expect(getSkill(id).topic).toBe('Scatter graphs');
       expect(strandOf('Scatter graphs')).toBe('Statistics and probability');
     });
     BANDS.forEach((band) => {
       checkCorrelation(generateForSkill('scatter-correlation', band), band);
       checkLineOfBestFit(generateForSkill('line-of-best-fit', band), band);
+      checkLineOfBestFit(generateForSkill('mean-point', band), band);
     });
   });
 });

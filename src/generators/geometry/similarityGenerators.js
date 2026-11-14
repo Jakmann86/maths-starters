@@ -263,20 +263,28 @@ function xShape(wholeLine) {
 }
 
 /* ------------------------------------- areas and volumes of similar shapes */
-//   Foundation  k from a matching pair of sides, the area of one shape
-//               given, find the other's (k squared; Haese Example 7)
-//   Core        both areas given, find a length (k is a square root); or
-//               similar solids, lengths given, a volume (k cubed)
-//   Stretch     surface areas given, find a volume (Haese 18D Q7-8); or the
-//               trapezium left when the small triangle is cut from the A
-//               shape (Haese 18D Q3)
-export const generateSimilarAreasVolumes = (options = {}) => {
+// Two skills: the area scale factor (k squared) and the volume scale
+// factor (k cubed).
+//   Areas
+//     Foundation  k from a matching pair of sides, the area of one shape
+//                 given, find the other's (Haese Example 7)
+//     Core        both areas given, find a length (k is a square root)
+//     Stretch     the trapezium left when the small triangle is cut from
+//                 the A shape (Haese 18D Q3)
+//   Volumes
+//     Foundation  similar solids, lengths given, find a volume
+//     Core        both volumes given, find a length (k is a cube root)
+//     Stretch     surface areas given, find a volume (Haese 18D Q7-8)
+export const generateSimilarAreas = (options = {}) => {
   const { difficulty = 'core' } = options;
-  let q;
-  if (difficulty === 'foundation') q = areaFromSides();
-  else if (difficulty === 'core') q = Math.random() < 0.5 ? lengthFromAreas() : volumeFromLengths();
-  else q = Math.random() < 0.55 ? volumeFromAreas() : trapeziumArea();
-  return { ...q, metadata: { topic: 'similar-areas-volumes', difficulty } };
+  const q = { foundation: areaFromSides, core: lengthFromAreas, stretch: trapeziumArea }[difficulty]();
+  return { ...q, metadata: { topic: 'similar-areas', difficulty } };
+};
+
+export const generateSimilarVolumes = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const q = { foundation: volumeFromLengths, core: lengthFromVolumes, stretch: volumeFromAreas }[difficulty]();
+  return { ...q, metadata: { topic: 'similar-volumes', difficulty } };
 };
 
 const K_AREA = [[2, 1], [3, 1], [3, 2], [5, 2], [4, 3], [5, 3]];
@@ -347,7 +355,7 @@ function volumeFromLengths() {
   const solid = _.sample(Object.keys(SOLIDS));
   const [p, qd] = _.sample([[2, 1], [3, 1], [3, 2], [5, 2], [4, 3]]);
   const k = p / qd;
-  const h = _.random(2, 6) * qd, V = _.random(2, 12) * qd ** 3;
+  const h = _.random(2, 8) * qd, V = _.random(2, 14) * qd ** 3;
   const H = h * k, W = V * k ** 3;
   const askBig = Math.random() < 0.6;
   const sm = { length: cm(h), value: askBig ? vol(V) : 'V = x' };
@@ -365,6 +373,33 @@ function volumeFromLengths() {
       type: 'similar-solids', big: true, solid,
       left: largeFirst ? lg : sm, right: largeFirst ? sm : lg,
       unknown: (askBig === largeFirst) ? 'left' : 'right',
+    },
+  };
+}
+
+function lengthFromVolumes() {
+  const solid = _.sample(Object.keys(SOLIDS));
+  const [p, qd] = _.sample([[2, 1], [3, 1], [3, 2], [5, 2], [4, 3]]);
+  const k = p / qd;
+  const h = _.random(2, 8) * qd, V = _.random(2, 14) * qd ** 3;
+  const H = h * k, W = V * k ** 3;
+  const xBig = Math.random() < 0.5;
+  const sm = { length: xBig ? cm(h) : 'x', value: vol(V) };
+  const lg = { length: xBig ? 'x' : cm(H), value: vol(W), big: true };
+  const largeFirst = Math.random() < 0.4;
+  return {
+    instruction: `The ${SOLIDS[solid]} are similar. Find the length x.`,
+    answer: `x = ${fmt(xBig ? H : h)}`,
+    answerUnits: '\\text{cm}',
+    workingOut: [
+      `k^3 = ${frac(fmt(W), fmt(V))}`,
+      `k = ${frac(p, qd)}`,
+      xBig ? `x = ${fmt(h)} \\times ${frac(p, qd)} = ${fmt(H)}` : `x = ${fmt(H)} \\times ${frac(qd, p)} = ${fmt(h)}`,
+    ].join(NL),
+    visualization: {
+      type: 'similar-solids', big: true, solid,
+      left: largeFirst ? lg : sm, right: largeFirst ? sm : lg,
+      unknown: `${(xBig === largeFirst) ? 'left' : 'right'}-length`,
     },
   };
 }

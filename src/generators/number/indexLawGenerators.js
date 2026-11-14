@@ -1,7 +1,9 @@
 // src/generators/number/indexLawGenerators.js
 //
-// Index laws beyond a single bare base — from the Y9 Unit 1 do-nows.
+// Index laws — Haese 6B and the Y9 Unit 1 do-nows.
 //
+//   index-laws-multiply-divide multiplying and dividing powers of one base
+//   index-laws-power           a power of a power
 //   index-laws-coefficients    the number in front has to be dealt with too
 //   index-laws-missing-power   the laws run backwards: find n
 //   exponential-equations      the unknown is the power: change the base
@@ -25,13 +27,156 @@ const fracTex = (n, d) => {
   return n < 0 ? `-\\frac{${-n}}{${d}}` : `\\frac{${n}}{${d}}`;
 };
 
+/* ---------------------------------------------- multiplying and dividing powers */
+//
+// The skill-ladder review split Haese 6B's index laws by law, so a band
+// never changes which law it is asking about.
+//
+//   foundation  a number base, evaluated        2^5 × 2^3,  10^7 ÷ 10^4
+//   core        a letter, one law               x^5 × x^3,  y^9 / y^4
+//   stretch     three or four terms, both laws  x^7 × x^4 / x^5,  a^5 a^3 / a^2 a^4
+const fracOrDiv = (a, b) => (_.random(0, 1) ? `\\frac{${a}}{${b}}` : `${a} \\div ${b}`);
+
+export const generateIndexLawsMultiplyDivide = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const meta = { topic: 'index-laws-multiply-divide', difficulty };
+
+  if (difficulty === 'foundation') {
+    // The cap is what limits variety: 10^6 is fine, 7^9 is not a starter.
+    const base = _.sample([2, 3, 4, 5, 6, 7, 10]);
+    const multiply = _.random(0, 1) === 1;
+    let m; let n; let res;
+    do {
+      if (multiply) { m = _.random(2, 9); n = _.random(2, 9); res = m + n; }
+      else { m = _.random(4, 14); n = _.random(2, m - 1); res = m - n; }
+    } while (base ** res > 100000 || res < 1);
+    const [A, B] = [`${base}^{${m}}`, `${base}^{${n}}`];
+    return {
+      instruction: 'Simplify, giving your answer as a whole number',
+      questionMath: multiply ? `${A} \\times ${B}` : fracOrDiv(A, B),
+      answer: String(base ** res),
+      workingOut: `${base}^{${m} ${multiply ? '+' : '-'} ${n}} = ${base}^{${res}}${NL}= ${base ** res}`,
+      metadata: meta,
+    };
+  }
+
+  const v = _.sample(VARS);
+  const pow = (e) => (e === 1 ? v : `${v}^{${e}}`);
+
+  if (difficulty === 'core') {
+    const multiply = _.random(0, 1) === 1;
+    let m; let n; let res;
+    do {
+      m = _.random(2, 12);
+      n = _.random(2, 9);
+      res = multiply ? m + n : m - n;
+    } while (res < 2 || res > 18);
+    return {
+      instruction: 'Simplify',
+      questionMath: multiply ? `${pow(m)} \\times ${pow(n)}` : fracOrDiv(pow(m), pow(n)),
+      answer: pow(res),
+      workingOut: `${v}^{${m} ${multiply ? '+' : '-'} ${n}}${NL}= ${pow(res)}`,
+      metadata: meta,
+    };
+  }
+
+  // Stretch: three terms (x^p × x^q ÷ x^r, either order), or four over a
+  // fraction line (x^p × x^q over x^r × x^s).
+  for (;;) {
+    const [p, q, r, t] = [_.random(2, 9), _.random(2, 9), _.random(2, 9), _.random(1, 6)];
+    const four = _.random(0, 1) === 1;
+    const res = four ? p + q - r - t : p + q - r;
+    if (res < 1 || res > 16) continue;
+    if (four) {
+      return {
+        instruction: 'Simplify',
+        questionMath: `\\frac{${pow(p)} \\times ${pow(q)}}{${pow(r)} \\times ${pow(t)}}`,
+        answer: pow(res),
+        workingOut: `\\frac{${v}^{${p + q}}}{${v}^{${r + t}}}${NL}= ${pow(res)}`,
+        metadata: meta,
+      };
+    }
+    const divideFirst = _.random(0, 1) === 1;
+    return {
+      instruction: 'Simplify',
+      questionMath: divideFirst ? `\\frac{${pow(p)}}{${pow(r)}} \\times ${pow(q)}` : `${pow(p)} \\times ${pow(q)} \\div ${pow(r)}`,
+      answer: pow(res),
+      workingOut: `${v}^{${divideFirst ? `${p} - ${r} + ${q}` : `${p} + ${q} - ${r}`}}${NL}= ${pow(res)}`,
+      metadata: meta,
+    };
+  }
+};
+
+/* ---------------------------------------------------------- a power of a power */
+//
+//   foundation  one letter                       (t^8)^2          -> t^16
+//   core        a coefficient raised too         (4a^3)^2         -> 16a^6
+//   stretch     two letters, or a fraction       (3a^2 b)^3,  (2a^3/b^2)^3
+export const generateIndexLawsPower = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const meta = { topic: 'index-laws-power', difficulty };
+  const [v, w] = _.sampleSize(VARS, 2).sort();
+  const instruction = 'Remove the brackets and simplify';
+
+  if (difficulty === 'foundation') {
+    const [inner, outer] = [_.random(2, 9), _.random(2, 6)];
+    return {
+      instruction,
+      questionMath: `(${v}^{${inner}})^{${outer}}`,
+      answer: `${v}^{${inner * outer}}`,
+      workingOut: `${v}^{${inner} \\times ${outer}}${NL}= ${v}^{${inner * outer}}`,
+      metadata: meta,
+    };
+  }
+  if (difficulty === 'core') {
+    // Forgetting to raise the coefficient is the error worth catching.
+    for (;;) {
+      const k = _.sample([2, 3, 4, 5, 6, 7, 10]);
+      const [inner, outer] = [_.random(2, 6), _.random(2, 4)];
+      if (k ** outer > 2500) continue;
+      return {
+        instruction,
+        questionMath: `(${k}${v}^{${inner}})^{${outer}}`,
+        answer: `${k ** outer}${v}^{${inner * outer}}`,
+        workingOut: `${k}^{${outer}} \\times ${v}^{${inner} \\times ${outer}}${NL}= ${k ** outer}${v}^{${inner * outer}}`,
+        metadata: meta,
+      };
+    }
+  }
+  for (;;) {
+    const k = _.sample([2, 3, 4, 5]);
+    const outer = _.random(2, 4);
+    if (k ** outer > 1000) continue;
+    const [e1, e2] = [_.random(1, 5), _.random(1, 4)];
+    const p = (x, e) => (e === 1 ? x : `${x}^{${e}}`);
+    if (_.random(0, 1)) {
+      // (k v^e1 w^e2)^outer
+      return {
+        instruction,
+        questionMath: `(${k}${p(v, e1)}${p(w, e2)})^{${outer}}`,
+        answer: `${k ** outer}${p(v, e1 * outer)}${p(w, e2 * outer)}`,
+        workingOut: `${k}^{${outer}} \\times ${v}^{${e1} \\times ${outer}} \\times ${w}^{${e2} \\times ${outer}}${NL}= ${k ** outer}${p(v, e1 * outer)}${p(w, e2 * outer)}`,
+        metadata: meta,
+      };
+    }
+    // (k v^e1 / w^e2)^outer
+    return {
+      instruction,
+      questionMath: `\\left(\\frac{${k}${p(v, e1)}}{${p(w, e2)}}\\right)^{${outer}}`,
+      answer: `\\frac{${k ** outer}${p(v, e1 * outer)}}{${p(w, e2 * outer)}}`,
+      workingOut: `\\frac{${k}^{${outer}} \\times ${v}^{${e1} \\times ${outer}}}{${w}^{${e2} \\times ${outer}}}${NL}= \\frac{${k ** outer}${p(v, e1 * outer)}}{${p(w, e2 * outer)}}`,
+      metadata: meta,
+    };
+  }
+};
+
 /* ------------------------------------------------- index laws with coefficients */
 //
 //   foundation  multiply or divide two terms               4a³ × 5a²,  20a⁷ / 4a³
 //   core        a bracket raised to a power, then × or ÷    (2y³)³ / 4y⁵
 //   stretch     a negative or a fractional index            (3m⁴)² / 9m⁻²,  (27x⁶)^(2/3)
 //
-// A bare (3x⁴)² is not here: index-laws already asks that at Stretch. Core
+// A bare (3x⁴)² is not here: index-laws-power asks that at Core. Core
 // chains it into a second law instead.
 
 export const generateIndexLawsCoefficients = (options = {}) => {

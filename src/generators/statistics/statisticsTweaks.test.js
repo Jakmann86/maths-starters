@@ -64,11 +64,90 @@ describe('averages-from-list core: four parts from one list', () => {
     expect(distinct.size).toBeGreaterThan(SAMPLES * 0.9);
   });
 
-  it('leaves Foundation and Stretch as single-measure questions', () => {
-    for (let t = 0; t < 200; t += 1) {
-      expect(generateAveragesFromList({ difficulty: 'foundation' }).instruction).toMatch(/^Find the (mode|range)$/);
-      expect(generateAveragesFromList({ difficulty: 'stretch' }).instruction).toMatch(/^Find the (mean|median)$/);
+});
+
+// Foundation: one of the four measures, recomputed from the printed list.
+// Stretch: backwards, x found from the given average; for the median and
+// range the list is in order, so x has one place.
+describe('averages-from-list foundation and stretch', () => {
+  it('foundation: one measure, recomputed from the list', () => {
+    const seen = new Set();
+    const distinct = new Set();
+    for (let t = 0; t < SAMPLES; t += 1) {
+      const q = generateAveragesFromList({ difficulty: 'foundation' });
+      parses(q);
+      const measure = /^Find the (mean|mode|median|range)$/.exec(q.instruction)?.[1];
+      expect(measure, q.instruction).toBeTruthy();
+      seen.add(measure);
+      distinct.add(q.instruction + q.questionMath);
+      const xs = q.questionMath.split(', ').map(Number);
+      expect(xs.length % 2).toBe(1);
+      const s = [...xs].sort((a, b) => a - b);
+      const counts = _.countBy(xs);
+      const top = Math.max(...Object.values(counts));
+      const modes = Object.keys(counts).filter((k) => counts[k] === top);
+      const want = {
+        mean: _.sum(xs) / xs.length,
+        mode: top > 1 && modes.length === 1 ? Number(modes[0]) : NaN,
+        median: numMedian(s),
+        range: s[s.length - 1] - s[0],
+      }[measure];
+      expect(Number.isInteger(want), `${measure} of ${q.questionMath}`).toBe(true);
+      expect(q.answer).toBe(String(want));
+      expect(q.workingOut.split('\n').at(-1)).toMatch(new RegExp(`= ${want}$`));
     }
+    expect([...seen].sort()).toEqual(['mean', 'median', 'mode', 'range']);
+    expect(distinct.size).toBeGreaterThan(SAMPLES * 0.9);
+  });
+
+  it('stretch: x from the given average', () => {
+    const seen = new Set();
+    const distinct = new Set();
+    for (let t = 0; t < SAMPLES; t += 1) {
+      const q = generateAveragesFromList({ difficulty: 'stretch' });
+      parses(q);
+      distinct.add(q.questionMath);
+      const [given, list] = q.questionMath.split('\n');
+      const g = /^\\text\{(mean|median|range|mode)\} = (\d+(?:\.5)?)$/.exec(given);
+      expect(g, given).toBeTruthy();
+      const [measure, target] = [g[1], Number(g[2])];
+      seen.add(measure);
+      const items = list.split(', ');
+      expect(items.filter((v) => v === 'x')).toHaveLength(1);
+      const m = /^x = (\d+)$/.exec(q.answer);
+      expect(m, q.answer).toBeTruthy();
+      const x = Number(m[1]);
+      const xs = items.map((v) => (v === 'x' ? x : Number(v)));
+      const ordered = measure === 'median' || measure === 'range';
+      expect(q.instruction).toBe(ordered ? 'The values are in order. Find x' : 'Find x');
+      if (ordered) xs.forEach((v, i) => { if (i) expect(v).toBeGreaterThanOrEqual(xs[i - 1]); });
+      const s = [...xs].sort((a, b) => a - b);
+      const counts = _.countBy(xs);
+      const top = Math.max(...Object.values(counts));
+      const modes = Object.keys(counts).filter((k) => counts[k] === top);
+      const got = {
+        mean: _.sum(xs) / xs.length,
+        median: numMedian(s),
+        range: s[s.length - 1] - s[0],
+        mode: modes.length === 1 ? Number(modes[0]) : NaN,
+      }[measure];
+      expect(got, `${measure} with x = ${x}: ${list}`).toBe(target);
+      // And x is the only value that works: one more or one less fails
+      // (keeping the order, where the list is in order).
+      [x - 1, x + 1].forEach((y) => {
+        const ys = items.map((v) => (v === 'x' ? y : Number(v)));
+        if (ordered && ys.some((v, i) => i && v < ys[i - 1])) return;
+        const ss = [...ys].sort((a, b) => a - b);
+        const c = _.countBy(ys);
+        const tp = Math.max(...Object.values(c));
+        const md = Object.keys(c).filter((k) => c[k] === tp);
+        const v = { mean: _.sum(ys) / ys.length, median: numMedian(ss), range: ss[ss.length - 1] - ss[0], mode: md.length === 1 ? Number(md[0]) : NaN }[measure];
+        expect(v === target, `x = ${y} also works: ${list}`).toBe(false);
+      });
+      expect(q.workingOut.split("\n").at(-1)).toMatch(new RegExp(`= ${x}$`));
+    }
+    expect([...seen].sort()).toEqual(['mean', 'median', 'mode', 'range']);
+    expect(distinct.size).toBeGreaterThan(SAMPLES * 0.9);
   });
 });
 
@@ -125,20 +204,33 @@ describe('frequency-table-reading', () => {
     }
   });
 
-  it('stretch: recover the withheld frequency from the stated count, then total', () => {
+  // The total of value x frequency is given in words; the withheld
+  // frequency is the answer. Read back from the sentence and the table, the
+  // total is matched against the context's own wording, and the row asked
+  // about is the one withheld.
+  it('stretch: the withheld frequency, from the total of value x frequency', () => {
+    const distinct = new Set();
     for (let t = 0; t < SAMPLES; t += 1) {
       const q = generateFrequencyTableReading({ difficulty: 'stretch' });
       parses(q);
+      distinct.add(q.questionText + JSON.stringify(q.visualization.rows));
       const { xs, fs } = readTable(q.visualization);
       const hidden = fs.indexOf(null);
       expect(fs.filter((f) => f === null)).toHaveLength(1);
-      expect(xs[hidden]).not.toBe(0);
-      const n = Number(q.questionText.match(/(\d+) (?:students|matches|houses|cars|nests)/)[1]);
-      const missing = n - _.sum(fs.filter((f) => f !== null));
-      expect(missing).toBeGreaterThanOrEqual(1);
-      const full = fs.map((f) => (f === null ? missing : f));
-      expect(Number(q.answer)).toBe(_.sum(xs.map((x, i) => x * full[i])));
+      expect(xs[hidden]).toBeGreaterThanOrEqual(2);
+      const m = q.questionText.match(/^\D*(\d+)\D+?\. (.+)$/);
+      expect(m, q.questionText).toBeTruthy();
+      const total = Number(m[1]);
+      // The question names the withheld row's value, and nothing else.
+      const asked = [...m[2].matchAll(/\d+/g)].map((d) => Number(d[0]));
+      expect(asked).toEqual([xs[hidden]]);
+      const known = _.sum(xs.map((x, i) => (i === hidden ? 0 : x * fs[i])));
+      const missing = (total - known) / xs[hidden];
+      expect(Number.isInteger(missing) && missing >= 1).toBe(true);
+      expect(q.answer).toBe(String(missing));
+      expect(q.workingOut.split('\n').at(-1)).toBe(`? = ${missing}`);
     }
+    expect(distinct.size).toBeGreaterThan(SAMPLES * 0.9);
   });
 });
 

@@ -4,7 +4,6 @@
 //   1A  The distributive law            -> expand-single-brackets
 //   1B  The product (a+b)(c+d)          -> expand-double-brackets
 //   1C  Difference of two squares       -> difference-of-two-squares
-//   1C  Q4, numerical application       -> difference-of-two-squares-numeric
 //   1D  Perfect squares expansion       -> expand-perfect-square
 //
 // Difficulty changes the SHAPE of the question, never the size of the number.
@@ -649,27 +648,5 @@ export const generateDifferenceOfTwoSquares = (options = {}) => {
     answer: answerLatex(collect(expanded), expanded[0]),
     workingOut: termsLatex(expanded),
     metadata: { topic: 'difference-of-two-squares', difficulty },
-  };
-};
-
-// Ex 1C Q4: 43 x 37 as 40^2 - 3^2, 24 x 26 as 25^2 - 1^2, 103 x 97 as 100^2 - 3^2.
-// No figure, one line, and unlike anything else in the retrieval pool.
-export const generateDifferenceOfTwoSquaresNumeric = (options = {}) => {
-  // Two bands: the shape has no third gear.
-  const difficulty = band(options.difficulty) === 'stretch' ? 'stretch' : 'core';
-  const base =
-    difficulty === 'core'
-      ? _.sample([20, 25, 30, 40, 50, 60, 70, 80, 90])
-      : _.sample([40, 50, 60, 70, 80, 90, 100, 110, 120]);
-  const d = difficulty === 'core' ? _.random(1, 4) : _.random(2, 7);
-
-  const pair = _.shuffle([base - d, base + d]);
-
-  return {
-    instruction: 'Evaluate without a calculator',
-    questionMath: `${pair[0]} \\times ${pair[1]}`,
-    answer: `${base * base - d * d}`,
-    workingOut: `${base}^{2} - ${d}^{2} = ${base * base} - ${d * d}`,
-    metadata: { topic: 'difference-of-two-squares-numeric', difficulty },
   };
 };

@@ -288,8 +288,15 @@ export function checkSimilarTriangles(q, difficulty) {
 
 const AREA = /^Area = (\d+(?:\.\d+)?) cm²$/;
 
+const ALLOWED = {
+  'similar-areas': { foundation: ['area from sides'], core: ['length from areas'], stretch: ['trapezium'] },
+  'similar-volumes': { foundation: ['volume from lengths'], core: ['length from volumes'], stretch: ['volume from areas'] },
+};
+
 export function checkSimilarAreasVolumes(q, difficulty) {
-  meta(q, 'similar-areas-volumes', difficulty);
+  const topic = q.metadata?.topic;
+  must(ALLOWED[topic], `topic ${topic}`, q);
+  meta(q, topic, difficulty);
   must(q.questionText === undefined, 'no prose question', q);
   const f = q.visualization;
   let kind;
@@ -345,13 +352,27 @@ export function checkSimilarAreasVolumes(q, difficulty) {
         else if ((m = /^S = (\d+(?:\.\d+)?) cm²$/.exec(part))) out.S = Number(m[1]);
         else if (part) fail(`value "${part}"`, q);
       });
-      if (S[w].length) out.h = len(S[w].length);
+      if (S[w].length) out.h = S[w].length === 'x' ? 'x' : len(S[w].length);
       return out;
     };
     const [B, Sm] = [read(big), read(small)];
     const plural = { cylinder: 'cylinders', cuboid: 'cuboids', cone: 'cones' }[f.solid];
     let k;
-    if (Number.isFinite(B.h) && Number.isFinite(Sm.h)) {
+    if (B.h === 'x' || Sm.h === 'x') {
+      // Both volumes given: k is the cube root of their ratio; x is a length.
+      must(Number.isFinite(B.V) && Number.isFinite(Sm.V) && B.S === undefined && Sm.S === undefined, 'both volumes, and no surface area', q);
+      k = Math.cbrt(B.V / Sm.V);
+      must(k > 1, 'the larger solid has the larger volume', q);
+      const which = B.h === 'x' ? big : small;
+      must(f.unknown === `${which}-length`, 'x is a length, in the slot colour', q);
+      const given = B.h === 'x' ? Sm.h : B.h;
+      must(Number.isFinite(given), 'the other length is given', q);
+      const x = B.h === 'x' ? given * k : given / k;
+      must(close(answerOf(q), x), `answer ${q.answer}, x is ${x}`, q);
+      must(q.answerUnits === '\\text{cm}' && q.instruction === `The ${plural} are similar. Find the length x.`, 'units and instruction', q);
+      checkWorking(q, { k, x });
+      kind = 'length from volumes';
+    } else if (Number.isFinite(B.h) && Number.isFinite(Sm.h)) {
       k = B.h / Sm.h;
       must(B.S === undefined && Sm.S === undefined, 'lengths or surface areas, not both', q);
       must(q.instruction === `The ${plural} are similar. Find the volume x.`, 'instruction', q);
@@ -362,15 +383,17 @@ export function checkSimilarAreasVolumes(q, difficulty) {
       must(q.instruction === `The ${plural} are similar. S is the surface area. Find the volume x.`, 'instruction', q);
       kind = 'volume from areas';
     }
-    must(k > 1, 'the larger solid is drawn larger', q);
-    const which = B.V === 'x' ? big : Sm.V === 'x' ? small : null;
-    must(which && f.unknown === which, 'x is a volume, in the slot colour', q);
-    const known = B.V === 'x' ? Sm.V : B.V;
-    must(Number.isFinite(known), 'the other volume is given', q);
-    const x = B.V === 'x' ? known * k ** 3 : known / k ** 3;
-    must(close(answerOf(q), x), `answer ${q.answer}, x is ${x}`, q);
-    must(q.answerUnits === '\\text{cm}^3', 'units cm³', q);
-    checkWorking(q, { k, x });
+    if (kind !== 'length from volumes') {
+      must(k > 1, 'the larger solid is drawn larger', q);
+      const which = B.V === 'x' ? big : Sm.V === 'x' ? small : null;
+      must(which && f.unknown === which, 'x is a volume, in the slot colour', q);
+      const known = B.V === 'x' ? Sm.V : B.V;
+      must(Number.isFinite(known), 'the other volume is given', q);
+      const x = B.V === 'x' ? known * k ** 3 : known / k ** 3;
+      must(close(answerOf(q), x), `answer ${q.answer}, x is ${x}`, q);
+      must(q.answerUnits === '\\text{cm}^3', 'units cm³', q);
+      checkWorking(q, { k, x });
+    }
   } else if (f?.type === 'similar-triangles') {
     const { name } = readTriangles(q);
     must(f.kind === 'A' && f.unknown === null, 'the A shape, no side unknown', q);
@@ -389,7 +412,7 @@ export function checkSimilarAreasVolumes(q, difficulty) {
     kind = 'trapezium';
     checkWorking(q, { k, [`T${name('ABC')}`]: small * k * k });
   } else fail('figure', q);
-  const allowed = { foundation: ['area from sides'], core: ['length from areas', 'volume from lengths'], stretch: ['volume from areas', 'trapezium'] }[difficulty];
+  const allowed = ALLOWED[topic][difficulty];
   must(allowed.includes(kind), `${difficulty} does not ask "${kind}"`, q);
   return { kind };
 }

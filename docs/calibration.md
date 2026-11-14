@@ -95,11 +95,11 @@ integer, in either order.
 **Core** — Ex 1C Q2. Coefficient on the variable.
 `(2x − 1)(2x + 1)`, `(4y − 5)(4y + 5)`, `(1 − 3x)(1 + 3x)`
 
-**Stretch** — Ex 1C Q3–Q4. Two variables, and the numerical application.
+**Stretch** — Ex 1C Q3. Two variables.
 `(4x + 5y)(4x − 5y)`, `(7x − 2y)(7x + 2y)`
-Also `43 × 37 = 40² − 3²`, and evaluating `18 × 22`, `49 × 51` without a
-calculator. That last form is a good starter question and unlike anything
-currently in the pool.
+The numerical application (Ex 1C Q4, `43 × 37 = 40² − 3²`) had its own skill
+and was removed in the skill-ladder review: a one-off trick, and not on the
+GCSE.
 
 ## Further algebra — Haese 1E, 1I, 1M, 7D, 16C–D
 
@@ -131,6 +131,45 @@ number denominators, subtraction needing the bracket. Stretch: letters in
 the denominator, `p/(x + a) ± q/(x + b)` or `p/x ± q/(x + b)`, the
 denominator left in factors. Answers in lowest terms, a negative leading
 numerator taken out in front.
+
+## Skill-ladder review: algebra
+
+Changes Joakim decided in the November 2026 skill-ladder review (rows marked
+"Use Claude's ladder" or "Use my ladder"). Rows still "To decide" were left
+alone.
+
+- **Difference of two squares: mental arithmetic** removed: a one-off trick,
+  and not on the GCSE.
+- **Factorising by grouping**, Stretch: a third kind with letters only,
+  `ax + bn + an + bx`, shuffled so that half the time the printed pairs
+  share nothing and must be regrouped first.
+- **Factorising x² + bx + c**, Stretch: a common number factor first (now
+  and then negative), then the monic quadratic.
+- **Algebraic fractions (16B)** split into Multiplying and Dividing, each
+  F single terms (no indices), C indices, S a quadratic to factorise (a
+  difference of two squares or a trinomial) cancelling across.
+- **Arithmetic sequences: use the nth term**: F the first five terms; C one
+  far term; S which term has a value, or the rule from two terms some way
+  apart.
+- **Formula substitution**: sixteen real formulae, not three. F substitute
+  forward; C substitute then solve for the letter left; S rearrange first
+  (a square or a root to undo), then substitute, to 3 s.f.
+- **Formula rearrangement**: Solve for x has gone (it is an equation; see
+  Equations, unknown on both sides). F `ax + by = c`; C a negative y
+  coefficient, the answer tidied (`(4x − 20)/3`, never over a negative);
+  S the subject in a denominator or under a root.
+- **Simultaneous equations** split by method. Substitution: F `y = …` with
+  another `y = …` or `x + y = k`; C into `ax + by = k`; S neither in `y =`
+  form, one rearranged first. Elimination: F the y coefficients already
+  match; C multiply one equation; S multiply both.
+- **Index laws** split by law. Multiplying and dividing: F a number base,
+  evaluated; C a letter, one law; S three or four terms. A power of a power:
+  F `(t⁸)²`; C `(4a³)²`; S two letters or a fraction inside.
+- **Fractional powers** evaluate in every band: F a unit fraction
+  (`8^(1/3)`); C a numerator or a negative (`32^(3/5)`, `16^(−3/4)`); S a
+  coefficient and a letter (`(27x⁶/8)^(−2/3)`). Writing a root as a power
+  is now its own skill: F `∛(p²)`; C a perfect power under the root
+  (`∛(8x²)`); S the reciprocal of a root, sometimes with a number on top.
 
 ## Solving linear equations — Haese 3A
 
@@ -259,6 +298,13 @@ between them marked. P's interior angle is what is left of 360°, then its
 exterior angle, then n. Only seven sets of polygons close round a point with
 a whole-number n; the marked gap is what gives the variety.
 
+**As built** (after the skill-ladder review). Interior angles: F a regular
+polygon, n given; C the angle given, find n; S an irregular polygon's
+missing angle, drawn to its true angles, or regular polygons meeting at a
+point (half each). Exterior angles: F n given; C the angle given, find n;
+S an irregular polygon. A Core question has no figure, since a regular
+polygon drawn would let the class count its sides.
+
 ## Functions — Haese 19A–F, 23B and Rayner 5.1–5.3
 
 Both books mix two notations, `f(x) = 3x − 7` and `f : x ↦ 3x − 7`, and two
@@ -370,42 +416,45 @@ diagonals). Stretch: x is the part of a side, so subtract at the end, or
 the X shape with the whole line given. Haese 18C (shadows, ramps) is left
 out, as the scheme marks it.
 
-**Areas and volumes** — Haese 18D, Rayner Ex 7.11-7.12. Foundation: k from
-two lengths, area times k squared (Haese Example 7). Core: areas given,
-find a length (Rayner Example 6), or volume from lengths (Haese
-Example 9). Stretch: surface areas given, find a volume (Haese 18D Q7-8),
-or the trapezium left in the A shape (Haese 18D Q3, Rayner Ex 7.12 Q5).
+**Areas of similar shapes** — Haese 18D, Rayner Ex 7.11-7.12. Foundation:
+k from two lengths, area times k squared (Haese Example 7). Core: areas
+given, find a length (Rayner Example 6). Stretch: the trapezium left in
+the A shape (Haese 18D Q3, Rayner Ex 7.12 Q5).
+
+**Volumes of similar solids** — Haese 18D. Foundation: volume from
+lengths (Haese Example 9). Core: volumes given, find a length, k a cube
+root. Stretch: surface areas given, find a volume (Haese 18D Q7-8).
 
 ## Transformations — Haese 20A–D and Rayner 11.6–11.12
 
-Year 8, on a coordinate grid; the vectors in Rayner 11.1–11.5 and Haese's
+On a coordinate grid; the vectors in Rayner 11.1–11.5 and Haese's
 stretches, function transformations, inverses and combinations (20E–H)
-are left out. A carry-out question letters one corner A and asks for A′;
-the image is drawn on reveal so the class can check their drawing. A
-describe question draws shapes A and B; the reveal draws the mirror line
-or the centre.
+are left out. Translation, reflection, rotation and enlargement are
+carried out only: a question letters one corner A and asks for A′, and
+the image is drawn on reveal so the class can check their drawing. One
+question in three (not for enlargement) moves a single point P instead,
+quicker to read off a projected grid. Describing is its own skill: it
+draws shapes A and B, and the reveal draws the mirror line or the centre.
 
 **Translation** — Haese 20A, Rayner Ex 11.10. Foundation: in words,
 "3 squares right and 2 squares down". Core: by a column vector, the form
-both books use. Stretch: write the column vector that maps A onto B.
+both books use, with no negative entry. Stretch: a column vector with a
+negative entry, or one vector and then another (find A″).
 
-**Reflection** — Haese 20C, Rayner Ex 11.6–11.7. Foundation: in a
-vertical or horizontal line, the axes among them. Core: in y = x or
-y = −x (Rayner Ex 11.7). Stretch: find the equation of the mirror line
-(Rayner Ex 11.7, "find the equation of the mirror line").
+**Reflection** — Haese 20C, Rayner Ex 11.6–11.7. Foundation: in the
+x-axis or the y-axis. Core: in a line x = a or y = b. Stretch: in y = x
+or y = −x (Rayner Ex 11.7).
 
 **Rotation** — Haese 20B, Rayner Ex 11.8–11.9. Foundation: 90° either way
-or 180° about the origin. Core: about another centre, marked. Stretch:
-describe fully, with the angle, the direction and the centre, as Rayner
-insists all three are needed.
+or 180° about the origin. Core: 180° about a centre marked on the grid.
+Stretch: 90°, clockwise or anticlockwise, about a marked centre.
 
 **Enlargement** — Haese 20D, Rayner Ex 11.11. Foundation: scale factor 2
-or 3 from a marked centre. Core: describe one, with the scale factor and
-the centre (Rayner's "find the centre of enlargement and the scale
-factor"). Stretch: scale factor ½, carried out or described; Haese calls
-this a reduction, and "enlargement, scale factor ½" is what the mark
-schemes ask for. Negative and fractional factors other than ½ are left
-out at Year 8.
+or 3, the centre at a corner of the shape, so the image grows out of it.
+Core: scale factor 2 or 3 from a centre off the shape. Stretch: scale
+factor ½ (Haese's reduction; "enlargement, scale factor ½" is what the
+mark schemes ask for), −1 or −2, the centre between the shape and its
+image.
 
 **Describing a transformation** — Rayner Ex 11.12, "describe fully the
 following transformations". Foundation: a translation, a reflection in a
@@ -414,6 +463,31 @@ the four, centres anywhere and scale factors 2 and 3. Stretch: the harder
 case of three: reflection in y = x or y = −x, a quarter turn about a
 centre off the origin, scale factor ½. A translation has no harder case,
 so it stops at Core.
+
+## Skill-ladder review: geometry
+
+Changes Joakim decided in the November 2026 skill-ladder review. Rows still
+"To decide" were left alone.
+
+- **Translation, reflection, rotation and enlargement** are carried out
+  only, with single-point questions mixed into every band of the first
+  three; describing is left to Describing a transformation. Bands as in
+  the Transformations section above.
+- **Polygon interior and exterior angles**: F n given; C the angle given,
+  find n; S irregular. See Angles in polygons above.
+- **Parallel and perpendicular gradients** split. Parallel lines: F
+  y = mx + c; C ax + by = d; S the equation of the parallel line through a
+  point. Perpendicular lines: F a whole-number gradient; C a fraction;
+  S general form.
+- **Vertical and horizontal lines**: F read x = a or y = b off a graph; C
+  through two points; S from a description ("parallel to the x-axis,
+  through (3, −2)"; perpendicular to an axis; gradient 0). Where a line
+  meets one is its own skill, *Where a line meets x = a or y = b*: F x = a
+  and y = b; C y = mx + c with x = k or y = k; S ax + by = d with x = k or
+  y = k.
+- **Straight lines in general form**: F y = mx + c to ax + by = d; C back;
+  S the equation through two points, in ax + by = d.
+- **Areas and volumes of similar shapes** split; see Similarity above.
 
 ## Vectors — Haese 24A–H and Rayner 11.1–11.5
 
@@ -487,6 +561,47 @@ other). Stretch: exactly one, or at least one, without the tree that
 added, or the one left. Core: overlapping events on numbered cards or a pack
 of 52, by P(A) + P(B) − P(A and B). Stretch: the addition rule with the
 probabilities given, forwards or back to P(A and B).
+
+## Skill-ladder review: number
+
+Changes Joakim decided in the November 2026 skill-ladder review. Rows still
+"To decide" were left alone.
+
+- **Percentages** is six skills, each holding one task:
+  - *Percentage of an amount*: F friendly percentages (10%, 25%, …); C any
+    whole percentage that is not one of those, over 100% a quarter of the
+    time; S a half percentage (12.5%, 7.5%).
+  - *Reverse percentages* (new): F 10% or 50% of it known; C any friendly
+    percentage, so 1% first; S the amount after an increase or decrease.
+  - *Finding a multiplier*: F a whole percentage; C an awkward one (45.9%,
+    or past 100%); S two changes as one multiplier.
+  - *Reading a multiplier as a change* (new): F × 1.15; C × 1.075;
+    S two multipliers in turn as one overall change.
+  - *Increasing or decreasing by a percentage*: F one step; C two steps;
+    S the same change compounded over several years.
+  - *Percentage change, profit and loss* (new): F a whole-number change;
+    C to one decimal place; S the cost price from a selling price and a
+    profit or loss.
+- **Fractions, decimals and percentages** split by direction. Decimals and
+  percentages to fractions: F 0.35, 6%; C three places, or 12.5% and its
+  family; S any other half percentage. Fractions to decimals and
+  percentages: F halves to twenty-fifths; C sixteenths, fortieths, 125ths;
+  S mixed numbers.
+- **Rational or irrational?** no longer has its own box: it is one
+  Foundation question in three in Simplifying surds.
+- **Negative fractions** split. Adding and subtracting: F one denominator
+  divides the other, simplify first; C different denominators; S three
+  terms. Multiplying and dividing: F one product; C a division, simplify
+  first; S a square in the product.
+- **Standard form** is four skills. Writing in standard form: F large;
+  C small; S already a × 10ⁿ but with a outside 1 to 10 (45 × 10³,
+  0.0004 × 10⁵). As an ordinary number (new): F positive power; C negative;
+  S powers of 8 to 12. Multiplying and dividing: F × with no carry; C ×
+  with a carry, or ÷ exactly; S ÷ needing adjustment. Adding and
+  subtracting: F the same power; C powers one apart; S two or three apart.
+- **Simplifying surds** already held one task after Joakim's own surds
+  rework (prime square factor, composite square factor, a coefficient), so
+  its bands were kept as he wrote them.
 
 ## Profit and interest — Haese 10B, 10C, 10F
 
@@ -591,6 +706,38 @@ power is positive). Stretch: combine with a number first
 (log_2 x + log_2(x + 2) = 3 → x = 2, the negative root rejected).
 
 ---
+
+## Skill-ladder review: statistics
+
+Changes Joakim decided in the November 2026 skill-ladder review. Rows still
+"To decide" were left alone.
+
+- **Types of data**: F qualitative or quantitative; C qualitative, discrete
+  or continuous; S the edge cases (shoe size, shirt number, hours of
+  sunshine), four variables with a Reason column filled in on reveal.
+- **Averages from a list** (Joakim's ladder): F one measure at a time
+  (mean, mode, median or range); C all four, as parts (a)–(d); S
+  backwards, x found from a given mean, median, range or mode. For the
+  median and the range the list is given in order, so x has one place.
+- **Reading a frequency table**: F read and add; C the total of value ×
+  frequency; S backwards, the missing frequency from that total, with the
+  number asked not given.
+- **Cumulative frequency tables**: F discrete; C grouped; S grouped with
+  gaps in both columns, so frequencies come from cumulative ones.
+- **Modal class** and **Class containing the median** split. Modal: F four
+  or five classes; C six, with a close second; S from a cumulative table.
+  Median: F a total of 30 or under; C a total of 50 to 100; S from a
+  cumulative table.
+- **Averages from a stem-and-leaf plot**: F the median of a short plot, odd
+  count; C the median with an even count; S the mean of 15 to 20 values.
+- **Pie charts** split. Reading: F a frequency from a labelled angle; C the
+  same with one angle withheld (360 minus the rest first); S the scale
+  from one known frequency. Drawing: F a total that divides 360; C any
+  total, to the nearest degree; S from percentages, one sometimes missing.
+- **Line of best fit**: F read an estimate; C estimate and say
+  interpolation or extrapolation; S estimate either way and judge
+  reliability with a reason. **The mean point** is its own skill: F four or
+  five pairs; C six or seven; S the mean point given, a missing value k.
 
 ## Not yet calibrated
 

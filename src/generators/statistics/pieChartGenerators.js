@@ -4,14 +4,24 @@
 // chart, finding a sector angle from a frequency table, and the two-step
 // questions of Exercise 5A Q6 where the sample size is not given.
 //
-// Both directions live in one skill, as bands:
+// Two skills, one per direction:
 //
-//   foundation  chart + total given        -> a frequency        (read)
-//   core        frequency table given      -> a sector angle     (construct)
-//   stretch     two steps, total withheld  -> a frequency        (either way)
+//   pie-charts (reading)
+//     foundation  chart + total given, every angle labelled -> a frequency
+//     core        total given, one sector's angle withheld  -> its frequency
+//                 (360 - the rest first)
+//     stretch     total withheld, one frequency given       -> another
+//                 frequency (the scale first)
 //
-// Every sector angle in this file is a whole number of degrees. That is the
-// binding constraint and it is what caps the variety: an angle is
+//   pie-chart-angles (drawing)
+//     foundation  frequency table, a total that divides 360 -> a whole angle
+//     core        any total                                  -> an angle to
+//                                                               the nearest degree
+//     stretch     a table of percentages, one sometimes      -> a whole angle
+//                 missing                                       (p x 3.6)
+//
+// Every sector angle drawn on a chart is a whole number of degrees. That is
+// the binding constraint and it is what caps the variety: an angle is
 // 360 x f / total, so the total has to divide 360. TOTALS below is therefore
 // not a range but a list, and it is the whole list that exists.
 
@@ -243,9 +253,16 @@ const figure = (sectors, unknownName, notes) => ({
 export const generatePieCharts = (options = {}) => {
   const { difficulty = 'core' } = options;
 
-  if (difficulty === 'core') return coreBand();
-  if (difficulty === 'stretch') return stretchBand();
+  if (difficulty === 'core') return twoStep('missing-angle', 'core');
+  if (difficulty === 'stretch') return twoStep('scale', 'stretch');
   return foundationBand();
+};
+
+export const generatePieChartAngles = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  if (difficulty === 'core') return anyTotalAngle();
+  if (difficulty === 'stretch') return percentageAngle();
+  return wholeAngle();
 };
 
 /* foundation: every angle on the chart, the total in words, read off one
@@ -269,11 +286,11 @@ function foundationBand() {
   };
 }
 
-/* core: the other direction. A frequency table, no total row, so the total
-   has to be found before the angle can be. Haese Example 2's own working. */
-function coreBand() {
+/* Drawing, foundation: a frequency table, no total row, so the total has to
+   be found before the angle can be. Haese Example 2's own working. */
+function wholeAngle() {
   const built = buildChart(_.sample([3, 4]));
-  if (!built) return coreBand();
+  if (!built) return wholeAngle();
   const { context, total, sectors } = built;
   const target = _.sample(sectors);
 
@@ -287,29 +304,91 @@ function coreBand() {
       `\\frac{${target.freq}}{${total}} \\times 360${NL}` +
       `= ${target.angle}^\\circ`,
     visualization: { type: 'table', rows, header: 'row' },
-    metadata: { topic: 'pie-charts', difficulty: 'core' },
+    metadata: { topic: 'pie-chart-angles', difficulty: 'foundation' },
   };
 }
 
-/* stretch: two steps, and the sample size is never handed over.
+/* Drawing, core: any total, so the angle is rounded to the nearest degree.
+   An angle ending in exactly .5 is not used, so the rounding never needs a
+   rule. */
+function anyTotalAngle() {
+  for (;;) {
+    const context = _.sample(CONTEXTS);
+    const k = _.sample([3, 4]);
+    if (context.cats.length < k) continue;
+    const total = _.random(21, 80);
+    if (360 % total === 0) continue;
+    const freqs = sampleFreqs(total, k, Math.ceil(total / 10), Math.floor(total / 2));
+    if (!freqs) continue;
+    const cats = _.sampleSize(context.cats, k);
+    const i = _.random(0, k - 1);
+    const exact = (freqs[i] * 360) / total;
+    const tenths = Math.round(exact * 10);
+    if (Number.isInteger(exact) || Math.abs(exact - Math.floor(exact) - 0.5) < 1e-9) continue;
+    const angle = Math.round(exact);
+    const rows = [[context.col, 'Frequency'], ...cats.map((c, j) => [c.name, String(freqs[j])])];
+    return {
+      instruction: `The table shows ${context.shows}. Work out the sector angle for ${cats[i].name} on a pie chart, to the nearest degree`,
+      answer: `${angle}^\\circ`,
+      workingOut:
+        `\\text{total} = ${freqs.join(' + ')} = ${total}${NL}` +
+        `\\frac{${freqs[i]}}{${total}} \\times 360 = ${(tenths / 10).toFixed(1)}...${NL}` +
+        `= ${angle}^\\circ`,
+      visualization: { type: 'table', rows, header: 'row' },
+      metadata: { topic: 'pie-chart-angles', difficulty: 'core' },
+    };
+  }
+}
 
-   scale          one sector's frequency is given in words; the total has to
+/* Drawing, stretch: percentages, each a multiple of 5 so every angle is
+   whole (5% is 18°). Half the time the category asked about has no
+   percentage printed, so 100 - the rest comes first. */
+function percentageAngle() {
+  for (;;) {
+    const context = _.sample(CONTEXTS);
+    const k = _.sample([3, 4, 5]);
+    if (context.cats.length < k) continue;
+    const parts = sampleFreqs(20, k, 2, 11);
+    if (!parts) continue;
+    const ps = parts.map((p) => p * 5);
+    const cats = _.sampleSize(context.cats, k);
+    const i = _.random(0, k - 1);
+    const missing = Math.random() < 0.5;
+    const rows = [[context.col, 'Percentage'], ...cats.map((c, j) => [c.name, missing && j === i ? '?' : `${ps[j]}%`])];
+    const others = ps.filter((_p, j) => j !== i);
+    return {
+      instruction: `The table shows ${context.shows}, as percentages. Work out the sector angle for ${cats[i].name} on a pie chart`,
+      answer: `${ps[i] * 3.6}^\\circ`,
+      workingOut: [
+        ...(missing ? [`100 - (${others.join(' + ')}) = ${ps[i]}\\%`] : []),
+        `${ps[i]}\\% \\text{ of } 360^\\circ = ${ps[i] / 100} \\times 360`,
+        `= ${ps[i] * 3.6}^\\circ`,
+      ].join(NL),
+      visualization: { type: 'table', rows, header: 'row' },
+      metadata: { topic: 'pie-chart-angles', difficulty: 'stretch' },
+    };
+  }
+}
+
+/* Reading, two steps.
+
+   missing-angle  (core) the total is given but one sector carries no angle,
+                  so 360 - the rest comes first. The withheld sector is the
+                  one asked about, so the subtraction cannot be skipped.
+   scale          (stretch) the sample size is never handed over: one
+                  sector's frequency is given in words, and the total has to
                   be recovered from it before any other sector can be read.
-                  (Haese Exercise 5A Q6a/c.)
-   missing-angle  the total is given but one sector carries no angle, so
-                  360 - the rest comes first. The withheld sector is the one
-                  asked about, so the subtraction cannot be skipped. */
-function stretchBand() {
-  const variant = _.sample(['scale', 'missing-angle']);
+                  (Haese Exercise 5A Q6a/c.) */
+function twoStep(variant, difficulty) {
   const built = buildChart(_.sample([3, 4]));
-  if (!built) return stretchBand();
+  if (!built) return twoStep(variant, difficulty);
   const { context, total, sectors } = built;
 
   if (variant === 'scale') {
     const [given, target] = _.sampleSize(sectors, 2);
     // A given frequency equal to the answer reads as a misprint rather than
     // a question, and lets a guess land.
-    if (given.freq === target.freq) return stretchBand();
+    if (given.freq === target.freq) return twoStep(variant, difficulty);
 
     return {
       instruction: `The pie chart shows ${context.shows}.`,
@@ -324,7 +403,7 @@ function stretchBand() {
       // sector you are being asked for. Highlighting the *given* sector here
       // would make the same cue mean the opposite in one band out of four.
       visualization: figure(sectors, target.name),
-      metadata: { topic: 'pie-charts', difficulty: 'stretch' },
+      metadata: { topic: 'pie-charts', difficulty },
     };
   }
 
@@ -341,6 +420,6 @@ function stretchBand() {
       `\\frac{${target.angle}}{360} \\times ${total}${NL}` +
       `= ${target.freq}`,
     visualization: figure(sectors, target.name, { [target.name]: '?' }),
-    metadata: { topic: 'pie-charts', difficulty: 'stretch' },
+    metadata: { topic: 'pie-charts', difficulty },
   };
 }

@@ -5,11 +5,14 @@
 // fully. The topic is "Transformations". Column vectors are used for
 // translations from Core; the vectors chapter itself is not here.
 //
-// Every question is drawn on the transform-grid figure. A carry-out
-// question letters one vertex A and asks for the coordinates of its image
-// A'; the image itself is drawn on reveal, in the slot colour, so a class
-// can check their drawing. A describe question draws shapes A and B, and
-// the reveal draws the mirror line or the centre that the answer names.
+// Every question is drawn on the transform-grid figure. Translation,
+// reflection, rotation and enlargement are carried out: a question letters
+// one vertex A and asks for the coordinates of its image A'; the image
+// itself is drawn on reveal, in the slot colour, so a class can check their
+// drawing. One question in three moves a single point P instead of a shape
+// (not for enlargement). Describing a transformation is its own skill: it
+// draws shapes A and B, and the reveal draws the mirror line or the centre
+// that the answer names.
 //
 // Shapes have no line or turn of symmetry, so a pair A, B is the image of
 // one transformation only and the answer is the only one. The checker
@@ -97,6 +100,7 @@ const inQuadrant = (pts) => [0, 1].every((i) => pts.every((p) => p[i] > 0) || pt
 // the whole drawing small enough to read.
 const valid = (r) => inGrid(r.object) && inGrid(r.image) && apart(r.object, r.image)
   && inQuadrant(r.object) && inQuadrant(r.image)
+  && (r.object.length > 1 || Math.hypot(r.object[0][0] - r.image[0][0], r.object[0][1] - r.image[0][1]) >= 2)
   && fits([...r.object, ...r.image, ...(r.centre ? [r.centre] : [])]);
 
 // Place an object, with its image, by trying placements until one is valid.
@@ -108,22 +112,44 @@ function place(make) {
   throw new Error('transformations: could not place a shape');
 }
 
+// A point question letters one point P, off the axes, and its image stands
+// at least two squares from it, so the two letters never crowd.
 const anyObject = () => move(shape(), _.random(-7, 4), _.random(-7, 4));
+const anyPoint = () => [[_.random(-6, 6), _.random(-6, 6)]];
+const objectOf = (point) => (point ? anyPoint() : anyObject());
 
-const makeTranslation = () => place(() => {
-  const v = [_.random(-6, 6), _.random(-6, 6)];
-  if (v[0] === 0 && v[1] === 0) return null;
-  const object = anyObject();
+const anyVector = () => { const v = [_.random(-6, 6), _.random(-6, 6)]; return v[0] || v[1] ? v : null; };
+const POSITIVE = () => { const v = [_.random(0, 6), _.random(0, 6)]; return v[0] || v[1] ? v : null; };
+const NEGATIVE = () => { const v = anyVector(); return v && (v[0] < 0 || v[1] < 0) ? v : null; };
+
+const makeTranslation = (vectorOf = anyVector, point = false) => place(() => {
+  const v = vectorOf();
+  if (!v) return null;
+  const object = objectOf(point);
   return { kind: 'translation', v, object, image: object.map(TRANSFORMS.translate(v)) };
 });
 
+// One translation and then another. The shape between them is not drawn,
+// but it stays on the grid, so a class drawing it can.
+const makeTwoTranslations = (point) => place(() => {
+  const v = anyVector(), w = anyVector();
+  if (!v || !w || (v[0] + w[0] === 0 && v[1] + w[1] === 0)) return null;
+  const object = objectOf(point);
+  const mid = object.map(TRANSFORMS.translate(v));
+  if (!inGrid(mid)) return null;
+  return { kind: 'translation', v, w, object, mid, image: mid.map(TRANSFORMS.translate(w)) };
+});
+
+const nonZero = (a, b) => { for (;;) { const n = _.random(a, b); if (n) return n; } };
+const AXES = [() => ({ x: 0 }), () => ({ y: 0 })];
+const OFF_AXIS = [() => ({ x: nonZero(-4, 4) }), () => ({ y: nonZero(-4, 4) })];
 const STRAIGHT = [() => ({ x: _.random(-4, 4) }), () => ({ y: _.random(-4, 4) })];
 const DIAGONAL = [() => ({ m: 1, c: 0 }), () => ({ m: -1, c: 0 })];
 // Each maker settles the kind (which line, which turn, which factor) before
 // placing, so a kind that is harder to fit on the grid is not drawn less.
-const makeReflection = (lines) => { const pick = _.sample(lines); return place(() => {
+const makeReflection = (lines, point = false) => { const pick = _.sample(lines); return place(() => {
   const line = pick();
-  const object = anyObject();
+  const object = objectOf(point);
   return { kind: 'reflection', line, object, image: object.map(TRANSFORMS.reflect(line)) };
 }); };
 
@@ -133,9 +159,9 @@ const offAxes = (p) => p[0] !== 0 && p[1] !== 0;
 const ORIGIN = () => [0, 0];
 const ANYWHERE = () => (Math.random() < 0.25 ? [0, 0] : OFF_ORIGIN());
 const OFF_ORIGIN = () => { for (;;) { const c = [_.random(-3, 3), _.random(-3, 3)]; if (offAxes(c)) return c; } };
-const makeRotation = (angles, centreOf) => { const angle = _.sample(angles); return place(() => {
+const makeRotation = (angles, centreOf, point = false) => { const angle = _.sample(angles); return place(() => {
   const centre = centreOf();
-  const object = anyObject();
+  const object = objectOf(point);
   if (inside(centre, object)) return null;
   return { kind: 'rotation', angle, centre, object, image: object.map(TRANSFORMS.rotate(angle, centre)) };
 }); };
@@ -143,23 +169,26 @@ const makeRotation = (angles, centreOf) => { const angle = _.sample(angles); ret
 // For a half, the small shape is the image, and the object is its
 // enlargement by 2, so every image corner lands on a grid point. The centre
 // lies off the axes and outside both shapes, so the rays from it can be
-// drawn. Few placements of a shape and its enlargement fit the grid, so
-// rather than guessing, every centre and offset is tried once per shape and
-// factor, and one of those that fit is drawn.
+// drawn; for a negative factor it lies between them. Few placements of a
+// shape and its enlargement fit the grid, so rather than guessing, every
+// centre and offset is tried once per shape and factor, and one of those
+// that fit is drawn.
 const ENLARGEMENTS = new Map();
+const smallShape = (k) => k === 3 || k === -2;
 function enlargementsOf(k, base) {
   const key = `${k}|${base.join(';')}`;
   if (!ENLARGEMENTS.has(key)) {
     const [, w, , h] = box(base);
-    const near = k === 3 ? 2 : 3;
+    const near = smallShape(k) ? 2 : 3;
+    const s = k === 0.5 ? 2 : 1;
     const list = [];
     for (let cx = -6; cx <= 6; cx += 1) for (let cy = -6; cy <= 6; cy += 1) {
       const centre = [cx, cy];
       if (!offAxes(centre)) continue;
       for (let dx = -w - near; dx <= near; dx += 1) for (let dy = -h - near; dy <= near; dy += 1) {
         // The boxes first, which an enlargement maps to boxes: most
-        // placements fail on them, before any shape is built.
-        const s = k === 0.5 ? 2 : 1;
+        // placements fail on them, before any shape is built. A negative
+        // factor turns a box's corners about, which box() does not mind.
         const ob = [cx + s * dx, cx + s * (dx + w), cy + s * dy, cy + s * (dy + h)];
         const ib = [cx + k * (ob[0] - cx), cx + k * (ob[1] - cx), cy + k * (ob[2] - cy), cy + k * (ob[3] - cy)];
         const corners = (b) => [[b[0], b[2]], [b[1], b[3]]];
@@ -180,9 +209,24 @@ function enlargementsOf(k, base) {
 const makeEnlargement = (factors) => {
   const k = _.sample(factors);
   for (;;) {
-    const list = enlargementsOf(k, shape(k === 3 ? 2 : 3));
+    const list = enlargementsOf(k, shape(smallShape(k) ? 2 : 3));
     if (list.length) return _.cloneDeep(_.sample(list));
   }
+};
+
+// The centre at one of the shape's own corners: the image grows out of that
+// corner and covers the shape, so the two are not kept apart.
+const makeEnlargementFromVertex = () => {
+  const k = _.sample([2, 3]);
+  for (let t = 0; t < 20000; t += 1) {
+    const object = move(shape(k === 3 ? 2 : 3), _.random(-7, 4), _.random(-7, 4));
+    const centre = _.sample(object);
+    const image = object.map(TRANSFORMS.enlarge(k, centre));
+    if (inGrid(object) && inGrid(image) && inQuadrant(object) && inQuadrant(image) && fits([...object, ...image])) {
+      return { kind: 'enlargement', k, centre: [...centre], object, image };
+    }
+  }
+  throw new Error('transformations: could not place an enlargement from a corner');
 };
 
 /* ------------------------------------------------------------- wording */
@@ -211,25 +255,37 @@ export function describeTex(r) {
 
 /* ------------------------------------------------------- question builders */
 
-// Carry out: the object with vertex A lettered, the image drawn on reveal,
-// the answer A'. A corner two or more squares from both axes is lettered
-// when there is one, so A and A' stay clear of the numbers on the axes.
-function carryOut(r, { instruction = findA, questionText, questionMath, showMirror, showCentre }, topic, difficulty) {
+// What the sentence moves: the shape, or the point P.
+const what = (r) => (r.object.length === 1 ? 'the point P' : 'the shape');
+
+// Carry out: the object with vertex A lettered (or the point P), the image
+// drawn on reveal, the answer A' (A'' after two translations). A corner two
+// or more squares from both axes is lettered when there is one, so A and A'
+// stay clear of the numbers on the axes; a corner the transformation leaves
+// where it is, the centre of an enlargement, is never lettered.
+function carryOut(r, { sentence, questionMath, showMirror, showCentre }, topic, difficulty) {
+  const L = r.object.length === 1 ? 'P' : 'A';
+  const primes = r.mid ? 2 : 1;
+  const find = `Find the coordinates of ${L}${primes === 2 ? '″' : '′'}.`;
   const clear = (p) => Math.abs(p[0]) >= 2 && Math.abs(p[1]) >= 2;
-  const corners = _.range(r.object.length);
+  const corners = _.range(r.object.length).filter((j) => String(r.object[j]) !== String(r.image[j]));
   const roomy = corners.filter((j) => clear(r.object[j]) && clear(r.image[j]));
   const i = _.sample(roomy.length ? roomy : corners);
-  const A = r.object[i], A2 = r.image[i];
+  const named = (n) => `${L}${"'".repeat(n)}`;
+  const steps = [r.object[i], ...(r.mid ? [r.mid[i]] : []), r.image[i]];
   return {
-    instruction: txt(instruction),
-    ...(questionText ? { questionText: txt(questionText) } : {}),
-    ...(questionMath ? { questionMath } : {}),
-    answer: `A' = ${pt(A2)}`,
-    workingOut: [`A = ${pt(A)}`, `A' = ${pt(A2)}`].join(NL),
+    // The sentence goes in the big text, unless a column vector takes that
+    // line; then it leads the instruction.
+    instruction: txt(questionMath ? `${sentence} ${find}` : find),
+    // An equation in the sentence ("the line y = −3") does not break at
+    // its equals sign.
+    ...(questionMath ? { questionMath } : { questionText: txt(sentence).replace(/ = /g, '\u00a0=\u00a0') }),
+    answer: `${named(primes)} = ${pt(r.image[i])}`,
+    workingOut: steps.map((p, n) => `${named(n)} = ${pt(p)}`).join(NL),
     visualization: {
       type: 'transform-grid', big: true,
-      shapes: [{ pts: r.object, vertex: { index: i, text: 'A' } }],
-      solution: [{ pts: r.image, vertex: { index: i, text: "A'" } }],
+      shapes: [{ pts: r.object, vertex: { index: i, text: L } }],
+      solution: [{ pts: r.image, vertex: { index: i, text: named(primes) } }],
       ...(showMirror ? { mirror: r.line, ...(lineLabel(r.line) ? { mirrorLabel: lineLabel(r.line) } : {}) } : {}),
       ...(showCentre ? { centre: r.centre } : {}),
     },
@@ -238,12 +294,12 @@ function carryOut(r, { instruction = findA, questionText, questionMath, showMirr
 }
 
 // Describe: A and B drawn; the reveal shows the mirror line or centre.
-function describe(r, topic, difficulty, { instruction, answer } = {}) {
+function describe(r, topic, difficulty) {
   const reveal = r.kind === 'reflection' ? { solutionMirror: r.line, ...(lineLabel(r.line) ? { solutionMirrorLabel: lineLabel(r.line) } : {}) }
     : r.kind === 'rotation' || r.kind === 'enlargement' ? { solutionCentre: r.centre } : {};
-  const ans = answer ?? describeTex(r);
+  const ans = describeTex(r);
   return {
-    instruction: instruction ?? 'Describe fully the single transformation that maps shape A onto shape B.',
+    instruction: 'Describe fully the single transformation that maps shape A onto shape B.',
     answer: ans,
     workingOut: ans,
     visualization: {
@@ -255,70 +311,76 @@ function describe(r, topic, difficulty, { instruction, answer } = {}) {
   };
 }
 
-const findA = 'Find the coordinates of A′.';
+// One question in three moves a single point rather than a shape: quicker
+// to read off a projected grid, and the same skill.
+const POINT_SHARE = 1 / 3;
+const aPoint = () => Math.random() < POINT_SHARE;
+
+// Translation, reflection, rotation and enlargement here are carried out
+// only. Saying which transformation maps one shape onto another is the
+// Describing a transformation skill.
 
 /* ---------------------------------------------------------- translation */
-//   Foundation  in words, "3 squares right and 2 squares down": find A'
-//   Core        by a column vector: find A'
-//   Stretch     the column vector that translates A onto B
+//   Foundation  in words, "3 squares right and 2 squares down"
+//   Core        by a column vector with no negative entry
+//   Stretch     by a column vector with a negative entry, or by one column
+//               vector and then another
 export const generateTranslation = (options = {}) => {
   const { difficulty = 'core' } = options;
   const topic = 'translation';
-  const r = makeTranslation();
-  const [dx, dy] = r.v;
+  const point = aPoint();
   if (difficulty === 'foundation') {
-    const sq = (n) => `${Math.abs(n)} square${Math.abs(n) === 1 ? '' : 's'}`;
+    const r = makeTranslation(anyVector, point);
+    const [dx, dy] = r.v;
+    const sq = (n) => `${Math.abs(n)} square${Math.abs(n) === 1 ? '' : 's'}`;
     const parts = [dx ? `${sq(dx)} ${dx > 0 ? 'right' : 'left'}` : null, dy ? `${sq(dy)} ${dy > 0 ? 'up' : 'down'}` : null].filter(Boolean);
-    return carryOut(r, { questionText: `Translate the shape ${parts.join(' and ')}.` }, topic, difficulty);
+    return carryOut(r, { sentence: `Translate ${what(r)} ${parts.join(' and ')}.` }, topic, difficulty);
   }
-  if (difficulty === 'core') {
-    return carryOut(r, { instruction: `Translate the shape by the column vector. ${findA}`, questionMath: vecTex(r.v) }, topic, difficulty);
+  if (difficulty === 'stretch' && Math.random() < 0.5) {
+    const r = makeTwoTranslations(point);
+    return carryOut(r, {
+      sentence: `Translate ${what(r)} by the first column vector, then by the second.`,
+      questionMath: `${vecTex(r.v)} \\text{ then } ${vecTex(r.w)}`,
+    }, topic, difficulty);
   }
-  return describe(r, topic, difficulty, { instruction: 'Write down the column vector that translates shape A onto shape B.', answer: vecTex(r.v) });
+  const r = makeTranslation(difficulty === 'core' ? POSITIVE : NEGATIVE, point);
+  return carryOut(r, { sentence: `Translate ${what(r)} by the column vector.`, questionMath: vecTex(r.v) }, topic, difficulty);
 };
 
 /* ----------------------------------------------------------- reflection */
-//   Foundation  in a vertical or horizontal line, the axes among them
-//   Core        in y = x or y = -x
-//   Stretch     the equation of the mirror line that maps A onto B
+//   Foundation  in the x-axis or the y-axis
+//   Core        in a line x = a or y = b, off the axes
+//   Stretch     in y = x or y = -x
 export const generateReflection = (options = {}) => {
   const { difficulty = 'core' } = options;
-  const topic = 'reflection';
-  if (difficulty === 'stretch') {
-    const r = makeReflection([...STRAIGHT, ...DIAGONAL]);
-    return describe(r, topic, difficulty, { instruction: 'Shape A is reflected onto shape B. Write down the equation of the mirror line.', answer: lineTex(r.line) });
-  }
-  const r = makeReflection(difficulty === 'foundation' ? STRAIGHT : DIAGONAL);
-  return carryOut(r, { questionText: `Reflect the shape in ${lineName(r.line)}.`, showMirror: true }, topic, difficulty);
+  const lines = { foundation: AXES, core: OFF_AXIS, stretch: DIAGONAL }[difficulty];
+  const r = makeReflection(lines, aPoint());
+  return carryOut(r, { sentence: `Reflect ${what(r)} in ${lineName(r.line)}.`, showMirror: true }, 'reflection', difficulty);
 };
 
 /* ------------------------------------------------------------- rotation */
 //   Foundation  90 or 180 degrees about the origin
-//   Core        about another centre, marked on the grid
-//   Stretch     describe fully: angle, direction and centre
+//   Core        180 degrees about a centre marked on the grid
+//   Stretch     90 degrees, clockwise or anticlockwise, about a centre
+//               marked on the grid
 export const generateRotation = (options = {}) => {
   const { difficulty = 'core' } = options;
-  const topic = 'rotation';
-  if (difficulty === 'stretch') return describe(makeRotation([90, -90, 180], OFF_ORIGIN), topic, difficulty);
   const origin = difficulty === 'foundation';
-  const r = makeRotation([90, -90, 180], origin ? ORIGIN : OFF_ORIGIN);
+  const angles = { foundation: [90, -90, 180], core: [180], stretch: [90, -90] }[difficulty];
+  const r = makeRotation(angles, origin ? ORIGIN : OFF_ORIGIN, aPoint());
   const about = origin ? 'the origin' : pt(r.centre);
-  return carryOut(r, { questionText: `Rotate the shape ${turnName(r.angle)} about ${about}.`, showCentre: !origin }, topic, difficulty);
+  return carryOut(r, { sentence: `Rotate ${what(r)} ${turnName(r.angle)} about ${about}.`, showCentre: !origin }, 'rotation', difficulty);
 };
 
 /* ---------------------------------------------------------- enlargement */
-//   Foundation  scale factor 2 or 3 from a marked centre: find A'
-//   Core        describe fully: scale factor and centre
-//   Stretch     scale factor 1/2: carry it out, or describe one
+//   Foundation  scale factor 2 or 3, centre at a corner of the shape
+//   Core        scale factor 2 or 3, centre a point off the shape
+//   Stretch     scale factor ½, -1 or -2
 export const generateEnlargement = (options = {}) => {
   const { difficulty = 'core' } = options;
-  const topic = 'enlargement';
-  const r = makeEnlargement(difficulty === 'stretch' ? [0.5] : [2, 3]);
-  const carry = difficulty === 'foundation' || (difficulty === 'stretch' && Math.random() < 0.5);
-  if (carry) {
-    return carryOut(r, { questionText: `Enlarge the shape by scale factor ${kText(r.k)}, centre ${pt(r.centre)}.`, showCentre: true }, topic, difficulty);
-  }
-  return describe(r, topic, difficulty);
+  const r = difficulty === 'foundation' ? makeEnlargementFromVertex()
+    : makeEnlargement(difficulty === 'core' ? [2, 3] : [0.5, -1, -2]);
+  return carryOut(r, { sentence: `Enlarge the shape by scale factor ${kText(r.k)}, centre ${pt(r.centre)}.`, showCentre: true }, 'enlargement', difficulty);
 };
 
 /* -------------------------------------------- describe the transformation */

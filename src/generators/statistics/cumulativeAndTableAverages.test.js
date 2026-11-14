@@ -81,8 +81,9 @@ describe('cumulative-frequency-table', () => {
         cls.forEach((c, i) => { if (i) expect(c.lo).toBe(cls[i - 1].hi); });
         expect(new Set(cls.map((c) => c.hi - c.lo)).size).toBe(1);
       }
-      if (band === 'foundation') {
+      if (band !== 'stretch') {
         expect(body.every((r) => r[1] !== '' && r[2] === '')).toBe(true);
+        expect(q.instruction).toMatch(/Complete the cumulative frequency column$/);
       } else {
         const fGaps = body.map((r, i) => (r[1] === '' ? i : -1)).filter((i) => i >= 0);
         expect(fGaps.some((i) => i > 0)).toBe(true);
@@ -90,9 +91,11 @@ describe('cumulative-frequency-table', () => {
         const empty = body.filter((r) => r[1] === '' && r[2] === '');
         const full = body.filter((r) => r[1] !== '' && r[2] !== '');
         expect(full).toHaveLength(1);
-        expect(empty).toHaveLength(band === 'stretch' ? 1 : 0);
-        // Stretch's empty row cannot be reached working downwards alone.
-        if (band === 'stretch') {
+        expect(empty.length).toBeLessThanOrEqual(1);
+        if (empty.length) hidden.both = (hidden.both ?? 0) + 1;
+        // An empty row cannot be reached working downwards alone: the whole
+        // row is directly below it.
+        if (empty.length) {
           const e = body.indexOf(empty[0]);
           expect(body[e + 1]).toBe(full[0]);
         }
@@ -105,19 +108,19 @@ describe('cumulative-frequency-table', () => {
     const { distinct } = check('foundation');
     expect(distinct).toBeGreaterThan(SAMPLES * 0.9);
   }, 60000);
-  it('core: gaps in both columns, always solvable top to bottom', () => {
-    const { distinct, hidden } = check('core');
+  it('core: running totals down a grouped table', () => {
+    const { distinct } = check('core');
     expect(distinct).toBeGreaterThan(SAMPLES * 0.9);
-    // Both kinds of gap turn up in quantity, neither one swamping the other.
-    expect(hidden.f / (hidden.f + hidden.cf)).toBeGreaterThan(0.35);
-    expect(hidden.f / (hidden.f + hidden.cf)).toBeLessThan(0.65);
   }, 60000);
-  it('stretch: one row empty, recovered from the whole row below', () => {
+  it('stretch: gaps in both columns, half the time a row empty too', () => {
     const { distinct, hidden } = check('stretch');
     expect(distinct).toBeGreaterThan(SAMPLES * 0.9);
     // Both kinds of gap turn up in quantity, neither one swamping the other.
     expect(hidden.f / (hidden.f + hidden.cf)).toBeGreaterThan(0.35);
     expect(hidden.f / (hidden.f + hidden.cf)).toBeLessThan(0.65);
+    // The empty-row design is about half of the band.
+    expect(hidden.both / SAMPLES).toBeGreaterThan(0.4);
+    expect(hidden.both / SAMPLES).toBeLessThan(0.6);
   }, 60000);
 });
 

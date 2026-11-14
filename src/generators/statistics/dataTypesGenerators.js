@@ -6,11 +6,11 @@
 // Foundation  qualitative or quantitative, four variables
 // Core        qualitative, discrete or continuous, five variables, every one
 //             of them a plain case
-// Stretch     the same three labels over five variables, at least two of
-//             which are traps: a number that is only a label (shirt number,
+// Stretch     the edge cases, with a reason: four variables, two or three of
+//             them traps — a number that is only a label (shirt number,
 //             registration), a measurement that comes in steps (shoe size),
 //             or a "number of" that is really a measurement (hours of
-//             sunshine)
+//             sunshine) — and a Reason column filled in on reveal
 //
 // The contexts are vocabulary, not a question bank: which variables appear,
 // and in which order, is drawn fresh each time. Ceiling: five contexts of
@@ -23,10 +23,12 @@ import _ from 'lodash';
 const NL = '\n';
 
 // type: 'qualitative' | 'discrete' | 'continuous'. trap: the obvious guess is
-// wrong. A trap is never served below Stretch, because at Foundation and Core
+// wrong, and the third entry is the reason the right answer is right. A trap is never served below Stretch, because at Foundation and Core
 // a student who answers it "wrongly" has applied the rule they were taught.
 // Anything genuinely disputed between textbooks (age, money, pulse rate) is
 // left out altogether rather than given an answer someone will argue with.
+const PLAIN_REASON = { qualitative: 'a category', discrete: 'counted', continuous: 'measured' };
+
 export const CONTEXTS = [
   {
     intro: 'A football scout records these for a player.',
@@ -43,8 +45,8 @@ export const CONTEXTS = [
       ['Mass', 'continuous'],
       ['Sprint speed', 'continuous'],
       ['Distance run in a match', 'continuous'],
-      ['Shirt number', 'qualitative', true],
-      ['Boot size', 'discrete', true],
+      ['Shirt number', 'qualitative', 'a name, not an amount'],
+      ['Boot size', 'discrete', 'sizes go in steps'],
     ],
   },
   {
@@ -59,9 +61,9 @@ export const CONTEXTS = [
       ['Height', 'continuous'],
       ['Mass', 'continuous'],
       ['Body temperature', 'continuous'],
-      ['Patient ID number', 'qualitative', true],
-      ['Shoe size', 'discrete', true],
-      ['Number of hours slept', 'continuous', true],
+      ['Patient ID number', 'qualitative', 'a name, not an amount'],
+      ['Shoe size', 'discrete', 'sizes go in steps'],
+      ['Number of hours slept', 'continuous', 'time is measured'],
     ],
   },
   {
@@ -76,9 +78,9 @@ export const CONTEXTS = [
       ['Time taken to get to school', 'continuous'],
       ['Hand span', 'continuous'],
       ['Height', 'continuous'],
-      ['House number', 'qualitative', true],
-      ['Mark in a test out of 50', 'discrete', true],
-      ['Number of hours of homework', 'continuous', true],
+      ['House number', 'qualitative', 'a name, not an amount'],
+      ['Mark in a test out of 50', 'discrete', 'whole marks only'],
+      ['Number of hours of homework', 'continuous', 'time is measured'],
     ],
   },
   {
@@ -92,8 +94,8 @@ export const CONTEXTS = [
       ['Speed on entry', 'continuous'],
       ['Length', 'continuous'],
       ['Time parked', 'continuous'],
-      ['Registration number', 'qualitative', true],
-      ['Litres of fuel in the tank', 'continuous', true],
+      ['Registration number', 'qualitative', 'a name, not an amount'],
+      ['Litres of fuel in the tank', 'continuous', 'a volume is measured'],
     ],
   },
   {
@@ -106,13 +108,13 @@ export const CONTEXTS = [
       ['Rainfall', 'continuous'],
       ['Temperature', 'continuous'],
       ['Wind speed', 'continuous'],
-      ['Station number', 'qualitative', true],
-      ['Number of hours of sunshine', 'continuous', true],
+      ['Station number', 'qualitative', 'a name, not an amount'],
+      ['Number of hours of sunshine', 'continuous', 'time is measured'],
     ],
   },
 ].map((c) => ({
   ...c,
-  vars: c.vars.map(([name, type, trap = false]) => ({ name, type, trap })),
+  vars: c.vars.map(([name, type, reason]) => ({ name, type, trap: Boolean(reason), reason: reason ?? PLAIN_REASON[type] })),
 }));
 
 const label = (v, difficulty) => (
@@ -128,13 +130,17 @@ function pick(context, difficulty) {
     const kinds = new Set(vs.map((v) => label(v, difficulty)));
     return kinds.size === 2 ? vs : null;
   }
-  const traps = difficulty === 'stretch'
-    ? _.sampleSize(context.vars.filter((v) => v.trap), _.random(2, 3))
-    : [];
-  const chosen = [...traps, ..._.sampleSize(plain, 5 - traps.length)];
+  if (difficulty === 'stretch') {
+    const all = context.vars.filter((v) => v.trap);
+    const traps = _.sampleSize(all, _.random(2, Math.min(3, all.length)));
+    const chosen = [...traps, ..._.sampleSize(plain, 4 - traps.length)];
+    // At least two different labels, so the column is not one word.
+    return new Set(chosen.map((v) => v.type)).size >= 2 ? _.shuffle(chosen) : null;
+  }
+  const chosen = _.sampleSize(plain, 5);
   // Every label used at least once, so no table can be answered by writing
   // the same word five times.
-  return new Set(chosen.map((v) => v.type)).size === 3 ? _.shuffle(chosen) : null;
+  return new Set(chosen.map((v) => v.type)).size === 3 ? chosen : null;
 }
 
 // "2 qualitative, 1 discrete, 2 continuous", in a fixed order.
@@ -154,21 +160,22 @@ export const generateDataTypes = (options = {}) => {
     const labels = difficulty === 'foundation'
       ? 'qualitative or quantitative'
       : 'qualitative, discrete or continuous';
-    const why = (v) => {
-      if (v.type === 'qualitative') return 'a label, not a quantity';
-      if (v.type === 'discrete') return 'counted, or comes in steps';
-      return 'measured';
-    };
-
+    const stretch = difficulty === 'stretch';
     return {
-      instruction: `${context.intro} Classify each as ${labels}`,
+      instruction: `${context.intro} Classify each as ${labels}${stretch ? ', and give a reason' : ''}`,
       // The table itself fills in on reveal, so the answer band only
       // summarises it, as the magic square's does. A line per variable here
       // squeezed the table to 11px text; the types in a row overflowed the
       // box, since \\text{} cannot wrap.
       answer: `\\text{${summary(vs.map((v) => label(v, difficulty)))}}`,
-      workingOut: vs.map((v) => `\\text{${v.name}: ${label(v, difficulty)} (${why(v)})}`).join(NL),
-      visualization: {
+      workingOut: vs.map((v) => `\\text{${v.name}: ${label(v, difficulty)} (${v.reason})}`).join(NL),
+      visualization: stretch ? {
+        type: 'table',
+        header: 'row',
+        big: true,
+        rows: [['Variable', 'Type', 'Reason'], ...vs.map((v) => [v.name, '', ''])],
+        solution: [['', '', ''], ...vs.map((v) => ['', v.type, v.reason])],
+      } : {
         type: 'table',
         header: 'row',
         big: true,

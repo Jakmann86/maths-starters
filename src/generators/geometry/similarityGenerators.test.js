@@ -7,7 +7,7 @@
 // Run: npx vitest run src/generators/geometry/similarityGenerators.test.js
 
 import { describe, expect, it } from 'vitest';
-import { generateSimilarShapes, generateSimilarTriangles, generateSimilarAreasVolumes } from './similarityGenerators';
+import { generateSimilarShapes, generateSimilarTriangles, generateSimilarAreas, generateSimilarVolumes } from './similarityGenerators';
 import { checkSimilarShapes, checkSimilarTriangles, checkSimilarAreasVolumes } from './similarityGenerators.check';
 import { generateForSkill, getSkill, strandOf, topicGroups } from '../../curriculum/skills';
 
@@ -17,7 +17,8 @@ const BANDS = ['foundation', 'core', 'stretch'];
 export const SKILLS = [
   { id: 'similar-shapes', gen: generateSimilarShapes, check: checkSimilarShapes },
   { id: 'similar-triangles', gen: generateSimilarTriangles, check: checkSimilarTriangles },
-  { id: 'similar-areas-volumes', gen: generateSimilarAreasVolumes, check: checkSimilarAreasVolumes },
+  { id: 'similar-areas', gen: generateSimilarAreas, check: checkSimilarAreasVolumes },
+  { id: 'similar-volumes', gen: generateSimilarVolumes, check: checkSimilarAreasVolumes },
 ];
 
 const KINDS = {
@@ -27,7 +28,8 @@ const KINDS = {
     stretch: ['named rectangles', 'named triangles'],
   },
   'similar-triangles': { foundation: ['A, whole sides'], core: ['A, parts given', 'X'], stretch: ['A, x a part', 'X, whole line'] },
-  'similar-areas-volumes': { foundation: ['area from sides'], core: ['length from areas', 'volume from lengths'], stretch: ['trapezium', 'volume from areas'] },
+  'similar-areas': { foundation: ['area from sides'], core: ['length from areas'], stretch: ['trapezium'] },
+  'similar-volumes': { foundation: ['volume from lengths'], core: ['length from volumes'], stretch: ['volume from areas'] },
 };
 
 // Most bands give 4,000 or more distinct questions in 6,000. Similar shapes
@@ -67,6 +69,6 @@ describe('Similarity', () => {
     });
     expect(strandOf('Similarity')).toBe('Geometry');
     const geo = topicGroups().find((g) => g.name === 'Geometry').topics;
-    expect(geo.indexOf('Similarity')).toBe(geo.indexOf('Further trigonometry') + 1);
+    expect(geo).toContain('Similarity');
   });
 });

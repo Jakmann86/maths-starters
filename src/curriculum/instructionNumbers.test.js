@@ -19,6 +19,7 @@ const INFERRABLE = {
   'table-averages': COUNT_OF_THE_DATA,
   'scatter-correlation': COUNT_OF_THE_DATA,
   'line-of-best-fit': COUNT_OF_THE_DATA,
+  'mean-point': COUNT_OF_THE_DATA,
   'simultaneous-problem-solving': /\d+°/,            // the equations beside it carry it
   'tree-diagrams': /holds \d+ .+ replacement\.$/,    // every branch is labelled (Stretch's aren't, and swaps)
   'polygon-interior-angles': /irregular \d+-sided/,  // every angle is labelled

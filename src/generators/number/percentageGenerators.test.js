@@ -1,9 +1,8 @@
 // src/generators/number/percentageGenerators.test.js
 //
-// Substitute-the-answer-back checks for generatePercentageOfAmount, the one
-// generator in this file touched here. The other three exports
-// (percentage-multiplier, percentage-change, index-laws) are untouched and
-// have no coverage yet — this file doesn't claim to cover them.
+// Substitute-the-answer-back checks for the six percentages skills
+// (percentageGenerators.check.js), with a mutation test, and the Foundation
+// band of index-laws-multiply-divide.
 //
 // Every value is recovered from the printed question/answer text (parsing
 // the £/comma-formatted story wording as well as the plain-math one) and
@@ -13,60 +12,69 @@
 // Run: npx vitest run src/generators/number/percentageGenerators.test.js
 
 import { describe, expect, it } from 'vitest';
-import { generatePercentageOfAmount, generateIndexLaws } from './percentageGenerators';
+import { bandMove, generic, mutants, report, sample } from '../harness.check';
+import { checkPercentage } from './percentageGenerators.check';
+import { generateIndexLawsMultiplyDivide as generateIndexLaws } from './indexLawGenerators';
 
 const BANDS = ['foundation', 'core', 'stretch'];
 const SAMPLES = 3000;
 
-/** "\\text{£12,345}" / "12,345" / "12345" -> 12345. */
-const num = (s) => Number(String(s).replace(/\\text\{([^}]*)\}/, '$1').replace(/[£,]/g, ''));
 
-describe('percentage-of-amount', () => {
-  it.each(BANDS)('is correct at %s', (difficulty) => {
-    const distinct = new Set();
-    for (let i = 0; i < SAMPLES; i += 1) {
-      const q = generatePercentageOfAmount({ difficulty });
-      expect(q.metadata).toEqual({ topic: 'percentage-of-amount', difficulty });
-      distinct.add(q.questionMath ?? q.questionText);
+const KINDS = {
+  'percentage-of-amount': { foundation: ['percent'], core: ['over 100%', 'percent'], stretch: ['half percent'] },
+  'reverse-percentages': { foundation: ['part known'], core: ['part known'], stretch: ['after a change'] },
+  'percentage-multiplier': { foundation: ['decrease', 'increase'], core: ['decrease', 'increase'], stretch: ['two changes'] },
+  'multiplier-to-percentage': { foundation: ['decrease', 'increase'], core: ['decrease', 'increase'], stretch: ['two multipliers'] },
+  'percentage-change': { foundation: ['one step'], core: ['two steps'], stretch: ['compound'] },
+  'percentage-change-find': { foundation: ['whole percent'], core: ['one decimal place'], stretch: ['loss', 'profit'] },
+};
+// The fewest distinct questions in 6,000 per band. Small ones are honest:
+// Foundation percentage of an amount is six friendly percentages of round
+// amounts with whole answers (about 350); a whole-percentage multiplier is
+// 90 percentages either way (180).
+const FLOOR = {
+  'percentage-of-amount': { foundation: 300, core: 5300, stretch: 1000 },
+  'reverse-percentages': { foundation: 2800, core: 4400, stretch: 3600 },
+  'percentage-multiplier': { foundation: 170, core: 1800, stretch: 3500 },
+  'multiplier-to-percentage': { foundation: 170, core: 1800, stretch: 1400 },
+  'percentage-change': { foundation: 4600, core: 5300, stretch: 5300 },
+  'percentage-change-find': { foundation: 5000, core: 5300, stretch: 4200 },
+};
 
-      if (difficulty !== 'stretch') {
-        // Forward: p% of n, read straight off questionMath.
-        const m = q.questionMath.match(/^(\d+(?:\.\d+)?)\\% \\text\{ of \} (\d+)$/);
-        expect(m, q.questionMath).toBeTruthy();
-        const [p, n] = [Number(m[1]), Number(m[2])];
-        expect(num(q.answer)).toBeCloseTo((p * n) / 100, 6);
-        continue;
-      }
-
-      // Stretch: reverse. Every story names the percentage, the given part,
-      // and the word "original", regardless of which of the three shapes
-      // (money / population / abstract) came up.
-      expect(q.instruction).toMatch(/original/);
-      const source = q.questionText ?? q.questionMath;
-      expect(source).toMatch(/original/);
-      const pm = source.match(/(\d+(?:\.\d+)?)\\?%/);
-      expect(pm, source).toBeTruthy();
-      const p = Number(pm[1]);
-      const partMatch = source.match(/£?([\d,]+(?:\.\d+)?)\s*\.?\s*(?:What|$)/);
-      expect(partMatch, source).toBeTruthy();
-      const part = num(partMatch[1]);
-      const n = num(q.answer);
-      // n is the original amount: p% of it is the part quoted in the question.
-      expect((p * n) / 100).toBeCloseTo(part, 6);
-      expect(Number.isInteger(n)).toBe(true);
-
-      if (q.questionText) {
-        expect(q.instruction).toMatch(/^Find the original (price|population)$/);
-        expect(q.answer).toMatch(q.instruction.includes('price') ? /^\\text\{£[\d,]+\}$/ : /^\\text\{[\d,]+\}$/);
-      } else {
-        expect(q.instruction).toBe('Find the original amount');
-      }
-    }
-    expect(distinct.size).toBeGreaterThan(1);
+describe('Percentages: every answer follows from what is printed', () => {
+  Object.keys(KINDS).forEach((id) => {
+    BANDS.forEach((band) => {
+      it(`${id} ${band}`, () => {
+        const result = sample(id, band, checkPercentage, 6000);
+        report(id, band, result, 6000);
+        expect(Object.keys(result.mix).sort()).toEqual(KINDS[id][band]);
+        expect(result.distinct).toBeGreaterThanOrEqual(FLOOR[id][band]);
+      });
+    });
   });
+
+  it('rejects every broken copy', () => {
+    const ops = {
+      ...generic('answer nudged', 'question line nudged', 'metadata changed'),
+      'moved to another band': bandMove(),
+      'increase and decrease swapped': (q) => {
+        const f = (s) => s.replace(/increase|decrease/, (w) => (w === 'increase' ? 'decrease' : 'increase'));
+        if (/increase|decrease/.test(q.answer)) q.answer = f(q.answer);
+        else if (q.questionMath && /increase|decrease/.test(q.questionMath)) q.questionMath = f(q.questionMath);
+        else return false;
+      },
+      'a number in the story nudged': (q) => {
+        if (!q.questionText) return false;
+        q.questionText = q.questionText.replace(/(\d)(?=[^\d]*$)|(\d)%/, (m, a, b) => (a ? String((Number(a) + 1) % 10) : `${(Number(b) + 1) % 10}%`));
+      },
+    };
+    const tally = mutants({ skills: Object.keys(KINDS), check: checkPercentage, ops });
+    if (process.env.SHOW) Object.entries(tally).forEach(([name, r]) => r.survivors.slice(0, 3).forEach((x) => console.log('SURV', name, JSON.stringify(x.q))));
+    Object.entries(tally).forEach(([name, r]) => expect(r.survivors.slice(0, 2), name).toEqual([]));
+  }, 600000);
 });
 
-describe('index-laws foundation', () => {
+describe('index-laws-multiply-divide foundation', () => {
   it('is correct, and writes some divides as a fraction', () => {
     const forms = { times: 0, div: 0, frac: 0 };
     const distinct = new Set();

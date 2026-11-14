@@ -211,6 +211,78 @@ describe('polygon-interior-angles', () => {
   });
 });
 
+// The polygon ladder, both skills, read back from what is printed:
+//   Foundation  n in the big text, a regular n-gon drawn: the angle
+//   Core        the angle in the question line, no figure: n, which must be
+//               a whole number, from 360 over the exterior angle
+//   Stretch     (interior) an irregular polygon drawn to its true angles:
+//               the labels and x sum to 180(n - 2); or polygons at a point,
+//               checked below. (exterior) checked below.
+// A regular polygon with whole-number angles has n dividing 360, so
+// Foundation and Core hold ten to a dozen questions each: the real ceiling.
+describe('polygon angle ladder', () => {
+  const deg = (l) => Number(/^(\d+)\^\\circ$/.exec(l)[1]);
+  const GENS = { interior: generatePolygonInteriorAngles, exterior: generatePolygonExteriorAngles };
+  Object.entries(GENS).forEach(([which, gen]) => {
+    const angleOf = (n) => (which === 'interior' ? (180 * (n - 2)) / n : 360 / n);
+    it(`${which} Foundation: the angle of the regular polygon named`, () => {
+      const seen = new Set();
+      for (let i = 0; i < SAMPLES; i += 1) {
+        const q = gen({ difficulty: 'foundation' });
+        const n = Number(/^(\d+) sides$/.exec(q.questionText)[1]);
+        expect(q.instruction).toBe(`Find the ${which} angle of this regular polygon`);
+        expect(q.visualization).toMatchObject({ type: 'polygon', n, angleLabel: 'x' });
+        expect(Boolean(q.visualization.exterior)).toBe(which === 'exterior');
+        expect(q.answer).toBe(`${angleOf(n)}^\\circ`);
+        expect(Number.isInteger(angleOf(n))).toBe(true);
+        seen.add(n);
+      }
+      expect(seen.size).toBeGreaterThanOrEqual(10);
+    });
+    it(`${which} Core: the number of sides from the angle, no figure`, () => {
+      const seen = new Set();
+      for (let i = 0; i < SAMPLES; i += 1) {
+        const q = gen({ difficulty: 'core' });
+        expect(q.instruction).toBe(`Each ${which} angle of a regular polygon is given. How many sides does it have?`);
+        expect(q.visualization).toBeNull();
+        const m = new RegExp(`^\\\\text\\{${which} angle\\} = (\\d+)\\^\\\\circ$`).exec(q.questionMath);
+        expect(m, q.questionMath).toBeTruthy();
+        const a = Number(m[1]);
+        const ext = which === 'interior' ? 180 - a : a;
+        const n = 360 / ext;
+        expect(Number.isInteger(n) && n >= 3).toBe(true);
+        expect(q.answer).toBe(`n = ${n}`);
+        expect(q.workingOut.split('\n').at(-1)).toBe(`n = \\frac{360}{${ext}} = ${n}`);
+        seen.add(n);
+      }
+      expect(seen.size).toBe(12);
+    });
+  });
+  it('interior Stretch: the irregular polygon, from its labels', () => {
+    const seen = new Set();
+    let irregular = 0;
+    for (let i = 0; i < SAMPLES; i += 1) {
+      const q = generatePolygonInteriorAngles({ difficulty: 'stretch' });
+      const v = q.visualization;
+      if (v.type !== 'polygon-irregular') { expect(v.type).toBe('polygons-at-point'); continue; }
+      irregular += 1;
+      expect(q.instruction).toBe(`This is an irregular ${v.n}-sided polygon. Find the missing angle x.`);
+      expect(v.angles[v.unknownIndex]).toBe('x');
+      expect(evenEnough(v.interiorValues)).toBe(true);
+      const given = v.angles.filter((_l, k) => k !== v.unknownIndex).map(deg);
+      given.forEach((a, k) => expect(a).toBe(v.interiorValues.filter((_l, j) => j !== v.unknownIndex)[k]));
+      const x = 180 * (v.n - 2) - given.reduce((a, b) => a + b, 0);
+      expect(x).toBe(v.interiorValues[v.unknownIndex]);
+      expect(x).toBeGreaterThan(0);
+      expect(x).toBeLessThan(180);
+      expect(q.answer).toBe(`x = ${x}^\\circ`);
+      seen.add(JSON.stringify(v.angles));
+    }
+    expect(irregular).toBeGreaterThan(SAMPLES * 0.4);
+    expect(seen.size).toBeGreaterThan(irregular * 0.95);
+  });
+});
+
 // Parallel lines with a shape (Stretch). The figure is drawn from `a` and
 // `b`, so every label must be the angle the geometry gives that mark: worked
 // out here from a and b alone, never from the generator's own values. The

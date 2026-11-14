@@ -89,12 +89,6 @@ export const skills = {
     generate: (opts) => expressions.generateDifferenceOfTwoSquares(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'difference-of-two-squares-numeric': {
-    label: 'Difference of two squares: mental arithmetic',
-    topic: 'Expanding brackets',
-    generate: (opts) => expressions.generateDifferenceOfTwoSquaresNumeric(opts),
-    difficulties: ['core', 'stretch'],
-  },
 
   // --- Haese 1D -----------------------------------------------------------
   'expand-perfect-square': {
@@ -295,10 +289,16 @@ export const skills = {
     generate: (opts) => algFrac.generateSimplifyFractionsFactorising(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'multiply-divide-algebraic-fractions': {
-    label: 'Multiplying and dividing algebraic fractions',
+  'multiply-algebraic-fractions': {
+    label: 'Multiplying algebraic fractions',
     topic: 'Algebraic fractions',
-    generate: (opts) => algFrac.generateMultiplyDivideFractions(opts),
+    generate: (opts) => algFrac.generateMultiplyAlgebraicFractions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'divide-algebraic-fractions': {
+    label: 'Dividing algebraic fractions',
+    topic: 'Algebraic fractions',
+    generate: (opts) => algFrac.generateDivideAlgebraicFractions(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'add-algebraic-fractions': {
@@ -393,10 +393,16 @@ export const skills = {
     generate: (opts) => similarity.generateSimilarTriangles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'similar-areas-volumes': {
-    label: 'Areas and volumes of similar shapes',
+  'similar-areas': {
+    label: 'Areas of similar shapes',
     topic: 'Similarity',
-    generate: (opts) => similarity.generateSimilarAreasVolumes(opts),
+    generate: (opts) => similarity.generateSimilarAreas(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'similar-volumes': {
+    label: 'Volumes of similar solids',
+    topic: 'Similarity',
+    generate: (opts) => similarity.generateSimilarVolumes(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -567,10 +573,16 @@ export const skills = {
     generate: (opts) => coord.generateGradientOfSegment(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'parallel-perpendicular-gradients': {
-    label: 'Parallel and perpendicular gradients',
+  'parallel-gradients': {
+    label: 'Parallel lines',
     topic: 'Coordinate geometry',
-    generate: (opts) => coord.generateParallelPerpendicular(opts),
+    generate: (opts) => coord.generateParallelGradients(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'perpendicular-gradients': {
+    label: 'Perpendicular lines',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generatePerpendicularGradients(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   // --- Haese 14A: vertical and horizontal lines (Y9 Unit 2 do-nows) ---
@@ -578,6 +590,12 @@ export const skills = {
     label: 'Vertical and horizontal lines',
     topic: 'Straight-line graphs',
     generate: (opts) => coord.generateHorizontalVerticalLines(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'lines-meet': {
+    label: 'Where a line meets x = a or y = b',
+    topic: 'Straight-line graphs',
+    generate: (opts) => coord.generateLinesMeet(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'equation-of-a-line': {
@@ -801,13 +819,20 @@ export const skills = {
     generate: (opts) => formulae.generateFormulaDerivation(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'simultaneous-equations': {
-    label: 'Simultaneous equations',
+  // A pair of equations set at full display size filled the box and left
+  // the teacher nowhere to write the working (questionScale, typeSizing.js).
+  'simultaneous-substitution': {
+    label: 'Simultaneous equations: substitution',
     topic: 'Simultaneous equations',
-    generate: (opts) => formulae.generateSimultaneousEquations(opts),
+    generate: (opts) => formulae.generateSimultaneousSubstitution(opts),
     difficulties: ['foundation', 'core', 'stretch'],
-    // A pair of equations set at full display size filled the box and left
-    // the teacher nowhere to write the working (questionScale, typeSizing.js).
+    questionScale: 0.75,
+  },
+  'simultaneous-elimination': {
+    label: 'Simultaneous equations: elimination',
+    topic: 'Simultaneous equations',
+    generate: (opts) => formulae.generateSimultaneousElimination(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
     questionScale: 0.75,
   },
   // --- Y9 Unit 2 do-nows: solving simultaneous equations graphically ---
@@ -1038,24 +1063,48 @@ export const skills = {
     generate: (opts) => pct.generatePercentageOfAmount(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'reverse-percentages': {
+    label: 'Reverse percentages',
+    topic: 'Percentages',
+    generate: (opts) => pct.generateReversePercentages(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'percentage-multiplier': {
-    label: 'Percentage multipliers',
+    label: 'Finding a multiplier',
     topic: 'Percentages',
     generate: (opts) => pct.generatePercentageMultiplier(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'multiplier-to-percentage': {
+    label: 'Reading a multiplier as a change',
+    topic: 'Percentages',
+    generate: (opts) => pct.generateMultiplierToPercentage(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'percentage-change': {
-    label: 'Percentage increase and decrease',
+    label: 'Increasing or decreasing by a percentage',
     topic: 'Percentages',
     generate: (opts) => pct.generatePercentageChange(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'percentage-change-find': {
+    label: 'Percentage change, profit and loss',
+    topic: 'Percentages',
+    generate: (opts) => pct.generatePercentageChangeFind(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 
   // --- Y9 do-nows: rational numbers ---
-  'fdp-conversions': {
-    label: 'Fractions, decimals and percentages',
+  'decimal-percent-to-fraction': {
+    label: 'Decimals and percentages to fractions',
     topic: 'Rational numbers',
-    generate: (opts) => rational.generateFdpConversions(opts),
+    generate: (opts) => rational.generateDecimalPercentToFraction(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'fraction-to-decimal-percent': {
+    label: 'Fractions to decimals and percentages',
+    topic: 'Rational numbers',
+    generate: (opts) => rational.generateFractionToDecimalPercent(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'recurring-decimals': {
@@ -1064,16 +1113,16 @@ export const skills = {
     generate: (opts) => rational.generateRecurringDecimals(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'rational-or-irrational': {
-    label: 'Rational or irrational?',
+  'negative-fractions-add': {
+    label: 'Adding and subtracting negative fractions',
     topic: 'Rational numbers',
-    generate: (opts) => rational.generateRationalOrNot(opts),
+    generate: (opts) => rational.generateNegativeFractionsAdd(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'negative-fractions': {
-    label: 'Calculating with negative fractions',
+  'negative-fractions-multiply': {
+    label: 'Multiplying and dividing negative fractions',
     topic: 'Rational numbers',
-    generate: (opts) => rational.generateNegativeFractions(opts),
+    generate: (opts) => rational.generateNegativeFractionsMultiply(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1092,10 +1141,16 @@ export const skills = {
   },
 
   // --- Haese 6B: index laws ---
-  'index-laws': {
-    label: 'Index laws',
+  'index-laws-multiply-divide': {
+    label: 'Multiplying and dividing powers',
     topic: 'Indices',
-    generate: (opts) => pct.generateIndexLaws(opts),
+    generate: (opts) => indexLaws.generateIndexLawsMultiplyDivide(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'index-laws-power': {
+    label: 'A power of a power',
+    topic: 'Indices',
+    generate: (opts) => indexLaws.generateIndexLawsPower(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'index-laws-coefficients': {
@@ -1114,8 +1169,14 @@ export const skills = {
   },
 
   // --- Fractional indices (beyond Haese 6C; Y9 do-nows) ---
+  'roots-as-powers': {
+    label: 'Writing roots as powers',
+    topic: 'Indices',
+    generate: (opts) => fracPow.generateRootsAsPowers(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'fractional-powers': {
-    label: 'Fractional powers',
+    label: 'Evaluating fractional powers',
     topic: 'Indices',
     generate: (opts) => fracPow.generateFractionalPowers(opts),
     difficulties: ['foundation', 'core', 'stretch'],
@@ -1216,18 +1277,44 @@ export const skills = {
     generate: (opts) => ch6.generateStandardFormWrite(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'standard-form-calculate': {
-    label: 'Calculating in standard form',
+  'standard-form-ordinary': {
+    label: 'Standard form as an ordinary number',
     topic: 'Standard form',
-    generate: (opts) => ch6.generateStandardFormCalculate(opts),
+    generate: (opts) => ch6.generateStandardFormOrdinary(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'standard-form-multiply-divide': {
+    label: 'Multiplying and dividing in standard form',
+    topic: 'Standard form',
+    generate: (opts) => ch6.generateStandardFormMultiplyDivide(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'standard-form-add-subtract': {
+    label: 'Adding and subtracting in standard form',
+    topic: 'Standard form',
+    generate: (opts) => ch6.generateStandardFormAddSubtract(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
   // --- Haese 6E-6H: surds ---
+  // Each surd skill asks the same kind of question at every band (see
+  // chapter6Generators.js), so Mixed can put any of them in any box.
   'surds-simplify': {
     label: 'Simplifying surds',
     topic: 'Surds',
     generate: (opts) => ch6.generateSurdsSimplify(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'surds-add': {
+    label: 'Adding and subtracting surds',
+    topic: 'Surds',
+    generate: (opts) => ch6.generateSurdsAdd(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'surds-multiply': {
+    label: 'Multiplying and dividing surds',
+    topic: 'Surds',
+    generate: (opts) => ch6.generateSurdsMultiply(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'surds-expand': {
@@ -1377,6 +1464,12 @@ export const skills = {
     generate: (opts) => displays.generateModalClass(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'median-class': {
+    label: 'Class containing the median',
+    topic: 'Averages',
+    generate: (opts) => displays.generateMedianClass(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'table-averages': {
     label: 'Mean, mode and median from a table',
     topic: 'Averages',
@@ -1397,9 +1490,15 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'pie-charts': {
-    label: 'Pie charts',
+    label: 'Reading pie charts',
     topic: 'Representing data',
     generate: (opts) => pie.generatePieCharts(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'pie-chart-angles': {
+    label: 'Drawing pie charts',
+    topic: 'Representing data',
+    generate: (opts) => pie.generatePieChartAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'bar-charts': {
@@ -1446,6 +1545,12 @@ export const skills = {
     generate: (opts) => scatter.generateLineOfBestFit(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'mean-point': {
+    label: 'The mean point',
+    topic: 'Scatter graphs',
+    generate: (opts) => scatter.generateMeanPoint(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 };
 
 export const skillIds = Object.keys(skills);
@@ -1485,10 +1590,27 @@ export const generateForSkill = (id, wanted = 'core') => {
  * skill sits in this file and where a teacher sees it on screen are different
  * decisions, and adding a skill should never silently reshuffle the panel.
  *
- * Within a strand, topics run in Haese chapter order.
+ * Within a strand, topics run in the textbook's order: by the first Haese
+ * section (haese-igcse.json) that uses one of their skills. A topic the
+ * book takes as assumed knowledge, with no section of its own (order of
+ * operations, fractions), goes first in its strand. topicOrder.test.js holds
+ * the panel to that rule.
  */
 export const STRANDS = [
-  { name: 'Number', topics: ['Rational numbers', 'Order of operations', 'Indices', 'Logarithms', 'Standard form', 'Surds', 'Percentages', 'Profit and interest', 'Speed, distance and time'] },
+  {
+    name: 'Number',
+    topics: [
+      'Order of operations',
+      'Rational numbers',
+      'Surds',
+      'Indices',
+      'Standard form',
+      'Percentages',
+      'Profit and interest',
+      'Speed, distance and time',
+      'Logarithms',
+    ],
+  },
   {
     name: 'Algebra',
     topics: [
@@ -1499,12 +1621,12 @@ export const STRANDS = [
       'Formulae',
       'Simultaneous equations',
       'Algebraic fractions',
+      'Functions',
       'Quadratic equations',
       'Quadratic graphs',
       'Arithmetic and geometric sequences',
       'Quadratic and cubic sequences',
       'Variation',
-      'Functions',
     ],
   },
   {
@@ -1512,14 +1634,14 @@ export const STRANDS = [
     topics: [
       'Angle facts',
       'Parallel lines and polygons',
+      'Pythagoras and trigonometry',
       'Coordinate geometry',
       'Straight-line graphs',
-      'Pythagoras and trigonometry',
-      'Further trigonometry',
       'Similarity',
       'Transformations',
       'Vectors',
       'Circle theorems',
+      'Further trigonometry',
     ],
   },
   { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Surface area', 'Volume'] },

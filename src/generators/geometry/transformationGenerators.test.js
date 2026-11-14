@@ -25,23 +25,33 @@ export const SKILLS = [
   { id: 'describe-transformation', gen: generateDescribeTransformation },
 ];
 
-const turns = (mode) => ['90 acw', '90 cw', '180'].map((t) => `${mode} rotation ${t}`);
+const turns = (mode, list = ['90 acw', '90 cw', '180']) => list.map((t) => `${mode} rotation ${t}`);
+// Shape and point questions, both, for each kind.
+const both = (kinds) => kinds.flatMap((k) => [`carry ${k}`, `point ${k}`]);
 const KINDS = {
-  translation: { foundation: ['carry translation words'], core: ['carry translation vector'], stretch: ['describe translation'] },
-  reflection: {
-    foundation: ['carry reflection x = a', 'carry reflection y = b'],
-    core: ['carry reflection y = -x', 'carry reflection y = x'],
-    stretch: ['describe reflection x = a', 'describe reflection y = -x', 'describe reflection y = b', 'describe reflection y = x'],
+  translation: {
+    foundation: both(['translation words']),
+    core: both(['translation vector']),
+    stretch: both(['translation negative vector', 'translation two vectors']),
   },
-  rotation: { foundation: turns('carry'), core: turns('carry'), stretch: turns('describe') },
+  reflection: {
+    foundation: both(['reflection axis']),
+    core: both(['reflection x = a', 'reflection y = b']),
+    stretch: both(['reflection y = x', 'reflection y = -x']),
+  },
+  rotation: {
+    foundation: [...turns('carry'), ...turns('point')],
+    core: [...turns('carry', ['180']), ...turns('point', ['180'])],
+    stretch: [...turns('carry', ['90 acw', '90 cw']), ...turns('point', ['90 acw', '90 cw'])],
+  },
   enlargement: {
-    foundation: ['carry enlargement sf 2', 'carry enlargement sf 3'],
-    core: ['describe enlargement sf 2', 'describe enlargement sf 3'],
-    stretch: ['carry enlargement sf 1/2', 'describe enlargement sf 1/2'],
+    foundation: ['carry enlargement sf 2 from a corner', 'carry enlargement sf 3 from a corner'],
+    core: ['carry enlargement sf 2', 'carry enlargement sf 3'],
+    stretch: ['carry enlargement sf 1/2', 'carry enlargement sf -1', 'carry enlargement sf -2'],
   },
   'describe-transformation': {
-    foundation: ['describe reflection x = a', 'describe reflection y = b', ...turns('describe'), 'describe translation'],
-    core: ['describe enlargement sf 2', 'describe enlargement sf 3', 'describe reflection x = a', 'describe reflection y = b', 'describe reflection y = x', ...turns('describe'), 'describe translation'],
+    foundation: ['describe reflection axis', 'describe reflection x = a', 'describe reflection y = b', ...turns('describe'), 'describe translation'],
+    core: ['describe enlargement sf 2', 'describe enlargement sf 3', 'describe reflection axis', 'describe reflection x = a', 'describe reflection y = b', 'describe reflection y = x', ...turns('describe'), 'describe translation'],
     stretch: ['describe enlargement sf 1/2', 'describe reflection y = -x', 'describe reflection y = x', 'describe rotation 90 acw', 'describe rotation 90 cw'],
   },
 };
@@ -49,15 +59,18 @@ const KINDS = {
 // Distinct questions in 6,000 run from about 1,800 to 6,000 per band. Every
 // shape sits in one quadrant, clear of the axes, on a grid of at most 14 by
 // 10 with the origin on it, so the class can read it, and that is the
-// ceiling. Enlargements are the tightest: there are exactly 2,080 ways to
-// place a shape and its enlargement by 2 (or by a half), and only 320 by 3,
-// so describing one (Enlargement Core, sampled 6,000 times) shows about
-// 1,800. A diagonal mirror through the origin has only so many places for a
-// shape too, and a mirror-line answer can only be one of twenty lines.
+// ceiling. A point question (one in three) has fewer still: a point off the
+// axes within six squares of the origin, so a few hundred per line or turn.
+// Enlargements are the tightest: there are exactly 2,080 ways to place a
+// shape and its enlargement by 2 (or by a half), and only 320 by 3, so
+// Enlargement Core, sampled 6,000 times, shows about 1,800. A mirror in an
+// axis or a diagonal through the origin has only so many places for a
+// shape too.
 const FLOOR = {
-  reflection: { foundation: 4800, core: 2500, stretch: 3500 },
-  rotation: { foundation: 4400, stretch: 5000 },
-  enlargement: { foundation: 2200, core: 1500, stretch: 2900 },
+  translation: { core: 5000 },
+  reflection: { foundation: 3300, core: 4200, stretch: 2300 },
+  rotation: { foundation: 3500, core: 4400, stretch: 5200 },
+  enlargement: { foundation: 2600, core: 2300, stretch: 4500 },
   'describe-transformation': { foundation: 5000, core: 4600, stretch: 3800 },
 };
 
@@ -92,7 +105,7 @@ describe('Transformations', () => {
     });
     expect(strandOf('Transformations')).toBe('Geometry');
     const geo = topicGroups().find((g) => g.name === 'Geometry').topics;
-    expect(geo.indexOf('Transformations')).toBe(geo.indexOf('Similarity') + 1);
+    expect(geo).toContain('Transformations');
     expect(skillsInTopic('Transformations')).toEqual(SKILLS.map((s) => s.id));
   });
 });

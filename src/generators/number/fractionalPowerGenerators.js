@@ -5,11 +5,8 @@
 // and follows the Y9 do-nows, which drill the root-to-power conversion, and
 // the annual revision paper, which asks for (125y^6 b^-9)^(2/3).
 //
-//   foundation  a root written as a single power     \sqrt[5]{x^2} -> x^(2/5)
-//   core        evaluate a fractional power          27^(2/3)      -> 9
-//   stretch     negative fractional powers, two ways
-//                 evaluate  16^(-3/4)                -> 1/8
-//                 convert   1/\sqrt[5]{x^3}          -> x^(-3/5)
+// Two skills since the skill-ladder review: evaluating (fractional-powers)
+// and rewriting roots (roots-as-powers). Bands are listed with the skills.
 //
 // EVERY question here falls back to KaTeX, and that is by design, not a
 // parser bug: SPEC §6 sends "any exponent or subscript other than the bare
@@ -77,38 +74,53 @@ const EVALUABLE = buildEvaluable(1000, 1000);
 // A negative power turns the answer into 1/k^m, so the denominator is held
 // much lower — 1/729 is arithmetically fine and pedagogically useless.
 const EVALUABLE_NEG = buildEvaluable(1000, 125);
+// Unit fractions, a^(1/n) = k: square roots up to 15^2, other roots under
+// 1000. The whole pool is under forty; that is its real size.
+const UNIT = [];
+for (let k = 2; k <= 15; k += 1) {
+  for (let n = 2; n <= 5; n += 1) {
+    if (k ** n <= (n === 2 ? 225 : 1000)) UNIT.push({ k, n, base: k ** n });
+  }
+}
 
-/* ------------------------------------------------------------- the skill */
+/* ------------------------------------------------------------- the skills */
+//
+// Skill-ladder review: fractional-powers evaluates in every band, and
+// writing a root as a power is a skill of its own (roots-as-powers).
+//
+//   fractional-powers
+//     foundation  a unit fraction          8^(1/3), 25^(1/2)          -> 2, 5
+//     core        a numerator, or negative 32^(3/5), 16^(-3/4)        -> 8, 1/8
+//     stretch     a coefficient and letters (27x^6/8)^(-2/3)          -> 4/(9x^4)
+//   roots-as-powers
+//     foundation  a root as a power        \sqrt[5]{x^2}              -> x^(2/5)
+//     core        with a coefficient       \sqrt[3]{8x^2}             -> 2x^(2/3)
+//     stretch     the reciprocal of a root 2/\sqrt[5]{x^3}            -> 2x^(-3/5)
 
 export const generateFractionalPowers = (options = {}) => {
   const { difficulty = 'core' } = options;
-  if (difficulty === 'core') return coreBand();
-  if (difficulty === 'stretch') return stretchBand();
-  return foundationBand();
+  if (difficulty === 'foundation') return unitBand();
+  if (difficulty === 'core') return _.random(0, 2) ? numeratorBand() : negativeBand();
+  return lettersBand();
 };
 
-/* foundation: notation only. The root becomes the denominator. */
-function foundationBand() {
-  const [m, n] = _.sample(INDEX_PAIRS);
-  const v = _.sample(VARS);
-  const q = rootTex(n, `${v}^{${m}}`);
+const meta = (difficulty, topic = 'fractional-powers') => ({ topic, difficulty });
 
+function unitBand() {
+  const { k, n, base } = _.sample(UNIT);
   return {
-    instruction: `Write as a single power of ${v}`,
-    questionMath: q,
-    answer: fracPow(v, m, n),
-    workingOut:
-      `${q} = \\left(${v}^{${m}}\\right)^{\\frac{1}{${n}}}${NL}` +
-      `= ${fracPow(v, m, n)}`,
-    metadata: { topic: 'fractional-powers', difficulty: 'foundation' },
+    instruction: 'Evaluate',
+    questionMath: `${base}^{\\frac{1}{${n}}}`,
+    answer: String(k),
+    workingOut: `${base}^{\\frac{1}{${n}}} = ${rootTex(n, base)}${NL}= ${k}`,
+    metadata: meta('foundation'),
   };
 }
 
-/* core: take the root first, then the power — the order that keeps the
-   numbers small enough to do in your head. */
-function coreBand() {
+/* take the root first, then the power — the order that keeps the numbers
+   small enough to do in your head. */
+function numeratorBand() {
   const { k, n, m, base, answer } = _.sample(EVALUABLE);
-
   return {
     instruction: 'Evaluate',
     questionMath: fracPow(base, m, n),
@@ -117,39 +129,105 @@ function coreBand() {
       `${fracPow(base, m, n)} = \\left(${rootTex(n, base)}\\right)^{${m}}${NL}` +
       `= ${k}^{${m}}${NL}` +
       `= ${answer}`,
-    metadata: { topic: 'fractional-powers', difficulty: 'core' },
+    metadata: meta('core'),
   };
 }
 
-/* stretch: the negative index, reached two different ways. */
-function stretchBand() {
-  if (_.random(0, 1)) {
-    const { k, n, m, base, answer } = _.sample(EVALUABLE_NEG);
+function negativeBand() {
+  // m = 1 sometimes: 16^(-1/2) = 1/4.
+  const pool = [...EVALUABLE_NEG, ...UNIT.filter((u) => u.k <= 12).map((u) => ({ ...u, m: 1, answer: u.k }))];
+  const { n, m, base, answer } = _.sample(pool);
+  const q = m === 1 ? `${base}^{-\\frac{1}{${n}}}` : fracPow(base, m, n, true);
+  const pos = m === 1 ? `${base}^{\\frac{1}{${n}}}` : fracPow(base, m, n);
+  return {
+    instruction: 'Evaluate',
+    questionMath: q,
+    answer: `\\frac{1}{${answer}}`,
+    workingOut:
+      `${q} = \\frac{1}{${pos}}${NL}` +
+      `= \\frac{1}{${m === 1 ? rootTex(n, base) : `\\left(${rootTex(n, base)}\\right)^{${m}}`}}${NL}` +
+      `= \\frac{1}{${answer}}`,
+    metadata: meta('core'),
+  };
+}
+
+// c x^e, coefficient 1 dropped and x^1 written as x.
+const mono = (c, v, e) => `${c === 1 ? '' : c}${e === 0 ? '' : e === 1 ? v : `${v}^{${e}}`}` || '1';
+
+/* (a x^(nt) / b)^(±m/n), a = p^n and b = q^n, or no b at all. */
+function lettersBand() {
+  for (;;) {
+    const n = _.sample([2, 3, 3, 4]);
+    const m = _.sample([1, 2, 3].filter((x) => gcd(x, n) === 1 && !(n === 2 && x === 1)));
+    const negative = _.random(0, 1) === 1;
+    const t = _.random(1, 3);
+    const v = _.sample(VARS);
+    const p = _.random(2, n === 2 ? 9 : n === 3 ? 5 : 3);
+    const q = _.random(0, 1) ? _.random(2, n === 2 ? 7 : n === 3 ? 4 : 2) : 1;
+    if (q !== 1 && gcd(p, q) !== 1) continue;
+    const [a, b] = [p ** n, q ** n];
+    const [pm, qm] = [p ** m, q ** m];
+    if (pm > 400 || qm > 400) continue;
+    const e = n * t;
+    const inside = q === 1 ? mono(a, v, e) : `\\frac{${mono(a, v, e)}}{${b}}`;
+    const index = `${negative ? '-' : ''}\\frac{${m}}{${n}}`;
+    const questionMath = `\\left(${inside}\\right)^{${index}}`;
+    // The root of each part, then the power, then the reciprocal.
+    const top = mono(pm, v, t * m);
+    const answer = negative
+      ? `\\frac{${qm}}{${top}}`
+      : q === 1 ? top : `\\frac{${top}}{${qm}}`;
+    const rooted = q === 1 ? mono(p, v, t) : `\\frac{${mono(p, v, t)}}{${q}}`;
     return {
-      instruction: 'Evaluate',
-      questionMath: fracPow(base, m, n, true),
-      answer: `\\frac{1}{${answer}}`,
-      workingOut:
-        `${fracPow(base, m, n, true)} = \\frac{1}{${fracPow(base, m, n)}}${NL}` +
-        `= \\frac{1}{\\left(${rootTex(n, base)}\\right)^{${m}}} = \\frac{1}{${k}^{${m}}}${NL}` +
-        `= \\frac{1}{${answer}}`,
-      metadata: { topic: 'fractional-powers', difficulty: 'stretch' },
+      instruction: 'Simplify',
+      questionMath,
+      answer,
+      workingOut: [
+        `\\left(${rooted}\\right)^{${negative ? '-' : ''}${m}}`,
+        answer,
+      ].join(NL),
+      metadata: meta('stretch'),
     };
   }
+}
 
-  // The reciprocal of a root: two steps past foundation, since the root has
-  // to become a fractional power before the reciprocal can become a sign.
+export const generateRootsAsPowers = (options = {}) => {
+  const { difficulty = 'core' } = options;
   const [m, n] = _.sample(INDEX_PAIRS);
   const v = _.sample(VARS);
-  const q = `\\frac{1}{${rootTex(n, `${v}^{${m}}`)}}`;
+  const topic = 'roots-as-powers';
 
+  if (difficulty === 'foundation') {
+    const q = rootTex(n, `${v}^{${m}}`);
+    return {
+      instruction: `Write as a single power of ${v}`,
+      questionMath: q,
+      answer: fracPow(v, m, n),
+      workingOut: `${q} = \\left(${v}^{${m}}\\right)^{\\frac{1}{${n}}}${NL}= ${fracPow(v, m, n)}`,
+      metadata: meta('foundation', topic),
+    };
+  }
+  if (difficulty === 'core') {
+    // A perfect power under the root comes out as the coefficient.
+    const k = _.random(2, n === 2 ? 9 : n === 3 ? 5 : n === 4 ? 3 : 2);
+    const q = rootTex(n, `${k ** n}${v}^{${m}}`);
+    return {
+      instruction: `Write as a number times a power of ${v}`,
+      questionMath: q,
+      answer: `${k}${fracPow(v, m, n)}`,
+      workingOut: `${q} = ${rootTex(n, k ** n)} \\times ${rootTex(n, `${v}^{${m}}`)}${NL}= ${k}${fracPow(v, m, n)}`,
+      metadata: meta('core', topic),
+    };
+  }
+  // The reciprocal of a root, a number on top sometimes.
+  const c = _.sample([1, 1, 2, 3, 4, 5]);
+  const q = `\\frac{${c}}{${rootTex(n, `${v}^{${m}}`)}}`;
+  const ans = `${c === 1 ? '' : c}${fracPow(v, m, n, true)}`;
   return {
-    instruction: `Write as a single power of ${v}`,
+    instruction: `Write as a single power of ${v}${c === 1 ? '' : ', with a number in front'}`,
     questionMath: q,
-    answer: fracPow(v, m, n, true),
-    workingOut:
-      `${q} = \\frac{1}{${fracPow(v, m, n)}}${NL}` +
-      `= ${fracPow(v, m, n, true)}`,
-    metadata: { topic: 'fractional-powers', difficulty: 'stretch' },
+    answer: ans,
+    workingOut: `${q} = \\frac{${c}}{${fracPow(v, m, n)}}${NL}= ${ans}`,
+    metadata: meta('stretch', topic),
   };
-}
+};
