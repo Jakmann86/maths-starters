@@ -246,33 +246,79 @@ export const generateSequenceFindNthTermArithmetic = (options = {}) => {
 };
 
 // generateSequenceUseNthTermArithmetic ----------------------------------------
-// Given a_n = dn + c, find the first 5 terms and one far term. Target
-// ranges step up cleanly across bands (6-20 / 21-50 / 51-100) so they
-// never overlap at the edges.
+// Using a_n = dn + c (skill-ladder review): Foundation lists the first five
+// terms; Core finds one far term, d sometimes negative; Stretch works
+// backwards, either the n of a given value or the rule from two terms that
+// are not next to each other.
+const signed = (c) => `${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+
 export const generateSequenceUseNthTermArithmetic = (options = {}) => {
   const { difficulty = 'core' } = options;
+  const meta = { topic: 'sequences-arithmetic-use-nth-term', difficulty };
 
-  const d = difficulty === 'stretch'
-    ? _.sample([-9, -7, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9])
-    : _.random(2, 9);
-  const c = difficulty === 'foundation' ? _.random(1, 10) : _.random(-15, 15);
-  const targetN = { foundation: _.random(6, 20), core: _.random(21, 50), stretch: _.random(51, 100) }[difficulty] || _.random(21, 50);
+  if (difficulty === 'foundation') {
+    const d = _.random(2, 9);
+    const c = _.random(-6, 10);
+    const five = [1, 2, 3, 4, 5].map((n) => d * n + c);
+    return {
+      instruction: 'Find the first five terms',
+      questionMath: formatArithmeticRule(d, c),
+      answer: five.join(', '),
+      workingOut: five.map((t, i) => `a_{${i + 1}} = ${d}(${i + 1}) ${signed(c)} = ${t}`).join(NL),
+      visualization: null,
+      metadata: meta,
+    };
+  }
 
-  const firstFive = [1, 2, 3, 4, 5].map((n) => d * n + c);
-  const targetValue = d * targetN + c;
+  const d = _.sample([-9, -7, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9]);
+  const c = _.random(-15, 15);
 
+  if (difficulty === 'core') {
+    const n = _.random(21, 100);
+    const v = d * n + c;
+    return {
+      instruction: 'Find this term',
+      questionMath: `${formatArithmeticRule(d, c)}${NL}a_{${n}}`,
+      answer: `a_{${n}} = ${v}`,
+      workingOut: `a_{${n}} = ${d}(${n}) ${signed(c)} = ${v}`,
+      visualization: null,
+      metadata: meta,
+    };
+  }
+
+  if (Math.random() < 0.5) {
+    // Which term has this value?
+    const n = _.random(12, 60);
+    const v = d * n + c;
+    return {
+      instruction: 'Find which term has this value',
+      questionMath: `${formatArithmeticRule(d, c)}${NL}a_n = ${v}`,
+      answer: `n = ${n}`,
+      workingOut: [`${d}n ${signed(c)} = ${v}`, `${d}n = ${v - c}`, `n = ${n}`].join(NL),
+      visualization: null,
+      metadata: meta,
+    };
+  }
+  // The rule from two terms some way apart: their gap is a multiple of d.
+  const p = _.random(2, 6);
+  const q = p + _.random(3, 8);
+  const [vp, vq] = [d * p + c, d * q + c];
+  if (c === 0) return generateSequenceUseNthTermArithmetic(options);
   return {
-    instruction: 'Find these terms',
-    questionMath: `${formatArithmeticRule(d, c)}${NL}a_1 \\text{ to } a_5 \\text{ and } a_{${targetN}}`,
-    answer: `${firstFive.join(', ')}` + NL + `a_{${targetN}} = ${targetValue}`,
-    workingOut:
-      firstFive.map((t, i) => `a_{${i + 1}} = ${t}`).join(NL) + NL +
-      `a_{${targetN}} = ${d}(${targetN}) ${c >= 0 ? '+' : '-'} ${Math.abs(c)} = ${targetValue}`,
-    metadata: { topic: 'sequences-arithmetic-use-nth-term', difficulty },
+    instruction: 'Find a formula for the nth term',
+    questionMath: `a_{${p}} = ${vp}, \\; a_{${q}} = ${vq}`,
+    answer: formatArithmeticRule(d, c),
+    workingOut: [
+      `${q - p}d = ${vq} - ${vp < 0 ? `(${vp})` : vp} = ${vq - vp}`,
+      `d = ${d}`,
+      `c = ${vp} - ${d < 0 ? `(${d * p})` : d * p} = ${c}`,
+      formatArithmeticRule(d, c),
+    ].join(NL),
+    visualization: null,
+    metadata: meta,
   };
 };
 
-// generateSequenceIsInSequenceArithmetic --------------------------------------
 // Is a target value a term of a_n = dn + c? "Yes" and "no" outcomes are
 // both constructed deliberately (never left to chance): "yes" plants the
 // target as a real term; "no" offsets from a real term by an amount less

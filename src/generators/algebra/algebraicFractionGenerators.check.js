@@ -136,19 +136,24 @@ function band(q, b) {
     must(dt === 2 && db === 2, `Stretch: a quadratic over a quadratic: ${Q}`, q);
     return 'trinomials';
   }
-  if (topic === 'multiply-divide-algebraic-fractions') {
+  if (topic === 'multiply-algebraic-fractions' || topic === 'divide-algebraic-fractions') {
+    // One operation per skill, in every band.
+    const op = topic.startsWith('multiply') ? ' \\times ' : ' \\div ';
+    const other = op === ' \\times ' ? '\\div' : '\\times';
     must(q.instruction === 'Simplify', 'instruction', q);
-    if (b === 'foundation') {
-      const parts = Q.split(' \\times ');
-      must(parts.length === 2 && parts.every(monoFrac), `Foundation multiplies two monomial fractions: ${Q}`, q);
-      return 'multiply';
+    must(Q.includes(op) && !Q.includes(other), `one operation, ${op.trim()}: ${Q}`, q);
+    const parts = Q.split(op);
+    must(parts.length === 2, `two fractions: ${Q}`, q);
+    if (b === 'stretch') {
+      must(/x\^2/.test(Q), `Stretch: a quadratic to factorise: ${Q}`, q);
+      return /x\^2 - \d+\}/.test(Q) ? 'difference of squares' : 'trinomial';
     }
-    if (b === 'core') {
-      must(Q.includes(' \\div ') && !Q.includes('\\times'), `Core divides: ${Q}`, q);
-      return /\\div \d+$/.test(Q) ? 'divide by a number' : 'divide';
-    }
-    must(Q.includes(' \\times ') && /x\^2 - \d+/.test(Q), `Stretch multiplies across a difference of two squares: ${Q}`, q);
-    return 'difference of squares';
+    const byNumber = /^\d+$/.test(parts[1]);
+    must(monoFrac(parts[0]) && (monoFrac(parts[1]) || (byNumber && op === ' \\div ')), `monomial fractions: ${Q}`, q);
+    const idx = maxIndex(Q);
+    if (b === 'foundation') must(idx === 1, `Foundation: single terms, no indices: ${Q}`, q);
+    else must(idx >= 2, `Core: an index to add or subtract: ${Q}`, q);
+    return byNumber ? 'by a number' : op === ' \\times ' ? 'multiply' : 'divide';
   }
   return fail(`topic ${topic}`, q);
 }

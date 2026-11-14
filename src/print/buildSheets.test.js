@@ -11,7 +11,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { buildSheets, PER_PAGE, PRESETS } from './buildSheets';
 
 const BOXES = [
-  { skillId: 'index-laws', band: 'foundation' },
+  { skillId: 'index-laws-multiply-divide', band: 'foundation' },
   { skillId: 'volume-cuboid', band: 'core' },
   { skillId: 'pythagoras-hypotenuse', band: 'core' },
   { skillId: 'tree-diagrams', band: 'stretch' },
@@ -96,7 +96,7 @@ describe('buildSheets', () => {
     const boxes = [BOXES[0], { skillId: undefined, band: 'core' }, BOXES[1]];
     const nullGen = (id, band) => (id === 'volume-cuboid' ? null : gen(id, band));
     const [page] = buildSheets(boxes, { layout: 'half', perBox: 1, versions: 1 }, nullGen);
-    expect(page.halves[0].questions.map((q) => q.skillId)).toEqual(['index-laws']);
+    expect(page.halves[0].questions.map((q) => q.skillId)).toEqual(['index-laws-multiply-divide']);
   });
 
   it('leaves out a skill whose generator throws, and prints the rest', () => {
@@ -104,7 +104,7 @@ describe('buildSheets', () => {
     const { gen } = counter();
     const throwing = (id, band) => { if (id === 'volume-cuboid') throw new Error('broken'); return gen(id, band); };
     const [page] = buildSheets(BOXES, { layout: 'half', perBox: 1, versions: 1 }, throwing);
-    expect(page.halves[0].questions.map((q) => q.skillId)).toEqual(['index-laws', 'pythagoras-hypotenuse', 'tree-diagrams']);
+    expect(page.halves[0].questions.map((q) => q.skillId)).toEqual(['index-laws-multiply-divide', 'pythagoras-hypotenuse', 'tree-diagrams']);
     expect(log).toHaveBeenCalled();
     log.mockRestore();
   });

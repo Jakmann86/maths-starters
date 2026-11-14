@@ -1,19 +1,13 @@
 // src/generators/algebra/formulaGenerators.js
 //
-// Haese Chapter 7 — formulae and simultaneous equations. Six textbook
-// sections map to five skills here: 7B (rearrangement) and 7D (harder
-// rearrangement) are one skill at different bands, same convention as every
-// other chapter migrated so far where a "harder version" section isn't a
-// separate skill.
-//
-// What's deliberately thin in this first pass: elimination's working-out always cross-multiplies (scale eq1 by |b2|, eq2 by |b1|) rather
-// than finding the minimal scale factor a textbook would pick. All safe
-// simplifications, narrower than the full chapter but not wrong.
+// Haese Chapter 7 — formulae and simultaneous equations. Simultaneous
+// equations are two skills, by substitution and by elimination (skill-ladder
+// review); elimination scales by the smallest multipliers that match the y
+// coefficients. Checked in formulaLadder.test.js.
 
 import _ from 'lodash';
 
 const NL = '\n';
-const round = (v, d) => Number(v.toFixed(d));
 
 // Not the same function as angleFactsGenerators.js's local formatLinear —
 // that one doesn't special-case m === -1 (prints "-1x"), which never comes
@@ -28,139 +22,274 @@ const formatLinear = (m, c) => {
 };
 
 // ---------------------------------------------------------------------------
-// generateFormulaSubstitution (Haese 7A)
-// Real formulae only (never invented) — same convention as Pythagoras/trig.
-// Foundation is always forward (direct substitution). Core/Stretch reverse
-// it; Stretch restricts to the squared formulas so finding r genuinely
-// needs a square root, not just a division.
-const TWO_VAR_FORMULAS = [
+// generateFormulaSubstitution (Haese 7A), reworked in the skill-ladder review
+// for variety: real formulae only (never invented), and many more of them.
+//   foundation  substitute forward                         v = u + at
+//   core        substitute, then solve for the one left    23 = 3 + 5a
+//   stretch     rearrange first, then substitute: a square or a root to undo
+//
+// Each formula lists its letters with a range for each, how to work out its
+// subject, and, for Core, how to solve for each other letter. Core builds
+// the question backward from a whole-number answer, so the solving is clean.
+// `pi` marks the formulae whose answers are rounded to 3 s.f.
+// 3 significant figures as text, trailing zeros kept (12.0, not 12) and
+// never in exponent form (6280, not 6.28e+3).
+const S3 = (v) => {
+  const r = Number(v.toPrecision(3));
+  const mag = Math.floor(Math.log10(Math.abs(r)) + 1e-12);
+  return r.toFixed(Math.max(0, 2 - mag));
+};
+const fmt = (v) => String(v);
+const LINEAR_FORMULAS = [
   {
-    formula: 'C = 2\\pi r', known: 'r', unknown: 'C',
-    forward: (r) => 2 * Math.PI * r,
-    reverse: (C) => C / (2 * Math.PI),
-    substitutedForward: (r) => `C = 2\\pi \\times ${r}`,
-    substitutedReverse: (C) => `r = \\frac{${C}}{2\\pi}`,
-    range: [2, 25], decimals: 2, unitK: '\\text{cm}', unitU: '\\text{cm}',
-    figure: { type: 'circle', r: 'r' },
+    tex: 'v = u + at', subject: 'v', vars: { u: [0, 20], a: [2, 10], t: [2, 12] },
+    value: ({ u, a, t }) => u + a * t,
+    sub: ({ u, a, t }) => `${u} + ${a} \\times ${t}`,
+    solve: { u: 'v - at', a: '\\frac{v - u}{t}', t: '\\frac{v - u}{a}' },
   },
   {
-    formula: 'A = \\pi r^2', known: 'r', unknown: 'A',
-    forward: (r) => Math.PI * r * r,
-    reverse: (A) => Math.sqrt(A / Math.PI),
-    substitutedForward: (r) => `A = \\pi \\times ${r}^2`,
-    substitutedReverse: (A) => `r = \\sqrt{\\frac{${A}}{\\pi}}`,
-    range: [2, 20], decimals: 2, unitK: '\\text{cm}', unitU: '\\text{cm}^2',
-    figure: { type: 'circle', r: 'r' },
+    tex: 'A = \\frac{1}{2}bh', subject: 'A', vars: { b: [2, 20, 2], h: [2, 15] },
+    value: ({ b, h }) => (b * h) / 2,
+    sub: ({ b, h }) => `\\frac{1}{2} \\times ${b} \\times ${h}`,
+    solve: { b: '\\frac{2A}{h}', h: '\\frac{2A}{b}' },
   },
-  // The surface area of a sphere, so it is drawn on a sphere, not a circle.
   {
-    formula: 'A = 4\\pi r^2', known: 'r', unknown: 'A',
-    forward: (r) => 4 * Math.PI * r * r,
-    reverse: (A) => Math.sqrt(A / (4 * Math.PI)),
-    substitutedForward: (r) => `A = 4\\pi \\times ${r}^2`,
-    substitutedReverse: (A) => `r = \\sqrt{\\frac{${A}}{4\\pi}}`,
-    range: [2, 15], decimals: 2, unitK: '\\text{cm}', unitU: '\\text{cm}^2',
-    figure: { type: 'sphere', r: 'r' },
+    tex: 'P = 2(l + w)', subject: 'P', vars: { l: [3, 25], w: [2, 15] },
+    value: ({ l, w }) => 2 * (l + w),
+    sub: ({ l, w }) => `2(${l} + ${w})`,
+    solve: { l: '\\frac{P}{2} - w', w: '\\frac{P}{2} - l' },
+  },
+  {
+    tex: 'A = \\frac{1}{2}(a + b)h', subject: 'A', vars: { a: [2, 12], b: [3, 16], h: [2, 12, 2] },
+    value: ({ a, b, h }) => ((a + b) * h) / 2,
+    sub: ({ a, b, h }) => `\\frac{1}{2}(${a} + ${b}) \\times ${h}`,
+    solve: { h: '\\frac{2A}{a + b}' },
+  },
+  {
+    tex: 'V = lwh', subject: 'V', vars: { l: [2, 12], w: [2, 10], h: [2, 10] },
+    value: ({ l, w, h }) => l * w * h,
+    sub: ({ l, w, h }) => `${l} \\times ${w} \\times ${h}`,
+    solve: { h: '\\frac{V}{lw}', l: '\\frac{V}{wh}' },
+  },
+  {
+    tex: 'F = ma', subject: 'F', vars: { m: [2, 30], a: [2, 12] },
+    value: ({ m, a }) => m * a,
+    sub: ({ m, a }) => `${m} \\times ${a}`,
+    solve: { m: '\\frac{F}{a}', a: '\\frac{F}{m}' },
+  },
+  {
+    tex: 'd = st', subject: 'd', vars: { s: [3, 90], t: [2, 9] },
+    value: ({ s, t }) => s * t,
+    sub: ({ s, t }) => `${s} \\times ${t}`,
+    solve: { s: '\\frac{d}{t}', t: '\\frac{d}{s}' },
+  },
+  {
+    tex: 'F = \\frac{9}{5}C + 32', subject: 'F', vars: { C: [-8, 20, 5] },
+    value: ({ C }) => (9 * C) / 5 + 32,
+    sub: ({ C }) => `\\frac{9}{5} \\times ${C < 0 ? `(${C})` : C} + 32`,
+    solve: { C: '\\frac{5(F - 32)}{9}' },
+  },
+  {
+    tex: 'C = 2\\pi r', subject: 'C', vars: { r: [2, 25] }, pi: true, figure: { type: 'circle', r: 'r' },
+    value: ({ r }) => 2 * Math.PI * r,
+    sub: ({ r }) => `2\\pi \\times ${r}`,
+  },
+  {
+    tex: 'V = \\pi r^2 h', subject: 'V', vars: { r: [2, 10], h: [3, 20] }, pi: true, figure: { type: 'cylinder', r: 'r', h: 'h' },
+    value: ({ r, h }) => Math.PI * r * r * h,
+    sub: ({ r, h }) => `\\pi \\times ${r}^2 \\times ${h}`,
   },
 ];
 
+// Stretch: the letter wanted is squared or under a root, so the formula is
+// rearranged before anything is substituted. `make` is the rearranged
+// formula; answers to 3 s.f.
+const POWER_FORMULAS = [
+  {
+    tex: 'A = \\pi r^2', want: 'r', given: { A: [20, 900] }, figure: { type: 'circle', r: 'r' },
+    make: 'r = \\sqrt{\\frac{A}{\\pi}}', value: ({ A }) => Math.sqrt(A / Math.PI), sub: ({ A }) => `\\sqrt{\\frac{${A}}{\\pi}}`,
+  },
+  {
+    tex: 'A = 4\\pi r^2', want: 'r', given: { A: [50, 2000] }, figure: { type: 'sphere', r: 'r' },
+    make: 'r = \\sqrt{\\frac{A}{4\\pi}}', value: ({ A }) => Math.sqrt(A / (4 * Math.PI)), sub: ({ A }) => `\\sqrt{\\frac{${A}}{4\\pi}}`,
+  },
+  {
+    tex: 'V = \\pi r^2 h', want: 'r', given: { V: [100, 3000], h: [3, 20] }, figure: { type: 'cylinder', r: 'r', h: 'h' },
+    make: 'r = \\sqrt{\\frac{V}{\\pi h}}', value: ({ V, h }) => Math.sqrt(V / (Math.PI * h)), sub: ({ V, h }) => `\\sqrt{\\frac{${V}}{\\pi \\times ${h}}}`,
+  },
+  {
+    tex: 'E = \\frac{1}{2}mv^2', want: 'v', given: { E: [50, 900], m: [2, 20] },
+    make: 'v = \\sqrt{\\frac{2E}{m}}', value: ({ E, m }) => Math.sqrt((2 * E) / m), sub: ({ E, m }) => `\\sqrt{\\frac{2 \\times ${E}}{${m}}}`,
+  },
+  {
+    tex: 'v^2 = u^2 + 2as', want: 'u', given: { v: [15, 40], a: [1, 5], s: [5, 40] },
+    make: 'u = \\sqrt{v^2 - 2as}', value: ({ v, a, s }) => Math.sqrt(v * v - 2 * a * s), sub: ({ v, a, s }) => `\\sqrt{${v}^2 - 2 \\times ${a} \\times ${s}}`,
+    ok: ({ v, a, s }) => v * v - 2 * a * s > 4,
+  },
+  {
+    tex: 'c = \\sqrt{a^2 + b^2}', want: 'a', given: { c: [10, 40], b: [3, 25] },
+    make: 'a = \\sqrt{c^2 - b^2}', value: ({ c, b }) => Math.sqrt(c * c - b * b), sub: ({ c, b }) => `\\sqrt{${c}^2 - ${b}^2}`,
+    ok: ({ c, b }) => c > b + 1,
+  },
+  {
+    tex: 'T = 2\\pi\\sqrt{\\frac{l}{g}}', want: 'l', given: { T: [2, 6], g: [10, 10] },
+    make: 'l = g\\left(\\frac{T}{2\\pi}\\right)^2', value: ({ T, g }) => g * (T / (2 * Math.PI)) ** 2, sub: ({ T, g }) => `${g}\\left(\\frac{${T}}{2\\pi}\\right)^2`,
+  },
+];
+
+const pick = ([lo, hi, by = 1]) => _.random(Math.ceil(lo / by), Math.floor(hi / by)) * by;
+const givenLine = (vals) => Object.entries(vals).map(([k, v]) => `${k} = ${v}`).join(', \\; ');
+const isWhole = (v) => Math.abs(v - Math.round(v)) < 1e-9;
+
 export const generateFormulaSubstitution = (options = {}) => {
   const { difficulty = 'core' } = options;
+  const meta = { topic: 'formula-substitution', difficulty, tags: ['algebra', 'formulae'] };
 
-  if (difficulty === 'foundation') {
-    const f = _.sample(TWO_VAR_FORMULAS);
-    const r = _.random(f.range[0], f.range[1]);
-    const result = round(f.forward(r), f.decimals);
-    return {
-      instruction: `Use the formula to find ${f.unknown}`,
-      questionMath: `${f.formula}` + NL + `${f.known} = ${r}\\text{ }${f.unitK}`,
-      answer: `${f.unknown} = ${result}`,
-      answerUnits: f.unitU,
-      workingOut: [f.substitutedForward(r), `${f.unknown} = ${result}`].join(NL),
-      visualization: null,
-      metadata: { topic: 'formula-substitution', difficulty, tags: ['algebra', 'formulae'] },
-    };
+  if (difficulty === 'stretch') {
+    for (;;) {
+      const f = _.sample(POWER_FORMULAS);
+      const vals = _.mapValues(f.given, pick);
+      if (f.ok && !f.ok(vals)) continue;
+      const x = f.value(vals);
+      if (isWhole(x)) continue; // a rounded answer, not a whole one
+      const ans = S3(x);
+      return {
+        instruction: `Make ${f.want} the subject, then find ${f.want} correct to 3 significant figures`,
+        questionMath: `${f.tex}${NL}${givenLine(vals)}`,
+        answer: `${f.want} = ${fmt(ans)}`,
+        workingOut: [f.make, `${f.want} = ${f.sub(vals)}`, `${f.want} = ${fmt(ans)}`].join(NL),
+        visualization: f.figure ?? null,
+        metadata: meta,
+      };
+    }
   }
 
-  const pool = difficulty === 'stretch' ? TWO_VAR_FORMULAS.filter((x) => x.formula.includes('r^2')) : TWO_VAR_FORMULAS;
-  const g = _.sample(pool);
-  const r = _.random(g.range[0], g.range[1]);
-  const knownValue = round(g.forward(r), g.decimals);
-  const result = round(g.reverse(knownValue), g.decimals);
-  return {
-    instruction: 'Use the formula to find r',
-    questionMath: `${g.formula}` + NL + `${g.unknown} = ${knownValue}\\text{ }${g.unitU}`,
-    answer: `r \\approx ${result}`,
-    answerUnits: g.unitK,
-    workingOut: [g.substitutedReverse(knownValue), `r \\approx ${result}`].join(NL),
-    visualization: g.figure,
-    metadata: { topic: 'formula-substitution', difficulty, tags: ['algebra', 'formulae'] },
-  };
+  if (difficulty === 'foundation') {
+    for (;;) {
+      const f = _.sample(LINEAR_FORMULAS);
+      const vals = _.mapValues(f.vars, pick);
+      if (Object.values(vals).includes(0)) continue; // a zero would hide a wrong coefficient
+      const v = f.value(vals);
+      if (!f.pi && !isWhole(v)) continue;
+      const ans = f.pi ? S3(v) : Math.round(v);
+      return {
+        instruction: `Use the formula to find ${f.subject}${f.pi ? ', correct to 3 significant figures' : ''}`,
+        questionMath: `${f.tex}${NL}${givenLine(vals)}`,
+        answer: `${f.subject} = ${fmt(ans)}`,
+        workingOut: [`${f.subject} = ${f.sub(vals)}`, `${f.subject} = ${fmt(ans)}`].join(NL),
+        visualization: f.figure ?? null,
+        metadata: meta,
+      };
+    }
+  }
+
+  // Core: the subject's value is given, and one other letter is wanted.
+  for (;;) {
+    const f = _.sample(LINEAR_FORMULAS.filter((x) => x.solve));
+    const want = _.sample(Object.keys(f.solve));
+    const vals = _.mapValues(f.vars, pick);
+    if (Object.values(vals).includes(0)) continue;
+    const total = f.value(vals);
+    if (!isWhole(total)) continue;
+    const given = { [f.subject]: total, ..._.omit(vals, want) };
+    return {
+      instruction: `Use the formula to find ${want}`,
+      questionMath: `${f.tex}${NL}${givenLine(given)}`,
+      answer: `${want} = ${vals[want]}`,
+      workingOut: [`${total} = ${f.sub({ ...vals, [want]: want })}`, `${want} = ${f.solve[want]}`, `${want} = ${vals[want]}`].join(NL),
+      visualization: f.figure ?? null,
+      metadata: meta,
+    };
+  }
 };
 
 // ---------------------------------------------------------------------------
-// generateFormulaRearrangement (Haese 7B + 7D)
-// Foundation/Core: ax + by = c, make y the subject. Stretch: two different
-// techniques (variable appears twice → factor it out; variable in a
-// fraction's denominator → multiply through), picked at random for variety.
+// generateFormulaRearrangement (Haese 7B + 7D), reworked in the skill-ladder
+// review. Solving ax + c = bx + d for a number has gone: that is an
+// equation, and the Equations topic has it (unknown on both sides).
+//   foundation  ax + by = c, b positive: y = (c - ax)/b
+//   core        a negative coefficient, the answer tidied so its top leads
+//               with a positive term: y = (4x - 20)/3, never (20 - 4x)/-3
+//   stretch     the subject in a denominator, or under a root
+const signedTerm = (n, letter) => `${n < 0 ? '-' : '+'} ${Math.abs(n) === 1 ? '' : Math.abs(n)}${letter}`;
+const leadTerm = (n, letter) => `${n === 1 ? '' : n === -1 ? '-' : n}${letter}`;
+
 export const generateFormulaRearrangement = (options = {}) => {
   const { difficulty = 'core' } = options;
+  const meta = { topic: 'formula-rearrangement', difficulty, tags: ['algebra', 'formulae'] };
 
   if (difficulty === 'stretch') {
-    if (_.sample([true, false])) {
-      // ax + c = bx + d, make x the subject. Built backward from a chosen x
-      // (same convention as every other Stretch band in this project) —
-      // picking a, c, d independently of x would almost always leave
-      // (d - c)/(a - b) an ugly fraction rather than the clean value a
-      // "factor it out" exercise is meant to land on.
-      const x = _.sample([-8, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 8]);
-      const a = _.random(2, 8);
-      let b = _.random(2, 8);
-      if (a === b) b += 1; // guard against a zero coefficient after subtracting
-      const c = _.random(1, 20);
-      const d = c + x * (a - b);
+    const kind = _.sample(['denominator', 'root', 'square root of a sum']);
+    if (kind === 'denominator') {
+      // T = a/(x - b): x = (a + bT)/T.
+      const a = _.random(2, 30);
+      const b = _.random(1, 12);
       return {
-        instruction: 'Solve for x',
-        questionMath: `${a}x + ${c} = ${b}x ${d >= 0 ? '+' : '-'} ${Math.abs(d)}`,
-        answer: `x = ${x}`,
-        workingOut: [
-          `${a}x - ${b}x = ${d} - ${c}`,
-          `x(${a - b}) = ${d - c}`,
-          `x = ${x}`,
-        ].join(NL),
+        instruction: 'Make x the subject',
+        questionMath: `T = \\frac{${a}}{x - ${b}}`,
+        answer: `x = \\frac{${a} + ${b}T}{T}`,
+        workingOut: [`T(x - ${b}) = ${a}`, `Tx - ${b}T = ${a}`, `Tx = ${a} + ${b}T`, `x = \\frac{${a} + ${b}T}{T}`].join(NL),
         visualization: null,
-        metadata: { topic: 'formula-rearrangement', difficulty, tags: ['algebra', 'formulae'] },
+        metadata: meta,
       };
     }
-    // T = a / (x - b), make x the subject — a genuine rearrangement (the
-    // answer is a formula in T, not a specific number), so there's no
-    // "chosen x" to build backward from here.
-    const a = _.random(2, 20), b = _.random(1, 10);
+    if (kind === 'root') {
+      // y = a\sqrt{x}: x = y^2/a^2.
+      const a = _.random(2, 12);
+      return {
+        instruction: 'Make x the subject',
+        questionMath: `y = ${a}\\sqrt{x}`,
+        answer: `x = \\frac{y^2}{${a * a}}`,
+        workingOut: [`\\frac{y}{${a}} = \\sqrt{x}`, `x = \\frac{y^2}{${a * a}}`].join(NL),
+        visualization: null,
+        metadata: meta,
+      };
+    }
+    // y = \sqrt{x + b} - c, or \sqrt{ax - b}: square after isolating the root.
+    const a = _.random(2, 9);
+    const b = _.random(1, 20);
     return {
       instruction: 'Make x the subject',
-      questionMath: `T = \\frac{${a}}{x - ${b}}`,
-      answer: `x = \\frac{${a}}{T} + ${b}`,
-      workingOut: [
-        `T(x - ${b}) = ${a}`,
-        `Tx - ${b}T = ${a}`,
-        `Tx = ${a} + ${b}T`,
-        `x = \\frac{${a} + ${b}T}{T}`,
-      ].join(NL),
+      questionMath: `y = \\sqrt{${a}x - ${b}}`,
+      answer: `x = \\frac{y^2 + ${b}}{${a}}`,
+      workingOut: [`y^2 = ${a}x - ${b}`, `${a}x = y^2 + ${b}`, `x = \\frac{y^2 + ${b}}{${a}}`].join(NL),
       visualization: null,
-      metadata: { topic: 'formula-rearrangement', difficulty, tags: ['algebra', 'formulae'] },
+      metadata: meta,
     };
   }
 
   const a = _.random(2, 9);
-  const b = difficulty === 'foundation' ? _.random(2, 9) : _.sample([-9, -8, -7, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9]);
   const c = _.random(5, 40);
+  const b0 = _.random(2, 9);
+  // Nothing common to all three, or the answer would simplify further.
+  if (gcdOf(gcdOf(a, b0), c) !== 1) return generateFormulaRearrangement(options);
+  if (difficulty === 'foundation') {
+    const b = b0;
+    return {
+      instruction: 'Make y the subject',
+      questionMath: `${a}x + ${b}y = ${c}`,
+      answer: `y = \\frac{${c} - ${a}x}{${b}}`,
+      workingOut: [`${b}y = ${c} - ${a}x`, `y = \\frac{${c} - ${a}x}{${b}}`].join(NL),
+      visualization: null,
+      metadata: meta,
+    };
+  }
+  // Core: by = c - ax with b negative: divide by b and tidy the signs.
+  const b = -b0;
+  const sa = _.sample([1, -1]) * a;   // the x coefficient, either sign
+  // y = (c - sa x)/b = (sa x - c)/|b|
+  const top = `${leadTerm(sa, 'x')} - ${c}`;
   return {
     instruction: 'Make y the subject',
-    questionMath: `${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}y = ${c}`,
-    answer: `y = \\frac{${c} - ${a}x}{${b}}`,
-    workingOut: [`${b}y = ${c} - ${a}x`, `y = \\frac{${c} - ${a}x}{${b}}`].join(NL),
+    questionMath: `${leadTerm(sa, 'x')} ${signedTerm(b, 'y')} = ${c}`,
+    answer: sa > 0 ? `y = \\frac{${top}}{${-b}}` : `y = -\\frac{${-sa}x + ${c}}{${-b}}`,
+    workingOut: [
+      `${b}y = ${c} ${signedTerm(-sa, 'x')}`,
+      `y = \\frac{${c} ${signedTerm(-sa, 'x')}}{${b}}`,
+      sa > 0 ? `y = \\frac{${top}}{${-b}}` : `y = -\\frac{${-sa}x + ${c}}{${-b}}`,
+    ].join(NL),
     visualization: null,
-    metadata: { topic: 'formula-rearrangement', difficulty, tags: ['algebra', 'formulae'] },
+    metadata: meta,
   };
 };
 
@@ -284,74 +413,146 @@ export const generateFormulaDerivation = (options = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-// generateSimultaneousEquations (Haese 7E, all three methods)
-// x, y chosen first, equations built backward — same technique as everywhere
-// else tonight. Elimination's working-out always scales eq1 by |b2| and eq2
-// by |b1| (a Cramer's-rule-style cross-multiply) rather than hunting for the
-// minimal scale factor — deliberately, since that's guaranteed correct for
-// any coefficients rather than needing case-by-case sign handling.
-export const generateSimultaneousEquations = (options = {}) => {
+// Simultaneous equations (Haese 7E), split by method in the skill-ladder
+// review. x and y are chosen first and the equations built backward.
+const VALUES = [-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8];
+const eqn = (a, b, k) => `${leadTerm(a, 'x')} ${signedTerm(b, 'y')} = ${k}`;
+const ANSWER = (x, y) => `x = ${x}, \\ y = ${y}`;
+const simMeta = (topic, difficulty) => ({ topic, difficulty, tags: ['algebra', 'simultaneous'] });
+
+//   foundation  y = mx + c with a simple equation: another y = ..., or x + y = k
+//   core        y = mx + c into ax + by = k with coefficients
+//   stretch     neither in y = form: one is rearranged first
+export const generateSimultaneousSubstitution = (options = {}) => {
   const { difficulty = 'core' } = options;
-  const method = _.sample(['equating-y', 'substitution', 'elimination']);
-  const x = _.sample([-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8]);
-  const y = _.sample([-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8]);
+  const x = _.sample(VALUES);
+  const y = _.sample(VALUES);
+  const meta = simMeta('simultaneous-substitution', difficulty);
+  const instruction = 'Solve simultaneously, by substitution';
 
-  if (method === 'equating-y') {
+  if (difficulty === 'foundation') {
     const m1 = _.random(1, 5);
-    const m2 = _.sample([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5].filter((v) => v !== m1));
-    const c1 = y - m1 * x, c2 = y - m2 * x;
+    if (Math.random() < 0.5) {
+      const m2 = _.sample([-3, -2, -1, 1, 2, 3, 4].filter((v) => v !== m1));
+      const [c1, c2] = [y - m1 * x, y - m2 * x];
+      return {
+        instruction,
+        questionMath: `y = ${formatLinear(m1, c1)}${NL}y = ${formatLinear(m2, c2)}`,
+        answer: ANSWER(x, y),
+        workingOut: [`${formatLinear(m1, c1)} = ${formatLinear(m2, c2)}`, `x = ${x}`, `y = ${y}`].join(NL),
+        visualization: null,
+        metadata: meta,
+      };
+    }
+    const c = y - m1 * x;
     return {
-      instruction: 'Find the simultaneous solution',
-      questionMath: `y = ${formatLinear(m1, c1)}` + NL + `y = ${formatLinear(m2, c2)}`,
-      answer: `x = ${x}, \\ y = ${y}`,
-      workingOut: [
-        `${formatLinear(m1, c1)} = ${formatLinear(m2, c2)} \\ \\text{(equating y)}`,
-        `x = ${x}`, `y = ${y}`,
-      ].join(NL),
+      instruction,
+      questionMath: `y = ${formatLinear(m1, c)}${NL}x + y = ${x + y}`,
+      answer: ANSWER(x, y),
+      workingOut: [`x + ${formatLinear(m1, c).startsWith('-') ? `(${formatLinear(m1, c)})` : formatLinear(m1, c)} = ${x + y}`, `x = ${x}`, `y = ${y}`].join(NL),
       visualization: null,
-      metadata: { topic: 'simultaneous-equations', difficulty, tags: ['algebra', 'simultaneous'] },
+      metadata: meta,
     };
   }
 
-  if (method === 'substitution') {
-    const m = _.sample([-4, -3, -2, -1, 1, 2, 3, 4]);
+  if (difficulty === 'core') {
+    const m = _.sample([-4, -3, -2, -1, 2, 3, 4]);
     const c = y - m * x;
-    const a = _.random(1, 5), b = _.random(1, 5);
-    const k = a * x + b * y;
+    const a = _.random(2, 6);
+    const b = _.sample([-1, 1]) * _.random(2, 6);
+    if (a + b * m === 0) return generateSimultaneousSubstitution(options);
     return {
-      instruction: 'Solve simultaneously, by substitution',
-      questionMath: `y = ${formatLinear(m, c)}` + NL + `${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}y = ${k}`,
-      answer: `x = ${x}, \\ y = ${y}`,
-      workingOut: [`${a}x + ${b}(${formatLinear(m, c)}) = ${k}`, `x = ${x}`, `y = ${y}`].join(NL),
+      instruction,
+      questionMath: `y = ${formatLinear(m, c)}${NL}${eqn(a, b, a * x + b * y)}`,
+      answer: ANSWER(x, y),
+      workingOut: [`${a}x ${b < 0 ? '-' : '+'} ${Math.abs(b)}(${formatLinear(m, c)}) = ${a * x + b * y}`, `x = ${x}`, `y = ${y}`].join(NL),
       visualization: null,
-      metadata: { topic: 'simultaneous-equations', difficulty, tags: ['algebra', 'simultaneous'] },
+      metadata: meta,
     };
   }
 
-  const range = difficulty === 'stretch' ? [2, 9] : [2, 6];
-  let a1, b1, a2, b2;
-  do {
-    a1 = _.random(range[0], range[1]); b1 = _.random(range[0], range[1]);
-    a2 = _.random(range[0], range[1]);
-    b2 = difficulty === 'foundation' ? -b1 : _.sample([-1, 1]) * _.random(range[0], range[1]);
-  } while (a1 * b2 - a2 * b1 === 0);
-  const k1 = a1 * x + b1 * y, k2 = a2 * x + b2 * y;
-
+  // Stretch: x + py = k1 (x has a coefficient of 1, so it is the one to
+  // make the subject) with ax + by = k2.
+  const p = _.sample([-1, 1]) * _.random(2, 5);
+  const a = _.random(2, 5);
+  const b = _.sample([-1, 1]) * _.random(2, 6);
+  if (b - a * p === 0) return generateSimultaneousSubstitution(options);
+  const k1 = x + p * y;
+  const k2 = a * x + b * y;
+  const rearranged = `x = ${k1} ${signedTerm(-p, 'y')}`;
   return {
-    instruction: 'Solve simultaneously, by elimination',
-    questionMath: `${a1}x ${b1 >= 0 ? '+' : '-'} ${Math.abs(b1)}y = ${k1}` + NL + `${a2}x ${b2 >= 0 ? '+' : '-'} ${Math.abs(b2)}y = ${k2}`,
-    answer: `x = ${x}, \\ y = ${y}`,
-    workingOut: [
-      `\\text{multiply the first equation by } ${Math.abs(b2)}\\text{, the second by } ${Math.abs(b1)}`,
-      `${a1 * b2}x ${b1 * b2 >= 0 ? '+' : '-'} ${Math.abs(b1 * b2)}y = ${k1 * b2}`,
-      `${a2 * b1}x ${b2 * b1 >= 0 ? '+' : '-'} ${Math.abs(b2 * b1)}y = ${k2 * b1}`,
-      `\\text{subtract: } ${a1 * b2 - a2 * b1}x = ${k1 * b2 - k2 * b1}`,
-      `x = ${x}`, `y = ${y}`,
-    ].join(NL),
+    instruction,
+    questionMath: `${eqn(1, p, k1)}${NL}${eqn(a, b, k2)}`,
+    answer: ANSWER(x, y),
+    workingOut: [rearranged, `${a}(${k1} ${signedTerm(-p, 'y')}) ${signedTerm(b, 'y')} = ${k2}`, `y = ${y}`, `x = ${x}`].join(NL),
     visualization: null,
-    metadata: { topic: 'simultaneous-equations', difficulty, tags: ['algebra', 'simultaneous'] },
+    metadata: meta,
   };
 };
+
+//   foundation  one coefficient already matches: add or subtract
+//   core        multiply one equation to match a coefficient
+//   stretch     multiply both
+export const generateSimultaneousElimination = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const meta = simMeta('simultaneous-elimination', difficulty);
+  for (;;) {
+    const x = _.sample(VALUES);
+    const y = _.sample(VALUES);
+    let a1; let b1; let a2; let b2; let m1; let m2;
+    if (difficulty === 'foundation') {
+      // The y coefficients match, or are opposite.
+      b1 = _.random(1, 6);
+      b2 = _.sample([-1, 1]) * b1;
+      a1 = _.random(1, 7);
+      a2 = _.random(1, 7);
+      [m1, m2] = [1, 1];
+    } else if (difficulty === 'core') {
+      // Times the first equation by k matches y.
+      b1 = _.random(1, 4);
+      const k = _.random(2, 4);
+      b2 = _.sample([-1, 1]) * k * b1;
+      a1 = _.random(1, 6);
+      a2 = _.random(1, 9);
+      [m1, m2] = [k, 1];
+    } else {
+      // Neither y coefficient divides the other, nor does either x one.
+      b1 = _.random(2, 7);
+      b2 = _.sample([-1, 1]) * _.random(2, 7);
+      a1 = _.random(2, 7);
+      a2 = _.random(2, 7);
+      const divides = (u, v) => Math.abs(u) % Math.abs(v) === 0 || Math.abs(v) % Math.abs(u) === 0;
+      if (divides(b1, b2) || divides(a1, a2)) continue;
+      const l = (Math.abs(b1) * Math.abs(b2)) / gcdOf(b1, b2);
+      [m1, m2] = [l / Math.abs(b1), l / Math.abs(b2)];
+    }
+    if (a1 * b2 - a2 * b1 === 0) continue;
+    if (difficulty === 'core' && (a2 % a1 === 0 || a2 === a1)) continue; // x matching by accident
+    const [k1, k2] = [a1 * x + b1 * y, a2 * x + b2 * y];
+    // An equation with a common factor could be divided down first, which
+    // would change which multiplying the band asks for.
+    if (gcdOf(gcdOf(a1, b1), k1) !== 1 || gcdOf(gcdOf(a2, b2), k2) !== 1) continue;
+    const scaled = [[a1 * m1, b1 * m1, k1 * m1], [a2 * m2, b2 * m2, k2 * m2]];
+    const add = scaled[0][1] === -scaled[1][1];
+    const ax = add ? scaled[0][0] + scaled[1][0] : scaled[0][0] - scaled[1][0];
+    const kx = add ? scaled[0][2] + scaled[1][2] : scaled[0][2] - scaled[1][2];
+    if (ax === 0) continue;
+    const steps = [];
+    if (m1 !== 1) steps.push(`${eqn(...scaled[0])} \\quad (\\times ${m1})`);
+    if (m2 !== 1) steps.push(`${eqn(...scaled[1])} \\quad (\\times ${m2})`);
+    steps.push(`${add ? '\\text{add: }' : '\\text{subtract: }'} ${leadTerm(ax, 'x')} = ${kx}`);
+    return {
+      instruction: 'Solve simultaneously, by elimination',
+      questionMath: `${eqn(a1, b1, k1)}${NL}${eqn(a2, b2, k2)}`,
+      answer: ANSWER(x, y),
+      workingOut: [...steps, `x = ${x}`, `y = ${y}`].join(NL),
+      visualization: null,
+      metadata: meta,
+    };
+  }
+};
+
+const gcdOf = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
 
 // ---------------------------------------------------------------------------
 // generateSimultaneousGraphical (Y9 Unit 2 do-nows)

@@ -95,11 +95,11 @@ integer, in either order.
 **Core** — Ex 1C Q2. Coefficient on the variable.
 `(2x − 1)(2x + 1)`, `(4y − 5)(4y + 5)`, `(1 − 3x)(1 + 3x)`
 
-**Stretch** — Ex 1C Q3–Q4. Two variables, and the numerical application.
+**Stretch** — Ex 1C Q3. Two variables.
 `(4x + 5y)(4x − 5y)`, `(7x − 2y)(7x + 2y)`
-Also `43 × 37 = 40² − 3²`, and evaluating `18 × 22`, `49 × 51` without a
-calculator. That last form is a good starter question and unlike anything
-currently in the pool.
+The numerical application (Ex 1C Q4, `43 × 37 = 40² − 3²`) had its own skill
+and was removed in the skill-ladder review: a one-off trick, and not on the
+GCSE.
 
 ## Further algebra — Haese 1E, 1I, 1M, 7D, 16C–D
 
@@ -131,6 +131,45 @@ number denominators, subtraction needing the bracket. Stretch: letters in
 the denominator, `p/(x + a) ± q/(x + b)` or `p/x ± q/(x + b)`, the
 denominator left in factors. Answers in lowest terms, a negative leading
 numerator taken out in front.
+
+## Skill-ladder review: algebra
+
+Changes Joakim decided in the November 2026 skill-ladder review (rows marked
+"Use Claude's ladder" or "Use my ladder"). Rows still "To decide" were left
+alone.
+
+- **Difference of two squares: mental arithmetic** removed: a one-off trick,
+  and not on the GCSE.
+- **Factorising by grouping**, Stretch: a third kind with letters only,
+  `ax + bn + an + bx`, shuffled so that half the time the printed pairs
+  share nothing and must be regrouped first.
+- **Factorising x² + bx + c**, Stretch: a common number factor first (now
+  and then negative), then the monic quadratic.
+- **Algebraic fractions (16B)** split into Multiplying and Dividing, each
+  F single terms (no indices), C indices, S a quadratic to factorise (a
+  difference of two squares or a trinomial) cancelling across.
+- **Arithmetic sequences: use the nth term**: F the first five terms; C one
+  far term; S which term has a value, or the rule from two terms some way
+  apart.
+- **Formula substitution**: sixteen real formulae, not three. F substitute
+  forward; C substitute then solve for the letter left; S rearrange first
+  (a square or a root to undo), then substitute, to 3 s.f.
+- **Formula rearrangement**: Solve for x has gone (it is an equation; see
+  Equations, unknown on both sides). F `ax + by = c`; C a negative y
+  coefficient, the answer tidied (`(4x − 20)/3`, never over a negative);
+  S the subject in a denominator or under a root.
+- **Simultaneous equations** split by method. Substitution: F `y = …` with
+  another `y = …` or `x + y = k`; C into `ax + by = k`; S neither in `y =`
+  form, one rearranged first. Elimination: F the y coefficients already
+  match; C multiply one equation; S multiply both.
+- **Index laws** split by law. Multiplying and dividing: F a number base,
+  evaluated; C a letter, one law; S three or four terms. A power of a power:
+  F `(t⁸)²`; C `(4a³)²`; S two letters or a fraction inside.
+- **Fractional powers** evaluate in every band: F a unit fraction
+  (`8^(1/3)`); C a numerator or a negative (`32^(3/5)`, `16^(−3/4)`); S a
+  coefficient and a letter (`(27x⁶/8)^(−2/3)`). Writing a root as a power
+  is now its own skill: F `∛(p²)`; C a perfect power under the root
+  (`∛(8x²)`); S the reciprocal of a root, sometimes with a number on top.
 
 ## Solving linear equations — Haese 3A
 

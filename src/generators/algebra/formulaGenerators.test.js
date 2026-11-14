@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateFormulaSubstitution, generateFormulaDerivation, generateSimultaneousGraphical } from './formulaGenerators';
+import { generateFormulaDerivation, generateSimultaneousGraphical } from './formulaGenerators';
 
 const BANDS = ['foundation', 'core', 'stretch'];
 const RUNS = 3000;
@@ -24,17 +24,8 @@ const situationOf = (text) => {
   return hit[0];
 };
 
-describe('formula substitution', () => {
-  it('draws each formula on its own shape: 4πr² is a sphere, never a circle', () => {
-    for (let i = 0; i < RUNS; i += 1) {
-      for (const difficulty of ['core', 'stretch']) {
-        const q = generateFormulaSubstitution({ difficulty });
-        const want = q.questionMath.includes('4\\pi') ? 'sphere' : 'circle';
-        expect(q.visualization.type, q.questionMath).toBe(want);
-      }
-    }
-  });
-});
+// Formula substitution's figures (4πr² on a sphere, never a circle) are
+// checked in formulaLadder.test.js, with the rest of that skill.
 
 describe('formula derivation', () => {
   it('Foundation: the answer is what the sentence works out to', () => {
