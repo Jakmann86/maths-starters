@@ -1590,11 +1590,12 @@ export const generateForSkill = (id, wanted = 'core') => {
  * skill sits in this file and where a teacher sees it on screen are different
  * decisions, and adding a skill should never silently reshuffle the panel.
  *
- * Within a strand, topics run in the textbook's order: by the first Haese
- * section (haese-igcse.json) that uses one of their skills. A topic the
- * book takes as assumed knowledge, with no section of its own (order of
- * operations, fractions), goes first in its strand. topicOrder.test.js holds
- * the panel to that rule.
+ * Within a strand, topics run in the textbook's order: by their home
+ * chapter in Haese (haese-igcse.json), the one holding most of their skills,
+ * then by the first section that uses one. A topic the book takes as
+ * assumed knowledge, with no section of its own (order of operations,
+ * fractions), goes first in its strand. topicOrder.test.js holds the panel
+ * to that rule.
  */
 export const STRANDS = [
   {

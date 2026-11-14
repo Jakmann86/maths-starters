@@ -44,9 +44,9 @@ export const skills = {
 - `STRANDS` sets the topic panel's display order (Number, Algebra, Geometry,
   Mensuration, Statistics and probability, Problem solving), deliberately
   separate from file order. Within a strand, topics follow the textbook: by
-  the first Haese section in `haese-igcse.json` that uses one of their
-  skills, with assumed-knowledge topics that have no section (order of
-  operations, fractions) first. `topicOrder.test.js` enforces it. A topic
+  their home chapter in `haese-igcse.json` (the one holding most of their
+  skills), then the first section that uses one, with assumed-knowledge
+  topics that have no section (order of operations, fractions) first. `topicOrder.test.js` enforces it. A topic
   missing from `STRANDS` lands in "Other".
 - `generateForSkill(id, band)` is the board's single entry point. It returns
   `null` for an unknown id rather than throwing.
