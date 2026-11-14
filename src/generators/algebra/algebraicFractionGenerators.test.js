@@ -20,14 +20,16 @@ const SAMPLES = 6000;
 const KINDS = {
   'simplify-algebraic-fractions': { foundation: ['one letter'], core: ['one letter, indices', 'two letters'], stretch: ['bracket squared'] },
   'simplify-fractions-factorising': { foundation: ['linear below', 'linear on top'], core: ['common factor', 'perfect square'], stretch: ['trinomials'] },
-  'multiply-divide-algebraic-fractions': { foundation: ['multiply'], core: ['divide', 'divide by a number'], stretch: ['difference of squares'] },
+  'multiply-algebraic-fractions': { foundation: ['multiply'], core: ['multiply'], stretch: ['difference of squares', 'trinomial'] },
+  'divide-algebraic-fractions': { foundation: ['by a number', 'divide'], core: ['by a number', 'divide'], stretch: ['difference of squares', 'trinomial'] },
 };
 
 // The fewest distinct questions in 6,000 per band.
 const FLOOR = {
   'simplify-algebraic-fractions': { foundation: 1600, core: 5300, stretch: 1900 },
   'simplify-fractions-factorising': { foundation: 1000, core: 800, stretch: 1500 },
-  'multiply-divide-algebraic-fractions': { foundation: 5500, core: 4700, stretch: 2800 },
+  'multiply-algebraic-fractions': { foundation: 5500, core: 5800, stretch: 2200 },
+  'divide-algebraic-fractions': { foundation: 5200, core: 5400, stretch: 2200 },
 };
 
 describe('Algebraic fractions', () => {

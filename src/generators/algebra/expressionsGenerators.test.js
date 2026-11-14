@@ -14,7 +14,6 @@ import {
   generateExpandSingleBrackets,
   generateExpandDoubleBrackets,
   generateDifferenceOfTwoSquares,
-  generateDifferenceOfTwoSquaresNumeric,
   generateExpandPerfectSquare,
 } from './expressionsGenerators';
 
@@ -57,7 +56,6 @@ const generators = {
   'expand-double-brackets': generateExpandDoubleBrackets,
   'expand-perfect-square': generateExpandPerfectSquare,
   'difference-of-two-squares': generateDifferenceOfTwoSquares,
-  'difference-of-two-squares-numeric': generateDifferenceOfTwoSquaresNumeric,
 };
 
 describe.each(Object.entries(generators))('%s', (topic, generate) => {
@@ -147,13 +145,6 @@ describe('band-specific shapes', () => {
     for (let i = 0; i < 400; i += 1) {
       const q = generateDifferenceOfTwoSquares({ difficulty: 'core' });
       expect(q.answer.split(/ [+-] /).length).toBe(2);
-    }
-  });
-
-  it('gives the numeric variant a whole-number answer', () => {
-    for (let i = 0; i < 200; i += 1) {
-      const q = generateDifferenceOfTwoSquaresNumeric({ difficulty: 'stretch' });
-      expect(Number.isInteger(Number(q.answer))).toBe(true);
     }
   });
 });

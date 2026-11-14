@@ -88,12 +88,6 @@ export const skills = {
     generate: (opts) => expressions.generateDifferenceOfTwoSquares(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'difference-of-two-squares-numeric': {
-    label: 'Difference of two squares: mental arithmetic',
-    topic: 'Expanding brackets',
-    generate: (opts) => expressions.generateDifferenceOfTwoSquaresNumeric(opts),
-    difficulties: ['core', 'stretch'],
-  },
 
   // --- Haese 1D -----------------------------------------------------------
   'expand-perfect-square': {
@@ -294,10 +288,16 @@ export const skills = {
     generate: (opts) => algFrac.generateSimplifyFractionsFactorising(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'multiply-divide-algebraic-fractions': {
-    label: 'Multiplying and dividing algebraic fractions',
+  'multiply-algebraic-fractions': {
+    label: 'Multiplying algebraic fractions',
     topic: 'Algebraic fractions',
-    generate: (opts) => algFrac.generateMultiplyDivideFractions(opts),
+    generate: (opts) => algFrac.generateMultiplyAlgebraicFractions(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'divide-algebraic-fractions': {
+    label: 'Dividing algebraic fractions',
+    topic: 'Algebraic fractions',
+    generate: (opts) => algFrac.generateDivideAlgebraicFractions(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'add-algebraic-fractions': {
@@ -788,13 +788,20 @@ export const skills = {
     generate: (opts) => formulae.generateFormulaDerivation(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'simultaneous-equations': {
-    label: 'Simultaneous equations',
+  // A pair of equations set at full display size filled the box and left
+  // the teacher nowhere to write the working (questionScale, typeSizing.js).
+  'simultaneous-substitution': {
+    label: 'Simultaneous equations: substitution',
     topic: 'Simultaneous equations',
-    generate: (opts) => formulae.generateSimultaneousEquations(opts),
+    generate: (opts) => formulae.generateSimultaneousSubstitution(opts),
     difficulties: ['foundation', 'core', 'stretch'],
-    // A pair of equations set at full display size filled the box and left
-    // the teacher nowhere to write the working (questionScale, typeSizing.js).
+    questionScale: 0.75,
+  },
+  'simultaneous-elimination': {
+    label: 'Simultaneous equations: elimination',
+    topic: 'Simultaneous equations',
+    generate: (opts) => formulae.generateSimultaneousElimination(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
     questionScale: 0.75,
   },
   // --- Y9 Unit 2 do-nows: solving simultaneous equations graphically ---
@@ -1079,10 +1086,16 @@ export const skills = {
   },
 
   // --- Haese 6B: index laws ---
-  'index-laws': {
-    label: 'Index laws',
+  'index-laws-multiply-divide': {
+    label: 'Multiplying and dividing powers',
     topic: 'Indices',
-    generate: (opts) => pct.generateIndexLaws(opts),
+    generate: (opts) => indexLaws.generateIndexLawsMultiplyDivide(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'index-laws-power': {
+    label: 'A power of a power',
+    topic: 'Indices',
+    generate: (opts) => indexLaws.generateIndexLawsPower(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'index-laws-coefficients': {
@@ -1101,8 +1114,14 @@ export const skills = {
   },
 
   // --- Fractional indices (beyond Haese 6C; Y9 do-nows) ---
+  'roots-as-powers': {
+    label: 'Writing roots as powers',
+    topic: 'Indices',
+    generate: (opts) => fracPow.generateRootsAsPowers(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'fractional-powers': {
-    label: 'Fractional powers',
+    label: 'Evaluating fractional powers',
     topic: 'Indices',
     generate: (opts) => fracPow.generateFractionalPowers(opts),
     difficulties: ['foundation', 'core', 'stretch'],

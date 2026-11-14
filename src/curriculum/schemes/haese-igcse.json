@@ -7,7 +7,7 @@
   "entries": [
     { "id": "1A", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "The distributive law", "page": 32, "skills": ["expand-single-brackets"], "status": "ready" },
     { "id": "1B", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "The product (a+b)(c+d)", "page": 33, "skills": ["expand-double-brackets"], "status": "ready" },
-    { "id": "1C", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Difference of two squares", "page": 35, "skills": ["difference-of-two-squares", "difference-of-two-squares-numeric"], "status": "ready" },
+    { "id": "1C", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Difference of two squares", "page": 35, "skills": ["difference-of-two-squares"], "status": "ready" },
     { "id": "1D", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Perfect squares expansion", "page": 37, "skills": ["expand-perfect-square"], "status": "ready" },
     { "id": "1E", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Further expansion", "page": 39, "skills": ["expand-further"], "status": "ready" },
     { "id": "1F", "ch": 1, "unit": "Algebra: expansion and factorisation", "lesson": "Algebraic common factors", "page": 40, "skills": ["factorise-common-factor"], "status": "ready" },
@@ -45,7 +45,7 @@
     { "id": "5C", "ch": 5, "unit": "Graphs, charts and tables", "lesson": "Using technology to graph data", "page": 119, "skills": [], "status": "skip" },
 
     { "id": "6A", "ch": 6, "unit": "Exponents and surds", "lesson": "Index notation", "page": 123, "skills": [], "status": "todo" },
-    { "id": "6B", "ch": 6, "unit": "Exponents and surds", "lesson": "Index laws", "page": 126, "skills": ["index-laws", "index-laws-coefficients", "index-laws-missing-power"], "status": "ready" },
+    { "id": "6B", "ch": 6, "unit": "Exponents and surds", "lesson": "Index laws", "page": 126, "skills": ["index-laws-multiply-divide", "index-laws-power", "index-laws-coefficients", "index-laws-missing-power"], "status": "ready" },
     { "id": "6C", "ch": 6, "unit": "Exponents and surds", "lesson": "Zero and negative indices", "page": 129, "skills": ["indices-zero-negative"], "status": "ready" },
     { "id": "6D", "ch": 6, "unit": "Exponents and surds", "lesson": "Standard form", "page": 131, "skills": ["standard-form-write", "standard-form-calculate"], "status": "ready" },
     { "id": "6E", "ch": 6, "unit": "Exponents and surds", "lesson": "Surds", "page": 134, "skills": [], "status": "todo" },
@@ -57,7 +57,7 @@
     { "id": "7B", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Formula rearrangement", "page": 150, "skills": ["formula-rearrangement"], "status": "ready" },
     { "id": "7C", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Formula derivation", "page": 153, "skills": ["formula-derivation"], "status": "ready" },
     { "id": "7D", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "More difficult rearrangements", "page": 155, "skills": ["rearrange-harder"], "status": "ready" },
-    { "id": "7E", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Simultaneous equations", "page": 158, "skills": ["simultaneous-equations", "simultaneous-graphical"], "status": "ready" },
+    { "id": "7E", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Simultaneous equations", "page": 158, "skills": ["simultaneous-substitution", "simultaneous-elimination", "simultaneous-graphical"], "status": "ready" },
     { "id": "7F", "ch": 7, "unit": "Formulae and simultaneous equations", "lesson": "Problem solving", "page": 164, "skills": ["simultaneous-problem-solving"], "status": "ready" },
 
     { "id": "8A", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Pythagoras' theorem", "page": 170, "skills": ["pythagoras-hypotenuse", "pythagoras-missing-side"], "status": "ready" },
@@ -116,7 +116,7 @@
     { "id": "15F", "ch": 15, "unit": "Trigonometry", "lesson": "3-dimensional problem solving", "page": 331, "skills": [], "status": "todo" },
 
     { "id": "16A", "ch": 16, "unit": "Algebraic fractions", "lesson": "Simplifying algebraic fractions", "page": 339, "skills": ["simplify-algebraic-fractions", "simplify-fractions-factorising"], "status": "ready" },
-    { "id": "16B", "ch": 16, "unit": "Algebraic fractions", "lesson": "Multiplying and dividing algebraic fractions", "page": 344, "skills": ["multiply-divide-algebraic-fractions"], "status": "ready" },
+    { "id": "16B", "ch": 16, "unit": "Algebraic fractions", "lesson": "Multiplying and dividing algebraic fractions", "page": 344, "skills": ["multiply-algebraic-fractions", "divide-algebraic-fractions"], "status": "ready" },
     { "id": "16C", "ch": 16, "unit": "Algebraic fractions", "lesson": "Adding and subtracting algebraic fractions", "page": 346, "skills": ["add-algebraic-fractions"], "status": "ready" },
     { "id": "16D", "ch": 16, "unit": "Algebraic fractions", "lesson": "More complicated fractions", "page": 348, "skills": ["add-algebraic-fractions"], "status": "ready" },
 
@@ -194,7 +194,7 @@
     { "id": "27A", "ch": 27, "unit": "Circle geometry", "lesson": "Circle theorems", "page": 547, "skills": ["angle-in-semicircle", "angle-at-centre", "angle-same-segment", "chord-perpendicular-bisector", "tangents-from-point", "tangent-length", "alternate-segment"], "status": "ready" },
     { "id": "27B", "ch": 27, "unit": "Circle geometry", "lesson": "Cyclic quadrilaterals", "page": 556, "skills": ["cyclic-quadrilateral"], "status": "ready" },
 
-    { "id": "28A", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Rational exponents", "page": 566, "skills": ["fractional-powers"], "status": "ready" },
+    { "id": "28A", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Rational exponents", "page": 566, "skills": ["fractional-powers", "roots-as-powers"], "status": "ready" },
     { "id": "28B", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Exponential functions", "page": 568, "skills": [], "status": "todo" },
     { "id": "28C", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Exponential equations", "page": 570, "skills": ["exponential-equations"], "status": "ready" },
     { "id": "28D", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Problem solving with exponential functions", "page": 573, "skills": [], "status": "skip" },

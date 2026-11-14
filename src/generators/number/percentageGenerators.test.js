@@ -13,7 +13,8 @@
 // Run: npx vitest run src/generators/number/percentageGenerators.test.js
 
 import { describe, expect, it } from 'vitest';
-import { generatePercentageOfAmount, generateIndexLaws } from './percentageGenerators';
+import { generatePercentageOfAmount } from './percentageGenerators';
+import { generateIndexLawsMultiplyDivide as generateIndexLaws } from './indexLawGenerators';
 
 const BANDS = ['foundation', 'core', 'stretch'];
 const SAMPLES = 3000;
@@ -66,7 +67,7 @@ describe('percentage-of-amount', () => {
   });
 });
 
-describe('index-laws foundation', () => {
+describe('index-laws-multiply-divide foundation', () => {
   it('is correct, and writes some divides as a fraction', () => {
     const forms = { times: 0, div: 0, frac: 0 };
     const distinct = new Set();
