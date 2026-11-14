@@ -225,6 +225,26 @@ answer. The `workingOut` string should model that.
 **Separate skill: triple recognition** — Haese 8A.2.
 Foundation: is {8, 15, 17} a triple? Core: find k if {k, 24, 26} is a triple.
 
+**The converse** (`pythagoras-converse`) — Haese 8B. Built; bands set from
+how Haese escalates, not yet reviewed in class. Half the triangles are
+right-angled; the others are a triple with one side moved by one or two, so
+only the arithmetic tells. Foundation: three sides up to 30 on a triangle,
+yes or no (8B Q1). Core: larger sides and named vertices, and the right
+angle located opposite the longest side (8B Q2). Stretch: the vertices as
+coordinates, each side squared from its run and rise first (8C Example 10
+meeting 8B).
+
+**Three dimensions** (`pythagoras-3d`) — Haese 8E. Foundation: one right
+triangle in a solid from a triple, a cone's height, slant or radius, or the
+longest rod in a cylinder from its diameter (8E Q1, Example 17). Core: two
+steps, a cuboid's space diagonal with the floor diagonal drawn, or the rod
+from the radius (Example 18, Q5–6), exact in surd form. Stretch: the
+diagonal given and an edge wanted, so the steps run backwards: a cube, a
+cuboid's third edge, a cylinder's height (Review 8A Q7, 8B Q8), to 3 s.f.
+
+**Circle problems** — Haese 8D. Served by the Circle theorems topic's
+`chord-perpendicular-bisector` and `tangent-length`, not repeated here.
+
 ## Angle facts — Rayner 7.1
 
 The cleanest three-band structure of any exercise here.

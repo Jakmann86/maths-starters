@@ -16,6 +16,7 @@ import * as magicSquares from '../generators/puzzles/magicSquareGenerators';
 import * as symbolPuzzles from '../generators/puzzles/symbolPuzzleGenerators';
 import * as arithmagon from '../generators/puzzles/arithmagonGenerators';
 import * as pythagoras from '../generators/geometry/pythagorasGenerators';
+import * as pythProblems from '../generators/geometry/pythagorasProblemsGenerators';
 import * as sohcahtoa from '../generators/geometry/sohcahtoaGenerators';
 import * as functions from '../generators/algebra/functionGenerators';
 import * as furtherTrig from '../generators/geometry/furtherTrigGenerators';
@@ -320,10 +321,22 @@ export const skills = {
     generate: (opts) => pythagoras.generatePythagorasMissingSide(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'pythagoras-converse': {
+    label: 'Pythagoras: is it right-angled?',
+    topic: 'Pythagoras and trigonometry',
+    generate: (opts) => pythProblems.generatePythagorasConverse(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'pythagoras-isosceles': {
     label: 'Pythagoras: isosceles triangles',
     topic: 'Pythagoras and trigonometry',
     generate: (opts) => pythagoras.generatePythagorasIsosceles(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'pythagoras-3d': {
+    label: 'Pythagoras in three dimensions',
+    topic: 'Pythagoras and trigonometry',
+    generate: (opts) => pythProblems.generatePythagoras3d(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1577,11 +1590,12 @@ export const generateForSkill = (id, wanted = 'core') => {
  * skill sits in this file and where a teacher sees it on screen are different
  * decisions, and adding a skill should never silently reshuffle the panel.
  *
- * Within a strand, topics run in the textbook's order: by the first Haese
- * section (haese-igcse.json) that uses one of their skills. A topic the
- * book takes as assumed knowledge, with no section of its own (order of
- * operations, fractions), goes first in its strand. topicOrder.test.js holds
- * the panel to that rule.
+ * Within a strand, topics run in the textbook's order: by their home
+ * chapter in Haese (haese-igcse.json), the one holding most of their skills,
+ * then by the first section that uses one. A topic the book takes as
+ * assumed knowledge, with no section of its own (order of operations,
+ * fractions), goes first in its strand. topicOrder.test.js holds the panel
+ * to that rule.
  */
 export const STRANDS = [
   {

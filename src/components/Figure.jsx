@@ -569,6 +569,22 @@ export default function Figure({ fig, color, shown }) {
     // overflow: visible, so a long label here is not clipped.
     if (fig.d) nodes.push(figLabel('d', 223 + OFF / 2, 172 - OFF / 2, fig.d, 'start', labelColor('d')));
 
+    // The space diagonal, front-bottom-left to back-top-right (Haese 8E), and
+    // with `baseDiagonal` the floor's diagonal under it, dashed as the
+    // construction line it is: the first of the two right triangles. Every
+    // part of the front face has a hidden edge or a diagonal near it, so
+    // the label takes the narrow strip above the diagonal, right of the
+    // hidden vertical edge, with a halo in case a long label grazes a line.
+    if (fig.baseDiagonal) nodes.push(edge('bd', FBL, BBR, { strokeDasharray: '6 6', strokeWidth: 2 }));
+    if (fig.diagonal) {
+      nodes.push(edge('sd', FBL, BTR, { strokeWidth: 2.5 }));
+      nodes.push(
+        <g key="sdh" stroke="var(--ground)" strokeWidth={5} strokeLinejoin="round" style={{ paintOrder: 'stroke' }}>
+          {figLabel('sdl', 112, 84, fig.diagonal, 'start', labelColor('diagonal'))}
+        </g>
+      );
+    }
+
     return solidWrap(nodes, 300, 195, 'cb', fig, shown);
   }
 
@@ -607,6 +623,14 @@ export default function Figure({ fig, color, shown }) {
       nodes.push(figLabel('rv', CX + RX / 2, TOP - RY - 8, fig.r, 'middle', col('r')));
     }
     if (fig.h) nodes.push(figLabel('hv', L - 10, (TOP + BOT) / 2 + 5, fig.h, 'end', col('h')));
+    // A rod from the bottom rim on the left to the top rim on the right
+    // (Haese 8E Example 17): the longest straight line inside. Its label sits
+    // inside, above-left of the line, where it clears both sides (below-right
+    // of it, the body is too narrow for "24 cm" before the right side).
+    if (fig.diagonal) {
+      nodes.push(figLine('dg', L, BOT, R, TOP, { strokeWidth: 2.5 }));
+      nodes.push(figLabel('dgl', CX - 23, (TOP + BOT) / 2 - 18, fig.diagonal, 'middle', col('diagonal')));
+    }
     return solidWrap(nodes, 210, 240, 'cy', fig, shown);
   }
 
