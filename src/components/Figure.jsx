@@ -1219,7 +1219,8 @@ export default function Figure({ fig, color, shown }) {
   // Two similar solids, small and large (Similarity, Haese 18D):
   //   solid    'cylinder', 'cuboid' or 'cone'
   //   left, right  { length, value, big }: `length` labels the height,
-  //            `value` (an area or volume, or 'x') is written underneath
+  //            `value` (an area or volume, or 'x') is written underneath;
+  //            two values joined by ', ' go one under the other
   //   unknown  'left' | 'right' | 'left-length' | 'right-length'
   if (fig.type === 'similar-solids') {
     const nodes = [];
@@ -1258,11 +1259,14 @@ export default function Figure({ fig, color, shown }) {
       }
       const h0 = fig.solid === 'cuboid' ? base - (90 * k) / 2 : base - ((fig.solid === 'cone' ? 130 : 110) * k) / 2;
       if (s.length) nodes.push(figLabel(`${which}len`, hx, h0 + 6, s.length, 'end', tint(`${which}-length`)));
-      if (s.value) nodes.push(figLabel(`${which}val`, x + width / 2, base + 40, s.value, 'middle', tint(which)));
+      // A surface area and a volume together go one under the other, so the
+      // small solid's pair does not run into the large one's.
+      if (s.value) s.value.split(', ').forEach((part, i) => nodes.push(figLabel(`${which}val${i}`, x + width / 2, base + 38 + i * 24, part, 'middle', tint(which))));
       x += width + 90;
       void top;
     });
-    return svgWrap(nodes, Math.round(x - 40), 280, 'ss', fig.big, shown);
+    const stacked = ['left', 'right'].some((w) => (fig[w]?.value ?? '').includes(', '));
+    return svgWrap(nodes, Math.round(x - 40), stacked ? 300 : 280, 'ss', fig.big, shown);
   }
 
   if (fig.type === 'isosceles-angles') {
