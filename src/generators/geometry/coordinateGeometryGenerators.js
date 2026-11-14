@@ -5,7 +5,10 @@
 //   distance-between-points            12B
 //   midpoint-of-segment                12C
 //   gradient-of-segment                12D
-//   parallel-perpendicular-gradients   12E
+//   parallel-gradients                 12E
+//   perpendicular-gradients            12E
+//   horizontal-vertical-lines          14A
+//   lines-meet                         14A (where a line meets x = a or y = b)
 //   equation-of-a-line                 14C
 //   line-general-form                  14D
 //   point-on-line                      14C Q8 / 14D Q6
@@ -339,27 +342,91 @@ export const generateGradientOfSegment = (options = {}) => {
 
 /* ------------------------------ 12E parallel and perpendicular gradients */
 
-export const generateParallelPerpendicular = (options = {}) => {
+/** ax + by = d with a and b coprime, b positive and a not zero. */
+function generalLine() {
+  for (;;) {
+    const a = _.random(1, 6) * _.sample([-1, 1]);
+    const bb = _.random(1, 6);
+    const d = _.random(-12, 12);
+    if (gcd(a, bb) !== 1 || Math.abs(a) + bb < 3) continue;
+    return [a, bb, d];
+  }
+}
+
+// Parallel lines
+//   Foundation  y = mx + c: the gradient of a parallel line
+//   Core        ax + by = d: the gradient has to be found first
+//   Stretch     the equation of the parallel line through a given point
+export const generateParallelGradients = (options = {}) => {
   const { difficulty = 'core' } = options;
-  const num = _.random(1, 8) * _.sample([-1, 1]);
-  const den = _.random(1, 6);
+  const topic = 'parallel-gradients';
 
   if (difficulty === 'foundation') {
+    const num = _.random(1, 8) * _.sample([-1, 1]);
+    const den = _.random(1, 6);
     const c = _.random(-6, 6);
     return {
       instruction: 'Find the gradient of a line parallel to this one',
       questionMath: lineEquation(num, den, c),
       questionMathCompact: true,
       answer: frac(num, den),
-      workingOut: [
-        `\\text{parallel lines have equal gradients}`,
-        `m = ${frac(num, den)}`,
-      ].join(NL),
-      metadata: { topic: 'parallel-perpendicular-gradients', difficulty },
+      workingOut: [`\\text{parallel lines have equal gradients}`, `m = ${frac(num, den)}`].join(NL),
+      metadata: { topic, difficulty },
     };
   }
 
   if (difficulty === 'core') {
+    const [a, bb, d] = generalLine();
+    return {
+      instruction: 'Find the gradient of a line parallel to this one',
+      questionMath: generalForm(a, bb, d),
+      questionMathCompact: true,
+      answer: frac(-a, bb),
+      workingOut: [`${coef(bb)}y = ${coef(-a)}x${signed(d)}`, `m = ${frac(-a, bb)}`].join(NL),
+      metadata: { topic, difficulty },
+    };
+  }
+
+  // The point lies on a whole-number step of the gradient, so c is whole.
+  for (;;) {
+    const num = _.random(1, 5) * _.sample([-1, 1]);
+    const den = _.random(1, 3);
+    if (gcd(num, den) !== 1) continue;
+    const c = _.random(-6, 6);
+    const x = den * _.random(-3, 3);
+    const c2 = _.random(-8, 8);
+    const y = (num * x) / den + c2;
+    if (x === 0 || c2 === c || Math.abs(y) > 12) continue;
+    return {
+      instruction: 'Find the equation of the line parallel to this one, through the point given',
+      questionMath: `${lineEquation(num, den, c)}${NL}\\text{through } ${point(x, y)}`,
+      questionMathCompact: true,
+      answer: lineEquation(num, den, c2),
+      workingOut: [
+        `y = ${mx(num, den)}x + c`,
+        `${y} = ${frac(num, den)} \\times ${br(x)} + c`,
+        `c = ${c2}`,
+        lineEquation(num, den, c2),
+      ].join(NL),
+      metadata: { topic, difficulty },
+    };
+  }
+};
+
+// Perpendicular lines
+//   Foundation  a whole-number gradient: its negative reciprocal
+//   Core        a fraction for a gradient: turned over and the sign changed
+//   Stretch     the line in general form, so the gradient comes first
+export const generatePerpendicularGradients = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const topic = 'perpendicular-gradients';
+
+  if (difficulty !== 'stretch') {
+    let num, den;
+    do {
+      num = _.random(1, 8) * _.sample([-1, 1]);
+      den = difficulty === 'foundation' ? 1 : _.random(2, 6);
+    } while (gcd(num, den) !== 1);
     const c = _.random(-6, 6);
     return {
       instruction: 'Find the gradient of a line perpendicular to this one',
@@ -368,32 +435,25 @@ export const generateParallelPerpendicular = (options = {}) => {
       answer: frac(-den, num),
       workingOut: [
         `m = ${frac(num, den)}`,
-        `\\text{perpendicular gradient} = -1 \\div ${frac(num, den)} = ${frac(-den, num)}`,
+        `\\text{perpendicular gradient} = -1 \\div ${frac(num, den).startsWith('-') ? `(${frac(num, den)})` : frac(num, den)} = ${frac(-den, num)}`,
       ].join(NL),
-      metadata: { topic: 'parallel-perpendicular-gradients', difficulty },
+      metadata: { topic, difficulty },
     };
   }
 
-  // Stretch: the line arrives in general form, so the gradient has to be
-  // recovered before it can be turned over.
-  for (;;) {
-    const a = _.random(1, 6) * _.sample([-1, 1]);
-    const bb = _.random(1, 6);
-    const d = _.random(-12, 12);
-    if (gcd(a, bb) !== 1) continue;
-    return {
-      instruction: 'Find the gradient of a line perpendicular to this one',
-      questionMath: generalForm(a, bb, d),
-      questionMathCompact: true,
-      answer: frac(bb, a),
-      workingOut: [
-        `${coef(bb)}y = ${coef(-a)}x${signed(d)}`,
-        `m = ${frac(-a, bb)}`,
-        `\\text{perpendicular gradient} = ${frac(bb, a)}`,
-      ].join(NL),
-      metadata: { topic: 'parallel-perpendicular-gradients', difficulty },
-    };
-  }
+  const [a, bb, d] = generalLine();
+  return {
+    instruction: 'Find the gradient of a line perpendicular to this one',
+    questionMath: generalForm(a, bb, d),
+    questionMathCompact: true,
+    answer: frac(bb, a),
+    workingOut: [
+      `${coef(bb)}y = ${coef(-a)}x${signed(d)}`,
+      `m = ${frac(-a, bb)}`,
+      `\\text{perpendicular gradient} = ${frac(bb, a)}`,
+    ].join(NL),
+    metadata: { topic, difficulty },
+  };
 };
 
 /* --------------------------------------------------- 14C equation of a line */
@@ -533,26 +593,31 @@ export const generateLineGeneralForm = (options = {}) => {
     }
   }
 
-  // Gradient and a point, straight to general form (Haese's fast method).
+  // Two points: the gradient first, then straight to general form
+  // (Haese's fast method).
   for (;;) {
     const num = _.random(1, 5) * _.sample([-1, 1]);
     const den = _.random(2, 5);
     if (gcd(num, den) !== 1) continue;
-    const x = _.random(-6, 6);
-    const y = _.random(-6, 6);
+    const p = [_.random(-6, 4), _.random(-6, 6)];
+    const k = _.random(1, 2);
+    const q = [p[0] + den * k, p[1] + num * k];
+    if (Math.abs(q[0]) > 9 || Math.abs(q[1]) > 9) continue;
     const a = -num;
     const bb = den;
-    const d = a * x + bb * y;
     const flip = a < 0 ? -1 : 1;
+    const [A, B] = [a * flip, bb * flip];
+    const d = A * p[0] + B * p[1];
     return {
-      instruction: 'Find the equation of the line in the form ax + by = d',
-      questionMath: `\\text{gradient } ${frac(num, den)}${NL}\\text{through } ${point(x, y)}`,
+      instruction: 'Find the equation of the line through A and B, in the form ax + by = d',
+      questionMath: `A${point(p[0], p[1])} \\text{ and } B${point(q[0], q[1])}`,
       questionMathCompact: true,
-      answer: generalForm(a * flip, bb * flip, d * flip),
+      answer: generalForm(A, B, d),
       workingOut: [
-        `${generalForm(a * flip, bb * flip, 'd')}`,
-        `d = ${a * flip} \\times ${br(x)} + ${br(bb * flip)} \\times ${br(y)} = ${d * flip}`,
-        generalForm(a * flip, bb * flip, d * flip),
+        `m = \\frac{${q[1]} - ${br(p[1])}}{${q[0]} - ${br(p[0])}} = ${frac(num, den)}`,
+        generalForm(A, B, 'd'),
+        `d = ${A} \\times ${br(p[0])} + ${br(B)} \\times ${br(p[1])} = ${d}`,
+        generalForm(A, B, d),
       ].join(NL),
       metadata: { topic: 'line-general-form', difficulty },
     };
@@ -627,17 +692,29 @@ export const generatePointOnLine = (options = {}) => {
 /* --------------------------------------- 14A vertical and horizontal lines */
 //   foundation  one drawn line, x = k or y = k          read its equation
 //   core        two points sharing an x or a y          no figure
-//   stretch     where x = k or y = k meets y = mx + c    substitute, then
-//               (y = k needs solving for x)              give the point
+//   stretch     from a description: parallel or perpendicular to an axis,
+//               or a gradient of 0, through a given point
 // Foundation has a real ceiling: k is a non-zero whole number on a readable
 // grid, two orientations, so 16 questions. k = 0 would sit on an axis and be
 // invisible; a wider k only moves the window.
+//
+// Where such a line meets another is its own skill, lines-meet, below.
+
+// What the description says, and whether it makes the line vertical.
+const DESCRIPTIONS = [
+  ['\\text{parallel to the } x\\text{-axis}', false],
+  ['\\text{parallel to the } y\\text{-axis}', true],
+  ['\\text{perpendicular to the } x\\text{-axis}', true],
+  ['\\text{perpendicular to the } y\\text{-axis}', false],
+  ['\\text{gradient } 0', false],
+];
 
 export const generateHorizontalVerticalLines = (options = {}) => {
   const { difficulty = 'core' } = options;
-  const vertical = _.random(0, 1) === 1;
+  const topic = 'horizontal-vertical-lines';
 
   if (difficulty === 'foundation') {
+    const vertical = _.random(0, 1) === 1;
     const k = _.sample([-4, -3, -2, -1, 1, 2, 3, 4]);
     return {
       instruction: 'Find the equation of this line',
@@ -646,11 +723,12 @@ export const generateHorizontalVerticalLines = (options = {}) => {
         ? `\\text{every point on the line has } x = ${k}${NL}x = ${k}`
         : `\\text{every point on the line has } y = ${k}${NL}y = ${k}`,
       visualization: { type: 'coordinate-grid', line: vertical ? { x: k } : { m: 0, c: k }, big: true },
-      metadata: { topic: 'horizontal-vertical-lines', difficulty },
+      metadata: { topic, difficulty },
     };
   }
 
   if (difficulty === 'core') {
+    const vertical = _.random(0, 1) === 1;
     const k = _.random(-8, 8);
     const [p, q] = _.sampleSize(_.range(-8, 9), 2);
     const a = vertical ? [k, p] : [p, k];
@@ -663,24 +741,92 @@ export const generateHorizontalVerticalLines = (options = {}) => {
       workingOut: vertical
         ? `\\text{both points have } x = ${k}\\text{, so the line is vertical}${NL}x = ${k}`
         : `\\text{both points have } y = ${k}\\text{, so the line is horizontal}${NL}y = ${k}`,
-      metadata: { topic: 'horizontal-vertical-lines', difficulty },
+      metadata: { topic, difficulty },
     };
   }
 
-  // Stretch: the meeting point is chosen first, so it is always whole.
-  const m = _.sample([-4, -3, -2, -1, 1, 2, 3, 4]);
-  const px = _.random(-6, 6);
-  const c = _.random(-8, 8);
-  const py = m * px + c;
-  const sloped = `y = ${coef(m)}x${signed(c)}`;
-  const flat = vertical ? `x = ${px}` : `y = ${py}`;
+  // The point's two coordinates differ in size, so naming the wrong one
+  // gives a different line.
+  const [words, vertical] = _.sample(DESCRIPTIONS);
+  let x, y;
+  do { x = _.random(-8, 8); y = _.random(-8, 8); } while (!x || !y || Math.abs(x) === Math.abs(y));
+  const answer = vertical ? `x = ${x}` : `y = ${y}`;
   return {
-    instruction: 'Find the point where these two lines meet',
-    questionMath: `${sloped}${NL}${flat}`,
-    answer: point(px, py),
-    workingOut: vertical
-      ? `y = ${m} \\times ${br(px)}${signed(c)} = ${py}${NL}${point(px, py)}`
-      : `${py} = ${coef(m)}x${signed(c)}${NL}x = ${px}${NL}${point(px, py)}`,
-    metadata: { topic: 'horizontal-vertical-lines', difficulty },
+    instruction: 'Find the equation of the line',
+    questionMath: `${words}${NL}\\text{through } ${point(x, y)}`,
+    questionMathCompact: true,
+    answer,
+    workingOut: `\\text{the line is ${vertical ? 'vertical' : 'horizontal'}, so every point has } ${answer}${NL}${answer}`,
+    metadata: { topic, difficulty },
   };
+};
+
+/* -------------------------------- 14A where a line meets x = a or y = b */
+//   foundation  x = a and y = b                          read the point off
+//   core        y = mx + c with x = k or y = k           substitute, then
+//               (y = k needs solving for x)              give the point
+//   stretch     ax + by = d with x = k or y = k          the same, from
+//                                                        general form
+// The meeting point is chosen first, so it is always whole.
+
+export const generateLinesMeet = (options = {}) => {
+  const { difficulty = 'core' } = options;
+  const topic = 'lines-meet';
+  const vertical = _.random(0, 1) === 1;
+
+  if (difficulty === 'foundation') {
+    let px, py;
+    do { px = _.random(-8, 8); py = _.random(-8, 8); } while (!px || !py);
+    const lines = _.shuffle([`x = ${px}`, `y = ${py}`]);
+    return {
+      instruction: 'Find the point where these two lines meet',
+      questionMath: lines.join(NL),
+      answer: point(px, py),
+      workingOut: `\\text{the point has } x = ${px} \\text{ and } y = ${py}${NL}${point(px, py)}`,
+      metadata: { topic, difficulty },
+    };
+  }
+
+  if (difficulty === 'core') {
+    let m, px, c, py;
+    do {
+      m = _.sample([-4, -3, -2, -1, 1, 2, 3, 4]);
+      px = _.random(-6, 6);
+      c = _.random(-8, 8);
+      py = m * px + c;
+    } while (!px || !py);
+    const sloped = `y = ${coef(m)}x${signed(c)}`;
+    const flat = vertical ? `x = ${px}` : `y = ${py}`;
+    return {
+      instruction: 'Find the point where these two lines meet',
+      questionMath: `${sloped}${NL}${flat}`,
+      answer: point(px, py),
+      workingOut: vertical
+        ? `y = ${m} \\times ${br(px)}${signed(c)} = ${py}${NL}${point(px, py)}`
+        : `${py} = ${coef(m)}x${signed(c)}${NL}x = ${px}${NL}${point(px, py)}`,
+      metadata: { topic, difficulty },
+    };
+  }
+
+  for (;;) {
+    const a = _.random(1, 6) * _.sample([-1, 1]);
+    const bb = _.random(1, 6);
+    if (gcd(Math.abs(a), bb) !== 1 || Math.abs(a) + bb < 3) continue;
+    const px = _.random(-6, 6);
+    const py = _.random(-6, 6);
+    // The coefficient left to divide by is not 1, or there is no solving.
+    if (!px || !py || (vertical && bb === 1) || (!vertical && Math.abs(a) === 1)) continue;
+    const d = a * px + bb * py;
+    const flat = vertical ? `x = ${px}` : `y = ${py}`;
+    const working = vertical
+      ? [`${a} \\times ${br(px)} + ${coef(bb)}y = ${d}`, `${bb}y = ${d - a * px}`, `y = ${py}`]
+      : [`${coef(a)}x + ${bb} \\times ${br(py)} = ${d}`, `${a}x = ${d - bb * py}`, `x = ${px}`];
+    return {
+      instruction: 'Find the point where these two lines meet',
+      questionMath: `${generalForm(a, bb, d)}${NL}${flat}`,
+      answer: point(px, py),
+      workingOut: [...working, point(px, py)].join(NL),
+      metadata: { topic, difficulty },
+    };
+  }
 };

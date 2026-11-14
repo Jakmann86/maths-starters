@@ -278,6 +278,13 @@ between them marked. P's interior angle is what is left of 360°, then its
 exterior angle, then n. Only seven sets of polygons close round a point with
 a whole-number n; the marked gap is what gives the variety.
 
+**As built** (after the skill-ladder review). Interior angles: F a regular
+polygon, n given; C the angle given, find n; S an irregular polygon's
+missing angle, drawn to its true angles, or regular polygons meeting at a
+point (half each). Exterior angles: F n given; C the angle given, find n;
+S an irregular polygon. A Core question has no figure, since a regular
+polygon drawn would let the class count its sides.
+
 ## Functions — Haese 19A–F, 23B and Rayner 5.1–5.3
 
 Both books mix two notations, `f(x) = 3x − 7` and `f : x ↦ 3x − 7`, and two
@@ -389,42 +396,45 @@ diagonals). Stretch: x is the part of a side, so subtract at the end, or
 the X shape with the whole line given. Haese 18C (shadows, ramps) is left
 out, as the scheme marks it.
 
-**Areas and volumes** — Haese 18D, Rayner Ex 7.11-7.12. Foundation: k from
-two lengths, area times k squared (Haese Example 7). Core: areas given,
-find a length (Rayner Example 6), or volume from lengths (Haese
-Example 9). Stretch: surface areas given, find a volume (Haese 18D Q7-8),
-or the trapezium left in the A shape (Haese 18D Q3, Rayner Ex 7.12 Q5).
+**Areas of similar shapes** — Haese 18D, Rayner Ex 7.11-7.12. Foundation:
+k from two lengths, area times k squared (Haese Example 7). Core: areas
+given, find a length (Rayner Example 6). Stretch: the trapezium left in
+the A shape (Haese 18D Q3, Rayner Ex 7.12 Q5).
+
+**Volumes of similar solids** — Haese 18D. Foundation: volume from
+lengths (Haese Example 9). Core: volumes given, find a length, k a cube
+root. Stretch: surface areas given, find a volume (Haese 18D Q7-8).
 
 ## Transformations — Haese 20A–D and Rayner 11.6–11.12
 
-Year 8, on a coordinate grid; the vectors in Rayner 11.1–11.5 and Haese's
+On a coordinate grid; the vectors in Rayner 11.1–11.5 and Haese's
 stretches, function transformations, inverses and combinations (20E–H)
-are left out. A carry-out question letters one corner A and asks for A′;
-the image is drawn on reveal so the class can check their drawing. A
-describe question draws shapes A and B; the reveal draws the mirror line
-or the centre.
+are left out. Translation, reflection, rotation and enlargement are
+carried out only: a question letters one corner A and asks for A′, and
+the image is drawn on reveal so the class can check their drawing. One
+question in three (not for enlargement) moves a single point P instead,
+quicker to read off a projected grid. Describing is its own skill: it
+draws shapes A and B, and the reveal draws the mirror line or the centre.
 
 **Translation** — Haese 20A, Rayner Ex 11.10. Foundation: in words,
 "3 squares right and 2 squares down". Core: by a column vector, the form
-both books use. Stretch: write the column vector that maps A onto B.
+both books use, with no negative entry. Stretch: a column vector with a
+negative entry, or one vector and then another (find A″).
 
-**Reflection** — Haese 20C, Rayner Ex 11.6–11.7. Foundation: in a
-vertical or horizontal line, the axes among them. Core: in y = x or
-y = −x (Rayner Ex 11.7). Stretch: find the equation of the mirror line
-(Rayner Ex 11.7, "find the equation of the mirror line").
+**Reflection** — Haese 20C, Rayner Ex 11.6–11.7. Foundation: in the
+x-axis or the y-axis. Core: in a line x = a or y = b. Stretch: in y = x
+or y = −x (Rayner Ex 11.7).
 
 **Rotation** — Haese 20B, Rayner Ex 11.8–11.9. Foundation: 90° either way
-or 180° about the origin. Core: about another centre, marked. Stretch:
-describe fully, with the angle, the direction and the centre, as Rayner
-insists all three are needed.
+or 180° about the origin. Core: 180° about a centre marked on the grid.
+Stretch: 90°, clockwise or anticlockwise, about a marked centre.
 
 **Enlargement** — Haese 20D, Rayner Ex 11.11. Foundation: scale factor 2
-or 3 from a marked centre. Core: describe one, with the scale factor and
-the centre (Rayner's "find the centre of enlargement and the scale
-factor"). Stretch: scale factor ½, carried out or described; Haese calls
-this a reduction, and "enlargement, scale factor ½" is what the mark
-schemes ask for. Negative and fractional factors other than ½ are left
-out at Year 8.
+or 3, the centre at a corner of the shape, so the image grows out of it.
+Core: scale factor 2 or 3 from a centre off the shape. Stretch: scale
+factor ½ (Haese's reduction; "enlargement, scale factor ½" is what the
+mark schemes ask for), −1 or −2, the centre between the shape and its
+image.
 
 **Describing a transformation** — Rayner Ex 11.12, "describe fully the
 following transformations". Foundation: a translation, a reflection in a
@@ -433,6 +443,31 @@ the four, centres anywhere and scale factors 2 and 3. Stretch: the harder
 case of three: reflection in y = x or y = −x, a quarter turn about a
 centre off the origin, scale factor ½. A translation has no harder case,
 so it stops at Core.
+
+## Skill-ladder review: geometry
+
+Changes Joakim decided in the November 2026 skill-ladder review. Rows still
+"To decide" were left alone.
+
+- **Translation, reflection, rotation and enlargement** are carried out
+  only, with single-point questions mixed into every band of the first
+  three; describing is left to Describing a transformation. Bands as in
+  the Transformations section above.
+- **Polygon interior and exterior angles**: F n given; C the angle given,
+  find n; S irregular. See Angles in polygons above.
+- **Parallel and perpendicular gradients** split. Parallel lines: F
+  y = mx + c; C ax + by = d; S the equation of the parallel line through a
+  point. Perpendicular lines: F a whole-number gradient; C a fraction;
+  S general form.
+- **Vertical and horizontal lines**: F read x = a or y = b off a graph; C
+  through two points; S from a description ("parallel to the x-axis,
+  through (3, −2)"; perpendicular to an axis; gradient 0). Where a line
+  meets one is its own skill, *Where a line meets x = a or y = b*: F x = a
+  and y = b; C y = mx + c with x = k or y = k; S ax + by = d with x = k or
+  y = k.
+- **Straight lines in general form**: F y = mx + c to ax + by = d; C back;
+  S the equation through two points, in ax + by = d.
+- **Areas and volumes of similar shapes** split; see Similarity above.
 
 ## Vectors — Haese 24A–H and Rayner 11.1–11.5
 

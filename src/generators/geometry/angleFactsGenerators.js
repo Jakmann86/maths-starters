@@ -704,22 +704,19 @@ export const generateParallelLineAngles = (options = {}) => {
 };
 
 // generatePolygonInteriorAngles / generatePolygonExteriorAngles ----------------------------------
-// Haese: regular-polygon angle facts. Both share Figure.jsx's 'polygon' type
+// Haese: polygon angle facts. Both share Figure.jsx's 'polygon' type
 // (n-sided outline, either an interior corner mark or an exterior
-// extension + arc depending on `exterior`).
-//   Foundation  small n (<= 8, interior) / <= 10 (exterior)     read off the fact
-//   Core        any n from the nice-n pool                       read off the fact
-//   Stretch     interior: regular polygons meeting at a point, find P's n
-//               (half); given the angle, find n; or an irregular polygon's
-//               missing angle. exterior: given all-but-one
-//               exterior angle (sum to 360, any polygon), find the missing one
+// extension + arc depending on `exterior`) and 'polygon-irregular'.
+//   Foundation  a regular polygon, n given: find the angle
+//   Core        a regular polygon, the angle given: find n. There is no
+//               figure, since a regular n-gon drawn would let the class
+//               count the sides.
+//   Stretch     interior: an irregular polygon, find the missing angle, or
+//               (half the time) regular polygons meeting at a point, find
+//               P's n. exterior: an irregular polygon, find the missing
+//               exterior angle from the exterior or the interior angles
 const NICE_POLYGON_N = [4, 5, 6, 8, 9, 10, 12, 15, 18, 20];
 const interiorAngleOf = (n) => (180 * (n - 2)) / n;
-// Per-vertex radius multipliers for the 'polygon-irregular' figure — kept
-// close to 1 (0.72-1.00) so the shape stays convex and legible while still
-// reading as genuinely irregular rather than a regular n-gon with
-// mismatched angle labels.
-const randomRadiusFactors = (n) => Array.from({ length: n }, () => _.random(72, 100) / 100);
 
 // Regular polygons that meet at a point (Stretch). Polygon P's interior
 // angle is what is left of 360 degrees, then its exterior angle, then n:
@@ -802,48 +799,50 @@ function polygonsAtPoint(difficulty) {
 
 export const POLYGONS_AT_A_POINT = AT_A_POINT;
 
+// Irregular angle sets, drawn to their true angles: n - 1 interior angles
+// from 95 to 160 and a missing one from 60 to 155, redrawn until the outline
+// closes with no sliver of a side (evenEnough).
+function irregularInterior(n, unknownIndex) {
+  for (;;) {
+    const known = Array.from({ length: n - 1 }, () => _.random(95, 160));
+    const missing = 180 * (n - 2) - known.reduce((a, b) => a + b, 0);
+    if (missing < 60 || missing > 155) continue;
+    known.splice(unknownIndex, 0, missing);
+    if (evenEnough(known)) return known;
+  }
+}
+
+// A regular polygon given its angle: no figure, the angle in the question.
+function sidesFromAngle(topic, difficulty, exterior) {
+  const n = _.sample(NICE_EXTERIOR_N);
+  const angle = exterior ? exteriorAngleOf(n) : interiorAngleOf(n);
+  return {
+    instruction: `Each ${exterior ? 'exterior' : 'interior'} angle of a regular polygon is given. How many sides does it have?`,
+    questionMath: `\\text{${exterior ? 'exterior' : 'interior'} angle} = ${angle}^\\circ`,
+    answer: `n = ${n}`,
+    workingOut: exterior
+      ? `n = \\frac{360}{${angle}} = ${n}`
+      : [`\\text{exterior angle} = 180^\\circ - ${angle}^\\circ = ${360 / n}^\\circ`, `n = \\frac{360}{${360 / n}} = ${n}`].join(NL),
+    visualization: null,
+    metadata: { topic, difficulty, tags: ['angles', 'polygon', exterior ? 'exterior' : 'interior', 'sides'] },
+  };
+}
+
 export const generatePolygonInteriorAngles = (options = {}) => {
   const { difficulty = 'core' } = options;
+  const topic = 'polygon-interior-angles';
 
   if (difficulty === 'stretch') {
     // Half the time: regular polygons meeting at a point (polygonsAtPoint).
-    // A quarter: the regular-polygon reverse lookup (given the interior
-    // angle, find n). A quarter: an irregular polygon with all but one
-    // interior angle given, find the missing one via 180(n-2) — genuinely
-    // different reasoning (the general angle-sum fact, not the regular-n
-    // formula), so Stretch isn't just the same trick with bigger numbers.
-    const pick = Math.random();
-    if (pick < 0.5) return polygonsAtPoint(difficulty);
-    if (pick < 0.75) {
-      const n = _.sample(NICE_POLYGON_N.filter((v) => v >= 6));
-      const angle = interiorAngleOf(n);
-      return {
-        instruction: 'Each interior angle of a regular polygon is given. How many sides does it have?',
-        // The angle is labelled on the figure; repeating it as a question
-        // line printed it twice (CLAUDE.md §2: a forward question carries
-        // everything on the figure).
-        questionMath: null,
-        answer: `n = ${n}`,
-        workingOut: `\\frac{180(n-2)}{n} = ${angle}` + NL + `n = ${n}`,
-        visualization: { type: 'polygon', n, angleLabel: `${angle}^\\circ`, big: true },
-        metadata: { topic: 'polygon-interior-angles', difficulty, tags: ['angles', 'polygon', 'interior'] },
-      };
-    }
-
-    // Rejection-sample so the missing angle always lands somewhere sensible
-    // (30-170) rather than risking a near-zero or implausibly large corner.
-    let n, knownAngles, missing;
-    do {
-      n = _.random(4, 7);
-      knownAngles = Array.from({ length: n - 1 }, () => _.random(60, 150));
-      missing = 180 * (n - 2) - knownAngles.reduce((a, b) => a + b, 0);
-    } while (missing < 30 || missing > 170);
-
+    // Otherwise an irregular polygon with all but one interior angle given,
+    // the missing one by 180(n - 2): the general angle sum, not the
+    // regular-polygon formula.
+    if (Math.random() < 0.5) return polygonsAtPoint(difficulty);
+    const n = _.random(5, 7);
     const unknownIndex = _.random(0, n - 1);
-    const angles = [];
-    let k = 0;
-    for (let i = 0; i < n; i++) angles.push(i === unknownIndex ? 'x' : `${knownAngles[k++]}^\\circ`);
-
+    const interior = irregularInterior(n, unknownIndex);
+    const missing = interior[unknownIndex];
+    const knownAngles = interior.filter((_v, i) => i !== unknownIndex);
     return {
       instruction: `This is an irregular ${n}-sided polygon. Find the missing angle x.`,
       // Every angle is labelled on the figure, so no list beside it.
@@ -852,13 +851,17 @@ export const generatePolygonInteriorAngles = (options = {}) => {
       workingOut:
         `\\text{sum of interior angles} = 180(${n} - 2) = ${180 * (n - 2)}^\\circ` + NL +
         `x = ${180 * (n - 2)} - (${knownAngles.join(' + ')}) = ${missing}^\\circ`,
-      visualization: { type: 'polygon-irregular', n, angles, unknownIndex, radiusFactors: randomRadiusFactors(n), big: true },
-      metadata: { topic: 'polygon-interior-angles', difficulty, tags: ['angles', 'polygon', 'interior', 'irregular'] },
+      visualization: {
+        type: 'polygon-irregular', n, interiorValues: interior, unknownIndex, big: true,
+        angles: interior.map((v, i) => (i === unknownIndex ? 'x' : `${v}^\\circ`)),
+      },
+      metadata: { topic, difficulty, tags: ['angles', 'polygon', 'interior', 'irregular'] },
     };
   }
 
-  const pool = difficulty === 'foundation' ? NICE_POLYGON_N.filter((v) => v <= 8) : NICE_POLYGON_N;
-  const n = _.sample(pool);
+  if (difficulty === 'core') return sidesFromAngle(topic, difficulty, false);
+
+  const n = _.sample(NICE_POLYGON_N);
   const angle = interiorAngleOf(n);
   return {
     instruction: 'Find the interior angle of this regular polygon',
@@ -866,7 +869,7 @@ export const generatePolygonInteriorAngles = (options = {}) => {
     answer: `${angle}^\\circ`,
     workingOut: `\\frac{180(${n}-2)}{${n}} = \\frac{${180 * (n - 2)}}{${n}} = ${angle}^\\circ`,
     visualization: { type: 'polygon', n, angleLabel: 'x', big: true },
-    metadata: { topic: 'polygon-interior-angles', difficulty, tags: ['angles', 'polygon', 'interior'] },
+    metadata: { topic, difficulty, tags: ['angles', 'polygon', 'interior'] },
   };
 };
 
@@ -947,8 +950,9 @@ export const generatePolygonExteriorAngles = (options = {}) => {
     };
   }
 
-  const pool = difficulty === 'foundation' ? NICE_EXTERIOR_N.filter((v) => v <= 10) : NICE_EXTERIOR_N;
-  const n = _.sample(pool);
+  if (difficulty === 'core') return sidesFromAngle('polygon-exterior-angles', difficulty, true);
+
+  const n = _.sample(NICE_EXTERIOR_N);
   const angle = exteriorAngleOf(n);
   return {
     instruction: 'Find the exterior angle of this regular polygon',

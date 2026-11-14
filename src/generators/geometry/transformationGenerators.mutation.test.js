@@ -40,9 +40,9 @@ const said = (q) => (q.questionText ? 'questionText' : 'instruction');
 const OPS = {
   'answer nudged': (q) => { const s = bumpOne(q.answer.replace(/\\frac\{1\}\{2\}/, 'HALF')); if (!s) return false; q.answer = s.replace('HALF', '\\frac{1}{2}'); },
   'answer coordinates swapped': (q) => {
-    const m = /^A' = \((-?\d+), (-?\d+)\)$/.exec(q.answer);
-    if (!m || m[1] === m[2]) return false;
-    q.answer = `A' = (${m[2]}, ${m[1]})`;
+    const m = /^([AP]'+) = \((-?\d+), (-?\d+)\)$/.exec(q.answer);
+    if (!m || m[2] === m[3]) return false;
+    q.answer = `${m[1]} = (${m[3]}, ${m[2]})`;
   },
   'a sign dropped in the answer': (q) => { if (!/-\d/.test(q.answer)) return false; q.answer = q.answer.replace(/-(\d)/, '$1'); },
   'a vertex of the image moved': (q) => {
@@ -58,7 +58,7 @@ const OPS = {
   },
   'A lettered at another corner': (q) => {
     const f = q.visualization;
-    if (!f.solution) return false;
+    if (!f.solution || f.shapes[0].pts.length < 2) return false;
     const n = f.shapes[0].pts.length;
     const j = (f.shapes[0].vertex.index + _.random(1, n - 1)) % n;
     if (Math.random() < 0.5) f.shapes[0].vertex.index = j;
@@ -94,7 +94,7 @@ const OPS = {
     q[said(q)] = q[said(q)].replace(/the ([xy])-axis/, (w, a) => `the line ${a === 'x' ? 'y' : 'x'} = 0`);
   },
   'the scale factor changed': (q) => {
-    if (/scale factor/.test(q[said(q)])) { q[said(q)] = q[said(q)].replace(/scale factor (2|3|½)/, (w, k) => `scale factor ${{ 2: 3, 3: 2, '½': 2 }[k]}`); return undefined; }
+    if (/scale factor/.test(q[said(q)])) { q[said(q)] = q[said(q)].replace(/scale factor (2|3|½|−1|−2)/, (w, k) => `scale factor ${{ 2: 3, 3: 2, '½': 2, '−1': '−2', '−2': '−1' }[k]}`); return undefined; }
     if (!/scale factor/.test(q.answer)) return false;
     q.answer = q.answer.replace(/scale factor \} (2|3|\\frac\{1\}\{2\})/, (w, k) => `scale factor } ${{ 2: '3', 3: '2' }[k] ?? '2'}`);
   },
@@ -142,6 +142,17 @@ const OPS = {
     const lines = q.workingOut.split('\n');
     if (lines.length < 2) return false;
     q.workingOut = lines.slice(0, -1).join('\n');
+  },
+  'a prime dropped': (q) => { if (!/''/.test(q.answer)) return false; q.answer = q.answer.replace("''", "'"); },
+  'a point called the shape': (q) => { if (!/the point P/.test(q[said(q)])) return false; q[said(q)] = q[said(q)].replace('the point P', 'the shape'); },
+  'a shape called the point': (q) => { if (!/the shape/.test(q[said(q)]) || !q.visualization.solution) return false; q[said(q)] = q[said(q)].replace('the shape', 'the point P'); },
+  'the second translation dropped': (q) => {
+    if (!/then/.test(q.questionMath ?? '')) return false;
+    q.questionMath = q.questionMath.split(' \\text{ then } ')[0];
+  },
+  'the two translations swapped for one': (q) => {
+    if (!/then/.test(q.questionMath ?? '')) return false;
+    q.instruction = q.instruction.replace('by the first column vector, then by the second', 'by the column vector');
   },
   'metadata changed': (q) => { q.metadata.difficulty = q.metadata.difficulty === 'core' ? 'stretch' : 'core'; },
   'moved to another band': (q) => {

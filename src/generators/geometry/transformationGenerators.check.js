@@ -3,10 +3,11 @@
 // (transformationGenerators.mutation.test.js). Test support only.
 //
 // Everything is read back off the board. A carry-out question's
-// transformation is parsed from the sentence (and the column vector), then
-// applied here, by this file's own affine maps, to the shape drawn on the
-// grid; the answer, the image drawn on reveal and the mirror line or
-// centre drawn on the grid must all agree with that. A describe question
+// transformation is parsed from the sentence (and the column vectors), then
+// applied here, by this file's own affine maps, to the shape or point drawn
+// on the grid; the answer, the image drawn on reveal and the mirror line or
+// centre drawn on the grid must all agree with that. Only Describing a
+// transformation asks for a description. A describe question
 // is solved from the two drawn shapes alone: every translation, every
 // reflection (in any line), every quarter and half turn (about any point)
 // and every enlargement by 2, 3, 1/2, 1/3 or their negatives that sends
@@ -53,7 +54,8 @@ const lineMap = (line) => (line.x !== undefined ? MAPS.reflection([line.x, 0], [
 const num = (s) => Number(s);
 const point = (s) => { const m = /^\((-?\d+), (-?\d+)\)$/.exec(s ?? ''); return m ? [num(m[1]), num(m[2])] : null; };
 const vector = (s) => { const m = /^\\begin\{pmatrix\} (-?\d+) \\\\ (-?\d+) \\end\{pmatrix\}$/.exec(s ?? ''); return m ? [num(m[1]), num(m[2])] : null; };
-const factor = (s) => ({ 2: 2, 3: 3, '½': 0.5, '\\frac{1}{2}': 0.5 }[s]);
+const factor = (s) => ({ 2: 2, 3: 3, '-1': -1, '-2': -2, '½': 0.5, '\\frac{1}{2}': 0.5 }[s]);
+const compose = (f, g) => ({ at: (p) => g.at(f.at(p)) });
 
 // "the y-axis", "the line x = 2", "the line y = -x"
 function lineFromWords(s) {
@@ -68,11 +70,19 @@ const sameLine = (a, b) => JSON.stringify({ x: a?.x, y: a?.y, m: a?.m, c: a?.c }
 const lineLabelOf = (line) => (line.x !== undefined ? `x = ${line.x}` : line.y !== undefined ? `y = ${line.y}` : `y = ${line.m === 1 ? '' : '-'}x`).replace(/-/g, '\u2212');
 
 // The carry-out sentence -> { kind, map, line?, centre?, ... }.
-function parseCarryOut(q) {
+function parseCarryOut(q, lone) {
   // Told what to do in the big text, and what to find in the instruction.
   const s = plain(q.questionText ? `${q.questionText} ${q.instruction}` : q.instruction);
-  must(s.endsWith(' Find the coordinates of A′.'), 'asks for A′', q);
-  const head = s.slice(0, -' Find the coordinates of A′.'.length);
+  const L = lone ? 'P' : 'A';
+  const ask = / Find the coordinates of ([AP])(′|″)\.$/.exec(s);
+  must(ask && ask[1] === L, `asks for ${L}′`, q);
+  const twice = ask[2] === '″';
+  // A point is read as a shape of one corner.
+  const said = s.slice(0, ask.index);
+  const head = lone ? said.replace(/^(\w+) the point P /, '$1 the shape ') : said;
+  must(!lone || head !== said, 'a point is called the point P', q);
+  must(lone || !/the point/.test(head), 'a shape is called the shape', q);
+  must(!twice || /^Translate the shape by the first column vector, then by the second\.$/.test(head), 'a double prime only after two translations', q);
   let m = /^Translate the shape (\d+) squares? (right|left)(?: and (\d+) squares? (up|down))?\.$/.exec(head)
     ?? /^Translate the shape ()()(\d+) squares? (up|down)\.$/.exec(head);
   if (m) {
@@ -87,7 +97,16 @@ function parseCarryOut(q) {
   if (head === 'Translate the shape by the column vector.') {
     const v = vector(q.questionMath);
     must(v && (v[0] || v[1]), 'the column vector', q);
-    return { kind: 'translation', mode: 'vector', v, map: MAPS.translation(v) };
+    return { kind: 'translation', mode: v[0] < 0 || v[1] < 0 ? 'negative vector' : 'vector', v, map: MAPS.translation(v) };
+  }
+  if (head === 'Translate the shape by the first column vector, then by the second.') {
+    must(twice, 'two translations find A″', q);
+    const parts = (q.questionMath ?? '').split(' \\text{ then } ');
+    must(parts.length === 2, 'two column vectors', q);
+    const [v, w] = parts.map(vector);
+    must(v && w && (v[0] || v[1]) && (w[0] || w[1]) && (v[0] + w[0] || v[1] + w[1]), 'two column vectors, not undoing each other', q);
+    const first = MAPS.translation(v);
+    return { kind: 'translation', mode: 'two vectors', v, w, first, map: compose(first, MAPS.translation(w)) };
   }
   must(q.questionMath === undefined, 'only a column vector goes in the question line', q);
   m = /^Reflect the shape in (.+)\.$/.exec(head);
@@ -104,7 +123,7 @@ function parseCarryOut(q) {
     must(m[2] === 'the origin' || centre[0] || centre[1], 'the origin is named as the origin', q);
     return { kind: 'rotation', deg, centre, origin: m[2] === 'the origin', map: MAPS.rotation(deg, centre) };
   }
-  m = /^Enlarge the shape by scale factor (2|3|½), centre (\(-?\d+, -?\d+\))\.$/.exec(head);
+  m = /^Enlarge the shape by scale factor (2|3|-1|-2|½), centre (\(-?\d+, -?\d+\))\.$/.exec(head);
   if (m) {
     const k = factor(m[1]), centre = point(m[2]);
     return { kind: 'enlargement', k, centre, map: MAPS.enlargement(k, centre) };
@@ -113,7 +132,7 @@ function parseCarryOut(q) {
 }
 
 // A describe answer -> the same shape of record.
-function parseDescription(q, answer, axesByName = true) {
+function parseDescription(q, answer) {
   let m = /^\\text\{Translation by \} (.+)$/.exec(answer);
   if (m) { const v = vector(m[1]); must(v && (v[0] || v[1]), 'translation vector', q); return { kind: 'translation', v, map: MAPS.translation(v) }; }
   m = /^\\text\{Reflection in \} (.+)$/.exec(answer);
@@ -122,7 +141,7 @@ function parseDescription(q, answer, axesByName = true) {
       : m[1].startsWith('\\text{the line } ') ? `the line ${m[1].slice('\\text{the line } '.length)}` : '';
     const line = lineFromWords(words);
     must(line, `mirror line "${m[1]}"`, q);
-    must(!axesByName || !/[xy] = 0$/.test(m[1]), 'an axis is named as an axis', q);
+    must(!/[xy] = 0$/.test(m[1]), 'an axis is named as an axis', q);
     return { kind: 'reflection', line, map: lineMap(line) };
   }
   m = /^\\text\{Rotation \} (90\^\\circ \\text\{ clockwise\}|90\^\\circ \\text\{ anticlockwise\}|180\^\\circ) \\text\{ about \} (\(-?\d+, -?\d+\))$/.exec(answer);
@@ -244,39 +263,39 @@ const BAND_RULES = {
   translation: {
     foundation: (r) => r.mode === 'words',
     core: (r) => r.mode === 'vector',
-    stretch: (r) => r.mode === 'describe-vector',
+    stretch: (r) => r.mode === 'negative vector' || r.mode === 'two vectors',
   },
   reflection: {
-    foundation: (r) => r.mode === 'carry' && r.line.m === undefined,
-    core: (r) => r.mode === 'carry' && r.line.m !== undefined,
-    stretch: (r) => r.mode === 'describe-line',
+    foundation: (r) => r.line.x === 0 || r.line.y === 0,
+    core: (r) => (r.line.x !== undefined && r.line.x !== 0) || (r.line.y !== undefined && r.line.y !== 0),
+    stretch: (r) => r.line.m !== undefined,
   },
   rotation: {
-    foundation: (r) => r.mode === 'carry' && r.origin,
-    core: (r) => r.mode === 'carry' && !r.origin,
-    stretch: (r) => r.mode === 'describe' && (r.centre[0] || r.centre[1]),
+    foundation: (r) => r.origin,
+    core: (r) => !r.origin && r.deg === 180,
+    stretch: (r) => !r.origin && r.deg !== 180,
   },
   enlargement: {
-    foundation: (r) => r.mode === 'carry' && r.k > 1,
-    core: (r) => r.mode === 'describe' && r.k > 1,
-    stretch: (r) => r.k === 0.5,
+    foundation: (r) => r.corner && r.k > 1,
+    core: (r) => !r.corner && r.k > 1,
+    stretch: (r) => !r.corner && (r.k === 0.5 || r.k < 0),
   },
   'describe-transformation': {
-    foundation: (r) => r.mode === 'describe' && (r.kind === 'translation' || (r.kind === 'reflection' && r.line.m === undefined) || (r.kind === 'rotation' && !r.centre[0] && !r.centre[1])),
-    core: (r) => r.mode === 'describe' && (r.kind !== 'reflection' || r.line.m !== -1) && (r.kind !== 'enlargement' || r.k > 1),
-    stretch: (r) => r.mode === 'describe' && ((r.kind === 'reflection' && r.line.m !== undefined)
-      || (r.kind === 'rotation' && r.deg !== 180 && (r.centre[0] || r.centre[1])) || (r.kind === 'enlargement' && r.k === 0.5)),
+    foundation: (r) => r.kind === 'translation' || (r.kind === 'reflection' && r.line.m === undefined) || (r.kind === 'rotation' && !r.centre[0] && !r.centre[1]),
+    core: (r) => (r.kind !== 'reflection' || r.line.m !== -1) && (r.kind !== 'enlargement' || r.k > 1),
+    stretch: (r) => (r.kind === 'reflection' && r.line.m !== undefined)
+      || (r.kind === 'rotation' && r.deg !== 180 && (r.centre[0] || r.centre[1])) || (r.kind === 'enlargement' && r.k === 0.5),
   },
 };
 
 const lineKind = (line) => (line.x !== undefined ? 'x = a' : line.y !== undefined ? 'y = b' : line.m === 1 ? 'y = x' : 'y = -x');
 const turnKind = (deg) => ({ 90: '90 acw', 270: '90 cw', 180: '180' }[deg]);
 const kindOf = (r) => {
-  const detail = r.kind === 'translation' ? (r.mode === 'words' ? ' words' : r.mode === 'vector' ? ' vector' : '')
-    : r.kind === 'reflection' ? ` ${lineKind(r.line)}`
+  const detail = r.kind === 'translation' ? (r.mode === 'describe' ? '' : ` ${r.mode}`)
+    : r.kind === 'reflection' ? ` ${r.line.x === 0 || r.line.y === 0 ? 'axis' : lineKind(r.line)}`
       : r.kind === 'rotation' ? ` ${turnKind(r.deg)}`
-        : ` sf ${r.k === 0.5 ? '1/2' : r.k}`;
-  return `${r.mode.startsWith('describe') ? 'describe' : 'carry'} ${r.kind}${detail}`;
+        : ` sf ${r.k === 0.5 ? '1/2' : r.k}${r.corner ? ' from a corner' : ''}`;
+  return `${r.mode === 'describe' ? 'describe' : r.lone ? 'point' : 'carry'} ${r.kind}${detail}`;
 };
 
 /* -------------------------------------------------------------- the check */
@@ -311,24 +330,45 @@ export function checkTransformation(q, band) {
   const f = checkCommon(q, topic, band);
   let rec;
   if (f.solution) {
-    // Carry out.
+    // Carry out: a shape with a lettered corner A, or a lone point P.
+    must(topic !== 'describe-transformation', 'describing asks for a description', q);
     must(f.shapes?.length === 1 && f.solution.length === 1, 'one shape and its image', q);
     const obj = f.shapes[0], img = f.solution[0];
-    checkPolygon(obj.pts, q);
-    checkAsymmetric(obj.pts, q);
-    rec = parseCarryOut(q);
-    rec.mode ??= 'carry';
+    const lone = obj.pts?.length === 1;
+    const L = lone ? 'P' : 'A';
+    if (lone) {
+      must(isInt(obj.pts[0]) && Math.abs(obj.pts[0][0]) <= LIMIT && Math.abs(obj.pts[0][1]) <= LIMIT, 'the point on the grid', q);
+    } else {
+      checkPolygon(obj.pts, q);
+      checkAsymmetric(obj.pts, q);
+    }
+    rec = parseCarryOut(q, lone);
+    rec.lone = lone;
+    must(!lone || rec.kind !== 'enlargement', 'a point is not enlarged', q);
+    const twice = rec.mode === 'two vectors';
+    const named = (n) => `${L}${"'".repeat(n)}`;
     const i = obj.vertex?.index;
-    must(obj.vertex?.text === 'A' && Number.isInteger(i) && i >= 0 && i < obj.pts.length && !obj.name, 'vertex A lettered on the shape', q);
-    must(img.vertex?.text === "A'" && img.vertex.index === i && !img.name, "A' lettered on the image, at the same corner", q);
+    must(obj.vertex?.text === L && Number.isInteger(i) && i >= 0 && i < obj.pts.length && !obj.name, `${L} lettered on the shape`, q);
+    must(img.vertex?.text === named(twice ? 2 : 1) && img.vertex.index === i && !img.name, `${named(twice ? 2 : 1)} lettered on the image, at the same corner`, q);
     const expected = obj.pts.map((p) => rec.map.at(p));
     must(img.pts.length === expected.length && img.pts.every((p, k) => same(p, expected[k])), 'the image drawn on reveal is the image', q);
-    checkPolygon(img.pts, q);
-    checkApart(obj.pts, img.pts, q);
-    [obj.pts, img.pts].forEach((pts) => checkQuadrant(pts, q));
+    if (lone) {
+      const [P, P2] = [obj.pts[0], img.pts[0]];
+      must(Math.hypot(P[0] - P2[0], P[1] - P2[1]) >= 2, 'the point and its image stand two squares apart', q);
+    } else checkPolygon(img.pts, q);
     const A = obj.pts[i], A2 = expected[i];
-    must(q.answer === `A' = (${A2[0]}, ${A2[1]})`, `answer ${q.answer}, expected (${A2})`, q);
-    must(q.workingOut === `A = (${A[0]}, ${A[1]})\nA' = (${A2[0]}, ${A2[1]})`, 'working: A, then A′', q);
+    must(!same(A, A2), 'the lettered corner moves', q);
+    // An enlargement from one of the shape's corners grows over the shape;
+    // every other image stands apart from its object.
+    rec.corner = rec.kind === 'enlargement' && obj.pts.some((p) => same(p, rec.centre));
+    if (!rec.corner) checkApart(obj.pts, img.pts, q);
+    [obj.pts, img.pts].forEach((pts) => checkQuadrant(pts, q));
+    if (twice) {
+      const mid = obj.pts.map((p) => rec.first.at(p));
+      mid.forEach((p) => must(Math.abs(p[0]) <= LIMIT && Math.abs(p[1]) <= LIMIT, 'the shape between the two translations stays on the grid', q));
+      must(q.workingOut === [A, mid[i], A2].map((p, n) => `${named(n)} = (${p[0]}, ${p[1]})`).join('\n'), `working: ${L}, ${L}′, ${L}″`, q);
+    } else must(q.workingOut === `${L} = (${A[0]}, ${A[1]})\n${L}' = (${A2[0]}, ${A2[1]})`, `working: ${L}, then ${L}′`, q);
+    must(q.answer === `${named(twice ? 2 : 1)} = (${A2[0]}, ${A2[1]})`, `answer ${q.answer}, expected (${A2})`, q);
     // What is drawn on the grid matches the sentence.
     if (rec.kind === 'reflection') {
       const axis = rec.line.x === 0 || rec.line.y === 0;
@@ -337,7 +377,7 @@ export function checkTransformation(q, band) {
     if (rec.kind === 'enlargement' || (rec.kind === 'rotation' && !rec.origin)) {
       must(f.centre && same(f.centre, rec.centre), 'the centre dot where the sentence says', q);
       must(rec.centre[0] && rec.centre[1], 'a centre dot stands off the axes', q);
-      must(!inBox(rec.centre, obj.pts) && !inBox(rec.centre, img.pts), 'the centre stands clear of both shapes', q);
+      if (!rec.corner) must(!inBox(rec.centre, obj.pts) && !inBox(rec.centre, img.pts), 'the centre stands clear of both shapes', q);
     } else must(f.centre === undefined, 'no centre dot', q);
     must(f.solutionMirror === undefined && f.solutionCentre === undefined, 'nothing else drawn on reveal', q);
   } else {
@@ -352,22 +392,10 @@ export function checkTransformation(q, band) {
     const found = solve(A, B);
     must(found.size === 1, `exactly one transformation maps A onto B (found ${found.size})`, q);
     const truth = [...found.values()][0];
-    // The answer, in the skill's form.
-    let mode = 'describe';
-    if (topic === 'translation') {
-      must(q.instruction === 'Write down the column vector that translates shape A onto shape B.', 'translation instruction', q);
-      rec = parseDescription(q, `\\text{Translation by } ${q.answer}`);
-      mode = 'describe-vector';
-    } else if (topic === 'reflection') {
-      must(q.instruction === 'Shape A is reflected onto shape B. Write down the equation of the mirror line.', 'reflection instruction', q);
-      must(/^(x|y) = -?(\d+|x)$/.test(q.answer), 'the answer is an equation', q);
-      rec = parseDescription(q, `\\text{Reflection in } \\text{the line } ${q.answer}`, false);
-      mode = 'describe-line';
-    } else {
-      must(q.instruction === 'Describe fully the single transformation that maps shape A onto shape B.', 'describe instruction', q);
-      rec = parseDescription(q, q.answer);
-    }
-    rec.mode = mode;
+    must(topic === 'describe-transformation', 'only Describing a transformation describes', q);
+    must(q.instruction === 'Describe fully the single transformation that maps shape A onto shape B.', 'describe instruction', q);
+    rec = parseDescription(q, q.answer);
+    rec.mode = 'describe';
     must(rec.kind === truth.kind, `the answer names a ${rec.kind}, the shapes show a ${truth.kind}`, q);
     const img = A.map((p) => rec.map.at(p));
     must(img.every((p) => B.some((r) => same(p, r))) && B.every((r) => img.some((p) => same(p, r))), 'the map named carries A onto B', q);
