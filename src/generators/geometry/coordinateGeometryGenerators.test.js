@@ -1,15 +1,14 @@
 // src/generators/geometry/coordinateGeometryGenerators.test.js
 //
-// Substitute-the-answer-back for horizontal-vertical-lines and
-// simultaneous-graphical (which lives in formulaGenerators but draws on the
-// same grid). Answers are recomputed from the printed equations and the
+// Substitute-the-answer-back for simultaneous-graphical (which lives in
+// formulaGenerators but draws on the coordinate grid). The straight-line
+// skills of this file are checked in coordinateLines.test.js. Answers are recomputed from the printed equations and the
 // figure config, never the generator's variables: a figure that draws one
 // line while the question prints another is the failure this is for.
 //
 // Run: npx vitest run src/generators/geometry/coordinateGeometryGenerators.test.js
 
 import { describe, expect, it } from 'vitest';
-import { generateHorizontalVerticalLines } from './coordinateGeometryGenerators';
 import { generateSimultaneousGraphical } from '../algebra/formulaGenerators';
 import { exactOf, asRational, subst, compiles } from '../number/latexArithmetic.check';
 
@@ -27,53 +26,6 @@ const linear = (eq) => {
   const z = residual(eq, 0, 0);
   return { a: residual(eq, 1, 0) - z, b: residual(eq, 0, 1) - z, d: -z };
 };
-const pointRe = /\((-?\d+), (-?\d+)\)/;
-
-describe('horizontal-vertical-lines', () => {
-  it.each(BANDS)('the equation is the line, at %s', (difficulty) => {
-    const distinct = new Set();
-    let vertical = 0;
-    for (let i = 0; i < SAMPLES; i++) {
-      const q = generateHorizontalVerticalLines({ difficulty });
-      expect(q.metadata).toEqual({ topic: 'horizontal-vertical-lines', difficulty });
-      const id = JSON.stringify([q.questionMath, q.visualization]);
-      if (!distinct.has(id)) { if (q.questionMath) compiles(q.questionMath); compiles(q.answer); compiles(q.workingOut); }
-      distinct.add(id);
-
-      if (difficulty === 'foundation') {
-        const { line } = q.visualization;
-        expect(q.visualization.type).toBe('coordinate-grid');
-        if (line.x !== undefined) {
-          vertical += 1;
-          expect(q.answer).toBe(`x = ${line.x}`);
-        } else {
-          expect(line.m).toBe(0);
-          expect(q.answer).toBe(`y = ${line.c}`);
-        }
-        expect(line.x ?? line.c).not.toBe(0); // never hidden under an axis
-      } else if (difficulty === 'core') {
-        const [, x1, y1] = pointRe.exec(q.questionMath.split('\\text{ and }')[0]).map(Number);
-        const [, x2, y2] = pointRe.exec(q.questionMath.split('\\text{ and }')[1]).map(Number);
-        expect([x1, y1]).not.toEqual([x2, y2]);
-        expect((x1 === x2) !== (y1 === y2), q.questionMath).toBe(true);
-        if (x1 === x2) vertical += 1;
-        expect(q.answer).toBe(x1 === x2 ? `x = ${x1}` : `y = ${y1}`);
-      } else {
-        const eqs = q.questionMath.split('\n');
-        const [, px, py] = pointRe.exec(q.answer).map(Number);
-        eqs.forEach((eq) => expect(residual(eq, px, py), `${eq} at ${q.answer}`).toBe(0));
-        const [l1, l2] = eqs.map(linear);
-        expect(l1.a * l2.b - l2.a * l1.b, q.questionMath).not.toBe(0); // one crossing
-        if (/^x = /.test(eqs[1])) vertical += 1;
-      }
-    }
-    console.log(`horizontal-vertical-lines ${difficulty}: ${distinct.size} distinct, ${vertical} vertical`);
-    expect(vertical).toBeGreaterThan(SAMPLES * 0.45);
-    expect(vertical).toBeLessThan(SAMPLES * 0.55);
-    // Foundation's ceiling is 16 (see the generator), and it should reach it.
-    expect(distinct.size).toBeGreaterThanOrEqual(difficulty === 'foundation' ? 16 : 300);
-  });
-});
 
 describe('simultaneous-graphical', () => {
   it.each(BANDS)('the answer is the crossing of the printed lines, at %s', (difficulty) => {

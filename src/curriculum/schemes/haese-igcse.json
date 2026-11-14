@@ -90,7 +90,7 @@
     { "id": "12B", "ch": 12, "unit": "Coordinate geometry", "lesson": "Distance between two points", "page": 258, "skills": ["distance-between-points"], "status": "ready" },
     { "id": "12C", "ch": 12, "unit": "Coordinate geometry", "lesson": "Midpoint of a line segment", "page": 261, "skills": ["midpoint-of-segment"], "status": "ready" },
     { "id": "12D", "ch": 12, "unit": "Coordinate geometry", "lesson": "Gradient of a line segment", "page": 263, "skills": ["gradient-of-segment"], "status": "ready" },
-    { "id": "12E", "ch": 12, "unit": "Coordinate geometry", "lesson": "Gradient of parallel and perpendicular lines", "page": 267, "skills": ["parallel-perpendicular-gradients"], "status": "ready" },
+    { "id": "12E", "ch": 12, "unit": "Coordinate geometry", "lesson": "Gradient of parallel and perpendicular lines", "page": 267, "skills": ["parallel-gradients", "perpendicular-gradients"], "status": "ready" },
     { "id": "12F", "ch": 12, "unit": "Coordinate geometry", "lesson": "Using coordinate geometry", "page": 270, "skills": [], "status": "skip" },
 
     { "id": "13A", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Variables used in statistics", "page": 277, "skills": ["data-types"], "status": "ready" },
@@ -101,7 +101,7 @@
     { "id": "13F", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Grouped discrete data", "page": 290, "skills": ["estimated-mean", "modal-class"], "status": "ready" },
     { "id": "13G", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Statistics from technology", "page": 292, "skills": [], "status": "skip" },
 
-    { "id": "14A", "ch": 14, "unit": "Straight lines", "lesson": "Vertical and horizontal lines", "page": 297, "skills": ["horizontal-vertical-lines"], "status": "ready" },
+    { "id": "14A", "ch": 14, "unit": "Straight lines", "lesson": "Vertical and horizontal lines", "page": 297, "skills": ["horizontal-vertical-lines", "lines-meet"], "status": "ready" },
     { "id": "14B", "ch": 14, "unit": "Straight lines", "lesson": "Graphing from a table of values", "page": 299, "skills": [], "status": "todo" },
     { "id": "14C", "ch": 14, "unit": "Straight lines", "lesson": "Equations of lines (gradient-intercept form)", "page": 301, "skills": ["equation-of-a-line"], "status": "ready" },
     { "id": "14D", "ch": 14, "unit": "Straight lines", "lesson": "Equations of lines (general form)", "page": 304, "skills": ["line-general-form", "point-on-line"], "status": "ready" },
@@ -127,7 +127,7 @@
     { "id": "18A", "ch": 18, "unit": "Similarity", "lesson": "Similarity", "page": 367, "skills": ["similar-shapes"], "status": "ready" },
     { "id": "18B", "ch": 18, "unit": "Similarity", "lesson": "Similar triangles", "page": 370, "skills": ["similar-triangles"], "status": "ready" },
     { "id": "18C", "ch": 18, "unit": "Similarity", "lesson": "Problem solving", "page": 373, "skills": [], "status": "skip" },
-    { "id": "18D", "ch": 18, "unit": "Similarity", "lesson": "Area and volume of similar shapes", "page": 376, "skills": ["similar-areas-volumes"], "status": "ready" },
+    { "id": "18D", "ch": 18, "unit": "Similarity", "lesson": "Area and volume of similar shapes", "page": 376, "skills": ["similar-areas", "similar-volumes"], "status": "ready" },
 
     { "id": "19A", "ch": 19, "unit": "Introduction to functions", "lesson": "Mapping diagrams", "page": 383, "skills": ["domain-range"], "status": "ready" },
     { "id": "19B", "ch": 19, "unit": "Introduction to functions", "lesson": "Functions", "page": 385, "skills": ["domain-range"], "status": "ready" },

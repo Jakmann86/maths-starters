@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 import _ from 'lodash';
-import { generateSimilarShapes, generateSimilarTriangles, generateSimilarAreasVolumes } from './similarityGenerators';
+import { generateSimilarShapes, generateSimilarTriangles, generateSimilarAreas, generateSimilarVolumes } from './similarityGenerators';
 import { checkSimilarShapes, checkSimilarTriangles, checkSimilarAreasVolumes } from './similarityGenerators.check';
 
 const PER_BAND = 300;
@@ -17,7 +17,8 @@ const BANDS = ['foundation', 'core', 'stretch'];
 const SKILLS = [
   [generateSimilarShapes, checkSimilarShapes],
   [generateSimilarTriangles, checkSimilarTriangles],
-  [generateSimilarAreasVolumes, checkSimilarAreasVolumes],
+  [generateSimilarAreas, checkSimilarAreasVolumes],
+  [generateSimilarVolumes, checkSimilarAreasVolumes],
 ];
 
 const bump = (s) => s.replace(/(\d+(?:\.\d+)?)(?!.*\d)/, (n) => String(Number(n) + 1));

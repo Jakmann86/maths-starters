@@ -380,10 +380,16 @@ export const skills = {
     generate: (opts) => similarity.generateSimilarTriangles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'similar-areas-volumes': {
-    label: 'Areas and volumes of similar shapes',
+  'similar-areas': {
+    label: 'Areas of similar shapes',
     topic: 'Similarity',
-    generate: (opts) => similarity.generateSimilarAreasVolumes(opts),
+    generate: (opts) => similarity.generateSimilarAreas(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'similar-volumes': {
+    label: 'Volumes of similar solids',
+    topic: 'Similarity',
+    generate: (opts) => similarity.generateSimilarVolumes(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -554,10 +560,16 @@ export const skills = {
     generate: (opts) => coord.generateGradientOfSegment(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'parallel-perpendicular-gradients': {
-    label: 'Parallel and perpendicular gradients',
+  'parallel-gradients': {
+    label: 'Parallel lines',
     topic: 'Coordinate geometry',
-    generate: (opts) => coord.generateParallelPerpendicular(opts),
+    generate: (opts) => coord.generateParallelGradients(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'perpendicular-gradients': {
+    label: 'Perpendicular lines',
+    topic: 'Coordinate geometry',
+    generate: (opts) => coord.generatePerpendicularGradients(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   // --- Haese 14A: vertical and horizontal lines (Y9 Unit 2 do-nows) ---
@@ -565,6 +577,12 @@ export const skills = {
     label: 'Vertical and horizontal lines',
     topic: 'Straight-line graphs',
     generate: (opts) => coord.generateHorizontalVerticalLines(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'lines-meet': {
+    label: 'Where a line meets x = a or y = b',
+    topic: 'Straight-line graphs',
+    generate: (opts) => coord.generateLinesMeet(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'equation-of-a-line': {
