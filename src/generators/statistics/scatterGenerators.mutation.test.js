@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from 'vitest';
 import _ from 'lodash';
-import { generateScatterCorrelation, generateLineOfBestFit } from './scatterGenerators';
+import { generateScatterCorrelation, generateLineOfBestFit, generateMeanPoint } from './scatterGenerators';
 import { checkCorrelation, checkLineOfBestFit } from './scatterGenerators.check';
 
 const PER_BAND = 300;
@@ -147,10 +147,19 @@ const LOBF_OPS = {
     return true;
   },
   'verdict flipped': (q) => {
-    if (!q.answer.includes('reliable')) return false;
-    q.answer = q.answer.includes('not reliable')
-      ? q.answer.replace('not reliable (extrapolation)', 'reliable (interpolation)')
-      : q.answer.replace('reliable (interpolation)', 'not reliable (extrapolation)');
+    if (!/polation/.test(q.answer)) return false;
+    if (q.answer.includes('reliable')) {
+      q.answer = q.answer.includes('not reliable')
+        ? q.answer.replace('not reliable: outside the data (extrapolation)', 'reliable: inside the data (interpolation)')
+        : q.answer.replace('reliable: inside the data (interpolation)', 'not reliable: outside the data (extrapolation)');
+    } else {
+      q.answer = q.answer.includes('extrapolation') ? q.answer.replace('extrapolation', 'interpolation') : q.answer.replace('interpolation', 'extrapolation');
+    }
+    return true;
+  },
+  'the reason dropped': (q) => {
+    if (!q.answer.includes(': ')) return false;
+    q.answer = q.answer.replace(/: (in|out)side the data/, '');
     return true;
   },
   'units dropped': (q) => {
@@ -159,13 +168,27 @@ const LOBF_OPS = {
     if (q.answer.includes('£')) { q.answer = q.answer.replace(/\\text\{£(\d+)\}/, '$1'); return true; }
     return false;
   },
-  'mean point: a table value nudged': (q) => {
-    if (q.visualization.type !== 'table') return false;
+};
+
+const MEAN_OPS = {
+  'a number in the working nudged': LOBF_OPS['a number in the working nudged'],
+  'answer value nudged': LOBF_OPS['answer value nudged'],
+  'a table value nudged': (q) => {
     const row = q.visualization.rows[_.random(0, 1)];
-    row[1] = String(Number(row[1]) + 1);
+    const j = row.findIndex((v, i) => i > 0 && v !== 'k');
+    row[j] = String(Number(row[j]) + 1);
     return true;
   },
-  'mean point: coordinates swapped': (q) => {
+  'the mean point given nudged': (q) => {
+    if (!/mean point is/.test(q.questionText)) return false;
+    q.questionText = q.questionText.replace(/\((\d+),/, (m, d) => `(${Number(d) + 1},`);
+    return true;
+  },
+  'moved to another band': (q) => {
+    q.metadata.difficulty = { foundation: 'core', core: 'foundation', stretch: 'core' }[q.metadata.difficulty];
+    return true;
+  },
+  'coordinates swapped': (q) => {
     const m = /^\((\d+), (\d+)\)$/.exec(q.answer);
     if (!m || m[1] === m[2]) return false; // equal coordinates swap to the same answer
     q.answer = `(${m[2]}, ${m[1]})`;
@@ -207,4 +230,5 @@ const mutate = (gen, check, ops) => {
 describe('scatter harness, mutation test', () => {
   it('scatter-correlation: rejects every mutated question', () => mutate(generateScatterCorrelation, checkCorrelation, CORRELATION_OPS), 120000);
   it('line-of-best-fit: rejects every mutated question', () => mutate(generateLineOfBestFit, checkLineOfBestFit, LOBF_OPS), 120000);
+  it('mean-point: rejects every mutated question', () => mutate(generateMeanPoint, checkLineOfBestFit, MEAN_OPS), 120000);
 });

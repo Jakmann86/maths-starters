@@ -1451,6 +1451,12 @@ export const skills = {
     generate: (opts) => displays.generateModalClass(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'median-class': {
+    label: 'Class containing the median',
+    topic: 'Averages',
+    generate: (opts) => displays.generateMedianClass(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'table-averages': {
     label: 'Mean, mode and median from a table',
     topic: 'Averages',
@@ -1471,9 +1477,15 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'pie-charts': {
-    label: 'Pie charts',
+    label: 'Reading pie charts',
     topic: 'Representing data',
     generate: (opts) => pie.generatePieCharts(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'pie-chart-angles': {
+    label: 'Drawing pie charts',
+    topic: 'Representing data',
+    generate: (opts) => pie.generatePieChartAngles(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'bar-charts': {
@@ -1518,6 +1530,12 @@ export const skills = {
     label: 'Line of best fit',
     topic: 'Scatter graphs',
     generate: (opts) => scatter.generateLineOfBestFit(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'mean-point': {
+    label: 'The mean point',
+    topic: 'Scatter graphs',
+    generate: (opts) => scatter.generateMeanPoint(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 };

@@ -40,7 +40,7 @@
     { "id": "4D", "ch": 4, "unit": "Lines, angles and polygons", "lesson": "Interior angles of a polygon", "page": 103, "skills": ["quadrilateral-angle-sum", "polygon-interior-angles"], "status": "ready" },
     { "id": "4E", "ch": 4, "unit": "Lines, angles and polygons", "lesson": "Exterior angles of a polygon", "page": 106, "skills": ["polygon-exterior-angles"], "status": "ready" },
 
-    { "id": "5A", "ch": 5, "unit": "Graphs, charts and tables", "lesson": "Statistical graphs", "page": 112, "skills": ["pie-charts", "bar-charts"], "status": "ready" },
+    { "id": "5A", "ch": 5, "unit": "Graphs, charts and tables", "lesson": "Statistical graphs", "page": 112, "skills": ["pie-charts", "pie-chart-angles", "bar-charts"], "status": "ready" },
     { "id": "5B", "ch": 5, "unit": "Graphs, charts and tables", "lesson": "Graphs which compare data", "page": 116, "skills": [], "status": "todo" },
     { "id": "5C", "ch": 5, "unit": "Graphs, charts and tables", "lesson": "Using technology to graph data", "page": 119, "skills": [], "status": "skip" },
 
@@ -98,7 +98,7 @@
     { "id": "13C", "ch": 13, "unit": "Analysis of discrete data", "lesson": "The centre of a discrete data set", "page": 282, "skills": ["averages-from-list", "mean-missing-value", "stem-and-leaf-averages"], "status": "ready" },
     { "id": "13D", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Measuring the spread of discrete data", "page": 285, "skills": ["averages-from-list", "quartiles-iqr", "five-number-summary", "box-plot-reading", "compare-distributions"], "status": "ready" },
     { "id": "13E", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Data in frequency tables", "page": 288, "skills": ["averages-from-table", "table-averages", "quartiles-iqr"], "status": "ready" },
-    { "id": "13F", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Grouped discrete data", "page": 290, "skills": ["estimated-mean", "modal-class"], "status": "ready" },
+    { "id": "13F", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Grouped discrete data", "page": 290, "skills": ["estimated-mean", "modal-class", "median-class"], "status": "ready" },
     { "id": "13G", "ch": 13, "unit": "Analysis of discrete data", "lesson": "Statistics from technology", "page": 292, "skills": [], "status": "skip" },
 
     { "id": "14A", "ch": 14, "unit": "Straight lines", "lesson": "Vertical and horizontal lines", "page": 297, "skills": ["horizontal-vertical-lines", "lines-meet"], "status": "ready" },
@@ -157,7 +157,7 @@
     { "id": "21J", "ch": 21, "unit": "Quadratic equations and functions", "lesson": "Problem solving", "page": 447, "skills": [], "status": "skip" },
 
     { "id": "22A", "ch": 22, "unit": "Two variable analysis", "lesson": "Correlation", "page": 456, "skills": ["scatter-correlation"], "status": "ready" },
-    { "id": "22B", "ch": 22, "unit": "Two variable analysis", "lesson": "Line of best fit by eye", "page": 459, "skills": ["line-of-best-fit"], "status": "ready" },
+    { "id": "22B", "ch": 22, "unit": "Two variable analysis", "lesson": "Line of best fit by eye", "page": 459, "skills": ["line-of-best-fit", "mean-point"], "status": "ready" },
     { "id": "22C", "ch": 22, "unit": "Two variable analysis", "lesson": "Linear regression", "page": 461, "skills": [], "status": "skip" },
 
     { "id": "23A", "ch": 23, "unit": "Further functions", "lesson": "Cubic functions", "page": 469, "skills": [], "status": "todo" },

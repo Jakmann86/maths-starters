@@ -21,7 +21,7 @@ function common(q, topic, band) {
   [q.answer, q.workingOut].forEach((s) => compiles(s));
 }
 
-/* ----------------------------------------------------------- modal class */
+/* ------------------------------------------------- modal and median class */
 
 // Classes lo ≤ x < hi, contiguous and of equal width.
 function readClasses(rows, q) {
@@ -39,16 +39,14 @@ function readClasses(rows, q) {
   return cls;
 }
 
-function modalClass(q, band) {
-  common(q, 'modal-class', band);
+// Classes and frequencies, from a frequency table or (`fromCumulative`) a
+// cumulative one, which is differenced.
+function readGrouped(q, fromCumulative) {
   const f = q.visualization;
   must(f?.type === 'table' && f.header === 'row', 'a table with a header row', q);
   const [head, ...rows] = f.rows;
-  must(rows.length >= 4 && rows.length <= 5, 'four or five classes', q);
-  const tex = ([lo, hi]) => `${lo} \\le x < ${hi}`;
   let cls, fs;
-
-  if (band === 'stretch') {
+  if (fromCumulative) {
     must(JSON.stringify(head) === '["Value","Cumulative frequency"]', 'a cumulative table', q);
     const ups = rows.map(([label]) => { const m = /^x < (\d+)$/.exec(label); must(m, `an upper bound: ${label}`, q); return Number(m[1]); });
     const width = ups[1] - ups[0];
@@ -63,24 +61,41 @@ function modalClass(q, band) {
     fs = rows.map(([, v]) => Number(v));
     fs.forEach((v) => must(Number.isInteger(v) && v > 0, 'whole-number frequencies', q));
   }
+  return { cls, fs, rows };
+}
+
+const tex = ([lo, hi]) => `${lo} \\le x < ${hi}`;
+
+function medianClass(q, band) {
+  common(q, 'median-class', band);
+  const { cls, fs, rows } = readGrouped(q, band === 'stretch');
   const n = _.sum(fs);
+  const cum = fs.map((_v, i) => _.sum(fs.slice(0, i + 1)));
+  must(rows.length === (band === 'foundation' ? 4 : 5), 'four classes at Foundation, five above', q);
+  if (band === 'foundation') must(n <= 30, 'a small total', q);
+  if (band === 'core') must(n >= 50 && n <= 100, 'a larger total', q);
+  must(q.instruction === 'Write down the class containing the median', 'instruction', q);
+  // The median sits between the floor and ceiling of (n + 1)/2: both must
+  // fall in one class, or there is no single class to name.
+  const classOf = (k) => cum.findIndex((c) => c >= k);
+  const [lo, hi] = [classOf(Math.floor((n + 1) / 2)), classOf(Math.ceil((n + 1) / 2))];
+  must(lo === hi, 'the median falls inside one class', q);
+  must(lo === 0 || cum[lo - 1] !== Math.floor((n + 1) / 2), 'the median is not the last value of the class before', q);
+  if (band === 'stretch' && lo === 0) must(cls[0][0] === 0, 'a first class whose lower bound the table shows (it starts at 0)', q);
+  must(q.answer === tex(cls[lo]), `answer ${q.answer}, expected ${tex(cls[lo])}`, q);
+  const position = `n = ${n}, \\frac{n + 1}{2} = ${tenths(5 * (n + 1))}`;
+  must(q.workingOut === (band === 'stretch' ? [position, tex(cls[lo])] : [position, `\\text{cumulative: } ${cum.join(', ')}`, tex(cls[lo])]).join('\n'), 'working: n, the position, the running totals', q);
+  return { kind: band === 'stretch' ? 'from cumulative' : 'median class' };
+}
+
+function modalClass(q, band) {
+  common(q, 'modal-class', band);
+  const { cls, fs, rows } = readGrouped(q, band === 'stretch');
+  must(band === 'core' ? rows.length === 6 : rows.length >= 4 && rows.length <= 5, 'six classes at Core, four or five otherwise', q);
   const peak = Math.max(...fs);
   must(fs.filter((v) => v === peak).length === 1, 'one tallest class', q);
   const mode = fs.indexOf(peak);
-  const cum = fs.map((_v, i) => _.sum(fs.slice(0, i + 1)));
-
-  if (band === 'core') {
-    must(q.instruction === 'Write down the class containing the median', 'instruction', q);
-    // The median sits between the floor and ceiling of (n + 1)/2: both must
-    // fall in one class, or there is no single class to name.
-    const classOf = (k) => cum.findIndex((c) => c >= k);
-    const [lo, hi] = [classOf(Math.floor((n + 1) / 2)), classOf(Math.ceil((n + 1) / 2))];
-    must(lo === hi, 'the median falls inside one class', q);
-    must(lo === 0 || cum[lo - 1] !== Math.floor((n + 1) / 2), 'the median is not the last value of the class before', q);
-    must(q.answer === tex(cls[lo]), `answer ${q.answer}, expected ${tex(cls[lo])}`, q);
-    must(q.workingOut === [`n = ${n}, \\frac{n + 1}{2} = ${tenths(5 * (n + 1))}`, `\\text{cumulative: } ${cum.join(', ')}`, tex(cls[lo])].join('\n'), 'working: n, the position, the running totals', q);
-    return { kind: 'median class' };
-  }
+  if (band === 'core') must(peak - Math.max(...fs.filter((v) => v !== peak)) <= 2, 'a close second', q);
 
   must(q.instruction === 'Write down the modal class', 'instruction', q);
   if (band === 'stretch' && mode === 0) must(cls[0][0] === 0, 'a first class whose lower bound the table shows (it starts at 0)', q);
@@ -114,27 +129,12 @@ function stemAndLeaf(q, band) {
   const n = values.length;
   const lines = q.workingOut.split('\n');
 
-  if (band === 'foundation') {
-    if (q.instruction === 'Write down the mode') {
-      const counts = _.countBy(values);
-      const best = Math.max(...Object.values(counts));
-      const modes = Object.keys(counts).filter((k) => counts[k] === best);
-      must(best > 1 && modes.length === 1, 'one value appears most often', q);
-      must(q.answer === modes[0], `answer ${q.answer}, expected ${modes[0]}`, q);
-      must(q.workingOut === [`\\text{${modes[0]} appears ${best} times}`, `\\text{mode} = ${modes[0]}`].join('\n'), 'working', q);
-      return { kind: 'mode' };
-    }
-    must(q.instruction === 'Find the range', `instruction ${q.instruction}`, q);
-    const [lo, hi] = [values[0], values[n - 1]];
-    must(hi - lo >= 10, 'a range across stems', q);
-    must(q.answer === String(hi - lo), `answer ${q.answer}, expected ${hi - lo}`, q);
-    must(q.workingOut === [`\\text{largest} = ${hi}, \\text{smallest} = ${lo}`, `\\text{range} = ${hi} - ${lo} = ${hi - lo}`].join('\n'), 'working', q);
-    return { kind: 'range' };
-  }
-
-  if (band === 'core') {
+  must(f.rows.length === 3, 'three stems', q);
+  if (band !== 'stretch') {
     must(q.instruction === 'Find the median', 'instruction', q);
     const odd = n % 2 === 1;
+    must(odd === (band === 'foundation'), band === 'foundation' ? 'an odd count' : 'an even count', q);
+    if (band === 'foundation') must(n <= 11, 'a short plot', q);
     const med10 = odd ? 10 * values[(n - 1) / 2] : 5 * (values[n / 2 - 1] + values[n / 2]);
     if (!odd) must(values[n / 2 - 1] !== values[n / 2], 'the two middle values differ, so they are averaged', q);
     must(q.answer === tenths(med10), `answer ${q.answer}, expected ${tenths(med10)}`, q);
@@ -144,6 +144,7 @@ function stemAndLeaf(q, band) {
   }
 
   must(q.instruction === 'Find the mean', 'instruction', q);
+  must(n >= 15, 'fifteen or more values', q);
   const total = _.sum(values);
   must((10 * total) % n === 0, 'the mean is exact to 1 d.p.', q);
   const mean = tenths((10 * total) / n);
@@ -155,6 +156,7 @@ function stemAndLeaf(q, band) {
 
 export function checkDataDisplay(q, band) {
   if (q.metadata?.topic === 'modal-class') return modalClass(q, band);
+  if (q.metadata?.topic === 'median-class') return medianClass(q, band);
   if (q.metadata?.topic === 'stem-and-leaf-averages') return stemAndLeaf(q, band);
   return fail(`topic ${q.metadata?.topic}`, q);
 }

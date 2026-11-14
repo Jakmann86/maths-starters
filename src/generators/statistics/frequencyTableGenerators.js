@@ -13,8 +13,9 @@
 //               meet a condition ("more than 2 siblings")
 //   core        the total of the variable itself: sum of value x frequency
 //               ("how many goals in total"), where the 0 row counts nothing
-//   stretch     the same total, but one frequency is withheld and the number
-//               asked is given in words, so it has to be recovered first
+//   stretch     backwards: one frequency is withheld, and the total of value
+//               x frequency is given in words instead of the number asked,
+//               so the missing frequency comes from that total
 
 import _ from 'lodash';
 import { dp1 } from '../shared';
@@ -33,6 +34,7 @@ const NL = '\n';
 export const DISCRETE = [
   {
     col: 'Number of siblings',
+    totalSaid: (t) => `The students have ${t} siblings in total`,
     shows: 'how many siblings each student in a class has',
     lo: 0, hi: 5, who: 'students', what: 'siblings',
     count: (n) => `There are ${n} students in the class`,
@@ -43,6 +45,7 @@ export const DISCRETE = [
   },
   {
     col: 'Goals scored',
+    totalSaid: (t) => `The team scored ${t} goals in total`,
     shows: 'the number of goals a team scored in each match of a season',
     lo: 0, hi: 5, who: 'matches', what: 'goals',
     count: (n) => `The team played ${n} matches`,
@@ -53,6 +56,7 @@ export const DISCRETE = [
   },
   {
     col: 'Number of pets',
+    totalSaid: (t) => `There are ${t} pets on the street altogether`,
     shows: 'the number of pets in each house on a street',
     lo: 0, hi: 4, who: 'houses', what: 'pets',
     count: (n) => `There are ${n} houses on the street`,
@@ -63,6 +67,7 @@ export const DISCRETE = [
   },
   {
     col: 'People in car',
+    totalSaid: (t) => `There were ${t} people in the cars altogether`,
     shows: 'the number of people in each car that passed a school',
     lo: 1, hi: 5, who: 'cars', what: 'people',
     count: (n) => `${n} cars passed the school`,
@@ -73,6 +78,7 @@ export const DISCRETE = [
   },
   {
     col: 'Books read',
+    totalSaid: (t) => `The students read ${t} books altogether`,
     shows: 'the number of books each student read over the summer',
     lo: 0, hi: 6, who: 'students', what: 'books',
     count: (n) => `${n} students were asked`,
@@ -83,6 +89,7 @@ export const DISCRETE = [
   },
   {
     col: 'Days absent',
+    totalSaid: (t) => `${t} days of school were missed in total`,
     shows: 'the number of days each student was absent last term',
     lo: 0, hi: 5, who: 'students', what: 'days',
     count: (n) => `There are ${n} students in the class`,
@@ -93,6 +100,7 @@ export const DISCRETE = [
   },
   {
     col: 'Eggs in nest',
+    totalSaid: (t) => `There were ${t} eggs altogether`,
     shows: 'the number of eggs in each nest a bird watcher found',
     lo: 1, hi: 6, who: 'nests', what: 'eggs',
     count: (n) => `The bird watcher found ${n} nests`,
@@ -103,6 +111,7 @@ export const DISCRETE = [
   },
   {
     col: 'School lunches',
+    totalSaid: (t) => `${t} school lunches were eaten in total`,
     shows: 'the number of school lunches each student had last week',
     lo: 0, hi: 5, who: 'students', what: 'lunches',
     count: (n) => `${n} students were asked`,
@@ -204,27 +213,31 @@ function coreBand() {
 }
 
 function stretchBand() {
-  const { context, xs, fs } = discreteData();
-  const n = _.sum(fs);
-  // Never the 0 row: its frequency adds nothing to the total, so withholding
-  // it would make the first step pointless.
-  const hide = _.sample(xs.map((_x, i) => i).filter((i) => xs[i] !== 0));
-  const shown = fs.map((f, i) => (i === hide ? '?' : String(f)));
-  const known = fs.filter((_f, i) => i !== hide);
-  const total = _.sum(xs.map((x, i) => x * fs[i]));
-  return {
-    instruction: `The table shows ${context.shows}.`,
-    questionText: `${context.count(n)}. ${context.totalQ}`,
-    answer: String(total),
-    answerUnits: unitsOf(context.what),
-    workingOut: [
-      `? = ${n} - (${known.join(' + ')}) = ${fs[hide]}`,
-      fxLine(xs, fs),
-      `= ${total}`,
-    ].join(NL),
-    visualization: tableFig(context, xs, shown),
-    metadata: { topic: 'frequency-table-reading', difficulty: 'stretch' },
-  };
+  for (;;) {
+    const { context, xs, fs } = discreteData();
+    // A row of 2 or more: the 0 row's frequency cannot be found from the
+    // total, and "have 1 siblings" does not read.
+    const rows = xs.map((_x, i) => i).filter((i) => xs[i] >= 2);
+    if (!rows.length) continue;
+    const hide = _.sample(rows);
+    const shown = fs.map((f, i) => (i === hide ? '?' : String(f)));
+    const total = _.sum(xs.map((x, i) => x * fs[i]));
+    const knownFX = total - xs[hide] * fs[hide];
+    const knownTerms = xs.map((x, i) => (i === hide || x === 0 ? null : `${x} \\times ${fs[i]}`)).filter(Boolean);
+    return {
+      instruction: `The table shows ${context.shows}.`,
+      questionText: `${context.totalSaid(total)}. ${context.condQ(String(xs[hide]))}`,
+      answer: String(fs[hide]),
+      answerUnits: unitsOf(context.who),
+      workingOut: [
+        `${knownTerms.join(' + ')} = ${knownFX}`,
+        `${xs[hide]} \\times ? = ${total} - ${knownFX} = ${total - knownFX}`,
+        `? = ${fs[hide]}`,
+      ].join(NL),
+      visualization: tableFig(context, xs, shown),
+      metadata: { topic: 'frequency-table-reading', difficulty: 'stretch' },
+    };
+  }
 }
 
 /* ------------------------------------------------------- continuous data
@@ -287,13 +300,15 @@ const runningTotals = (fs) => {
  * and fills in on reveal, as the data-types table does.
  *
  *   foundation  a discrete table: keep a running total of the frequencies
- *   core        a grouped table with gaps in both columns. Each row hides
+ *   core        a grouped table, the same: the cumulative column to fill in
+ *   stretch     a grouped table with gaps in both columns, so frequencies
+ *               are found from cumulative ones. Half the time each row hides
  *               one cell or none, so working down the table always closes:
  *               a missing cumulative frequency is added on, a missing
- *               frequency is differenced back from two cumulative ones
- *   stretch     as core, but one row hides both cells. Working down stalls
- *               there; its cumulative frequency comes back up from the whole
- *               row below it (cumulative minus frequency)
+ *               frequency is differenced back from two cumulative ones. The
+ *               other half, one row hides both cells: working down stalls
+ *               there, and its cumulative frequency comes back up from the
+ *               whole row below it (cumulative minus frequency)
  * ---------------------------------------------------------------------- */
 
 const CF = 'Cumulative frequency';
@@ -301,7 +316,8 @@ const CF = 'Cumulative frequency';
 export const generateCumulativeFrequencyTable = (options = {}) => {
   const { difficulty = 'core' } = options;
   if (difficulty === 'foundation') return cumulativeDiscrete();
-  return cumulativeGaps(difficulty);
+  if (difficulty === 'core') return cumulativeGrouped();
+  return cumulativeGaps(Math.random() < 0.5);
 };
 
 const cumulativeWorking = (fs, cfs) => cfs
@@ -326,14 +342,33 @@ function cumulativeDiscrete() {
   };
 }
 
-function cumulativeGaps(difficulty) {
-  const stretch = difficulty === 'stretch';
+function cumulativeGrouped() {
+  const { context, lows, highs, fs } = continuousData();
+  const cfs = runningTotals(fs);
+  return {
+    instruction: `The table shows ${context.shows()}. Complete the cumulative frequency column`,
+    answer: `\\text{cumulative: } ${cfs.join(', ')}`,
+    workingOut: cumulativeWorking(fs, cfs),
+    visualization: {
+      type: 'table',
+      header: 'row',
+      big: true,
+      rows: [[context.col, 'Frequency', CF], ...lows.map((lo, i) => [classOf(context.v, lo, highs[i]), String(fs[i]), ''])],
+      solution: [['', '', ''], ...cfs.map((c) => ['', '', String(c)])],
+    },
+    metadata: { topic: 'cumulative-frequency-table', difficulty: 'core' },
+  };
+}
+
+// `stretch` true: one row hides both its cells.
+function cumulativeGaps(stretch) {
+  const difficulty = 'stretch';
   for (;;) {
     const { context, lows, highs, fs } = continuousData();
     const k = fs.length;
     const cfs = runningTotals(fs);
-    // Core: k - 1 rows lose one cell each; one row is left whole. Stretch
-    // also empties a row completely, with the whole row directly below it.
+    // k - 1 rows lose one cell each; one row is left whole. With `stretch`
+    // a row is also emptied completely, with the whole row directly below it.
     const both = stretch ? _.random(0, k - 2) : null;
     const whole = stretch ? both + 1 : _.random(0, k - 1);
     const hide = _.times(k, (i) => {

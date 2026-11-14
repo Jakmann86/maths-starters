@@ -115,13 +115,14 @@ describe('data-types', () => {
         const context = byIntro[intro];
         expect(q.instruction).toMatch(difficulty === 'foundation'
           ? /qualitative or quantitative$/
-          : /qualitative, discrete or continuous$/);
+          : difficulty === 'core' ? /qualitative, discrete or continuous$/ : /qualitative, discrete or continuous, and give a reason$/);
 
+        const stretch = difficulty === 'stretch';
         const { rows } = q.visualization;
-        expect(rows[0]).toEqual(['Variable', 'Type']);
+        expect(rows[0]).toEqual(stretch ? ['Variable', 'Type', 'Reason'] : ['Variable', 'Type']);
         const names = rows.slice(1).map((r) => r[0]);
-        rows.slice(1).forEach((r) => expect(r[1]).toBe(''));
-        expect(names).toHaveLength(difficulty === 'foundation' ? 4 : 5);
+        rows.slice(1).forEach((r) => expect(r.slice(1).every((c) => c === '')).toBe(true));
+        expect(names).toHaveLength({ foundation: 4, core: 5, stretch: 4 }[difficulty]);
         expect(new Set(names).size).toBe(names.length);
 
         const vars = names.map((nm) => context.vars.find((v) => v.name === nm));
@@ -137,15 +138,20 @@ describe('data-types', () => {
         // The reveal fills exactly the blank Type cells, row for row.
         const { solution } = q.visualization;
         expect(solution).toHaveLength(rows.length);
-        expect(solution[0]).toEqual(['', '']);
+        expect(solution[0]).toEqual(stretch ? ['', '', ''] : ['', '']);
         expect(solution.slice(1).map((r) => r[1])).toEqual(expected);
         solution.slice(1).forEach((r) => expect(r[0]).toBe(''));
+        // A reason for each, the context's own: a trap's particular reason,
+        // or the plain one for its type.
+        const PLAIN = { qualitative: 'a category', discrete: 'counted', continuous: 'measured' };
+        if (stretch) solution.slice(1).forEach((r, i) => { expect(r[2]).toBe(vars[i].reason); if (!vars[i].trap) expect(r[2]).toBe(PLAIN[vars[i].type]); });
 
         const traps = vars.filter((v) => v.trap).length;
         if (difficulty === 'stretch') expect(traps).toBeGreaterThanOrEqual(2);
         else expect(traps).toBe(0);
         const kinds = new Set(vars.map((v) => want(v, difficulty)));
-        expect(kinds.size).toBe(difficulty === 'foundation' ? 2 : 3);
+        if (stretch) expect(kinds.size).toBeGreaterThanOrEqual(2);
+        else expect(kinds.size).toBe(difficulty === 'foundation' ? 2 : 3);
 
         distinct.add(q.instruction + names.join('|'));
       }
