@@ -240,12 +240,12 @@ export default function Board() {
       />
 
       {/* What is printed is what is on the board: each box's skill at that
-          box's band, with fresh numbers. */}
+          box's band, opening with the board's own four questions. */}
       {/* A print screen that fails to draw closes back to the board. */}
       <ErrorBoundary name="print" resetKey={printOpen} fallback={<PrintFailed onClose={closePrint} />}>
         <PrintSheet
           open={printOpen}
-          boxes={boxes.map((b, i) => ({ skillId: b.skillId, band: bandFor(diff, i) }))}
+          boxes={boxes.map((b, i) => ({ skillId: b.skillId, band: bandFor(diff, i), view: b.data }))}
           onClose={closePrint}
         />
       </ErrorBoundary>

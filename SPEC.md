@@ -235,7 +235,11 @@ spotted.
 
 The header's Print button opens a print screen over the board. It prints
 what the board holds: each box's skill at that box's band (so Mixed carries
-over), with fresh numbers. Nothing is chosen afresh.
+over). Version A opens with the board's own four questions, exactly as
+shown; the extra questions per box on practice and homework, and versions B
+onwards, have fresh numbers. "New numbers" redraws everything, board
+questions included; closing and reopening the screen starts from the board
+again. Nothing is chosen afresh.
 
 | Sheet | Layout | Questions |
 |---|---|---|

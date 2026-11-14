@@ -4,10 +4,12 @@
 // layout rules can be tested without a browser.
 //
 // The board decides WHAT is printed: each box's skill at that box's own band
-// (so Mixed carries over as Foundation, Core, Core, Stretch). The sheet type
-// decides HOW MANY: one question per box for an exit ticket, more for
-// practice and homework. Every version is generated fresh, so version B
-// has the same skills in the same order as A, with different numbers.
+// (so Mixed carries over as Foundation, Core, Core, Stretch), and version A
+// opens with the board's own four questions. The sheet type decides HOW
+// MANY: one question per box for an exit ticket, more for practice and
+// homework. Everything beyond the board's four is generated fresh, so
+// version B has the same skills in the same order as A, with different
+// numbers.
 //
 // Two layouts:
 //   half  two sheets on one A4, top and bottom, to be cut apart. Four
@@ -34,27 +36,37 @@ export const PRESETS = {
 // ceiling, like a cube's one parameter, can genuinely run out).
 const REDRAWS = 6;
 
-function questionsFor(boxes, perBox, rawGen) {
+function questionsFor(boxes, perBox, rawGen, fromBoard) {
   // A generator that throws prints nothing for that question rather than
   // stopping the whole sheet (safeGenerate.js).
   const gen = (id, band) => safeGenerate(id, band, rawGen);
+  const fresh = (skillId, band) => {
+    const q = gen(skillId, band);
+    return q ? questionView(q, skillId) : null;
+  };
   const out = [];
   // A box with no skill (an empty pool, a stale topic name) prints nothing,
   // rather than a numbered blank.
-  boxes.filter((b) => b.skillId && gen(b.skillId, b.band)).forEach(({ skillId, band }) => {
+  boxes.filter((b) => b.skillId && (usable(b.view) || gen(b.skillId, b.band))).forEach(({ skillId, band, view }) => {
     const seen = new Set();
     for (let k = 0; k < perBox; k += 1) {
-      let q = gen(skillId, band);
-      for (let t = 0; t < REDRAWS && q && seen.has(key(q)); t += 1) q = gen(skillId, band);
-      if (!q) continue;
-      seen.add(key(q));
-      out.push({ skillId, band, view: questionView(q, skillId) });
+      // The first question from each box is the one on the board, so what
+      // the teacher set up is what prints; the rest are fresh.
+      let v = fromBoard && k === 0 && usable(view) ? view : fresh(skillId, band);
+      for (let t = 0; t < REDRAWS && v && seen.has(key(v)); t += 1) v = fresh(skillId, band);
+      if (!v) continue;
+      seen.add(key(v));
+      out.push({ skillId, band, view: v });
     }
   });
   return out;
 }
 
-const key = (q) => JSON.stringify([q.instruction, q.questionMath, q.questionText, q.visualization]);
+// A box whose generator failed shows a message, not a question: print a
+// fresh draw instead.
+const usable = (view) => Boolean(view && !view.failed);
+
+const key = (v) => JSON.stringify([v.instr, v.q, v.parts, v.fig]);
 
 /**
  * versions: how many different versions (1-5). With one version, the half
@@ -62,15 +74,19 @@ const key = (q) => JSON.stringify([q.instruction, q.questionMath, q.questionText
  * different version, in order, and an odd count finishes on version A again
  * so the last page is not half blank.
  *
+ * fromBoard: version A starts each box with the question the box carries
+ * (`view`, as the board shows it). Versions B onwards, the extra questions
+ * per box, and every question after "New numbers" are generated fresh.
+ *
  * Returns pages: [{ halves: [sheet, sheet] }] for half, [{ sheet }] for full,
  * where a sheet is { letter, questions, part, parts }.
  */
 export function buildSheets(boxes, options, gen = generateForSkill) {
-  const { layout, perBox, versions } = options;
+  const { layout, perBox, versions, fromBoard = false } = options;
   const n = Math.max(1, Math.min(MAX_VERSIONS, versions));
   const sheets = Array.from({ length: n }, (_v, i) => ({
     letter: n > 1 ? LETTERS[i] : '',
-    questions: questionsFor(boxes, layout === 'half' ? 1 : perBox, gen),
+    questions: questionsFor(boxes, layout === 'half' ? 1 : perBox, gen, fromBoard && i === 0),
   }));
 
   if (layout === 'half') {
