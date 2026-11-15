@@ -51,6 +51,8 @@ import * as bars from '../generators/statistics/barChartGenerators';
 import * as freqTable from '../generators/statistics/frequencyTableGenerators';
 import * as dataTypes from '../generators/statistics/dataTypesGenerators';
 import * as sets from '../generators/number/setsGenerators';
+import * as compound from '../generators/geometry/compoundSolidGenerators';
+import * as intervals from '../generators/number/intervalGenerators';
 import * as probability from '../generators/number/probabilityGenerators';
 import * as trees from '../generators/number/treeDiagramGenerators';
 import * as probMore from '../generators/number/probabilityTopicsGenerators';
@@ -893,6 +895,12 @@ export const skills = {
     generate: (opts) => solids.generateSurfaceAreaPyramid(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'compound-surface-area': {
+    label: 'Surface area of a compound solid',
+    topic: 'Surface area',
+    generate: (opts) => compound.generateCompoundSurfaceArea(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 
   // --- Haese 11B: volume ---
   'volume-cuboid': {
@@ -931,6 +939,12 @@ export const skills = {
     label: 'Volume of a pyramid',
     topic: 'Volume',
     generate: (opts) => solids.generateVolumePyramid(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'compound-volume': {
+    label: 'Volume of a compound solid',
+    topic: 'Volume',
+    generate: (opts) => compound.generateCompoundVolume(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1299,6 +1313,18 @@ export const skills = {
   // --- Haese 6E-6H: surds ---
   // Each surd skill asks the same kind of question at every band (see
   // chapter6Generators.js), so Mixed can put any of them in any box.
+  'interval-list-elements': {
+    label: 'Listing the elements of a set',
+    topic: 'Interval notation',
+    generate: (opts) => intervals.generateIntervalListElements(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'interval-write': {
+    label: 'Writing in interval notation',
+    topic: 'Interval notation',
+    generate: (opts) => intervals.generateIntervalWrite(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'surds-simplify': {
     label: 'Simplifying surds',
     topic: 'Surds',
@@ -1603,6 +1629,7 @@ export const STRANDS = [
     topics: [
       'Order of operations',
       'Rational numbers',
+      'Interval notation',
       'Surds',
       'Indices',
       'Standard form',

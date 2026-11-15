@@ -21,7 +21,7 @@
 
     { "id": "2A", "ch": 2, "unit": "Sets", "lesson": "Set notation", "page": 57, "skills": ["venn-notation"], "status": "ready" },
     { "id": "2B", "ch": 2, "unit": "Sets", "lesson": "Special number sets", "page": 60, "skills": ["surds-simplify"], "status": "ready" },
-    { "id": "2C", "ch": 2, "unit": "Sets", "lesson": "Interval notation", "page": 61, "skills": [], "status": "todo" },
+    { "id": "2C", "ch": 2, "unit": "Sets", "lesson": "Interval notation", "page": 61, "skills": ["interval-list-elements", "interval-write"], "status": "ready" },
     { "id": "2D", "ch": 2, "unit": "Sets", "lesson": "Venn diagrams", "page": 63, "skills": ["venn-counts", "venn-place-elements"], "status": "ready" },
     { "id": "2E", "ch": 2, "unit": "Sets", "lesson": "Union and intersection", "page": 65, "skills": ["venn-set-operations", "venn-probability"], "status": "ready" },
     { "id": "2F", "ch": 2, "unit": "Sets", "lesson": "Problem solving", "page": 69, "skills": [], "status": "skip" },
@@ -84,7 +84,7 @@
     { "id": "11B", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Volume", "page": 239, "skills": ["volume-cuboid", "volume-cylinder", "volume-cone", "volume-sphere", "volume-prism", "volume-pyramid"], "status": "ready" },
     { "id": "11C", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Capacity", "page": 245, "skills": [], "status": "todo" },
     { "id": "11D", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Mass", "page": 248, "skills": [], "status": "todo" },
-    { "id": "11E", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Compound solids", "page": 249, "skills": [], "status": "todo" },
+    { "id": "11E", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Compound solids", "page": 249, "skills": ["compound-volume", "compound-surface-area"], "status": "ready" },
 
     { "id": "12A", "ch": 12, "unit": "Coordinate geometry", "lesson": "Plotting points", "page": 256, "skills": [], "status": "todo" },
     { "id": "12B", "ch": 12, "unit": "Coordinate geometry", "lesson": "Distance between two points", "page": 258, "skills": ["distance-between-points"], "status": "ready" },
