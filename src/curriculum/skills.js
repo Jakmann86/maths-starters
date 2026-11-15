@@ -51,6 +51,7 @@ import * as bars from '../generators/statistics/barChartGenerators';
 import * as freqTable from '../generators/statistics/frequencyTableGenerators';
 import * as dataTypes from '../generators/statistics/dataTypesGenerators';
 import * as sets from '../generators/number/setsGenerators';
+import * as fgraphs from '../generators/algebra/functionGraphGenerators';
 import * as compound from '../generators/geometry/compoundSolidGenerators';
 import * as intervals from '../generators/number/intervalGenerators';
 import * as probability from '../generators/number/probabilityGenerators';
@@ -274,6 +275,30 @@ export const skills = {
   // Haese 2C: inequalities written as sets, {x | -3 < x ≤ 2}, listed and
   // then written from a list or a number line. Before solving: they read
   // an inequality, solving produces one.
+  'transforming-graphs': {
+    label: 'Transforming graphs',
+    topic: 'Graphs of functions',
+    generate: (opts) => fgraphs.generateTransformingGraphs(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'cubic-graphs': {
+    label: 'Graphs of cubics',
+    topic: 'Graphs of functions',
+    generate: (opts) => fgraphs.generateCubicGraphs(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'tangent-gradient': {
+    label: 'Gradient of a curve',
+    topic: 'Graphs of functions',
+    generate: (opts) => fgraphs.generateTangentGradient(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'exponential-graphs': {
+    label: 'Exponential functions',
+    topic: 'Graphs of functions',
+    generate: (opts) => fgraphs.generateExponentialGraphs(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'interval-list-elements': {
     label: 'Listing the integers in an inequality',
     topic: 'Inequalities',
@@ -1659,6 +1684,7 @@ export const STRANDS = [
       'Functions',
       'Quadratic equations',
       'Quadratic graphs',
+      'Graphs of functions',
       'Arithmetic and geometric sequences',
       'Quadratic and cubic sequences',
       'Variation',

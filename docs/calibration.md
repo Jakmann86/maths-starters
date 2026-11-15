@@ -408,6 +408,40 @@ x-intercepts (given or drawn) or the vertex. Core: the vertex and the
 y-intercept, in turning point form. Stretch: the vertex and another point,
 or the x-intercepts and another point to expanded form.
 
+## Graphs of functions — Haese 20F, 23A, 23D, 28B
+
+Bands set from how Haese escalates; not yet reviewed in class. A topic of
+its own after Quadratic graphs, gathering the graph work from four
+chapters. Every graph is a `coordinate-grid` with a `window`, to scale,
+built from its answer so everything read off it sits on a gridline
+crossing.
+
+**Transforming graphs** — 20F. Haese works from f(x) to g(x) = f(x) + k,
+f(x − h), −f(x), kf(x) and f(−x). Here f is a parabola in ink and g its
+image in the slot colour; write g in terms of f. Foundation: one
+translation. Core: reflected in the x-axis, or stretched by 2 from it.
+Stretch: two at once, f(x − h) + k or −f(x) + k. f(−x) is left out: a
+parabola is symmetric, so its reflection in the y-axis is also a
+translation, and the question would have two right answers.
+
+**Graphs of cubics** — 23A. Foundation: where y = (x − p)(x − q)(x − r)
+meets each axis. Core: a repeated root and a leading coefficient, so where
+it touches and where it cuts. Stretch: the graph with its intercepts
+marked, find the equation, a from the y-intercept (Example 2). Reading an
+equation off a graph keeps the y-intercept within 5 and the roots small,
+so Stretch has 63 questions in all.
+
+**Gradient of a curve** — 23D. Haese draws the tangent and reads its
+gradient; here it is always drawn, with P and a second point Q on
+gridline crossings, so the gradient is counted rather than estimated.
+Foundation: a positive whole gradient. Core: negative or a half. Stretch:
+the tangent's equation, y = mx + c.
+
+**Exponential functions** — 28B. Foundation: f(x) = k × bˣ + c at a whole
+x from 0 to 3. Core: at a negative x, an exact fraction (Example 3c).
+Stretch: k and c from the graph, its asymptote dashed and y-intercept
+marked (Q5).
+
 ## The sine and cosine rules — Haese 29B–F and Rayner 10
 
 **Sine rule** — Haese 29C. Foundation: a side from its pair of angles.
