@@ -171,6 +171,30 @@ alone.
   is now its own skill: F `∛(p²)`; C a perfect power under the root
   (`∛(8x²)`); S the reciprocal of a root, sometimes with a number on top.
 
+## Interval notation — Haese 2C
+
+Haese writes sets of numbers with symbols only, {x | −3 < x ≤ 2}, and
+takes x as real unless the set says x ∈ Z, N or Z⁺. Its N includes 0
+(2B). The exercise has four tasks: read the notation, list the elements
+(Q2), write a list in the notation (Q3) and write a number line in it (Q4).
+Two skills cover the last three.
+
+**Listing the elements of a set.** Foundation: integers between two
+bounds, each end included or not (Example 4a). Core: x ∈ N or Z⁺ with a
+bound below where the set starts, or none (Q2d, f): the set starts the
+list, and the bound is a distractor. Stretch: one bound only, so the list
+carries on for ever and is written with "..." (Example 4b, Q2b, c, e).
+
+**Writing in interval notation.** Foundation: a finite list of
+consecutive integers (Q3a, b), answered with ≤ at both ends as Example 3
+writes it; the teacher marks the other correct forms. Core: a number line
+between two numbers, each end a filled or open circle (Q4). Stretch: a set
+that carries on: a list with "..." (Q3c, d, f), or a line with a ray, or
+two rays joined by "or" (Review set 2B Q1d).
+
+Small pools by nature: a list of consecutive integers is fixed by its two
+ends, and the harness records the real sizes.
+
 ## Solving linear equations — Haese 3A
 
 Five stages across 3A.1 and 3A.2.
@@ -399,6 +423,32 @@ area given, find the angle, which has two values.
 **Mixed** — Haese 29E–F, Rayner 10.13. Bearings (Haese Example 10) and two
 triangles sharing a side (Example 11, cosine rule then sine rule). Haese's
 advice for a choice: use the cosine rule, since it has no ambiguous case.
+
+## Compound solids — Haese 11E
+
+Haese finds the volume and surface area of a compound solid part by part:
+a cone on a cylinder (Example 14, both), a hemisphere on a cylinder (Q1,
+the observatory), a hemisphere on a cone (Q4, the ice cream), and a tank
+whose walls are a hollow cylinder (Example 15).
+
+**Volume of a compound solid.** Foundation: a narrow cylinder on a wide
+one, one formula used twice. Core: two different formulas, a cone or a
+hemisphere on a cylinder, or a hemisphere on a cone. Stretch: a part taken
+away, the hollow cylinder, given both radii or (as in Example 15) the outer
+diameter and the wall's thickness, so the inner radius comes first. Haese
+mixes metres and centimetres in Example 15; here one unit runs through each
+question, as everywhere else.
+
+**Surface area of a compound solid.** The whole outside of a solid object,
+base included; the face where the parts meet is inside. Foundation: a cone
+on a cylinder with the slant height given. Core: a hemisphere on a
+cylinder, the dome half a sphere's 4πr². Stretch: a cone on a cylinder
+with the perpendicular height given, so the slant comes first by
+Pythagoras, exactly Example 14.
+
+Every part is kept a whole multiple of π (a cone's r²H a multiple of 3, a
+hemisphere's r a multiple of 3), so the working adds whole multiples in
+both answer forms.
 
 ## Similarity — Haese 18A, 18B, 18D and Rayner 7.4
 

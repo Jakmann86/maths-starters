@@ -84,7 +84,7 @@
     { "id": "11B", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Volume", "page": 239, "skills": ["volume-cuboid", "volume-cylinder", "volume-cone", "volume-sphere", "volume-prism", "volume-pyramid"], "status": "ready" },
     { "id": "11C", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Capacity", "page": 245, "skills": [], "status": "todo" },
     { "id": "11D", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Mass", "page": 248, "skills": [], "status": "todo" },
-    { "id": "11E", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Compound solids", "page": 249, "skills": [], "status": "todo" },
+    { "id": "11E", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Compound solids", "page": 249, "skills": ["compound-volume", "compound-surface-area"], "status": "ready" },
 
     { "id": "12A", "ch": 12, "unit": "Coordinate geometry", "lesson": "Plotting points", "page": 256, "skills": [], "status": "todo" },
     { "id": "12B", "ch": 12, "unit": "Coordinate geometry", "lesson": "Distance between two points", "page": 258, "skills": ["distance-between-points"], "status": "ready" },

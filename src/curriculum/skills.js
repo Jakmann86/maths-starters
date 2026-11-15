@@ -51,6 +51,7 @@ import * as bars from '../generators/statistics/barChartGenerators';
 import * as freqTable from '../generators/statistics/frequencyTableGenerators';
 import * as dataTypes from '../generators/statistics/dataTypesGenerators';
 import * as sets from '../generators/number/setsGenerators';
+import * as compound from '../generators/geometry/compoundSolidGenerators';
 import * as intervals from '../generators/number/intervalGenerators';
 import * as probability from '../generators/number/probabilityGenerators';
 import * as trees from '../generators/number/treeDiagramGenerators';
@@ -894,6 +895,12 @@ export const skills = {
     generate: (opts) => solids.generateSurfaceAreaPyramid(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'compound-surface-area': {
+    label: 'Surface area of a compound solid',
+    topic: 'Surface area',
+    generate: (opts) => compound.generateCompoundSurfaceArea(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 
   // --- Haese 11B: volume ---
   'volume-cuboid': {
@@ -932,6 +939,12 @@ export const skills = {
     label: 'Volume of a pyramid',
     topic: 'Volume',
     generate: (opts) => solids.generateVolumePyramid(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'compound-volume': {
+    label: 'Volume of a compound solid',
+    topic: 'Volume',
+    generate: (opts) => compound.generateCompoundVolume(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
