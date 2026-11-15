@@ -25,6 +25,7 @@ const RENAMED = {
   'Formulae and simultaneous equations': ['Formulae', 'Simultaneous equations'],
   Circles: ['Perimeter', 'Area'],
   'Problem solving': ['Angle facts', 'Simultaneous equations'],
+  'Interval notation': ['Inequalities'],
 };
 
 /** A saved pool with renamed topics replaced by their successors. */

@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import { BANDS, sample, report, mutants, generic, bandMove } from '../harness.check';
 import { checkCompoundVolume, checkCompoundSurfaceArea } from './compoundSolidGenerators.check';
-import { getSkill } from '../../curriculum/skills';
+import { skillsInTopic } from '../../curriculum/skills';
 
 const N = 6000;
 const CHECKS = { 'compound-volume': checkCompoundVolume, 'compound-surface-area': checkCompoundSurfaceArea };
@@ -45,9 +45,10 @@ describe('compound solids', () => {
     });
   }));
 
-  it('sits in its topics, last', () => {
-    expect(getSkill('compound-volume').topic).toBe('Volume');
-    expect(getSkill('compound-surface-area').topic).toBe('Surface area');
+  it('sits in Compound shapes, 2D first then 3D', () => {
+    expect(skillsInTopic('Compound shapes')).toEqual([
+      'perimeter-compound', 'area-compound', 'compound-volume', 'compound-surface-area',
+    ]);
   });
 
   it('rejects every broken copy', () => {

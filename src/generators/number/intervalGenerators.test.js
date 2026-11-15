@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import { BANDS, sample, report, mutants, generic, bandMove } from '../harness.check';
 import { checkListElements, checkWrite } from './intervalGenerators.check';
-import { skillsInTopic, topicGroups } from '../../curriculum/skills';
+import { skillsInTopic } from '../../curriculum/skills';
 
 const N = 6000;
 const CHECKS = { 'interval-list-elements': checkListElements, 'interval-write': checkWrite };
@@ -44,10 +44,10 @@ describe('interval notation', () => {
     });
   }));
 
-  it('sits in Number, after the assumed knowledge', () => {
-    expect(skillsInTopic('Interval notation')).toEqual(['interval-list-elements', 'interval-write']);
-    const num = topicGroups().find((g) => g.name === 'Number').topics;
-    expect(num.indexOf('Interval notation')).toBe(num.indexOf('Rational numbers') + 1);
+  it('sits in Inequalities, after which numbers fit and before solving', () => {
+    expect(skillsInTopic('Inequalities')).toEqual([
+      'inequality-list-values', 'interval-list-elements', 'interval-write', 'solve-linear-inequalities',
+    ]);
   });
 
   it('rejects every broken copy', () => {

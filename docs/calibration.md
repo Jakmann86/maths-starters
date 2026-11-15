@@ -177,7 +177,8 @@ Haese writes sets of numbers with symbols only, {x | −3 < x ≤ 2}, and
 takes x as real unless the set says x ∈ Z, N or Z⁺. Its N includes 0
 (2B). The exercise has four tasks: read the notation, list the elements
 (Q2), write a list in the notation (Q3) and write a number line in it (Q4).
-Two skills cover the last three.
+Two skills cover the last three. On the board they sit in the Inequalities
+topic, between "which numbers fit?" and solving.
 
 **Listing the elements of a set.** Foundation: integers between two
 bounds, each end included or not (Example 4a). Core: x ∈ N or Z⁺ with a

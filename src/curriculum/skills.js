@@ -271,6 +271,21 @@ export const skills = {
     generate: (opts) => inequalities.generateInequalityListValues(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  // Haese 2C: inequalities written as sets, {x | -3 < x ≤ 2}, listed and
+  // then written from a list or a number line. Before solving: they read
+  // an inequality, solving produces one.
+  'interval-list-elements': {
+    label: 'Listing the integers in an inequality',
+    topic: 'Inequalities',
+    generate: (opts) => intervals.generateIntervalListElements(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'interval-write': {
+    label: 'Writing inequalities in set notation',
+    topic: 'Inequalities',
+    generate: (opts) => intervals.generateIntervalWrite(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'solve-linear-inequalities': {
     label: 'Solving linear inequalities',
     topic: 'Inequalities',
@@ -895,12 +910,6 @@ export const skills = {
     generate: (opts) => solids.generateSurfaceAreaPyramid(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'compound-surface-area': {
-    label: 'Surface area of a compound solid',
-    topic: 'Surface area',
-    generate: (opts) => compound.generateCompoundSurfaceArea(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
 
   // --- Haese 11B: volume ---
   'volume-cuboid': {
@@ -941,10 +950,31 @@ export const skills = {
     generate: (opts) => solids.generateVolumePyramid(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+
+  // --- Compound shapes: 2D (Haese 9B-9C) then 3D (11E), one topic so a
+  // teacher can pick compound work without the rest of mensuration ---
+  'perimeter-compound': {
+    label: 'Perimeter of a compound shape',
+    topic: 'Compound shapes',
+    generate: (opts) => perim.generatePerimeterCompound(opts),
+    difficulties: ['foundation', 'core'],
+  },
+  'area-compound': {
+    label: 'Area of a compound shape',
+    topic: 'Compound shapes',
+    generate: (opts) => perim.generateAreaCompound(opts),
+    difficulties: ['foundation', 'core'],
+  },
   'compound-volume': {
     label: 'Volume of a compound solid',
-    topic: 'Volume',
+    topic: 'Compound shapes',
     generate: (opts) => compound.generateCompoundVolume(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'compound-surface-area': {
+    label: 'Surface area of a compound solid',
+    topic: 'Compound shapes',
+    generate: (opts) => compound.generateCompoundSurfaceArea(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -979,12 +1009,6 @@ export const skills = {
     generate: (opts) => area.generateAreaKite(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
-  'area-compound': {
-    label: 'Area of a compound shape',
-    topic: 'Area',
-    generate: (opts) => perim.generateAreaCompound(opts),
-    difficulties: ['foundation', 'core'],
-  },
 
   // --- Haese 9B: perimeter ---
   'perimeter-rectangle': {
@@ -992,12 +1016,6 @@ export const skills = {
     topic: 'Perimeter',
     generate: (opts) => perim.generatePerimeterRectangle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
-  },
-  'perimeter-compound': {
-    label: 'Perimeter of a compound shape',
-    topic: 'Perimeter',
-    generate: (opts) => perim.generatePerimeterCompound(opts),
-    difficulties: ['foundation', 'core'],
   },
 
   // --- Haese 9D / Rayner 4.2: circles ---
@@ -1313,18 +1331,6 @@ export const skills = {
   // --- Haese 6E-6H: surds ---
   // Each surd skill asks the same kind of question at every band (see
   // chapter6Generators.js), so Mixed can put any of them in any box.
-  'interval-list-elements': {
-    label: 'Listing the elements of a set',
-    topic: 'Interval notation',
-    generate: (opts) => intervals.generateIntervalListElements(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
-  'interval-write': {
-    label: 'Writing in interval notation',
-    topic: 'Interval notation',
-    generate: (opts) => intervals.generateIntervalWrite(opts),
-    difficulties: ['foundation', 'core', 'stretch'],
-  },
   'surds-simplify': {
     label: 'Simplifying surds',
     topic: 'Surds',
@@ -1620,8 +1626,10 @@ export const generateForSkill = (id, wanted = 'core') => {
  * chapter in Haese (haese-igcse.json), the one holding most of their skills,
  * then by the first section that uses one. A topic the book takes as
  * assumed knowledge, with no section of its own (order of operations,
- * fractions), goes first in its strand. topicOrder.test.js holds the panel
- * to that rule.
+ * fractions), goes first in its strand. A topic gathered from several
+ * chapters on purpose (Compound shapes: perimeter, area, volume and surface
+ * area) goes last in its strand, since it draws on everything before it.
+ * topicOrder.test.js holds the panel to these rules.
  */
 export const STRANDS = [
   {
@@ -1629,7 +1637,6 @@ export const STRANDS = [
     topics: [
       'Order of operations',
       'Rational numbers',
-      'Interval notation',
       'Surds',
       'Indices',
       'Standard form',
@@ -1644,8 +1651,8 @@ export const STRANDS = [
     topics: [
       'Expanding brackets',
       'Factorising',
-      'Equations',
       'Inequalities',
+      'Equations',
       'Formulae',
       'Simultaneous equations',
       'Algebraic fractions',
@@ -1672,7 +1679,7 @@ export const STRANDS = [
       'Further trigonometry',
     ],
   },
-  { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Surface area', 'Volume'] },
+  { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Surface area', 'Volume', 'Compound shapes'] },
   // Sets sits here rather than in Number: Venn diagrams lead into
   // probability from a diagram, and the scheme teaches them together.
   { name: 'Statistics and probability', topics: ['Sets', 'Representing data', 'Averages', 'Spread', 'Scatter graphs', 'Probability'] },

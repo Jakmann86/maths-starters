@@ -3,7 +3,8 @@
 // most of its skills, the earlier one on a tie. Topics sharing a home
 // chapter run by the first section that uses one of their skills. A topic
 // with no section of its own — assumed knowledge, such as order of
-// operations — comes first in its strand.
+// operations — comes first in its strand. A topic gathered from several
+// chapters on purpose (GATHERED below) goes last in its strand instead.
 //
 // The home chapter, not simply the first mention, because a book reuses a
 // topic early: Haese 8D puts chords and tangents into a Pythagoras chapter,
@@ -27,11 +28,17 @@ const placeOf = (() => {
     return [home, Math.min(...idx)];
   };
 })();
+/** Topics that collect skills from across a strand, and so sit at its end. */
+const GATHERED = ['Compound shapes'];
+
 function countBy(xs) { const c = {}; xs.forEach((x) => { c[x] = (c[x] ?? 0) + 1; }); return c; }
 
 describe('topic panel order', () => {
   it('runs in textbook order within each strand, assumed knowledge first', () => {
-    STRANDS.forEach(({ name, topics }) => {
+    STRANDS.forEach(({ name, topics: all }) => {
+      const tail = all.filter((t) => GATHERED.includes(t));
+      expect(all.slice(all.length - tail.length), `${name}: gathered topics go last`).toEqual(tail);
+      const topics = all.filter((t) => !GATHERED.includes(t));
       const at = topics.map(placeOf);
       const sorted = [...at].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
       expect(at, `${name}: ${topics.map((t, i) => `${t} ch ${at[i][0]}`).join(', ')}`).toEqual(sorted);

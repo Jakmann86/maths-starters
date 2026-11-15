@@ -46,7 +46,7 @@ export const skills = {
   separate from file order. Within a strand, topics follow the textbook: by
   their home chapter in `haese-igcse.json` (the one holding most of their
   skills), then the first section that uses one, with assumed-knowledge
-  topics that have no section (order of operations, fractions) first. `topicOrder.test.js` enforces it. A topic
+  topics that have no section (order of operations, fractions) first, and a topic gathered from several chapters on purpose (Compound shapes) last. `topicOrder.test.js` enforces it. A topic
   missing from `STRANDS` lands in "Other".
 - `generateForSkill(id, band)` is the board's single entry point. It returns
   `null` for an unknown id rather than throwing.
