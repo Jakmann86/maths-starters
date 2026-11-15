@@ -2841,9 +2841,11 @@ export default function Figure({ fig, color, shown }) {
       if (!p.label) return;
       // Pushed away from the middle of the plotted set, not away from the
       // origin: away from the origin puts the label of a lower-left point
-      // straight onto the segment leaving it.
-      const ux = p.x === cx ? 1 : Math.sign(p.x - cx);
-      const uy = p.y === cy ? 1 : Math.sign(p.y - cy);
+      // straight onto the segment leaving it. A point on a curve can pin
+      // its label's corner instead, `labelDir: [ux, uy]` (each 1 or -1),
+      // since only its generator knows which way the curve leaves it.
+      const ux = p.labelDir ? p.labelDir[0] : p.x === cx ? 1 : Math.sign(p.x - cx);
+      const uy = p.labelDir ? p.labelDir[1] : p.y === cy ? 1 : Math.sign(p.y - cy);
       nodes.push(figLabel(`pl${i}`, X(p.x) + ux * 11, Y(p.y) - uy * 11 + 6, p.label,
         ux >= 0 ? 'start' : 'end', 'var(--ink)', NUM * 1.15));
     });
