@@ -588,6 +588,50 @@ export default function Figure({ fig, color, shown }) {
     return solidWrap(nodes, 300, 195, 'cb', fig, shown);
   }
 
+  if (fig.type === 'number-line') {
+    // A number line, Haese 2C: integers from `min` to `max`, ticked and
+    // numbered, arrows at both ends.
+    //   set  { parts: [{ from, to, fromIn, toIn }] }, real intervals drawn
+    //        thick on the line. An end is a filled circle when included
+    //        (fromIn / toIn) and an open one when not; `from: null` or
+    //        `to: null` runs the interval off that end, to the arrow.
+    // Drawn to the data, like the other data displays: the circles sit on
+    // the numbers they stand for.
+    // The right margin is wider, for the x that names the line.
+    const W = 480, H = 92, PADL = 26, PADR = 46, AY = 40;
+    const span = Math.max(1, fig.max - fig.min);
+    const u = (W - PADL - PADR) / span;
+    const X = (v) => PADL + (v - fig.min) * u;
+    const nodes = [
+      figLine('ax', 6, AY, W - 6, AY, { strokeWidth: 2.5 }),
+      arrowHead('al', 2, AY, -1, 0, 'var(--ink)', 12),
+      arrowHead('ar', W - 2, AY, 1, 0, 'var(--ink)', 12),
+    ];
+    for (let v = fig.min; v <= fig.max; v += 1) {
+      nodes.push(figLine(`t${v}`, X(v), AY - 7, X(v), AY + 7, { strokeWidth: 2 }));
+      nodes.push(figLabel(`n${v}`, X(v), AY + 32, String(v).replace('-', '−'), 'middle'));
+    }
+    const drawSet = (s, ink, key) => {
+      if (!s) return;
+      (s.parts ?? []).forEach((p, i) => {
+        const x1 = p.from === null || p.from === undefined ? 10 : X(p.from);
+        const x2 = p.to === null || p.to === undefined ? W - 10 : X(p.to);
+        nodes.push(figLine(`${key}p${i}`, x1, AY, x2, AY, { stroke: ink, strokeWidth: 7 }));
+        if (p.from === null || p.from === undefined) nodes.push(arrowHead(`${key}pl${i}`, 2, AY, -1, 0, ink, 16));
+        if (p.to === null || p.to === undefined) nodes.push(arrowHead(`${key}pr${i}`, W - 2, AY, 1, 0, ink, 16));
+        [[p.from, p.fromIn], [p.to, p.toIn]].forEach(([v, inc], j) => {
+          if (v === null || v === undefined) return;
+          nodes.push(<circle key={`${key}c${i}${j}`} cx={X(v)} cy={AY} r={8} fill={inc ? ink : 'var(--ground)'} stroke={ink} strokeWidth={3} />);
+        });
+      });
+    };
+    drawSet(fig.set, 'var(--ink)', 's');
+    nodes.push(figLabel('xl', W - 10, AY + 32, 'x', 'end'));
+    // A long thin drawing: given nearly the slot's full width, or its
+    // numbers are too small to read.
+    return svgWrap(nodes, W, H, 'nl', fig.big, shown, true, 1.34);
+  }
+
   if (fig.type === 'cylinder') {
     // Upright, following Haese p235 rather than Rayner's horizontal p143
     // drawing: standing on end puts h against a true vertical edge, which is
