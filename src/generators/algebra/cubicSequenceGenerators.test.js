@@ -6,6 +6,9 @@
 //
 // Foundation's an^3 + d rules are about 600 (finding the rule) and 420
 // (using it, n^3 + d at a term from 2 to 8); the rest run to thousands.
+// Foundation's floor sits a little under its pool: 6,000 draws from about
+// 600 sometimes miss one, and a floor at the pool's full size fails by
+// chance.
 //
 // Run: npx vitest run src/generators/algebra/cubicSequenceGenerators.test.js
 
@@ -25,7 +28,7 @@ const KINDS = {
 // The fewest distinct questions in 6,000 per band.
 const FLOOR = {
   'sequences-difference-method': { foundation: 2400, core: 3600, stretch: 3600 },
-  'sequences-cubic-nth-term': { foundation: 600, core: 3700, stretch: 4900 },
+  'sequences-cubic-nth-term': { foundation: 580, core: 3700, stretch: 4900 },
   'sequences-cubic-use-nth-term': { foundation: 420, core: 4800, stretch: 5400 },
 };
 
