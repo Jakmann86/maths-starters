@@ -678,6 +678,123 @@ export default function Figure({ fig, color, shown }) {
     return solidWrap(nodes, 210, 240, 'cy', fig, shown);
   }
 
+  if (fig.type === 'compound-solid') {
+    // Two solids joined, Haese 11E, drawn upright like the cylinder and
+    // cone figures, every circular face an ellipse with its hidden half
+    // dashed. `shape` picks the pair:
+    //   cylinder-cone        a cone on a cylinder (Haese Example 14)
+    //   cylinder-hemisphere  a hemisphere on a cylinder (the observatory)
+    //   cylinder-cylinder    a narrower cylinder on a wider one
+    //   cone-hemisphere      a hemisphere on an upside-down cone (an ice
+    //                        cream, Haese 11E Q4)
+    //   tube                 a cylinder with a cylinder taken out of it
+    //                        (the tank, Haese Example 15)
+    // Labels, each a plain string, drawn when present:
+    //   r, diameter  the radius (or diameter) of the main circular face
+    //   h            the cylinder's height
+    //   coneH        the cone's perpendicular height, dashed, with a right angle
+    //   slant        the cone's slant height, beside its right side
+    //   r2, h2       the narrow cylinder's radius and height
+    //   inner        the hole's radius (tube)
+    //   thickness    the tube's wall, across the rim on the right
+    // `unknown` names the label in the slot colour. Schematic: the drawing
+    // is the same whatever the numbers.
+    const RX = 62, RY = 18, CX = 115;
+    const L = CX - RX, R = CX + RX;
+    const unknown = fig.unknown ?? null;
+    const col = (k) => (k === unknown ? color : 'var(--ink)');
+    const nodes = [];
+    const dashed = { strokeDasharray: '6 6', strokeWidth: 2 };
+    /** An ellipse of half-width rx at y, its back half dashed. */
+    const ring = (key, y, rx, ry, backHidden = true) => [
+      <path key={`${key}b`} d={`M ${CX - rx} ${y} A ${rx} ${ry} 0 0 1 ${CX + rx} ${y}`} fill="none" stroke="var(--ink)" strokeWidth={backHidden ? 2 : 3} strokeDasharray={backHidden ? '6 6' : undefined} />,
+      <path key={`${key}f`} d={`M ${CX - rx} ${y} A ${rx} ${ry} 0 0 0 ${CX + rx} ${y}`} fill="none" stroke="var(--ink)" strokeWidth={3} />,
+    ];
+    /** A cylinder's body between top and bot, with its base drawn. */
+    const body = (key, top, bot, rx, ry) => [
+      ...ring(`${key}base`, bot, rx, ry),
+      figLine(`${key}l`, CX - rx, top, CX - rx, bot),
+      figLine(`${key}r`, CX + rx, top, CX + rx, bot),
+    ];
+    const radiusAt = (key, y, rx, text, labelY, k) => {
+      nodes.push(figLine(`${key}l`, CX, y, CX + rx, y, { strokeWidth: 2 }));
+      nodes.push(<circle key={`${key}c`} cx={CX} cy={y} r={3} fill="var(--ink)" />);
+      nodes.push(figLabel(`${key}v`, CX + rx / 2, labelY, text, 'middle', col(k)));
+    };
+    const baseLabel = (bot) => {
+      if (fig.diameter) {
+        nodes.push(figLine('dl', L, bot, R, bot, { strokeWidth: 2 }));
+        nodes.push(figLabel('dv', CX, bot + RY + 21, fig.diameter, 'middle', col('diameter')));
+      } else if (fig.r) radiusAt('r', bot, RX, fig.r, bot + RY + 21, 'r');
+    };
+    const heightLabel = (key, x, top, bot, text) => nodes.push(figLabel(key, x - 10, (top + bot) / 2 + 5, text, 'end', col(key === 'hv' ? 'h' : key === 'h2v' ? 'h2' : 'coneH')));
+    let H;
+
+    if (fig.shape === 'cylinder-cone' || fig.shape === 'cylinder-hemisphere') {
+      const APEX = 24;
+      const JOIN = fig.shape === 'cylinder-cone' ? 104 : APEX + RX;
+      const BOT = JOIN + 110;
+      nodes.push(...body('c', JOIN, BOT, RX, RY), ...ring('j', JOIN, RX, RY));
+      if (fig.shape === 'cylinder-cone') {
+        nodes.push(figLine('s1', CX, APEX, L, JOIN), figLine('s2', CX, APEX, R, JOIN));
+        if (fig.coneH) {
+          nodes.push(figLine('ch', CX, APEX, CX, JOIN, dashed));
+          nodes.push(<path key="ra" d={`M ${CX} ${JOIN - 12} L ${CX + 12} ${JOIN - 12} L ${CX + 12} ${JOIN}`} fill="none" stroke="var(--ink)" strokeWidth={2} />);
+          heightLabel('chv', CX - RX / 2 - 6, APEX, JOIN, fig.coneH);
+        }
+        if (fig.slant) nodes.push(figLabel('sv', (CX + R) / 2 + 14, (APEX + JOIN) / 2, fig.slant, 'start', col('slant')));
+      } else {
+        nodes.push(<path key="dome" d={`M ${L} ${JOIN} A ${RX} ${RX} 0 0 1 ${R} ${JOIN}`} fill="none" stroke="var(--ink)" strokeWidth={3} />);
+      }
+      if (fig.h) heightLabel('hv', L, JOIN, BOT, fig.h);
+      baseLabel(BOT);
+      H = BOT + RY + 30;
+    } else if (fig.shape === 'cone-hemisphere') {
+      const JOIN = 24 + RX, TIP = JOIN + 130;
+      nodes.push(<path key="dome" d={`M ${L} ${JOIN} A ${RX} ${RX} 0 0 1 ${R} ${JOIN}`} fill="none" stroke="var(--ink)" strokeWidth={3} />);
+      nodes.push(...ring('j', JOIN, RX, RY, false));
+      nodes.push(figLine('s1', L, JOIN, CX, TIP), figLine('s2', R, JOIN, CX, TIP));
+      if (fig.r) radiusAt('r', JOIN, RX, fig.r, JOIN - 10, 'r');
+      if (fig.coneH) {
+        nodes.push(figLine('ch', CX, JOIN, CX, TIP, dashed));
+        nodes.push(<path key="ra" d={`M ${CX} ${JOIN + 12} L ${CX - 12} ${JOIN + 12} L ${CX - 12} ${JOIN}`} fill="none" stroke="var(--ink)" strokeWidth={2} />);
+        heightLabel('chv', L, JOIN, TIP, fig.coneH);
+      }
+      if (fig.slant) nodes.push(figLabel('sv', (CX + R) / 2 + 14, (JOIN + TIP) / 2 + 10, fig.slant, 'start', col('slant')));
+      H = TIP + 20;
+    } else if (fig.shape === 'cylinder-cylinder') {
+      const RX2 = 40, RY2 = 12;
+      const TOP2 = 40, JOIN = 116, BOT = 216;
+      // The ledge where they meet: the wide top, all of it seen, with the
+      // narrow cylinder standing on it.
+      nodes.push(...body('c', JOIN, BOT, RX, RY));
+      nodes.push(<ellipse key="ledge" cx={CX} cy={JOIN} rx={RX} ry={RY} fill="none" stroke="var(--ink)" strokeWidth={3} />);
+      nodes.push(...body('n', TOP2, JOIN, RX2, RY2));
+      nodes.push(<ellipse key="ntop" cx={CX} cy={TOP2} rx={RX2} ry={RY2} fill="none" stroke="var(--ink)" strokeWidth={3} />);
+      if (fig.r2) radiusAt('r2', TOP2, RX2, fig.r2, TOP2 - RY2 - 8, 'r2');
+      if (fig.h2) heightLabel('h2v', CX - RX2, TOP2, JOIN, fig.h2);
+      if (fig.h) heightLabel('hv', L, JOIN, BOT, fig.h);
+      baseLabel(BOT);
+      H = BOT + RY + 30;
+    } else {
+      // tube
+      const TOP = 52, BOT = 205, RXI = 38, RYI = 11;
+      nodes.push(...body('c', TOP, BOT, RX, RY));
+      nodes.push(<ellipse key="top" cx={CX} cy={TOP} rx={RX} ry={RY} fill="none" stroke="var(--ink)" strokeWidth={3} />);
+      nodes.push(<ellipse key="hole" cx={CX} cy={TOP} rx={RXI} ry={RYI} fill="none" stroke="var(--ink)" strokeWidth={3} />);
+      if (fig.inner) radiusAt('in', TOP, RXI, fig.inner, TOP - RY - 8, 'inner');
+      if (fig.thickness) {
+        nodes.push(figLine('tk', CX + RXI, TOP, R, TOP, { strokeWidth: 2 }));
+        nodes.push(figLabel('tkv', R + 10, TOP + 6, fig.thickness, 'start', col('thickness')));
+      }
+      if (fig.h) heightLabel('hv', L, TOP, BOT, fig.h);
+      baseLabel(BOT);
+      H = BOT + RY + 30;
+    }
+    return solidWrap(nodes, 260, H, 'cs', fig, shown);
+  }
+
+
   if (fig.type === 'cone') {
     const RX = 62, RY = 17, CX = 105, BASE = 178, APEX_Y = 28;
     const L = CX - RX, R = CX + RX;
