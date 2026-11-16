@@ -152,7 +152,14 @@ export const generateSequenceIsInSequenceGeometric = (options = {}) => {
     workingOut: workingLines.join(NL) + NL +
       (isIn
         ? `\\text{keep multiplying by } ${r} \\text{ until we reach } ${target}`
-        : `\\text{${target} lies strictly between } a_{${stopAt - 1}} \\text{ and } a_{${stopAt}} \\text{ above, so it's never reached}`),
+        // Increasing terms: lying between two neighbours settles it. With a
+        // negative ratio the terms alternate, so "between two neighbours"
+        // proves nothing (an earlier term can sit there too): the reason is
+        // that it is none of the terms listed and later ones only get
+        // further from zero.
+        : r > 0
+          ? `${target} \\text{ lies strictly between } a_{${stopAt - 1}} \\text{ and } a_{${stopAt}} \\text{ above, so it's never reached}`
+          : `${target} \\text{ is none of these, and later terms are further from } 0 \\text{, so it's never reached}`),
     visualization: null,
     metadata: { topic: 'sequences-geometric-is-term', difficulty },
   };

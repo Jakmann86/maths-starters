@@ -128,4 +128,11 @@ describe('audit regressions: working out', () => {
       expect(Number(/a_\{(\d+)\}$/.exec(q.questionMath)[1])).toBeGreaterThan(5);
     }));
   });
+
+  it('D042 sequences-geometric-is-term: an alternating sequence is not argued by "between two terms"', () => {
+    draws('sequences-geometric-is-term', 'stretch').forEach((q) => {
+      expect(q.workingOut).not.toMatch(/lies strictly between/);
+      expect(q.workingOut).toMatch(/is none of these/);
+    });
+  });
 });
