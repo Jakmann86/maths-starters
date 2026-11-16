@@ -157,4 +157,10 @@ describe('audit regressions: working out', () => {
       expect(q.workingOut).not.toMatch(/[+-] 0\)|\\div 1(?!\d)|\.00|(^|[^\d])1n|[+-] 0 =/);
     }));
   });
+
+  it('D046 distance-between-points: only a negative difference is bracketed', () => {
+    ['foundation', 'core', 'stretch'].forEach((band) => draws('distance-between-points', band).forEach((q) => {
+      expect(q.workingOut).not.toMatch(/\(\d+\)\^2/);
+    }));
+  });
 });

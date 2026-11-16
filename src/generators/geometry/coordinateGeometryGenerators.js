@@ -130,6 +130,10 @@ function triplePair(spread, maxLeg = 99, reach = Infinity) {
 
 /* ------------------------------------------------------------ 12B distance */
 
+// A difference being squared: brackets only where the sign needs them,
+// (-6)^2 but 8^2.
+const sq = (n) => (n < 0 ? `(${n})^2` : `${n}^2`);
+
 export const generateDistanceBetweenPoints = (options = {}) => {
   const { difficulty = 'core' } = options;
 
@@ -151,7 +155,7 @@ export const generateDistanceBetweenPoints = (options = {}) => {
         questionMathCompact: true,
         answer: exact,
         workingOut: [
-          `AB^2 = (${dx})^2 + (${dy})^2`,
+          `AB^2 = ${sq(dx)} + ${sq(dy)}`,
           `AB^2 = ${d2}`,
           `AB = ${exact}`,
         ].join(NL),
@@ -165,7 +169,7 @@ export const generateDistanceBetweenPoints = (options = {}) => {
   const dy = b[1] - a[1];
   const d = Math.round(Math.sqrt(dx * dx + dy * dy));
   const working = [
-    `AB^2 = (${dx})^2 + (${dy})^2`,
+    `AB^2 = ${sq(dx)} + ${sq(dy)}`,
     `AB^2 = ${dx * dx} + ${dy * dy} = ${dx * dx + dy * dy}`,
     `AB = ${d}`,
   ].join(NL);
