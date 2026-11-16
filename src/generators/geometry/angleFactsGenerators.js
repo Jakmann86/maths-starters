@@ -243,7 +243,7 @@ export const generateTriangleAngleSum = (options = {}) => {
       answer: `x = ${x}`,
       workingOut: [
         `${exprs.join(' + ')} = 180 \\text{ (angle sum of a triangle)}`,
-        `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = 180`,
+        `${formatLinear(totalM, totalC)} = 180`,
         `x = ${x}`,
       ].join(NL),
       visualization: { type: 'triangle', labels: exprs, big: true },
