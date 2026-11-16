@@ -76,4 +76,11 @@ describe('audit regressions: working out', () => {
       ls.forEach((l, i) => { if (i) expect(l).not.toBe(ls[i - 1]); });
     });
   });
+
+  it('D019 exponential-graphs: no repeated working line', () => {
+    ['foundation', 'core'].forEach((band) => draws('exponential-graphs', band, 800).forEach((q) => {
+      const ls = lines(q);
+      ls.forEach((l, i) => { if (i) expect(l).not.toBe(ls[i - 1]); });
+    }));
+  });
 });

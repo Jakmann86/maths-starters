@@ -256,7 +256,7 @@ export function checkExponential(q, band) {
       `f(${n}) = ${kx}${b}^{${n}}${cs}`,
       `= ${kx}${n < 0 ? `\\frac{1}{${b ** -n}}` : b ** n}${cs}`,
       `= ${fracTex(num, den)}`,
-    ].join('|'), 'working: substitute, the power, the value');
+    ].filter((l, i, all) => i === 0 || l !== all[i - 1]).join('|'), 'working: substitute, the power, the value');
     return { kind: n === 0 ? 'f(0)' : n > 0 ? 'positive x' : 'negative x' };
   }
   must(q.instruction === 'The graph has the equation given. Find k and c', 'instruction');
@@ -274,10 +274,10 @@ export function checkExponential(q, band) {
   must(P.y !== 0 && fig.hug === true, 'the y-intercept off the origin; the graph hugs, beside its equation');
   must(inWin([fig.window[0], c]), 'the asymptote on the grid');
   must(q.answer === `k = ${P.y - asym.c}, \\ c = ${asym.c}`, `answer ${q.answer}`);
-  const cs = c < 0 ? `- ${-c}` : `+ ${c}`;
+  const cs = c === 0 ? '' : c < 0 ? ` - ${-c}` : ` + ${c}`;
   must(lines(q.workingOut).join('|') === [
     `\\text{asymptote } y = ${c}, \\text{ so } c = ${c}`,
-    `x = 0: \\ ${k + c} = k \\times 1 ${cs}, \\text{ so } k = ${k}`,
+    `x = 0: \\ ${k + c} = k \\times 1${cs}, \\text{ so } k = ${k}`,
     q.answer,
   ].join('|'), 'working: c from the asymptote, k from the y-intercept');
   return { kind: `base ${b}` };

@@ -325,7 +325,9 @@ export const generateExponentialGraphs = (options = {}) => {
         `f(${n}) = ${k === 1 ? '' : `${k} \\times `}${b}^{${n}}${c ? ` ${signed(c)}` : ''}`,
         `= ${k === 1 ? '' : `${k} \\times `}${power}${c ? ` ${signed(c)}` : ''}`,
         `= ${value}`,
-      ].join(NL),
+        // f(x) = b^x alone has nothing left to combine: its evaluated power is
+        // already the value, so that line is printed once.
+      ].filter((l, i, all) => i === 0 || l !== all[i - 1]).join(NL),
       metadata: { topic, difficulty },
     };
   }
@@ -342,7 +344,7 @@ export const generateExponentialGraphs = (options = {}) => {
     answer: `k = ${k}, \\ c = ${c}`,
     workingOut: [
       `\\text{asymptote } y = ${c}, \\text{ so } c = ${c}`,
-      `x = 0: \\ ${top} = k \\times 1 ${signed(c)}, \\text{ so } k = ${k}`,
+      `x = 0: \\ ${top} = k \\times 1${c ? ` ${signed(c)}` : ''}, \\text{ so } k = ${k}`,
       `k = ${k}, \\ c = ${c}`,
     ].join(NL),
     visualization: {

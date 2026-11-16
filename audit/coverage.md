@@ -63,60 +63,60 @@ quadratic-symmetry | stretch | Clean | 300 | 600/1200 | 3 |  |  |
 quadratic-find-function | foundation | Clean | 300 | 0/600 | 3 |  |  | 
 quadratic-find-function | core | Fixed | 300 | 0/1500 | 3 |  |  | D004
 quadratic-find-function | stretch | Fixed | 300 | 0/1500 | 3 |  |  | D004
-solve-linear-equations | foundation | Not covered | 300 | 900/600 | 0 |  |  | 
-solve-linear-equations | core | Not covered | 300 | 1500/900 | 0 |  |  | 
-solve-linear-equations | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
-solve-linear-both-sides | foundation | Not covered | 300 | 1053/753 | 0 |  |  | 
-solve-linear-both-sides | core | Not covered | 300 | 1004/704 | 0 |  |  | 
-solve-linear-both-sides | stretch | Not covered | 300 | 1005/705 | 0 |  |  | 
-solve-equations-fractions | foundation | Not covered | 300 | 900/600 | 0 |  |  | 
-solve-equations-fractions | core | Not covered | 300 | 1020/720 | 0 |  |  | 
-solve-equations-fractions | stretch | Not covered | 300 | 967/667 | 0 |  |  | 
-solve-fractional-coefficients | foundation | Not covered | 300 | 1500/900 | 0 |  |  | 
-solve-fractional-coefficients | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-solve-fractional-coefficients | stretch | Not covered | 300 | 1303/1003 | 0 |  |  | 
-solve-power-equations | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-solve-power-equations | core | Not covered | 300 | 0/600 | 0 |  |  | 
-solve-power-equations | stretch | Not covered | 300 | 1200/600 | 0 |  |  | 
-forming-equations | foundation | Not covered | 300 | 900/900 | 0 |  |  | 
-forming-equations | core | Not covered | 300 | 900/900 | 0 |  |  | 
-forming-equations | stretch | Not covered | 300 | 1200/1200 | 0 |  |  | 
-inequality-list-values | foundation | Not covered | 300 | 0/1196 | 0 |  |  | 
-inequality-list-values | core | Not covered | 300 | 0/1917 | 0 |  |  | 
-inequality-list-values | stretch | Not covered | 300 | 0/1716 | 0 |  |  | 
-transforming-graphs | foundation | Not covered | 300 | 0/900 | 0 |  |  | 
-transforming-graphs | core | Not covered | 300 | 0/988 | 0 |  |  | 
-transforming-graphs | stretch | Not covered | 300 | 0/1200 | 0 |  |  | 
-cubic-graphs | foundation | Not covered | 300 | 300/2700 | 0 |  |  | 
-cubic-graphs | core | Not covered | 300 | 300/1800 | 0 |  |  | 
-cubic-graphs | stretch | Not covered | 300 | 0/1500 | 0 |  |  | 
-tangent-gradient | foundation | Not covered | 300 | 300/300 | 0 |  |  | 
-tangent-gradient | core | Not covered | 300 | 300/300 | 0 |  |  | 
-tangent-gradient | stretch | Not covered | 300 | 300/1200 | 0 |  |  | 
-exponential-graphs | foundation | Not covered | 300 | 600/900 | 0 |  |  | 
-exponential-graphs | core | Not covered | 300 | 600/900 | 0 |  |  | 
-exponential-graphs | stretch | Not covered | 300 | 1200/1800 | 0 |  |  | 
-interval-list-elements | foundation | Not covered | 300 | 0/2118 | 0 |  |  | 
-interval-list-elements | core | Not covered | 300 | 0/2977 | 0 |  |  | 
-interval-list-elements | stretch | Not covered | 300 | 0/1500 | 0 |  |  | 
-interval-write | foundation | Not covered | 300 | 0/1200 | 0 |  |  | 
-interval-write | core | Not covered | 300 | 0/900 | 0 |  |  | 
-interval-write | stretch | Not covered | 300 | 0/885 | 0 |  |  | 
-solve-linear-inequalities | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-solve-linear-inequalities | core | Not covered | 300 | 0/900 | 0 |  |  | 
-solve-linear-inequalities | stretch | Not covered | 300 | 0/900 | 0 |  |  | 
-simplify-algebraic-fractions | foundation | Not covered | 300 | 798/600 | 0 |  |  | 
-simplify-algebraic-fractions | core | Not covered | 300 | 900/600 | 0 |  |  | 
-simplify-algebraic-fractions | stretch | Not covered | 300 | 838/600 | 0 |  |  | 
-simplify-fractions-factorising | foundation | Not covered | 300 | 900/600 | 0 |  |  | 
-simplify-fractions-factorising | core | Not covered | 300 | 900/600 | 0 |  |  | 
-simplify-fractions-factorising | stretch | Not covered | 300 | 900/600 | 0 |  |  | 
-multiply-algebraic-fractions | foundation | Not covered | 300 | 1147/900 | 0 |  |  | 
-multiply-algebraic-fractions | core | Not covered | 300 | 1187/900 | 0 |  |  | 
-multiply-algebraic-fractions | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
-divide-algebraic-fractions | foundation | Not covered | 300 | 1166/900 | 0 |  |  | 
-divide-algebraic-fractions | core | Not covered | 300 | 1188/900 | 0 |  |  | 
-divide-algebraic-fractions | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
+solve-linear-equations | foundation | Clean | 300 | 900/600 | 3 |  |  | 
+solve-linear-equations | core | Fixed | 300 | 1500/900 | 3 |  |  | D011
+solve-linear-equations | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
+solve-linear-both-sides | foundation | Clean | 300 | 1053/753 | 3 |  |  | 
+solve-linear-both-sides | core | Fixed | 300 | 1004/704 | 3 |  |  | D012
+solve-linear-both-sides | stretch | Clean | 300 | 1005/705 | 3 |  |  | 
+solve-equations-fractions | foundation | Clean | 300 | 900/600 | 3 |  |  | 
+solve-equations-fractions | core | Needs Joakim | 300 | 1020/720 | 3 |  |  | D013, D014
+solve-equations-fractions | stretch | Clean | 300 | 967/667 | 3 |  |  | 
+solve-fractional-coefficients | foundation | Fixed | 300 | 1500/900 | 3 |  |  | D015
+solve-fractional-coefficients | core | Fixed | 300 | 1200/900 | 3 |  |  | D015
+solve-fractional-coefficients | stretch | Fixed | 300 | 1303/1003 | 3 |  |  | D015
+solve-power-equations | foundation | Clean | 300 | 0/600 | 3 |  |  | 
+solve-power-equations | core | Needs Joakim | 300 | 0/600 | 3 |  |  | D016, D017
+solve-power-equations | stretch | Needs Joakim | 300 | 1200/600 | 3 |  |  | D016, D017
+forming-equations | foundation | Clean | 300 | 900/900 | 3 |  |  | 
+forming-equations | core | Clean | 300 | 900/900 | 3 |  |  | 
+forming-equations | stretch | Clean | 300 | 1200/1200 | 3 |  |  | 
+inequality-list-values | foundation | Clean | 300 | 0/1196 | 3 |  |  | 
+inequality-list-values | core | Clean | 300 | 0/1917 | 3 |  |  | 
+inequality-list-values | stretch | Clean | 300 | 0/1716 | 3 |  |  | 
+transforming-graphs | foundation | Clean | 300 | 0/900 | 3 |  |  | 
+transforming-graphs | core | Clean | 300 | 0/988 | 3 |  |  | 
+transforming-graphs | stretch | Clean | 300 | 0/1200 | 3 |  |  | 
+cubic-graphs | foundation | Clean | 300 | 300/2700 | 3 |  |  | 
+cubic-graphs | core | Clean | 300 | 300/1800 | 3 |  |  | 
+cubic-graphs | stretch | Clean | 300 | 0/1500 | 3 |  |  | 
+tangent-gradient | foundation | Clean | 300 | 300/300 | 3 |  |  | 
+tangent-gradient | core | Clean | 300 | 300/300 | 3 |  |  | 
+tangent-gradient | stretch | Clean | 300 | 300/1200 | 3 |  |  | 
+exponential-graphs | foundation | Fixed | 300 | 600/900 | 3 |  |  | D019
+exponential-graphs | core | Fixed | 300 | 600/900 | 3 |  |  | D019
+exponential-graphs | stretch | Fixed | 300 | 1200/1800 | 3 |  |  | D020
+interval-list-elements | foundation | Clean | 300 | 0/2118 | 3 |  |  | 
+interval-list-elements | core | Clean | 300 | 0/2977 | 3 |  |  | 
+interval-list-elements | stretch | Clean | 300 | 0/1500 | 3 |  |  | 
+interval-write | foundation | Clean | 300 | 0/1200 | 3 |  |  | 
+interval-write | core | Clean | 300 | 0/900 | 3 |  |  | 
+interval-write | stretch | Clean | 300 | 0/885 | 3 |  |  | 
+solve-linear-inequalities | foundation | Clean | 300 | 0/600 | 3 |  |  | 
+solve-linear-inequalities | core | Fixed | 300 | 0/900 | 3 |  |  | D018
+solve-linear-inequalities | stretch | Clean | 300 | 0/900 | 3 |  |  | 
+simplify-algebraic-fractions | foundation | Clean | 300 | 798/600 | 3 |  |  | 
+simplify-algebraic-fractions | core | Clean | 300 | 900/600 | 3 |  |  | 
+simplify-algebraic-fractions | stretch | Clean | 300 | 838/600 | 3 |  |  | 
+simplify-fractions-factorising | foundation | Clean | 300 | 900/600 | 3 |  |  | 
+simplify-fractions-factorising | core | Clean | 300 | 900/600 | 3 |  |  | 
+simplify-fractions-factorising | stretch | Clean | 300 | 900/600 | 3 |  |  | 
+multiply-algebraic-fractions | foundation | Clean | 300 | 1147/900 | 3 |  |  | 
+multiply-algebraic-fractions | core | Clean | 300 | 1187/900 | 3 |  |  | 
+multiply-algebraic-fractions | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
+divide-algebraic-fractions | foundation | Clean | 300 | 1166/900 | 3 |  |  | 
+divide-algebraic-fractions | core | Clean | 300 | 1188/900 | 3 |  |  | 
+divide-algebraic-fractions | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
 add-algebraic-fractions | foundation | Not covered | 300 | 973/673 | 0 |  |  | 
 add-algebraic-fractions | core | Not covered | 300 | 965/665 | 0 |  |  | 
 add-algebraic-fractions | stretch | Not covered | 300 | 967/667 | 0 |  |  | 
