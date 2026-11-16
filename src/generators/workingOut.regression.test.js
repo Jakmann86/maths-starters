@@ -163,4 +163,11 @@ describe('audit regressions: working out', () => {
       expect(q.workingOut).not.toMatch(/\(\d+\)\^2/);
     }));
   });
+
+  it('D047 equation-of-a-line: a gradient is not printed equal to itself', () => {
+    draws('equation-of-a-line', 'foundation', 800).forEach((q) => {
+      const m = /^m = (\\frac\{\d+\}\{\d+\}) = (.*)$/.exec(lines(q)[0]);
+      if (m) expect(m[2]).not.toBe(m[1]);
+    });
+  });
 });

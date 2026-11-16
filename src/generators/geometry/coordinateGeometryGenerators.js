@@ -483,7 +483,9 @@ export const generateEquationOfALine = (options = {}) => {
       instruction: 'Find the equation of this line',
       answer: lineEquation(num, den, c),
       workingOut: [
-        den === 1 ? `m = ${num}` : `m = \\frac{${num}}{${den}} = ${frac(num, den)}`,
+        // rise over run, then its tidy form only where that differs (a
+        // negative): never "m = 2/3 = 2/3".
+        den === 1 ? `m = ${num}` : num > 0 ? `m = ${frac(num, den)}` : `m = \\frac{${num}}{${den}} = ${frac(num, den)}`,
         `c = ${c}`,
         lineEquation(num, den, c),
       ].join(NL),
