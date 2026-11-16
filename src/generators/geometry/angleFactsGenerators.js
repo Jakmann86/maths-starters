@@ -196,7 +196,7 @@ export const generateVerticallyOpposite = (options = {}) => {
       answer: `x = ${x}`,
       workingOut: [
         `${expr1} = ${expr2} \\text{ (vertically opposite angles are equal)}`,
-        `${m1 - m2}x = ${c2 - c1}`,
+        `${m1 - m2 === 1 ? '' : m1 - m2 === -1 ? '-' : m1 - m2}x = ${c2 - c1}`,
         `x = ${x}`,
       ].join(NL),
       visualization: { type: 'angle-rays', rays, gapDegrees, wrap: true, labels, big: true },
