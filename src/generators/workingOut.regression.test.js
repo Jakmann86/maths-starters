@@ -39,4 +39,11 @@ describe('audit regressions: working out', () => {
       expect(q.workingOut).not.toMatch(/- 0(\n|$)/);
     });
   });
+
+  it('D012 solve-linear-both-sides: a zero constant is not printed as "+ 0"', () => {
+    draws('solve-linear-both-sides', 'core', 1500).forEach((q) => {
+      expect(q.questionMath).not.toMatch(/\+ 0(?![\d.])/);
+      expect(q.workingOut).not.toMatch(/\+ 0(?![\d.])/);
+    });
+  });
 });

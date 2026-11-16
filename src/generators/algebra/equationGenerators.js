@@ -47,6 +47,8 @@ const formatSolution = (num, den) => {
 };
 
 const constTerm = (b) => (b >= 0 ? `+ ${b}` : `- ${-b}`);       // "+ 5" / "- 5"
+// cx + d as one side of an equation, with a zero constant left unwritten.
+const side = (c, d) => (d === 0 ? xTerm(c) : `${xTerm(c)} ${constTerm(d)}`);
 const xTerm = (c) => (c === 1 ? 'x' : c === -1 ? '-x' : `${c}x`); // hides ±1
 const coefStr = (c) => (c === 1 ? '' : `${c}`);                   // "" for 1, else n
 
@@ -153,9 +155,9 @@ const bothCore = () => {
   const d = _.random(-8, 12);
   const num = d - a * p;
   return {
-    questionMath: `${a}(x ${constTerm(p)}) = ${xTerm(c)} ${constTerm(d)}`,
+    questionMath: `${a}(x ${constTerm(p)}) = ${side(c, d)}`,
     answer: formatSolution(num, a - c),
-    steps: [`${a}x ${constTerm(a * p)} = ${xTerm(c)} ${constTerm(d)}`, `${xTerm(a - c)} = ${num}`, formatSolution(num, a - c)],
+    steps: [`${a}x ${constTerm(a * p)} = ${side(c, d)}`, `${xTerm(a - c)} = ${num}`, formatSolution(num, a - c)],
   };
 };
 
