@@ -65,7 +65,7 @@ export const generateAnglesOnALine = (options = {}) => {
     const totalC = cs[0] + cs[1];
     steps = [
       `${exprs[0]} + ${exprs[1]} = 180 \\text{ (angles on a line)}`,
-      `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = 180`,
+      `${formatLinear(totalM, totalC)} = 180`,
       `x = ${x}`,
     ];
   } else {
