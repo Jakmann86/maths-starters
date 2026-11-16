@@ -53,7 +53,8 @@ export const generateSolveQuadraticRoots = (options = {}) => {
       instruction: 'Solve for x',
       questionMath: `${a === 1 ? '' : a}x^2 ${d < 0 ? '-' : '+'} ${Math.abs(d)} = ${e}`,
       answer: `x = \\pm ${r}`,
-      workingOut: `${a === 1 ? '' : a}x^2 = ${e - d}${NL}x^2 = ${r * r}${NL}x = \\pm ${r}`,
+      // With a = 1 the first line is already x^2 = r^2: print it once.
+      workingOut: `${a === 1 ? '' : `${a}x^2 = ${e - d}${NL}`}x^2 = ${r * r}${NL}x = \\pm ${r}`,
       metadata: { topic: 'solve-quadratic-roots', difficulty },
     };
   }
