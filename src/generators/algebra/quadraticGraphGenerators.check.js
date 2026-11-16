@@ -299,7 +299,7 @@ function checkFindFunction(q, band) {
   // The given point substituted, into the general form the working starts from.
   const sub = (x, y) => {
     must(w[0].startsWith('y = a'), 'working starts from the general form');
-    must(w[1] === `${y} = ${rhs(w[0]).replace(/x/g, `(${x})`)}`, 'working substitutes the given point');
+    must(w[1] === `${y} = ${rhs(w[0]).replace(/x/g, `${x}`)}`, 'working substitutes the given point');
   };
 
   if (band === 'foundation') {

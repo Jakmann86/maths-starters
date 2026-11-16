@@ -393,7 +393,11 @@ export const generateQuadraticSymmetry = (options = {}) => {
 // a(x - h)^2 + k with a still unknown, and the same with a value put in for
 // x (bracketed, so the working line reads back unambiguously).
 const tpBody = (h, k) => `a${factor(h)}^2 ${k < 0 ? '-' : '+'} ${Math.abs(k)}`;
-const at0 = (body, x) => body.replace(/x/g, `(${x})`);
+// The point's x put in for x. Every x here opens a bracket, (x - h), so the
+// number needs no bracket of its own: a(0 + 3)^2 and a(-2 - 3)^2.
+const at0 = (body, x) => body.replace(/x/g, `${x}`);
+// A coefficient of a, with the 1 left unwritten: 9a, a, never 1a.
+const coefA = (n) => (n === 1 ? 'a' : n === -1 ? '-a' : `${n}a`);
 
 export const generateQuadraticFindFunction = (options = {}) => {
   const { difficulty = 'core' } = options;
@@ -450,7 +454,7 @@ export const generateQuadraticFindFunction = (options = {}) => {
       workingOut: [
         `y = ${tpBody(h, k)}`,
         `${d} = ${at0(tpBody(h, k), 0)}`,
-        `${d} = ${h * h}a ${k < 0 ? '-' : '+'} ${Math.abs(k)}`,
+        `${d} = ${coefA(h * h)} ${k < 0 ? '-' : '+'} ${Math.abs(k)}`,
         `a = ${a}`,
         `y = ${turning(a, h, k)}`,
       ].join(NL),
@@ -477,7 +481,7 @@ export const generateQuadraticFindFunction = (options = {}) => {
         workingOut: [
           `y = ${tpBody(h, k)}`,
           `${y} = ${at0(tpBody(h, k), x)}`,
-          `${y} = ${(x - h) ** 2}a ${k < 0 ? '-' : '+'} ${Math.abs(k)}`,
+          `${y} = ${coefA((x - h) ** 2)} ${k < 0 ? '-' : '+'} ${Math.abs(k)}`,
           `a = ${a}`,
           `y = ${turning(a, h, k)}`,
         ].join(NL),
@@ -501,7 +505,7 @@ export const generateQuadraticFindFunction = (options = {}) => {
       workingOut: [
         `y = a${factored(1, p, q)}`,
         `${y} = ${at0(`a${factored(1, p, q)}`, x)}`,
-        `${y} = ${(x - p) * (x - q)}a`,
+        `${y} = ${coefA((x - p) * (x - q))}`,
         `a = ${a}`,
         `y = ${quad(a, B, C)}`,
       ].join(NL),
