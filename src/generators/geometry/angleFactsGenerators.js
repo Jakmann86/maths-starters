@@ -477,7 +477,7 @@ export const generateAnglesProblemSolving = (options = {}) => {
         `y = 180^\\circ - ${p}^\\circ \\text{ (angles on a line)}`,
         `y = ${y}^\\circ`,
         `${exprs[0]} + ${exprs[1]} = 180^\\circ - ${y}^\\circ \\text{ (angle sum of a triangle)}`,
-        `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = ${p}`,
+        `${formatLinear(totalM, totalC)} = ${p}`,
         `x = ${x}`,
       ].join(NL),
       visualization: { type: 'triangle', labels: [exprs[0], '', exprs[1]], exteriorLabel: `${p}^\\circ`, big: true },
