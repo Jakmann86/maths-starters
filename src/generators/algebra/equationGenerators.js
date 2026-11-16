@@ -101,7 +101,9 @@ const linCore = () => {
   return {
     questionMath: `${b} - ${a}x = ${c}`,
     answer: formatSolution(b - c, a),
-    steps: [`${a}x = ${b} - ${c}`, `${a}x = ${b - c}`, formatSolution(b - c, a)],
+    // A negative right-hand side is bracketed (7 - (-1), never 7 - -1), and
+    // subtracting 0 is not a step.
+    steps: [...(c === 0 ? [] : [`${a}x = ${b} - ${c < 0 ? `(${c})` : c}`]), `${a}x = ${b - c}`, formatSolution(b - c, a)],
   };
 };
 

@@ -32,4 +32,11 @@ describe('audit regressions: working out', () => {
       expect(q.workingOut).not.toMatch(/\(\(/);
     }));
   });
+
+  it('D011 solve-linear-equations: no "- -" and no "- 0" in the working', () => {
+    draws('solve-linear-equations', 'core', 1000).forEach((q) => {
+      expect(q.workingOut).not.toMatch(/- -/);
+      expect(q.workingOut).not.toMatch(/- 0(\n|$)/);
+    });
+  });
 });
