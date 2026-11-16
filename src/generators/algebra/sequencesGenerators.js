@@ -237,9 +237,13 @@ export const generateSequenceFindNthTermArithmetic = (options = {}) => {
     answer: formatArithmeticRule(d, c),
     workingOut:
       (givenAsTerms
-        ? `\\text{common difference } d = ${terms[1]} - ${terms[0]} = ${d}`
+        ? `\\text{common difference } d = ${terms[1]} - ${terms[0] < 0 ? `(${terms[0]})` : terms[0]} = ${d}`
         : `\\text{common difference } d = ${d}`) + NL +
       `\\text{first term } a_1 = ${firstTerm}` + NL +
+      // a_1 = d + c, so the constant is the first term less d: the step the
+      // rule cannot be written without (the Stretch use-nth-term working
+      // prints the same line).
+      `c = ${firstTerm} - ${d < 0 ? `(${d})` : d} = ${c}` + NL +
       formatArithmeticRule(d, c),
     metadata: { topic: 'sequences-arithmetic-nth-term', difficulty },
   };

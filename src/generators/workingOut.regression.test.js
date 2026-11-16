@@ -102,4 +102,11 @@ describe('audit regressions: working out', () => {
       });
     });
   });
+
+  it('D036 sequences-arithmetic-nth-term: no "- -", and the constant is derived', () => {
+    ['foundation', 'core', 'stretch'].forEach((band) => draws('sequences-arithmetic-nth-term', band).forEach((q) => {
+      expect(q.workingOut).not.toMatch(/- -/);
+      expect(lines(q).at(-2)).toMatch(/^c = -?\d+ - (\d+|\(-\d+\)) = -?\d+$/);
+    }));
+  });
 });
