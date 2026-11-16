@@ -1049,7 +1049,7 @@ export const generateQuadrilateralAngleSum = (options = {}) => {
   return {
     instruction: 'Form an equation and solve it to find x',
     answer: `x = ${x}`,
-    workingOut: `\\text{angles in a quadrilateral add to } 360^\\circ${NL}${sumC}x + ${sumD} = 360${NL}${sumC}x = ${360 - sumD}${NL}x = ${x}`,
+    workingOut: `\\text{angles in a quadrilateral add to } 360^\\circ${NL}${formatLinear(sumC, sumD)} = 360${NL}${sumC}x = ${360 - sumD}${NL}x = ${x}`,
     visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors(), big: true },
     metadata: { topic: 'quadrilateral-angle-sum', difficulty },
   };
