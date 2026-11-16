@@ -206,7 +206,9 @@ const fracCore = () => {
   return {
     questionMath: `\\frac{x ${constTerm(p)}}{${c}} = \\frac{x ${constTerm(q)}}{${d}}`,
     answer: formatSolution(num, d - c),
-    steps: [`${d}(x ${constTerm(p)}) = ${c}(x ${constTerm(q)})`, `${xTerm(d - c)} = ${num}`, formatSolution(num, d - c)],
+    // Cross-multiply, expand, collect: the expanded line is the step between
+    // the brackets and the collected x-term.
+    steps: [`${d}(x ${constTerm(p)}) = ${c}(x ${constTerm(q)})`, `${d}x ${constTerm(d * p)} = ${c}x ${constTerm(c * q)}`, `${xTerm(d - c)} = ${num}`, formatSolution(num, d - c)],
   };
 };
 

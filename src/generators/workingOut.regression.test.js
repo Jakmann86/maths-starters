@@ -46,4 +46,12 @@ describe('audit regressions: working out', () => {
       expect(q.workingOut).not.toMatch(/\+ 0(?![\d.])/);
     });
   });
+
+  it('D013 solve-equations-fractions: Core shows the expanded line after cross-multiplying', () => {
+    draws('solve-equations-fractions', 'core').forEach((q) => {
+      const ls = lines(q);
+      expect(ls[0]).toMatch(/^\d\(x [+-] \d+\) = \d\(x [+-] \d+\)$/);
+      expect(ls[1]).toMatch(/^\dx [+-] \d+ = \dx [+-] \d+$/);
+    });
+  });
 });
