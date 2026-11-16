@@ -117,60 +117,60 @@ multiply-algebraic-fractions | stretch | Clean | 300 | 1200/900 | 3 |  |  |
 divide-algebraic-fractions | foundation | Clean | 300 | 1166/900 | 3 |  |  | 
 divide-algebraic-fractions | core | Clean | 300 | 1188/900 | 3 |  |  | 
 divide-algebraic-fractions | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
-add-algebraic-fractions | foundation | Not covered | 300 | 973/673 | 0 |  |  | 
-add-algebraic-fractions | core | Not covered | 300 | 965/665 | 0 |  |  | 
-add-algebraic-fractions | stretch | Not covered | 300 | 967/667 | 0 |  |  | 
-pythagoras-hypotenuse | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-pythagoras-hypotenuse | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-pythagoras-hypotenuse | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
-pythagoras-missing-side | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-pythagoras-missing-side | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-pythagoras-missing-side | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
-pythagoras-converse | foundation | Not covered | 300 | 600/600 | 0 |  |  | 
-pythagoras-converse | core | Not covered | 300 | 600/762 | 0 |  |  | 
-pythagoras-converse | stretch | Not covered | 300 | 1038/1338 | 0 |  |  | 
-pythagoras-isosceles | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-pythagoras-isosceles | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-pythagoras-isosceles | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
-pythagoras-3d | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-pythagoras-3d | core | Not covered | 300 | 1200/1200 | 0 |  |  | 
-pythagoras-3d | stretch | Not covered | 300 | 1220/1200 | 0 |  |  | 
-sohcahtoa-find-side | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-sohcahtoa-find-side | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-sohcahtoa-find-side | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
-sohcahtoa-find-angle | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-sohcahtoa-find-angle | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-sohcahtoa-find-angle | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
-sine-rule | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-sine-rule | core | Not covered | 300 | 1178/1039 | 0 |  |  | 
-sine-rule | stretch | Not covered | 300 | 300/1500 | 0 |  |  | 
-cosine-rule | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-cosine-rule | core | Not covered | 300 | 600/600 | 0 |  |  | 
-cosine-rule | stretch | Not covered | 300 | 0/688 | 0 |  |  | 
-triangle-area-sine | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-triangle-area-sine | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-triangle-area-sine | stretch | Not covered | 300 | 300/1200 | 0 |  |  | 
-sine-cosine-mixed | foundation | Not covered | 300 | 964/818 | 0 |  |  | 
-sine-cosine-mixed | core | Not covered | 300 | 300/1500 | 0 |  |  | 
-sine-cosine-mixed | stretch | Not covered | 300 | 469/1453 | 0 |  |  | 
-similar-shapes | foundation | Not covered | 300 | 900/900 | 0 |  |  | 
-similar-shapes | core | Not covered | 300 | 900/900 | 0 |  |  | 
-similar-shapes | stretch | Not covered | 300 | 0/600 | 0 |  |  | 
-similar-triangles | foundation | Not covered | 300 | 300/600 | 0 |  |  | 
-similar-triangles | core | Not covered | 300 | 445/745 | 0 |  |  | 
-similar-triangles | stretch | Not covered | 300 | 954/1083 | 0 |  |  | 
-similar-areas | foundation | Not covered | 300 | 600/600 | 0 |  |  | 
-similar-areas | core | Not covered | 300 | 300/900 | 0 |  |  | 
-similar-areas | stretch | Not covered | 300 | 600/900 | 0 |  |  | 
-similar-volumes | foundation | Not covered | 300 | 600/600 | 0 |  |  | 
-similar-volumes | core | Not covered | 300 | 600/900 | 0 |  |  | 
-similar-volumes | stretch | Not covered | 300 | 600/900 | 0 |  |  | 
-translation | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-translation | core | Not covered | 300 | 0/600 | 0 |  |  | 
-translation | stretch | Not covered | 300 | 0/746 | 0 |  |  | 
-reflection | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-reflection | core | Not covered | 300 | 0/600 | 0 |  |  | 
-reflection | stretch | Not covered | 300 | 0/600 | 0 |  |  | 
+add-algebraic-fractions | foundation | Clean | 300 | 973/673 | 3 |  |  | 
+add-algebraic-fractions | core | Clean | 300 | 965/665 | 3 |  |  | 
+add-algebraic-fractions | stretch | Clean | 300 | 967/667 | 3 |  |  | 
+pythagoras-hypotenuse | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+pythagoras-hypotenuse | core | Needs Joakim | 300 | 1200/900 | 3 |  |  | D022
+pythagoras-hypotenuse | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
+pythagoras-missing-side | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+pythagoras-missing-side | core | Clean | 300 | 1200/900 | 3 |  |  | 
+pythagoras-missing-side | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
+pythagoras-converse | foundation | Clean | 300 | 600/600 | 3 |  |  | 
+pythagoras-converse | core | Clean | 300 | 600/762 | 3 |  |  | 
+pythagoras-converse | stretch | Clean | 300 | 1038/1338 | 3 |  |  | 
+pythagoras-isosceles | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+pythagoras-isosceles | core | Clean | 300 | 1200/900 | 3 |  |  | 
+pythagoras-isosceles | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
+pythagoras-3d | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+pythagoras-3d | core | Clean | 300 | 1200/1200 | 3 |  |  | 
+pythagoras-3d | stretch | Clean | 300 | 1220/1200 | 3 |  |  | 
+sohcahtoa-find-side | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+sohcahtoa-find-side | core | Clean | 300 | 1200/900 | 3 |  |  | 
+sohcahtoa-find-side | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
+sohcahtoa-find-angle | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+sohcahtoa-find-angle | core | Clean | 300 | 1200/900 | 3 |  |  | 
+sohcahtoa-find-angle | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
+sine-rule | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+sine-rule | core | Clean | 300 | 1178/1039 | 3 |  |  | 
+sine-rule | stretch | Clean | 300 | 300/1500 | 3 |  |  | 
+cosine-rule | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+cosine-rule | core | Clean | 300 | 600/600 | 3 |  |  | 
+cosine-rule | stretch | Clean | 300 | 0/688 | 3 |  |  | 
+triangle-area-sine | foundation | Clean | 300 | 0/600 | 3 |  |  | 
+triangle-area-sine | core | Clean | 300 | 1200/900 | 3 |  |  | 
+triangle-area-sine | stretch | Clean | 300 | 300/1200 | 3 |  |  | 
+sine-cosine-mixed | foundation | Clean | 300 | 964/818 | 3 |  |  | 
+sine-cosine-mixed | core | Clean | 300 | 300/1500 | 3 |  |  | 
+sine-cosine-mixed | stretch | Fixed | 300 | 469/1453 | 3 |  |  | D021
+similar-shapes | foundation | Clean | 300 | 900/900 | 3 |  |  | 
+similar-shapes | core | Clean | 300 | 900/900 | 3 |  |  | 
+similar-shapes | stretch | Clean | 300 | 0/600 | 3 |  |  | 
+similar-triangles | foundation | Needs Joakim | 300 | 300/600 | 3 |  |  | D023
+similar-triangles | core | Needs Joakim | 300 | 445/745 | 3 |  |  | D023
+similar-triangles | stretch | Needs Joakim | 300 | 954/1083 | 3 |  |  | D023
+similar-areas | foundation | Clean | 300 | 600/600 | 3 |  |  | 
+similar-areas | core | Clean | 300 | 300/900 | 3 |  |  | 
+similar-areas | stretch | Clean | 300 | 600/900 | 3 |  |  | 
+similar-volumes | foundation | Clean | 300 | 600/600 | 3 |  |  | 
+similar-volumes | core | Clean | 300 | 600/900 | 3 |  |  | 
+similar-volumes | stretch | Clean | 300 | 600/900 | 3 |  |  | 
+translation | foundation | Needs Joakim | 300 | 0/600 | 3 |  |  | D024
+translation | core | Needs Joakim | 300 | 0/600 | 3 |  |  | D024
+translation | stretch | Needs Joakim | 300 | 0/746 | 3 |  |  | D024
+reflection | foundation | Clean | 300 | 0/600 | 3 |  |  | 
+reflection | core | Clean | 300 | 0/600 | 3 |  |  | 
+reflection | stretch | Clean | 300 | 0/600 | 3 |  |  | 
 rotation | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
 rotation | core | Not covered | 300 | 0/600 | 0 |  |  | 
 rotation | stretch | Not covered | 300 | 0/600 | 0 |  |  | 

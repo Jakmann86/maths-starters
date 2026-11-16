@@ -83,4 +83,10 @@ describe('audit regressions: working out', () => {
       ls.forEach((l, i) => { if (i) expect(l).not.toBe(ls[i - 1]); });
     }));
   });
+
+  it('D022 sine-cosine-mixed: a hiker is not called "It"', () => {
+    draws('sine-cosine-mixed', 'stretch', 600).forEach((q) => {
+      if (q.questionText?.startsWith('A hiker')) expect(q.questionText).toMatch(/\. The hiker then walks/);
+    });
+  });
 });

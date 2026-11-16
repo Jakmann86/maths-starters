@@ -621,7 +621,7 @@ function checkCompound(q) {
   return { kind: `compound ${plan}` };
 }
 
-const BEARING = /^(A ship|A plane|A hiker|A drone) (sails|flies|walks) (\d+) km on a bearing of (\d{3})° from (port|airport|camp|base) ([A-Z]) to (a buoy|a beacon|a bridge|a mast) ([A-Z])\. It then (sails|flies|walks) (\d+) km on a bearing of (\d{3})° to (a lighthouse|a town|a hut|a farm) ([A-Z])\.$/;
+const BEARING = /^(A ship|A plane|A hiker|A drone) (sails|flies|walks) (\d+) km on a bearing of (\d{3})° from (port|airport|camp|base) ([A-Z]) to (a buoy|a beacon|a bridge|a mast) ([A-Z])\. (?:It|The hiker) then (sails|flies|walks) (\d+) km on a bearing of (\d{3})° to (a lighthouse|a town|a hut|a farm) ([A-Z])\.$/;
 const ASK_DIST = /^Find the distance ([A-Z]{2})\. Give your answer to 3 significant figures\.$/;
 const ASK_BRG = /^Find the bearing of ([A-Z]) from ([A-Z])\. Give your answer to 1 decimal place\.$/;
 

@@ -457,7 +457,7 @@ function cosineThenSine() {
 const CONTEXTS = [
   { who: 'A ship', go: 'sails', verb: 'sails', from: 'port', to1: 'a buoy', to2: 'a lighthouse', letters: ['P', 'B', 'L'] },
   { who: 'A plane', go: 'flies', verb: 'flies', from: 'airport', to1: 'a beacon', to2: 'a town', letters: ['A', 'B', 'T'] },
-  { who: 'A hiker', go: 'walks', verb: 'walks', from: 'camp', to1: 'a bridge', to2: 'a hut', letters: ['C', 'B', 'H'] },
+  { who: 'A hiker', then: 'The hiker', go: 'walks', verb: 'walks', from: 'camp', to1: 'a bridge', to2: 'a hut', letters: ['C', 'B', 'H'] },
   { who: 'A drone', go: 'flies', verb: 'flies', from: 'base', to1: 'a mast', to2: 'a farm', letters: ['D', 'M', 'F'] },
 ];
 const brg = (n) => String(n).padStart(3, '0');
@@ -519,7 +519,7 @@ function bearings() {
     }
     return {
       instruction,
-      questionText: `${c.who} ${c.go} ${l1} km on a bearing of ${brg(b1)}° from ${c.from} ${S} to ${c.to1} ${T}. It then ${c.verb} ${l2} km on a bearing of ${brg(b2)}° to ${c.to2} ${E}.`,
+      questionText: `${c.who} ${c.go} ${l1} km on a bearing of ${brg(b1)}° from ${c.from} ${S} to ${c.to1} ${T}. ${c.then ?? 'It'} then ${c.verb} ${l2} km on a bearing of ${brg(b2)}° to ${c.to2} ${E}.`,
       answer,
       ...(answerUnits ? { answerUnits } : {}),
       workingOut: steps.join(NL),
