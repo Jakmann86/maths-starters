@@ -198,7 +198,8 @@ export const generateVerticallyOpposite = (options = {}) => {
         `${expr1} = ${expr2} \\text{ (vertically opposite angles are equal)}`,
         `${m1 - m2 === 1 ? '' : m1 - m2 === -1 ? '-' : m1 - m2}x = ${c2 - c1}`,
         `x = ${x}`,
-      ].join(NL),
+        // When the coefficients differ by 1 the collected line is the answer.
+      ].filter((l, i, all) => i === 0 || l !== all[i - 1]).join(NL),
       visualization: { type: 'angle-rays', rays, gapDegrees, wrap: true, labels, big: true },
       metadata: { topic: 'vertically-opposite', difficulty },
     };
@@ -1049,7 +1050,7 @@ export const generateQuadrilateralAngleSum = (options = {}) => {
   return {
     instruction: 'Form an equation and solve it to find x',
     answer: `x = ${x}`,
-    workingOut: `\\text{angles in a quadrilateral add to } 360^\\circ${NL}${formatLinear(sumC, sumD)} = 360${NL}${sumC}x = ${360 - sumD}${NL}x = ${x}`,
+    workingOut: `\\text{angles in a quadrilateral add to } 360^\\circ${NL}${sumD === 0 ? '' : `${formatLinear(sumC, sumD)} = 360${NL}`}${sumC}x = ${360 - sumD}${NL}x = ${x}`,
     visualization: { type: 'polygon-irregular', n: 4, angles: labels, unknownIndex: mark, radiusFactors: radiusFactors(), big: true },
     metadata: { topic: 'quadrilateral-angle-sum', difficulty },
   };

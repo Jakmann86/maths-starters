@@ -89,4 +89,17 @@ describe('audit regressions: working out', () => {
       if (q.questionText?.startsWith('A hiker')) expect(q.questionText).toMatch(/\. The hiker then walks/);
     });
   });
+
+  it('D026-D033 angle facts (Stretch): no "1x", no "+ 0", no "+ -", no repeated line', () => {
+    ['vertically-opposite', 'triangle-exterior-angle', 'triangle-angle-sum', 'quadrilateral-angle-sum',
+      'parallel-line-angles', 'angles-on-a-line', 'angles-at-a-point', 'angles-problem-solving'].forEach((id) => {
+      draws(id, 'stretch', 600).forEach((q) => {
+        expect(q.workingOut).not.toMatch(/(^|[^\d])-?1x/m);
+        expect(q.workingOut).not.toMatch(/\+ 0(?![\d.])/);
+        expect(q.workingOut).not.toMatch(/\+ -/);
+        const ls = lines(q);
+        ls.forEach((l, i) => { if (i) expect(l).not.toBe(ls[i - 1]); });
+      });
+    });
+  });
 });
