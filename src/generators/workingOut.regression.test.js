@@ -109,4 +109,16 @@ describe('audit regressions: working out', () => {
       expect(lines(q).at(-2)).toMatch(/^c = -?\d+ - (\d+|\(-\d+\)) = -?\d+$/);
     }));
   });
+
+  it('D038 sequences-arithmetic-use-nth-term: no "+ 0"', () => {
+    ['foundation', 'core', 'stretch'].forEach((band) => draws('sequences-arithmetic-use-nth-term', band, 800).forEach((q) => {
+      expect(q.workingOut).not.toMatch(/[n)] [+-] 0(?![\d.])/);
+    }));
+  });
+
+  it('D039 sequences-arithmetic-is-term: no "+ 0"', () => {
+    ['foundation', 'core', 'stretch'].forEach((band) => draws('sequences-arithmetic-is-term', band, 800).forEach((q) => {
+      expect(q.workingOut).not.toMatch(/[+-] 0(?![\d.])/);
+    }));
+  });
 });

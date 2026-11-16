@@ -33,7 +33,7 @@ export function checkUseNthTerm(q, band) {
     must(d >= 2, 'an increasing rule at Foundation');
     const five = [1, 2, 3, 4, 5].map((n) => d * n + c);
     must(q.answer === five.join(', '), `answer ${q.answer}`);
-    must(w.join('|') === five.map((t, i) => `a_{${i + 1}} = ${d}(${i + 1}) ${signed(c)} = ${t}`).join('|'), 'working');
+    must(w.join('|') === five.map((t, i) => `a_{${i + 1}} = ${d}(${i + 1})${c === 0 ? '' : ` ${signed(c)}`} = ${t}`).join('|'), 'working');
     return { kind: 'first five' };
   }
   if (band === 'core') {
@@ -45,7 +45,7 @@ export function checkUseNthTerm(q, band) {
     must(n > 20, 'a far term');
     const v = d * n + c;
     must(q.answer === `a_{${n}} = ${v}`, `answer ${q.answer}, expected ${v}`);
-    must(w.join('|') === `a_{${n}} = ${d}(${n}) ${signed(c)} = ${v}`, 'working');
+    must(w.join('|') === `a_{${n}} = ${d}(${n})${c === 0 ? '' : ` ${signed(c)}`} = ${v}`, 'working');
     return { kind: d < 0 ? 'decreasing' : 'increasing' };
   }
   if (q.instruction === 'Find which term has this value') {
@@ -56,7 +56,7 @@ export function checkUseNthTerm(q, band) {
     const n = (v - c) / d;
     must(Number.isInteger(n) && n > 0, 'a term of the sequence');
     must(q.answer === `n = ${n}`, `answer ${q.answer}, expected n = ${n}`);
-    must(w.join('|') === [`${d}n ${signed(c)} = ${v}`, `${d}n = ${v - c}`, `n = ${n}`].join('|'), 'working');
+    must(w.join('|') === [...(c === 0 ? [] : [`${d}n ${signed(c)} = ${v}`]), `${d}n = ${v - c}`, `n = ${n}`].join('|'), 'working');
     return { kind: 'which term' };
   }
   must(q.instruction === 'Find a formula for the nth term' && l2 === undefined, 'instruction');

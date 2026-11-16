@@ -255,6 +255,8 @@ export const generateSequenceFindNthTermArithmetic = (options = {}) => {
 // backwards, either the n of a given value or the rule from two terms that
 // are not next to each other.
 const signed = (c) => `${c >= 0 ? '+' : '-'} ${Math.abs(c)}`;
+// The constant of a substituted rule, left out when it is zero: 3(1), not 3(1) + 0.
+const plusC = (c) => (c === 0 ? '' : ` ${signed(c)}`);
 
 export const generateSequenceUseNthTermArithmetic = (options = {}) => {
   const { difficulty = 'core' } = options;
@@ -268,7 +270,7 @@ export const generateSequenceUseNthTermArithmetic = (options = {}) => {
       instruction: 'Find the first five terms',
       questionMath: formatArithmeticRule(d, c),
       answer: five.join(', '),
-      workingOut: five.map((t, i) => `a_{${i + 1}} = ${d}(${i + 1}) ${signed(c)} = ${t}`).join(NL),
+      workingOut: five.map((t, i) => `a_{${i + 1}} = ${d}(${i + 1})${plusC(c)} = ${t}`).join(NL),
       visualization: null,
       metadata: meta,
     };
@@ -284,7 +286,7 @@ export const generateSequenceUseNthTermArithmetic = (options = {}) => {
       instruction: 'Find this term',
       questionMath: `${formatArithmeticRule(d, c)}${NL}a_{${n}}`,
       answer: `a_{${n}} = ${v}`,
-      workingOut: `a_{${n}} = ${d}(${n}) ${signed(c)} = ${v}`,
+      workingOut: `a_{${n}} = ${d}(${n})${plusC(c)} = ${v}`,
       visualization: null,
       metadata: meta,
     };
@@ -298,7 +300,7 @@ export const generateSequenceUseNthTermArithmetic = (options = {}) => {
       instruction: 'Find which term has this value',
       questionMath: `${formatArithmeticRule(d, c)}${NL}a_n = ${v}`,
       answer: `n = ${n}`,
-      workingOut: [`${d}n ${signed(c)} = ${v}`, `${d}n = ${v - c}`, `n = ${n}`].join(NL),
+      workingOut: [...(c === 0 ? [] : [`${d}n ${signed(c)} = ${v}`]), `${d}n = ${v - c}`, `n = ${n}`].join(NL),
       visualization: null,
       metadata: meta,
     };
@@ -370,7 +372,7 @@ export const generateSequenceIsInSequenceArithmetic = (options = {}) => {
     questionMath: `${formatArithmeticRule(d, c)},\\quad \\text{is } ${target} \\text{ a term?}`,
     answer: isIn ? `\\text{Yes} - a_{${matchedN}} = ${target}` : '\\text{No}',
     workingOut:
-      `${target} = ${d}n ${c >= 0 ? '+' : '-'} ${Math.abs(c)}` + NL +
+      `${target} = ${d}n${c === 0 ? '' : ` ${c > 0 ? '+' : '-'} ${Math.abs(c)}`}` + NL +
       `n = ${matchedN}` + NL +
       (isIn ? '\\text{whole number, so yes}' : '\\text{not a whole number, so no}'),
     visualization: null,
