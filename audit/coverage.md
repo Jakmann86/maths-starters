@@ -219,66 +219,66 @@ quadrilateral-angle-sum | stretch | Fixed | 300 | 900/1200 | 3 |  |  | D028
 angles-problem-solving | foundation | Clean | 300 | 1043/1200 | 3 |  |  | 
 angles-problem-solving | core | Clean | 300 | 1037/1200 | 3 |  |  | 
 angles-problem-solving | stretch | Fixed | 300 | 1200/1500 | 3 |  |  | D032
-parallel-line-angles | foundation | Not covered | 300 | 394/300 | 0 |  |  | 
-parallel-line-angles | core | Not covered | 300 | 392/300 | 0 |  |  | 
-parallel-line-angles | stretch | Not covered | 300 | 719/708 | 0 |  |  | 
-polygon-interior-angles | foundation | Not covered | 300 | 300/300 | 0 |  |  | 
-polygon-interior-angles | core | Not covered | 300 | 900/600 | 0 |  |  | 
-polygon-interior-angles | stretch | Not covered | 300 | 1038/738 | 0 |  |  | 
-polygon-exterior-angles | foundation | Not covered | 300 | 300/300 | 0 |  |  | 
-polygon-exterior-angles | core | Not covered | 300 | 600/300 | 0 |  |  | 
-polygon-exterior-angles | stretch | Not covered | 300 | 900/750 | 0 |  |  | 
-distance-between-points | foundation | Not covered | 300 | 300/900 | 0 |  |  | 
-distance-between-points | core | Not covered | 300 | 300/900 | 0 |  |  | 
-distance-between-points | stretch | Not covered | 300 | 300/900 | 0 |  |  | 
-midpoint-of-segment | foundation | Not covered | 300 | 600/600 | 0 |  |  | 
-midpoint-of-segment | core | Not covered | 300 | 600/600 | 0 |  |  | 
-midpoint-of-segment | stretch | Not covered | 300 | 600/900 | 0 |  |  | 
-gradient-of-segment | foundation | Not covered | 300 | 300/600 | 0 |  |  | 
-gradient-of-segment | core | Not covered | 300 | 300/600 | 0 |  |  | 
-gradient-of-segment | stretch | Not covered | 300 | 900/900 | 0 |  |  | 
-parallel-gradients | foundation | Not covered | 300 | 0/300 | 0 |  |  | 
-parallel-gradients | core | Not covered | 300 | 0/600 | 0 |  |  | 
-parallel-gradients | stretch | Not covered | 300 | 0/1200 | 0 |  |  | 
-perpendicular-gradients | foundation | Not covered | 300 | 300/600 | 0 |  |  | 
-perpendicular-gradients | core | Not covered | 300 | 300/600 | 0 |  |  | 
-perpendicular-gradients | stretch | Not covered | 300 | 0/900 | 0 |  |  | 
-horizontal-vertical-lines | foundation | Not covered | 300 | 600/600 | 0 |  |  | 
-horizontal-vertical-lines | core | Not covered | 300 | 600/600 | 0 |  |  | 
-horizontal-vertical-lines | stretch | Not covered | 300 | 600/600 | 0 |  |  | 
-lines-meet | foundation | Not covered | 300 | 0/900 | 0 |  |  | 
-lines-meet | core | Not covered | 300 | 166/734 | 0 |  |  | 
-lines-meet | stretch | Not covered | 300 | 0/1200 | 0 |  |  | 
-equation-of-a-line | foundation | Not covered | 300 | 161/900 | 0 |  |  | 
-equation-of-a-line | core | Not covered | 300 | 0/1200 | 0 |  |  | 
-equation-of-a-line | stretch | Not covered | 300 | 300/1200 | 0 |  |  | 
-line-general-form | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-line-general-form | core | Not covered | 300 | 0/600 | 0 |  |  | 
-line-general-form | stretch | Not covered | 300 | 600/1200 | 0 |  |  | 
-point-on-line | foundation | Not covered | 300 | 900/600 | 0 |  |  | 
-point-on-line | core | Not covered | 300 | 900/900 | 0 |  |  | 
-point-on-line | stretch | Not covered | 300 | 900/900 | 0 |  |  | 
-sequences-arithmetic-nth-term | foundation | Not covered | 300 | 151/900 | 0 |  |  | 
-sequences-arithmetic-nth-term | core | Not covered | 300 | 129/900 | 0 |  |  | 
-sequences-arithmetic-nth-term | stretch | Not covered | 300 | 158/900 | 0 |  |  | 
-sequences-arithmetic-use-nth-term | foundation | Not covered | 300 | 1500/1500 | 0 |  |  | 
-sequences-arithmetic-use-nth-term | core | Not covered | 300 | 600/300 | 0 |  |  | 
-sequences-arithmetic-use-nth-term | stretch | Not covered | 300 | 755/1045 | 0 |  |  | 
-sequences-arithmetic-is-term | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-sequences-arithmetic-is-term | core | Not covered | 300 | 0/600 | 0 |  |  | 
-sequences-arithmetic-is-term | stretch | Not covered | 300 | 0/600 | 0 |  |  | 
-sequences-arithmetic-pattern | foundation | Not covered | 300 | 0/900 | 0 |  |  | 
-sequences-arithmetic-pattern | core | Not covered | 300 | 0/900 | 0 |  |  | 
-sequences-arithmetic-pattern | stretch | Not covered | 300 | 0/900 | 0 |  |  | 
-sequences-geometric-nth-term | foundation | Not covered | 300 | 300/900 | 0 |  |  | 
-sequences-geometric-nth-term | core | Not covered | 300 | 300/900 | 0 |  |  | 
-sequences-geometric-nth-term | stretch | Not covered | 300 | 300/900 | 0 |  |  | 
-sequences-geometric-use-nth-term | foundation | Not covered | 300 | 745/1800 | 0 |  |  | 
-sequences-geometric-use-nth-term | core | Not covered | 300 | 701/1800 | 0 |  |  | 
-sequences-geometric-use-nth-term | stretch | Not covered | 300 | 600/1800 | 0 |  |  | 
-sequences-geometric-is-term | foundation | Not covered | 300 | 0/1951 | 0 |  |  | 
-sequences-geometric-is-term | core | Not covered | 300 | 0/1903 | 0 |  |  | 
-sequences-geometric-is-term | stretch | Not covered | 300 | 0/1946 | 0 |  |  | 
+parallel-line-angles | foundation | Clean | 300 | 394/300 | 3 |  |  | 
+parallel-line-angles | core | Clean | 300 | 392/300 | 3 |  |  | 
+parallel-line-angles | stretch | Fixed | 300 | 719/708 | 3 |  |  | D029
+polygon-interior-angles | foundation | Clean | 300 | 300/300 | 3 |  |  | 
+polygon-interior-angles | core | Clean | 300 | 900/600 | 3 |  |  | 
+polygon-interior-angles | stretch | Clean | 300 | 1038/738 | 3 |  |  | 
+polygon-exterior-angles | foundation | Clean | 300 | 300/300 | 3 |  |  | 
+polygon-exterior-angles | core | Clean | 300 | 600/300 | 3 |  |  | 
+polygon-exterior-angles | stretch | Clean | 300 | 900/750 | 3 |  |  | 
+distance-between-points | foundation | Fixed | 300 | 300/900 | 3 |  |  | D046
+distance-between-points | core | Fixed | 300 | 300/900 | 3 |  |  | D046
+distance-between-points | stretch | Fixed | 300 | 300/900 | 3 |  |  | D046
+midpoint-of-segment | foundation | Clean | 300 | 600/600 | 3 |  |  | 
+midpoint-of-segment | core | Clean | 300 | 600/600 | 3 |  |  | 
+midpoint-of-segment | stretch | Clean | 300 | 600/900 | 3 |  |  | 
+gradient-of-segment | foundation | Clean | 300 | 300/600 | 3 |  |  | 
+gradient-of-segment | core | Clean | 300 | 300/600 | 3 |  |  | 
+gradient-of-segment | stretch | Clean | 300 | 900/900 | 3 |  |  | 
+parallel-gradients | foundation | Clean | 300 | 0/300 | 3 |  |  | 
+parallel-gradients | core | Clean | 300 | 0/600 | 3 |  |  | 
+parallel-gradients | stretch | Clean | 300 | 0/1200 | 3 |  |  | 
+perpendicular-gradients | foundation | Clean | 300 | 300/600 | 3 |  |  | 
+perpendicular-gradients | core | Clean | 300 | 300/600 | 3 |  |  | 
+perpendicular-gradients | stretch | Clean | 300 | 0/900 | 3 |  |  | 
+horizontal-vertical-lines | foundation | Clean | 300 | 600/600 | 3 |  |  | 
+horizontal-vertical-lines | core | Clean | 300 | 600/600 | 3 |  |  | 
+horizontal-vertical-lines | stretch | Clean | 300 | 600/600 | 3 |  |  | 
+lines-meet | foundation | Clean | 300 | 0/900 | 3 |  |  | 
+lines-meet | core | Clean | 300 | 166/734 | 3 |  |  | 
+lines-meet | stretch | Clean | 300 | 0/1200 | 3 |  |  | 
+equation-of-a-line | foundation | Fixed | 300 | 161/900 | 3 |  |  | D047
+equation-of-a-line | core | Clean | 300 | 0/1200 | 3 |  |  | 
+equation-of-a-line | stretch | Clean | 300 | 300/1200 | 3 |  |  | 
+line-general-form | foundation | Clean | 300 | 0/600 | 3 |  |  | 
+line-general-form | core | Clean | 300 | 0/600 | 3 |  |  | 
+line-general-form | stretch | Clean | 300 | 600/1200 | 3 |  |  | 
+point-on-line | foundation | Clean | 300 | 900/600 | 3 |  |  | 
+point-on-line | core | Fixed | 300 | 900/900 | 3 |  |  | D048
+point-on-line | stretch | Clean | 300 | 900/900 | 3 |  |  | 
+sequences-arithmetic-nth-term | foundation | Fixed | 300 | 151/900 | 3 |  |  | D037
+sequences-arithmetic-nth-term | core | Fixed | 300 | 129/900 | 3 |  |  | D036, D037
+sequences-arithmetic-nth-term | stretch | Fixed | 300 | 158/900 | 3 |  |  | D036, D037
+sequences-arithmetic-use-nth-term | foundation | Fixed | 300 | 1500/1500 | 3 |  |  | D038
+sequences-arithmetic-use-nth-term | core | Fixed | 300 | 600/300 | 3 |  |  | D038
+sequences-arithmetic-use-nth-term | stretch | Fixed | 300 | 755/1045 | 3 |  |  | D038
+sequences-arithmetic-is-term | foundation | Fixed | 300 | 0/600 | 3 |  |  | D039
+sequences-arithmetic-is-term | core | Fixed | 300 | 0/600 | 3 |  |  | D039
+sequences-arithmetic-is-term | stretch | Fixed | 300 | 0/600 | 3 |  |  | D039
+sequences-arithmetic-pattern | foundation | Needs Joakim | 300 | 0/900 | 3 |  |  | D049
+sequences-arithmetic-pattern | core | Needs Joakim | 300 | 0/900 | 3 |  |  | D049
+sequences-arithmetic-pattern | stretch | Needs Joakim | 300 | 0/900 | 3 |  |  | D049
+sequences-geometric-nth-term | foundation | Clean | 300 | 300/900 | 3 |  |  | 
+sequences-geometric-nth-term | core | Clean | 300 | 300/900 | 3 |  |  | 
+sequences-geometric-nth-term | stretch | Clean | 300 | 300/900 | 3 |  |  | 
+sequences-geometric-use-nth-term | foundation | Fixed | 300 | 745/1800 | 3 |  |  | D041
+sequences-geometric-use-nth-term | core | Fixed | 300 | 701/1800 | 3 |  |  | D041
+sequences-geometric-use-nth-term | stretch | Fixed | 300 | 600/1800 | 3 |  |  | D040
+sequences-geometric-is-term | foundation | Clean | 300 | 0/1951 | 3 |  |  | 
+sequences-geometric-is-term | core | Clean | 300 | 0/1903 | 3 |  |  | 
+sequences-geometric-is-term | stretch | Fixed | 300 | 0/1946 | 3 |  |  | D042
 sequences-geometric-pattern | foundation | Not covered | 300 | 0/1200 | 0 |  |  | 
 sequences-geometric-pattern | core | Not covered | 300 | 0/1200 | 0 |  |  | 
 sequences-geometric-pattern | stretch | Not covered | 300 | 0/1200 | 0 |  |  | 
