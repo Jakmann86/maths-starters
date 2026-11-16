@@ -17,4 +17,8 @@ describe('audit regressions: working out', () => {
       ls.forEach((l, i) => { if (i) expect(l).not.toBe(ls[i - 1]); });
     });
   });
+
+  it('D002 solve-quadratic-factorising: the question never prints a coefficient of 1', () => {
+    draws('solve-quadratic-factorising', 'core', 1500).forEach((q) => expect(q.questionMath).not.toMatch(/(^|[^\d])1x/));
+  });
 });

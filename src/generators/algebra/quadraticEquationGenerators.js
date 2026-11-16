@@ -122,7 +122,7 @@ export const generateSolveQuadraticFactorising = (options = {}) => {
       const m = nonZero(-15, 15);
       return {
         instruction: 'Solve for x',
-        questionMath: `x^2 = ${m === 1 ? '' : m}x`,
+        questionMath: `x^2 = ${m === 1 ? '' : m === -1 ? '-' : m}x`,
         answer: roots(0, m),
         workingOut: `x^2 ${m < 0 ? '+' : '-'} ${Math.abs(m) === 1 ? '' : Math.abs(m)}x = 0${NL}x(x ${m < 0 ? '+' : '-'} ${Math.abs(m)}) = 0${NL}${roots(0, m)}`,
         metadata: { topic: 'solve-quadratic-factorising', difficulty },
