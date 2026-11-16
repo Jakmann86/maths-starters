@@ -551,13 +551,20 @@ export const generateSequenceIsInSequenceQuadratic = (options = {}) => {
     : Math.random() < 0.5;
 
   let target, isIn, matchedN, workingLines;
+  // n^2 = (target - c) / a, written without a "- 0" or a "divide by 1".
+  const isolate = (t) => {
+    const top = c === 0 ? `${t}` : `${t} ${c > 0 ? '-' : '+'} ${Math.abs(c)}`;
+    return a === 1 ? top : `(${top}) \\div ${a}`;
+  };
+  // Two decimal places only when there are decimals to show: 87, not 87.00.
+  const dp2 = (v) => (Number.isInteger(v) ? `${v}` : v.toFixed(2));
 
   if (wantYes) {
     matchedN = _.random(4, 10);
     target = nthTermQuadratic(a, b, c, matchedN);
     isIn = true;
     workingLines = [
-      `n^2 = (${target} ${c >= 0 ? '-' : '+'} ${Math.abs(c)}) \\div ${a} = ${matchedN * matchedN}`,
+      `n^2 = ${isolate(target)} = ${matchedN * matchedN}`,
       `n = \\sqrt{${matchedN * matchedN}} = ${matchedN}`,
       '\\text{whole number, so yes}',
     ];
@@ -573,8 +580,8 @@ export const generateSequenceIsInSequenceQuadratic = (options = {}) => {
     if (b === 0) {
       const nSquared = (target - c) / a;
       workingLines = [
-        `n^2 = (${target} ${c >= 0 ? '-' : '+'} ${Math.abs(c)}) \\div ${a} = ${nSquared.toFixed(2)}`,
-        `n = \\sqrt{${nSquared.toFixed(2)}} ≈ ${Math.sqrt(nSquared).toFixed(2)}`,
+        `n^2 = ${isolate(target)} = ${dp2(nSquared)}`,
+        `n = \\sqrt{${dp2(nSquared)}} \\approx ${Math.sqrt(nSquared).toFixed(2)}`,
         '\\text{not a whole number, so no}',
       ];
     } else {
@@ -584,8 +591,8 @@ export const generateSequenceIsInSequenceQuadratic = (options = {}) => {
       const D = b * b - 4 * a * (c - target);
       const nValue = (-b + Math.sqrt(D)) / (2 * a);
       workingLines = [
-        `${a}n^2 ${b >= 0 ? '+' : '-'} ${Math.abs(b)}n ${c >= 0 ? '+' : '-'} ${Math.abs(c)} = ${target}`,
-        `n ≈ ${nValue.toFixed(2)} \\text{ using the quadratic formula}`,
+        `${formatQuadraticRule(a, b, c).replace('a_n = ', '')} = ${target}`,
+        `n \\approx ${nValue.toFixed(2)} \\text{ using the quadratic formula}`,
         '\\text{not a whole number, so no}',
       ];
     }

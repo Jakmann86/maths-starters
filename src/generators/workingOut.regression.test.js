@@ -151,4 +151,10 @@ describe('audit regressions: working out', () => {
       if (check) { expect(check).toMatch(/\(1\)\^2/); expect(check).not.toMatch(/[+-] 0(?![\d.])/); }
     }));
   });
+
+  it('D045 sequences-quadratic-is-term: no "- 0", no division by 1, no 87.00, no "1n"', () => {
+    ['foundation', 'core', 'stretch'].forEach((band) => draws('sequences-quadratic-is-term', band).forEach((q) => {
+      expect(q.workingOut).not.toMatch(/[+-] 0\)|\\div 1(?!\d)|\.00|(^|[^\d])1n|[+-] 0 =/);
+    }));
+  });
 });
