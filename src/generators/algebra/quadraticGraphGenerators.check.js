@@ -232,7 +232,7 @@ function checkSymmetry(q, band) {
     must(q.answer === `x = ${h}`, `answer ${q.answer}, expected x = ${h}`);
     const w = lines(q.workingOut);
     must(w[0] === `x\\text{-intercepts } ${roots[0]} \\text{ and } ${roots[1]}`, 'working reads the intercepts');
-    must(w[1] === `x = \\frac{${roots[0]} + ${roots[1]}}{2}`, 'working averages them');
+    must(w[1] === `x = \\frac{${roots[0]} + ${roots[1] < 0 ? `(${roots[1]})` : roots[1]}}{2}`, 'working averages them');
     w.slice(1).forEach((ln) => must(close(value(ln.slice(4)), h) && ln.startsWith('x = '), `working line: ${ln}`));
     lastIs(q, q.answer);
     return { kind: 'graph' };
@@ -250,7 +250,7 @@ function checkSymmetry(q, band) {
     if (band === 'foundation') {
       const rs = realRoots(f);
       must(w[0] === `x\\text{-intercepts } ${rs[0]} \\text{ and } ${rs[1]}`, 'working reads the intercepts');
-      must(w[1] === `x = \\frac{${rs[0]} + ${rs[1]}}{2}`, 'working averages them');
+      must(w[1] === `x = \\frac{${rs[0]} + ${rs[1] < 0 ? `(${rs[1]})` : rs[1]}}{2}`, 'working averages them');
     } else must(w[0] === 'x = \\frac{-b}{2a}', 'working quotes the rule');
     w.slice(1).forEach((ln) => must(ln.startsWith('x = ') && close(value(ln.slice(4)), h), `working line: ${ln}`));
     lastIs(q, q.answer);

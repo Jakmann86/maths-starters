@@ -302,6 +302,9 @@ export const generateQuadraticIntercepts = (options = {}) => {
 
 /* ------------------------------------------ 21G: line of symmetry, vertex */
 
+// A negative number being added takes brackets: -6 + (-4), never -6 + -4.
+const neg = (n) => (n < 0 ? `(${n})` : `${n}`);
+
 export const generateQuadraticSymmetry = (options = {}) => {
   const { difficulty = 'core' } = options;
 
@@ -321,7 +324,7 @@ export const generateQuadraticSymmetry = (options = {}) => {
         return {
           instruction: 'Find the equation of the line of symmetry',
           answer: `x = ${h}`,
-          workingOut: `x\\text{-intercepts } ${p} \\text{ and } ${q}${NL}x = \\frac{${p} + ${q}}{2}${NL}x = ${h}`,
+          workingOut: `x\\text{-intercepts } ${p} \\text{ and } ${q}${NL}x = \\frac{${p} + ${neg(q)}}{2}${NL}x = ${h}`,
           visualization: graphOf(a, p, q),
           metadata: { topic: 'quadratic-symmetry', difficulty },
         };
@@ -335,7 +338,7 @@ export const generateQuadraticSymmetry = (options = {}) => {
       instruction: 'Find the equation of the line of symmetry',
       questionMath: `y = ${factored(a, p, q)}`,
       answer: `x = ${frac(p + q, 2)}`,
-      workingOut: `x\\text{-intercepts } ${Math.min(p, q)} \\text{ and } ${Math.max(p, q)}${NL}x = \\frac{${Math.min(p, q)} + ${Math.max(p, q)}}{2}${NL}x = ${frac(p + q, 2)}`,
+      workingOut: `x\\text{-intercepts } ${Math.min(p, q)} \\text{ and } ${Math.max(p, q)}${NL}x = \\frac{${Math.min(p, q)} + ${neg(Math.max(p, q))}}{2}${NL}x = ${frac(p + q, 2)}`,
       visualization: null,
       metadata: { topic: 'quadratic-symmetry', difficulty },
     };

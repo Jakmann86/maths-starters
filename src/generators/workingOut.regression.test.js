@@ -21,4 +21,8 @@ describe('audit regressions: working out', () => {
   it('D002 solve-quadratic-factorising: the question never prints a coefficient of 1', () => {
     draws('solve-quadratic-factorising', 'core', 1500).forEach((q) => expect(q.questionMath).not.toMatch(/(^|[^\d])1x/));
   });
+
+  it('D003 quadratic-symmetry: a negative intercept being added is bracketed', () => {
+    draws('quadratic-symmetry', 'foundation').forEach((q) => expect(q.workingOut).not.toMatch(/\+ -/));
+  });
 });
