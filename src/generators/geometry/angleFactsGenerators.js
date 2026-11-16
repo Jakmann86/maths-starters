@@ -306,7 +306,7 @@ export const generateTriangleExteriorAngle = (options = {}) => {
       answer: `x = ${x}`,
       workingOut: [
         `${expr3} = ${expr1} + ${expr2} \\text{ (exterior angle = sum of interior opposite angles)}`,
-        `${m3}x ${c3 >= 0 ? '+' : '-'} ${Math.abs(c3)} = ${m1 + m2}x ${cSum >= 0 ? '+' : '-'} ${Math.abs(cSum)}`,
+        `${formatLinear(m3, c3)} = ${formatLinear(m1 + m2, cSum)}`,
         `x = ${x}`,
       ].join(NL),
       visualization: { type: 'triangle', labels: [expr1, '', expr2], exteriorLabel: expr3, big: true },
