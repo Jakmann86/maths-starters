@@ -4,65 +4,65 @@ One row per skill x band. "Mech" = seeds run through the mechanical sweep (`audi
 
 skill-id | band | status | mech seeds | verified stmts | eye | fig measured | fig looked | notes
 ---|---|---|---|---|---|---|---|---
-expand-single-brackets | foundation | Not covered | 300 | 300/248 | 0 |  |  | 
-expand-single-brackets | core | Not covered | 300 | 522/247 | 0 |  |  | 
-expand-single-brackets | stretch | Not covered | 300 | 600/300 | 0 |  |  | 
-expand-double-brackets | foundation | Not covered | 300 | 600/300 | 0 |  |  | 
-expand-double-brackets | core | Not covered | 300 | 600/300 | 0 |  |  | 
-difference-of-two-squares | foundation | Not covered | 300 | 600/300 | 0 |  |  | 
-difference-of-two-squares | core | Not covered | 300 | 600/300 | 0 |  |  | 
-difference-of-two-squares | stretch | Not covered | 300 | 600/300 | 0 |  |  | 
-expand-perfect-square | foundation | Not covered | 300 | 600/300 | 0 |  |  | 
-expand-perfect-square | core | Not covered | 300 | 600/300 | 0 |  |  | 
-expand-perfect-square | stretch | Not covered | 300 | 600/300 | 0 |  |  | 
-expand-further | foundation | Not covered | 300 | 900/600 | 0 |  |  | 
-expand-further | core | Not covered | 300 | 900/600 | 0 |  |  | 
-expand-further | stretch | Not covered | 300 | 900/600 | 0 |  |  | 
-factorise-common-factor | foundation | Not covered | 300 | 600/600 | 0 |  |  | 
-factorise-common-factor | core | Not covered | 300 | 600/600 | 0 |  |  | 
-factorise-common-factor | stretch | Not covered | 300 | 600/600 | 0 |  |  | 
-factorise-difference-of-two-squares | foundation | Not covered | 300 | 300/300 | 0 |  |  | 
-factorise-difference-of-two-squares | core | Not covered | 300 | 300/300 | 0 |  |  | 
-factorise-difference-of-two-squares | stretch | Not covered | 300 | 300/600 | 0 |  |  | 
-factorise-perfect-square | foundation | Not covered | 300 | 900/600 | 0 |  |  | 
-factorise-perfect-square | core | Not covered | 300 | 900/600 | 0 |  |  | 
-factorise-perfect-square | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
-factorise-grouping | foundation | Not covered | 300 | 596/296 | 0 |  |  | 
-factorise-grouping | core | Not covered | 300 | 584/284 | 0 |  |  | 
-factorise-grouping | stretch | Not covered | 300 | 742/442 | 0 |  |  | 
-factorise-monic | foundation | Not covered | 300 | 300/600 | 0 |  |  | 
-factorise-monic | core | Not covered | 300 | 300/600 | 0 |  |  | 
-factorise-monic | stretch | Not covered | 300 | 900/1200 | 0 |  |  | 
-factorise-splitting-middle | foundation | Not covered | 300 | 300/300 | 0 |  |  | 
-factorise-splitting-middle | core | Not covered | 300 | 300/300 | 0 |  |  | 
-factorise-splitting-middle | stretch | Not covered | 300 | 300/300 | 0 |  |  | 
-factorise-fully | foundation | Not covered | 300 | 900/600 | 0 |  |  | 
-factorise-fully | core | Not covered | 300 | 900/600 | 0 |  |  | 
-factorise-fully | stretch | Not covered | 300 | 900/600 | 0 |  |  | 
-solve-quadratic-roots | foundation | Not covered | 300 | 29/900 | 0 |  |  | 
-solve-quadratic-roots | core | Not covered | 300 | 600/1200 | 0 |  |  | 
-solve-quadratic-roots | stretch | Not covered | 300 | 0/600 | 0 |  |  | 
-solve-quadratic-factorising | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-solve-quadratic-factorising | core | Not covered | 300 | 1800/1200 | 0 |  |  | 
-solve-quadratic-factorising | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
-solve-quadratic-formula | foundation | Not covered | 300 | 900/2400 | 0 |  |  | 
-solve-quadratic-formula | core | Not covered | 300 | 300/2100 | 0 |  |  | 
-solve-quadratic-formula | stretch | Not covered | 300 | 439/2100 | 0 |  |  | 
-quadratic-substitution | foundation | Not covered | 300 | 1500/900 | 0 |  |  | 
-quadratic-substitution | core | Not covered | 300 | 1500/900 | 0 |  |  | 
-quadratic-substitution | stretch | Not covered | 300 | 1628/1414 | 0 |  |  | 
-quadratic-vertex-form | foundation | Not covered | 300 | 0/900 | 0 |  |  | 
-quadratic-vertex-form | core | Not covered | 300 | 0/900 | 0 |  |  | 
-quadratic-vertex-form | stretch | Not covered | 300 | 300/900 | 0 |  |  | 
-quadratic-intercepts | foundation | Not covered | 300 | 0/841 | 0 |  |  | 
-quadratic-intercepts | core | Not covered | 300 | 0/1152 | 0 |  |  | 
-quadratic-intercepts | stretch | Not covered | 300 | 0/1456 | 0 |  |  | 
-quadratic-symmetry | foundation | Not covered | 300 | 900/1500 | 0 |  |  | 
-quadratic-symmetry | core | Not covered | 300 | 752/826 | 0 |  |  | 
-quadratic-symmetry | stretch | Not covered | 300 | 600/1200 | 0 |  |  | 
-quadratic-find-function | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-quadratic-find-function | core | Not covered | 300 | 0/1500 | 0 |  |  | 
-quadratic-find-function | stretch | Not covered | 300 | 0/1500 | 0 |  |  | 
+expand-single-brackets | foundation | Needs Joakim | 300 | 300/248 | 3 |  |  | D006
+expand-single-brackets | core | Needs Joakim | 300 | 522/247 | 3 |  |  | D006
+expand-single-brackets | stretch | Clean | 300 | 600/300 | 3 |  |  | 
+expand-double-brackets | foundation | Clean | 300 | 600/300 | 3 |  |  | 
+expand-double-brackets | core | Clean | 300 | 600/300 | 3 |  |  | 
+difference-of-two-squares | foundation | Clean | 300 | 600/300 | 3 |  |  | 
+difference-of-two-squares | core | Clean | 300 | 600/300 | 3 |  |  | 
+difference-of-two-squares | stretch | Clean | 300 | 600/300 | 3 |  |  | 
+expand-perfect-square | foundation | Clean | 300 | 600/300 | 3 |  |  | 
+expand-perfect-square | core | Clean | 300 | 600/300 | 3 |  |  | 
+expand-perfect-square | stretch | Clean | 300 | 600/300 | 3 |  |  | 
+expand-further | foundation | Clean | 300 | 900/600 | 3 |  |  | 
+expand-further | core | Clean | 300 | 900/600 | 3 |  |  | 
+expand-further | stretch | Clean | 300 | 900/600 | 3 |  |  | 
+factorise-common-factor | foundation | Clean | 300 | 600/600 | 3 |  |  | 
+factorise-common-factor | core | Clean | 300 | 600/600 | 3 |  |  | 
+factorise-common-factor | stretch | Clean | 300 | 600/600 | 3 |  |  | 
+factorise-difference-of-two-squares | foundation | Needs Joakim | 300 | 300/300 | 3 |  |  | D007
+factorise-difference-of-two-squares | core | Needs Joakim | 300 | 300/300 | 3 |  |  | D007
+factorise-difference-of-two-squares | stretch | Needs Joakim | 300 | 300/600 | 3 |  |  | D007
+factorise-perfect-square | foundation | Clean | 300 | 900/600 | 3 |  |  | 
+factorise-perfect-square | core | Clean | 300 | 900/600 | 3 |  |  | 
+factorise-perfect-square | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
+factorise-grouping | foundation | Needs Joakim | 300 | 596/296 | 3 |  |  | D010
+factorise-grouping | core | Needs Joakim | 300 | 584/284 | 3 |  |  | D010
+factorise-grouping | stretch | Needs Joakim | 300 | 742/442 | 3 |  |  | D010
+factorise-monic | foundation | Needs Joakim | 300 | 300/600 | 3 |  |  | D005, D009
+factorise-monic | core | Needs Joakim | 300 | 300/600 | 3 |  |  | D009
+factorise-monic | stretch | Clean | 300 | 900/1200 | 3 |  |  | 
+factorise-splitting-middle | foundation | Needs Joakim | 300 | 300/300 | 3 |  |  | D008
+factorise-splitting-middle | core | Needs Joakim | 300 | 300/300 | 3 |  |  | D008
+factorise-splitting-middle | stretch | Needs Joakim | 300 | 300/300 | 3 |  |  | D008
+factorise-fully | foundation | Clean | 300 | 900/600 | 3 |  |  | 
+factorise-fully | core | Clean | 300 | 900/600 | 3 |  |  | 
+factorise-fully | stretch | Clean | 300 | 900/600 | 3 |  |  | 
+solve-quadratic-roots | foundation | Fixed | 300 | 29/900 | 3 |  |  | D001
+solve-quadratic-roots | core | Clean | 300 | 600/1200 | 3 |  |  | 
+solve-quadratic-roots | stretch | Clean | 300 | 0/600 | 3 |  |  | 
+solve-quadratic-factorising | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+solve-quadratic-factorising | core | Fixed | 300 | 1800/1200 | 3 |  |  | D002
+solve-quadratic-factorising | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
+solve-quadratic-formula | foundation | Clean | 300 | 900/2400 | 3 |  |  | 
+solve-quadratic-formula | core | Clean | 300 | 300/2100 | 3 |  |  | 
+solve-quadratic-formula | stretch | Clean | 300 | 439/2100 | 3 |  |  | 
+quadratic-substitution | foundation | Clean | 300 | 1500/900 | 3 |  |  | 
+quadratic-substitution | core | Clean | 300 | 1500/900 | 3 |  |  | 
+quadratic-substitution | stretch | Clean | 300 | 1628/1414 | 3 |  |  | 
+quadratic-vertex-form | foundation | Clean | 300 | 0/900 | 3 |  |  | 
+quadratic-vertex-form | core | Clean | 300 | 0/900 | 3 |  |  | 
+quadratic-vertex-form | stretch | Clean | 300 | 300/900 | 3 |  |  | 
+quadratic-intercepts | foundation | Clean | 300 | 0/841 | 3 |  |  | 
+quadratic-intercepts | core | Clean | 300 | 0/1152 | 3 |  |  | 
+quadratic-intercepts | stretch | Clean | 300 | 0/1456 | 3 |  |  | 
+quadratic-symmetry | foundation | Fixed | 300 | 900/1500 | 3 |  |  | D003
+quadratic-symmetry | core | Clean | 300 | 752/826 | 3 |  |  | 
+quadratic-symmetry | stretch | Clean | 300 | 600/1200 | 3 |  |  | 
+quadratic-find-function | foundation | Clean | 300 | 0/600 | 3 |  |  | 
+quadratic-find-function | core | Fixed | 300 | 0/1500 | 3 |  |  | D004
+quadratic-find-function | stretch | Fixed | 300 | 0/1500 | 3 |  |  | D004
 solve-linear-equations | foundation | Not covered | 300 | 900/600 | 0 |  |  | 
 solve-linear-equations | core | Not covered | 300 | 1500/900 | 0 |  |  | 
 solve-linear-equations | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 

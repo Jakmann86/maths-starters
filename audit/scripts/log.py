@@ -23,6 +23,12 @@ for line in sys.stdin.read().split('\n'):
     elif line.startswith('@@R '):
         f = [x.strip() for x in line[4:].split('|')]
         reads.append(dict(skill=f[0], bands=f[1], eye=int(f[2]), status=f[3], note=f[4] if len(f) > 4 else '')); cur = None
+    elif line.startswith('@@RR '):
+        # @@RR fromIndex toIndex eye  — mark a catalogue range as read (Clean unless a defect says otherwise)
+        a, b, e = [int(x) for x in line[5:].split()]
+        order = list(dict.fromkeys(k.split('|')[0] for k in json.load(open(os.path.join(root, 'out', 'sweep-summary.json')))['stats']))
+        for sk in order[a:b]: reads.append(dict(skill=sk, bands='*', eye=e, status='Clean', note=''))
+        cur = None
     elif line.startswith('@@S '):
         f = [x.strip() for x in line[4:].split('|', 1)]
         for d in defects:
