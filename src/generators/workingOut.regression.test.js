@@ -69,4 +69,11 @@ describe('audit regressions: working out', () => {
       expect(m && m[1].length).toBe(4);
     }));
   });
+
+  it('D018 solve-linear-inequalities: no repeated working line', () => {
+    draws('solve-linear-inequalities', 'core', 800).forEach((q) => {
+      const ls = lines(q);
+      ls.forEach((l, i) => { if (i) expect(l).not.toBe(ls[i - 1]); });
+    });
+  });
 });

@@ -195,7 +195,9 @@ export const generateSolveLinearInequalities = (options = {}) => {
     instruction: 'Solve',
     questionMath,
     answer,
-    workingOut: steps.join(NL),
+    // With one x left over (3x + 1 < 2x + 2) the collected line is already
+    // the answer: print it once.
+    workingOut: steps.filter((l, i) => i === 0 || l !== steps[i - 1]).join(NL),
     metadata: { topic: 'solve-linear-inequalities', difficulty },
   };
 };
