@@ -664,7 +664,8 @@ export const generatePointOnLine = (options = {}) => {
         answer: `a = ${x}`,
         workingOut: [
           `${y} = ${m}a${signed(c)}`,
-          `${m}a = ${y - c}`,
+          // With no intercept the first line is already "ma = y".
+          ...(c === 0 ? [] : [`${m}a = ${y - c}`]),
           `a = ${x}`,
         ].join(NL),
         metadata: { topic: 'point-on-line', difficulty },
