@@ -517,7 +517,11 @@ export const generateSequenceUseNthTermQuadratic = (options = {}) => {
     answer: `${firstFive.join(', ')}` + NL + `a_{${targetN}} = ${targetValue}`,
     workingOut:
       firstFive.map((t, i) => `a_{${i + 1}} = ${t}`).join(NL) + NL +
-      `a_{${targetN}} = ${a}(${targetN})^2 ${b >= 0 ? '+' : '-'} ${Math.abs(b)}(${targetN}) ${c >= 0 ? '+' : '-'} ${Math.abs(c)} = ${targetValue}`,
+      // Terms that are not in the rule are not in its substitution: no
+      // 1(6)^2, no + 0(6), no + 0.
+      `a_{${targetN}} = ${a === 1 ? '' : a}(${targetN})^2`
+        + `${b === 0 ? '' : ` ${b > 0 ? '+' : '-'} ${Math.abs(b) === 1 ? '' : Math.abs(b)}(${targetN})`}`
+        + `${c === 0 ? '' : ` ${c > 0 ? '+' : '-'} ${Math.abs(c)}`} = ${targetValue}`,
     metadata: { topic: 'sequences-quadratic-use-nth-term', difficulty },
   };
 };

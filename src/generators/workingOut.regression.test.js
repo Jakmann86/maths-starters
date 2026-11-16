@@ -135,4 +135,12 @@ describe('audit regressions: working out', () => {
       expect(q.workingOut).toMatch(/is none of these/);
     });
   });
+
+  it('D043 sequences-quadratic-use-nth-term: the substitution has no zero or unit-coefficient terms', () => {
+    ['foundation', 'core', 'stretch'].forEach((band) => draws('sequences-quadratic-use-nth-term', band).forEach((q) => {
+      const last = lines(q).at(-1);
+      expect(last).not.toMatch(/[+-] 0(?![\d.])/);
+      expect(last).not.toMatch(/(^|[^\d])1\(/);
+    }));
+  });
 });
