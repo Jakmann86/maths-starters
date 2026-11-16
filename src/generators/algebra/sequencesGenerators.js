@@ -470,13 +470,13 @@ export const generateSequenceFindNthTermQuadratic = (options = {}) => {
     ? (showReference
         ? `\\text{each term is } ${a === 1 ? '' : `${a} \\times `}n^2 ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`
         : `\\text{2nd difference} = ${2 * a}, \\text{ so } a = ${a}`) + NL +
-      `\\text{check } n=1: ${a}(1) ${c >= 0 ? '+' : '-'} ${Math.abs(c)} = ${terms[0]}` + NL +
+      `\\text{check } n=1: ${a === 1 ? '' : a}(1)^2${c === 0 ? '' : ` ${c > 0 ? '+' : '-'} ${Math.abs(c)}`} = ${terms[0]}` + NL +
       formatQuadraticRule(a, b, c)
     : (() => {
         const residuals = [1, 2, 3, 4, 5].map((n) => terms[n - 1] - a * n * n);
         return `\\text{2nd difference} = ${2 * a}, \\text{ so } a = ${a}` + NL +
           `\\text{subtract } ${a}n^2 \\text{ from each term: } ${residuals.join(',\\ ')}` + NL +
-          `\\text{that's arithmetic: } b = ${residuals[1]} - ${residuals[0]} = ${b}, \\quad c = ${residuals[0]} - ${b} = ${c}` + NL +
+          `\\text{that's arithmetic: } b = ${residuals[1]} - ${residuals[0] < 0 ? `(${residuals[0]})` : residuals[0]} = ${b}, \\quad c = ${residuals[0]} - ${b < 0 ? `(${b})` : b} = ${c}` + NL +
           formatQuadraticRule(a, b, c);
       })();
 

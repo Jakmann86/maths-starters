@@ -143,4 +143,12 @@ describe('audit regressions: working out', () => {
       expect(last).not.toMatch(/(^|[^\d])1\(/);
     }));
   });
+
+  it('D044 sequences-quadratic-nth-term: check line squares n; no "- -"', () => {
+    ['foundation', 'core', 'stretch'].forEach((band) => draws('sequences-quadratic-nth-term', band).forEach((q) => {
+      expect(q.workingOut).not.toMatch(/- -/);
+      const check = lines(q).find((l) => l.includes('check'));
+      if (check) { expect(check).toMatch(/\(1\)\^2/); expect(check).not.toMatch(/[+-] 0(?![\d.])/); }
+    }));
+  });
 });
