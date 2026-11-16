@@ -62,4 +62,11 @@ describe('audit regressions: working out', () => {
       expect(`${q.questionMath}\n${q.workingOut}`).not.toMatch(/\+ 0(?![\d.])/);
     }));
   });
+
+  it('D016 solve-power-equations: a value quoted to 3 s.f. shows three figures', () => {
+    ['core', 'stretch'].forEach((band) => draws('solve-power-equations', band, 600).forEach((q) => {
+      const m = /(\d\.\d+) \\text\{ \(3 s\.f\.\)\}/.exec(q.workingOut);
+      expect(m && m[1].length).toBe(4);
+    }));
+  });
 });

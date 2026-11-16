@@ -52,7 +52,9 @@ const side = (c, d) => (d === 0 ? xTerm(c) : `${xTerm(c)} ${constTerm(d)}`);
 const xTerm = (c) => (c === 1 ? 'x' : c === -1 ? '-x' : `${c}x`); // hides ±1
 const coefStr = (c) => (c === 1 ? '' : `${c}`);                   // "" for 1, else n
 
-const toSig3 = (n) => `${Number(n.toPrecision(3))}`;
+// Three significant figures, trailing zeros kept: 4.90, not 4.9. Only used
+// for roots below 10, so toPrecision never switches to exponent form.
+const toSig3 = (n) => n.toPrecision(3);
 
 const pickNonSquare = (min, max) => {
   let k;
