@@ -118,7 +118,7 @@ export const generateAnglesAtAPoint = (options = {}) => {
       answer: `x = ${x}`,
       workingOut: [
         `${exprs.join(' + ')} = 360 \\text{ (angles at a point)}`,
-        `${totalM}x ${totalC >= 0 ? '+' : '-'} ${Math.abs(totalC)} = 360`,
+        `${formatLinear(totalM, totalC)} = 360`,
         `x = ${x}`,
       ].join(NL),
       visualization: { type: 'angle-rays', rays: rayAngles(vs), gapDegrees: vs, wrap: true, labels: exprs, big: true },
