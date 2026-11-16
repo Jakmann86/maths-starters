@@ -121,4 +121,11 @@ describe('audit regressions: working out', () => {
       expect(q.workingOut).not.toMatch(/[+-] 0(?![\d.])/);
     }));
   });
+
+  it('D040 sequences-geometric-use-nth-term: negative ratio bracketed; the further term is beyond a_5', () => {
+    ['foundation', 'core', 'stretch'].forEach((band) => draws('sequences-geometric-use-nth-term', band).forEach((q) => {
+      expect(q.workingOut).not.toMatch(/\\times -\d/);
+      expect(Number(/a_\{(\d+)\}$/.exec(q.questionMath)[1])).toBeGreaterThan(5);
+    }));
+  });
 });

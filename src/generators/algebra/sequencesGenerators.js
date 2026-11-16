@@ -58,22 +58,26 @@ export const generateSequenceUseNthTermGeometric = (options = {}) => {
   const ratios = RATIO_BANDS[difficulty] || RATIO_BANDS.core;
   const r = _.sample(ratios);
   const a = _.random(2, 9);
+  // "One further term": never a_5, which the first five already include.
+  // (Each band still makes its three draws, so the random stream is unchanged.)
   const targetN = { foundation: _.random(5, 6), core: _.random(5, 7), stretch: _.random(6, 8) }[difficulty] || _.random(5, 7);
+  const furtherN = Math.max(6, targetN);
 
   const firstFive = [1, 2, 3, 4, 5].map((k) => nthTerm(a, r, k));
-  const targetValue = nthTerm(a, r, targetN);
+  const targetValue = nthTerm(a, r, furtherN);
 
   return {
     instruction: 'Find these terms',
-    questionMath: `${formatRuleLatex(a, r)}${NL}a_1 \\text{ to } a_5 \\text{ and } a_{${targetN}}`,
+    questionMath: `${formatRuleLatex(a, r)}${NL}a_1 \\text{ to } a_5 \\text{ and } a_{${furtherN}}`,
     // Two lines, not one joined with "\quad" — same unsupported-command
     // fallback as the ellipsis above, and a clean line break reads better
     // here anyway (matches how every multi-step workingOut in this file
     // already separates lines with NL).
-    answer: `${firstFive.join(', ')}` + NL + `a_{${targetN}} = ${targetValue}`,
+    answer: `${firstFive.join(', ')}` + NL + `a_{${furtherN}} = ${targetValue}`,
+    // A negative ratio is bracketed: 2 x (-3)^6, because 2 x -3^6 is -1458.
     workingOut:
       firstFive.map((t, i) => `a_{${i + 1}} = ${t}`).join(NL) + NL +
-      `a_{${targetN}} = ${a} \\times ${r}^{${targetN - 1}} = ${targetValue}`,
+      `a_{${furtherN}} = ${a} \\times ${r < 0 ? `(${r})` : r}^{${furtherN - 1}} = ${targetValue}`,
     metadata: { topic: 'sequences-geometric-use-nth-term', difficulty },
   };
 };
