@@ -2643,8 +2643,13 @@ export default function Figure({ fig, color, shown }) {
     const seg = fig.segment || null;
     // Lines are { m, c } for y = mx + c, or { x } for a vertical line. `lines`
     // draws several (solving graphically); `line` is the one-line shorthand.
-    // `curves` are quadratics, { a, b, c } for y = ax^2 + bx + c; a curve
-    // needs a `window`, since no rule here knows which part of it matters.
+    // `curves` are { a, b, c } for y = ax^2 + bx + c, { cubic: [a, b, c, d] }
+    // for y = ax^3 + bx^2 + cx + d, or { exp: [k, b, c] } for y = k·b^x + c;
+    // a curve needs a `window`, since no rule here knows which part of it
+    // matters. A line or curve is in the slot colour, as the subject of the
+    // question; `ink: true` draws it in ink instead (the given curve, when
+    // another is the subject), and `dashed: true` dashes it (an asymptote).
+    // A curve's `label` is written at `labelAt` [x, y], in its own colour.
     const lines = fig.lines || (fig.line ? [fig.line] : []);
     let x0; let x1; let y0; let y1;
 
@@ -2697,9 +2702,11 @@ export default function Figure({ fig, color, shown }) {
 
     // The line or segment is the subject of the question, so it takes the
     // slot colour, like every other `unknown` in this file.
+    const strokeOf = (o) => (o.ink ? 'var(--ink)' : color);
+    const dashOf = (o) => (o.dashed ? { strokeDasharray: '8 6' } : {});
     lines.forEach((ln, li) => {
       if (ln.x !== undefined) {
-        nodes.push(<line key={`ln${li}`} x1={X(ln.x)} y1={Y(y0)} x2={X(ln.x)} y2={Y(y1)} stroke={color} strokeWidth={3} />);
+        nodes.push(<line key={`ln${li}`} x1={X(ln.x)} y1={Y(y0)} x2={X(ln.x)} y2={Y(y1)} stroke={strokeOf(ln)} strokeWidth={3} {...dashOf(ln)} />);
         return;
       }
       const { m, c } = ln;
@@ -2721,16 +2728,22 @@ export default function Figure({ fig, color, shown }) {
           y1={Y(best[0][1])}
           x2={X(best[1][0])}
           y2={Y(best[1][1])}
-          stroke={color}
+          stroke={strokeOf(ln)}
           strokeWidth={3}
+          {...dashOf(ln)}
         />
       );
     });
-    // Quadratic curves, { a, b, c } for y = ax^2 + bx + c, in the slot colour
-    // like a line. Sampled finely and clipped to the window by hand: a
-    // clipPath needs a document-unique id, and four boxes share a page.
-    (fig.curves || []).forEach(({ a, b, c }, ci) => {
-      const f = (x) => a * x * x + b * x + c;
+    // Curves, in the slot colour like a line unless `ink`. Sampled finely and
+    // clipped to the window by hand: a clipPath needs a document-unique id,
+    // and four boxes share a page.
+    const curveFn = (cv) => {
+      if (cv.cubic) { const [a, b, c, d] = cv.cubic; return (x) => ((a * x + b) * x + c) * x + d; }
+      if (cv.exp) { const [k, b, c] = cv.exp; return (x) => k * b ** x + c; }
+      return (x) => cv.a * x * x + cv.b * x + cv.c;
+    };
+    (fig.curves || []).forEach((cv, ci) => {
+      const f = curveFn(cv);
       const inY = (y) => y >= y0 - 1e-9 && y <= y1 + 1e-9;
       const N = Math.max(80, (x1 - x0) * 24);
       const runs = [];
@@ -2765,12 +2778,20 @@ export default function Figure({ fig, color, shown }) {
             key={`cv${ci}-${ri}`}
             points={r.map(([x, y]) => `${X(x).toFixed(1)},${Y(y).toFixed(1)}`).join(' ')}
             fill="none"
-            stroke={color}
+            stroke={strokeOf(cv)}
             strokeWidth={3}
             strokeLinejoin="round"
+            {...dashOf(cv)}
           />
         );
       });
+      if (cv.label && cv.labelAt) {
+        nodes.push(
+          <g key={`cl${ci}`} stroke="var(--ground)" strokeWidth={5} strokeLinejoin="round" style={{ paintOrder: 'stroke' }}>
+            {figLabel(`clt${ci}`, X(cv.labelAt[0]), Y(cv.labelAt[1]), cv.label, 'middle', strokeOf(cv), 19 * Math.max(1, Math.max(x1 - x0, y1 - y0) / 10))}
+          </g>
+        );
+      }
     });
     if (seg) {
       nodes.push(
@@ -2820,9 +2841,11 @@ export default function Figure({ fig, color, shown }) {
       if (!p.label) return;
       // Pushed away from the middle of the plotted set, not away from the
       // origin: away from the origin puts the label of a lower-left point
-      // straight onto the segment leaving it.
-      const ux = p.x === cx ? 1 : Math.sign(p.x - cx);
-      const uy = p.y === cy ? 1 : Math.sign(p.y - cy);
+      // straight onto the segment leaving it. A point on a curve can pin
+      // its label's corner instead, `labelDir: [ux, uy]` (each 1 or -1),
+      // since only its generator knows which way the curve leaves it.
+      const ux = p.labelDir ? p.labelDir[0] : p.x === cx ? 1 : Math.sign(p.x - cx);
+      const uy = p.labelDir ? p.labelDir[1] : p.y === cy ? 1 : Math.sign(p.y - cy);
       nodes.push(figLabel(`pl${i}`, X(p.x) + ux * 11, Y(p.y) - uy * 11 + 6, p.label,
         ux >= 0 ? 'start' : 'end', 'var(--ink)', NUM * 1.15));
     });

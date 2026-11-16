@@ -110,7 +110,7 @@
 
     { "id": "15A", "ch": 15, "unit": "Trigonometry", "lesson": "Labelling sides of a right angled triangle", "page": 314, "skills": [], "status": "todo" },
     { "id": "15B", "ch": 15, "unit": "Trigonometry", "lesson": "The trigonometric ratios", "page": 316, "skills": ["sohcahtoa-find-side", "sohcahtoa-find-angle"], "status": "ready" },
-    { "id": "15C", "ch": 15, "unit": "Trigonometry", "lesson": "Problem solving", "page": 322, "skills": ["trig-calculator"], "status": "todo" },
+    { "id": "15C", "ch": 15, "unit": "Trigonometry", "lesson": "Problem solving", "page": 322, "skills": [], "status": "todo" },
     { "id": "15D", "ch": 15, "unit": "Trigonometry", "lesson": "The first quadrant of the unit circle", "page": 327, "skills": [], "status": "todo" },
     { "id": "15E", "ch": 15, "unit": "Trigonometry", "lesson": "True bearings", "page": 330, "skills": [], "status": "todo" },
     { "id": "15F", "ch": 15, "unit": "Trigonometry", "lesson": "3-dimensional problem solving", "page": 331, "skills": [], "status": "todo" },
@@ -141,7 +141,7 @@
     { "id": "20C", "ch": 20, "unit": "Transformation geometry", "lesson": "Reflections", "page": 406, "skills": ["reflection", "describe-transformation"], "status": "ready" },
     { "id": "20D", "ch": 20, "unit": "Transformation geometry", "lesson": "Enlargements and reductions", "page": 408, "skills": ["enlargement", "describe-transformation"], "status": "ready" },
     { "id": "20E", "ch": 20, "unit": "Transformation geometry", "lesson": "Stretches", "page": 410, "skills": [], "status": "todo" },
-    { "id": "20F", "ch": 20, "unit": "Transformation geometry", "lesson": "Transforming functions", "page": 413, "skills": [], "status": "todo" },
+    { "id": "20F", "ch": 20, "unit": "Transformation geometry", "lesson": "Transforming functions", "page": 413, "skills": ["transforming-graphs"], "status": "ready" },
     { "id": "20G", "ch": 20, "unit": "Transformation geometry", "lesson": "The inverse of a transformation", "page": 416, "skills": [], "status": "todo" },
     { "id": "20H", "ch": 20, "unit": "Transformation geometry", "lesson": "Combinations of transformations", "page": 417, "skills": [], "status": "todo" },
 
@@ -160,10 +160,10 @@
     { "id": "22B", "ch": 22, "unit": "Two variable analysis", "lesson": "Line of best fit by eye", "page": 459, "skills": ["line-of-best-fit", "mean-point"], "status": "ready" },
     { "id": "22C", "ch": 22, "unit": "Two variable analysis", "lesson": "Linear regression", "page": 461, "skills": [], "status": "skip" },
 
-    { "id": "23A", "ch": 23, "unit": "Further functions", "lesson": "Cubic functions", "page": 469, "skills": [], "status": "todo" },
+    { "id": "23A", "ch": 23, "unit": "Further functions", "lesson": "Cubic functions", "page": 469, "skills": ["cubic-graphs"], "status": "ready" },
     { "id": "23B", "ch": 23, "unit": "Further functions", "lesson": "Inverse functions", "page": 473, "skills": ["inverse-functions"], "status": "ready" },
     { "id": "23C", "ch": 23, "unit": "Further functions", "lesson": "Using technology", "page": 475, "skills": [], "status": "skip" },
-    { "id": "23D", "ch": 23, "unit": "Further functions", "lesson": "Tangents to curves", "page": 480, "skills": [], "status": "todo" },
+    { "id": "23D", "ch": 23, "unit": "Further functions", "lesson": "Tangents to curves", "page": 480, "skills": ["tangent-gradient"], "status": "ready" },
 
     { "id": "24A", "ch": 24, "unit": "Vectors", "lesson": "Directed line segment representation", "page": 484, "skills": [], "status": "skip" },
     { "id": "24B", "ch": 24, "unit": "Vectors", "lesson": "Vector equality", "page": 485, "skills": ["vector-geometry"], "status": "ready" },
@@ -195,7 +195,7 @@
     { "id": "27B", "ch": 27, "unit": "Circle geometry", "lesson": "Cyclic quadrilaterals", "page": 556, "skills": ["cyclic-quadrilateral"], "status": "ready" },
 
     { "id": "28A", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Rational exponents", "page": 566, "skills": ["fractional-powers", "roots-as-powers"], "status": "ready" },
-    { "id": "28B", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Exponential functions", "page": 568, "skills": [], "status": "todo" },
+    { "id": "28B", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Exponential functions", "page": 568, "skills": ["exponential-graphs"], "status": "ready" },
     { "id": "28C", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Exponential equations", "page": 570, "skills": ["exponential-equations"], "status": "ready" },
     { "id": "28D", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Problem solving with exponential functions", "page": 573, "skills": [], "status": "skip" },
     { "id": "28E", "ch": 28, "unit": "Exponential functions and equations", "lesson": "Exponential modelling", "page": 576, "skills": [], "status": "skip" },
