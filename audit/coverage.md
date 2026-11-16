@@ -171,54 +171,54 @@ translation | stretch | Needs Joakim | 300 | 0/746 | 3 |  |  | D024
 reflection | foundation | Clean | 300 | 0/600 | 3 |  |  | 
 reflection | core | Clean | 300 | 0/600 | 3 |  |  | 
 reflection | stretch | Clean | 300 | 0/600 | 3 |  |  | 
-rotation | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-rotation | core | Not covered | 300 | 0/600 | 0 |  |  | 
-rotation | stretch | Not covered | 300 | 0/600 | 0 |  |  | 
-enlargement | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-enlargement | core | Not covered | 300 | 0/600 | 0 |  |  | 
-enlargement | stretch | Not covered | 300 | 0/600 | 0 |  |  | 
-describe-transformation | foundation | Not covered | 300 | 73/394 | 0 |  |  | 
-describe-transformation | core | Not covered | 300 | 35/448 | 0 |  |  | 
-describe-transformation | stretch | Not covered | 300 | 0/497 | 0 |  |  | 
-column-vectors | foundation | Not covered | 300 | 0/1500 | 0 |  |  | 
-column-vectors | core | Not covered | 300 | 0/600 | 0 |  |  | 
-column-vectors | stretch | Not covered | 300 | 0/600 | 0 |  |  | 
-vector-arithmetic | foundation | Not covered | 300 | 0/600 | 0 |  |  | 
-vector-arithmetic | core | Not covered | 300 | 0/600 | 0 |  |  | 
-vector-arithmetic | stretch | Not covered | 300 | 0/600 | 0 |  |  | 
-vector-magnitude | foundation | Not covered | 300 | 600/900 | 0 |  |  | 
-vector-magnitude | core | Not covered | 300 | 443/743 | 0 |  |  | 
-vector-magnitude | stretch | Not covered | 300 | 430/1030 | 0 |  |  | 
-parallel-vectors | foundation | Not covered | 300 | 600/600 | 0 |  |  | 
-parallel-vectors | core | Not covered | 300 | 600/600 | 0 |  |  | 
-parallel-vectors | stretch | Not covered | 300 | 300/1200 | 0 |  |  | 
-vector-geometry | foundation | Not covered | 300 | 0/624 | 0 |  |  | 
-vector-geometry | core | Not covered | 300 | 0/781 | 0 |  |  | 
-vector-geometry | stretch | Not covered | 300 | 0/800 | 0 |  |  | 
-angles-on-a-line | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-angles-on-a-line | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-angles-on-a-line | stretch | Not covered | 300 | 900/900 | 0 |  |  | 
-angles-at-a-point | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-angles-at-a-point | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-angles-at-a-point | stretch | Not covered | 300 | 900/900 | 0 |  |  | 
-vertically-opposite | foundation | Not covered | 300 | 300/300 | 0 |  |  | 
-vertically-opposite | core | Not covered | 300 | 508/508 | 0 |  |  | 
-vertically-opposite | stretch | Not covered | 300 | 900/900 | 0 |  |  | 
-triangle-angle-sum | foundation | Not covered | 300 | 1200/900 | 0 |  |  | 
-triangle-angle-sum | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-triangle-angle-sum | stretch | Not covered | 300 | 900/900 | 0 |  |  | 
-triangle-exterior-angle | foundation | Not covered | 300 | 900/600 | 0 |  |  | 
-triangle-exterior-angle | core | Not covered | 300 | 1200/900 | 0 |  |  | 
-triangle-exterior-angle | stretch | Not covered | 300 | 900/900 | 0 |  |  | 
-isosceles-base-angles | foundation | Not covered | 300 | 300/600 | 0 |  |  | 
-isosceles-base-angles | core | Not covered | 300 | 900/600 | 0 |  |  | 
-isosceles-base-angles | stretch | Not covered | 300 | 1200/900 | 0 |  |  | 
-quadrilateral-angle-sum | foundation | Not covered | 300 | 900/900 | 0 |  |  | 
-quadrilateral-angle-sum | core | Not covered | 300 | 900/900 | 0 |  |  | 
-quadrilateral-angle-sum | stretch | Not covered | 300 | 900/1200 | 0 |  |  | 
-angles-problem-solving | foundation | Not covered | 300 | 1043/1200 | 0 |  |  | 
-angles-problem-solving | core | Not covered | 300 | 1037/1200 | 0 |  |  | 
-angles-problem-solving | stretch | Not covered | 300 | 1200/1500 | 0 |  |  | 
+rotation | foundation | Clean | 300 | 0/600 | 3 |  |  | 
+rotation | core | Clean | 300 | 0/600 | 3 |  |  | 
+rotation | stretch | Clean | 300 | 0/600 | 3 |  |  | 
+enlargement | foundation | Clean | 300 | 0/600 | 3 |  |  | 
+enlargement | core | Clean | 300 | 0/600 | 3 |  |  | 
+enlargement | stretch | Clean | 300 | 0/600 | 3 |  |  | 
+describe-transformation | foundation | Needs Joakim | 300 | 73/394 | 3 |  |  | D035
+describe-transformation | core | Needs Joakim | 300 | 35/448 | 3 |  |  | D035
+describe-transformation | stretch | Needs Joakim | 300 | 0/497 | 3 |  |  | D035
+column-vectors | foundation | Clean | 300 | 0/1500 | 3 |  |  | 
+column-vectors | core | Clean | 300 | 0/600 | 3 |  |  | 
+column-vectors | stretch | Clean | 300 | 0/600 | 3 |  |  | 
+vector-arithmetic | foundation | Clean | 300 | 0/600 | 3 |  |  | 
+vector-arithmetic | core | Clean | 300 | 0/600 | 3 |  |  | 
+vector-arithmetic | stretch | Clean | 300 | 0/600 | 3 |  |  | 
+vector-magnitude | foundation | Clean | 300 | 600/900 | 3 |  |  | 
+vector-magnitude | core | Clean | 300 | 443/743 | 3 |  |  | 
+vector-magnitude | stretch | Clean | 300 | 430/1030 | 3 |  |  | 
+parallel-vectors | foundation | Clean | 300 | 600/600 | 3 |  |  | 
+parallel-vectors | core | Needs Joakim | 300 | 600/600 | 3 |  |  | D033
+parallel-vectors | stretch | Needs Joakim | 300 | 300/1200 | 3 |  |  | D033
+vector-geometry | foundation | Clean | 300 | 0/624 | 3 |  |  | 
+vector-geometry | core | Clean | 300 | 0/781 | 3 |  |  | 
+vector-geometry | stretch | Clean | 300 | 0/800 | 3 |  |  | 
+angles-on-a-line | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+angles-on-a-line | core | Clean | 300 | 1200/900 | 3 |  |  | 
+angles-on-a-line | stretch | Fixed | 300 | 900/900 | 3 |  |  | D030
+angles-at-a-point | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+angles-at-a-point | core | Clean | 300 | 1200/900 | 3 |  |  | 
+angles-at-a-point | stretch | Fixed | 300 | 900/900 | 3 |  |  | D031
+vertically-opposite | foundation | Clean | 300 | 300/300 | 3 |  |  | 
+vertically-opposite | core | Clean | 300 | 508/508 | 3 |  |  | 
+vertically-opposite | stretch | Fixed | 300 | 900/900 | 3 |  |  | D025
+triangle-angle-sum | foundation | Clean | 300 | 1200/900 | 3 |  |  | 
+triangle-angle-sum | core | Clean | 300 | 1200/900 | 3 |  |  | 
+triangle-angle-sum | stretch | Fixed | 300 | 900/900 | 3 |  |  | D027
+triangle-exterior-angle | foundation | Clean | 300 | 900/600 | 3 |  |  | 
+triangle-exterior-angle | core | Clean | 300 | 1200/900 | 3 |  |  | 
+triangle-exterior-angle | stretch | Fixed | 300 | 900/900 | 3 |  |  | D026
+isosceles-base-angles | foundation | Clean | 300 | 300/600 | 3 |  |  | 
+isosceles-base-angles | core | Clean | 300 | 900/600 | 3 |  |  | 
+isosceles-base-angles | stretch | Clean | 300 | 1200/900 | 3 |  |  | 
+quadrilateral-angle-sum | foundation | Needs Joakim | 300 | 900/900 | 3 |  |  | D034
+quadrilateral-angle-sum | core | Needs Joakim | 300 | 900/900 | 3 |  |  | D034
+quadrilateral-angle-sum | stretch | Fixed | 300 | 900/1200 | 3 |  |  | D028
+angles-problem-solving | foundation | Clean | 300 | 1043/1200 | 3 |  |  | 
+angles-problem-solving | core | Clean | 300 | 1037/1200 | 3 |  |  | 
+angles-problem-solving | stretch | Fixed | 300 | 1200/1500 | 3 |  |  | D032
 parallel-line-angles | foundation | Not covered | 300 | 394/300 | 0 |  |  | 
 parallel-line-angles | core | Not covered | 300 | 392/300 | 0 |  |  | 
 parallel-line-angles | stretch | Not covered | 300 | 719/708 | 0 |  |  | 
