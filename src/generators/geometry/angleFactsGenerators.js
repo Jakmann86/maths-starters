@@ -670,11 +670,11 @@ export const generateParallelLineAngles = (options = {}) => {
     const x = _.random(4, 15);
     const coeff = _.random(2, 6);
     const constant = trueUnknownValue - coeff * x;
-    unknownLabel = `${coeff}x${constant >= 0 ? ` + ${constant}` : ` - ${Math.abs(constant)}`}`;
+    unknownLabel = formatLinear(coeff, constant);
     answer = `x = ${x}`;
     workingOut =
       `\\text{${factLabel} are ${equal ? 'equal' : 'supplementary'}, so:}` + NL +
-      `${coeff}x ${constant >= 0 ? '+' : '-'} ${Math.abs(constant)} = ${trueUnknownValue}` + NL +
+      `${formatLinear(coeff, constant)} = ${trueUnknownValue}` + NL +
       `x = ${x}`;
   } else {
     unknownLabel = 'x';
