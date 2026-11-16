@@ -54,4 +54,12 @@ describe('audit regressions: working out', () => {
       expect(ls[1]).toMatch(/^\dx [+-] \d+ = \dx [+-] \d+$/);
     });
   });
+
+  it('D015 solve-fractional-coefficients: no fraction over 1, no q/q coefficient, no "+ 0"', () => {
+    ['foundation', 'core', 'stretch'].forEach((band) => draws('solve-fractional-coefficients', band, 1000).forEach((q) => {
+      expect(q.workingOut).not.toMatch(/\\frac\{\d+\}\{1\}/);
+      expect(q.workingOut).not.toMatch(/\\frac\{(\d+)\}\{\1\}x/);
+      expect(`${q.questionMath}\n${q.workingOut}`).not.toMatch(/\+ 0(?![\d.])/);
+    }));
+  });
 });

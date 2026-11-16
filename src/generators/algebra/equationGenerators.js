@@ -257,7 +257,8 @@ const fcFoundation = () => {
   return {
     questionMath: `${fracX(p, q)} ${constTerm(b)} = ${c}`,
     answer: `x = ${x}`,
-    steps: [`${fracX(p, q)} = ${c - b}`, `x = ${c - b} \\times \\frac{${q}}{${p}}`, `x = ${x}`],
+    // x/q is undone by multiplying by q, not by q/1.
+    steps: [`${fracX(p, q)} = ${c - b}`, `x = ${c - b} \\times ${p === 1 ? q : `\\frac{${q}}{${p}}`}`, `x = ${x}`],
   };
 };
 
@@ -272,9 +273,10 @@ const fcCore = () => {
   const b = randNonZero(-8, 8);
   const d = b + ((p - r) * x) / q;
   return {
-    questionMath: `${fracX(p, q)} ${constTerm(b)} = ${fracX(r, q)} ${constTerm(d)}`,
+    questionMath: `${fracX(p, q)} ${constTerm(b)} = ${d === 0 ? fracX(r, q) : `${fracX(r, q)} ${constTerm(d)}`}`,
     answer: `x = ${x}`,
-    steps: [`${fracX(p, q)} - ${fracX(r, q)} = ${d} - ${b < 0 ? `(${b})` : b}`, `${fracX(p - r, q)} = ${d - b}`, `x = ${x}`],
+    // q/q of x is x: that line is then the answer, and joinSteps prints it once.
+    steps: [`${fracX(p, q)} - ${fracX(r, q)} = ${d} - ${b < 0 ? `(${b})` : b}`, `${p - r === q ? 'x' : fracX(p - r, q)} = ${d - b}`, `x = ${x}`],
   };
 };
 
@@ -296,9 +298,9 @@ const fcStretch = () => {
     if (num === 0) return fcStretch();
     const lhs = e === 0 ? bracket : `${bracket} ${constTerm(e)}`;
     return {
-      questionMath: `${lhs} = ${xTerm(c)} ${constTerm(d)}`,
+      questionMath: `${lhs} = ${side(c, d)}`,
       answer: formatSolution(num, p * a1 - c),
-      steps: [`${expanded}${e === 0 ? '' : ` ${constTerm(e)}`} = ${xTerm(c)} ${constTerm(d)}`, `${xTerm(p * a1 - c)} = ${num}`, formatSolution(num, p * a1 - c)],
+      steps: [`${expanded}${e === 0 ? '' : ` ${constTerm(e)}`} = ${side(c, d)}`, `${xTerm(p * a1 - c)} = ${num}`, formatSolution(num, p * a1 - c)],
     };
   }
   // (p/q)(qa1 x + qb1) - x/r = d  ->  (r p a1 - 1)x = r(d - p b1)
