@@ -58,6 +58,8 @@ import * as probability from '../generators/number/probabilityGenerators';
 import * as trees from '../generators/number/treeDiagramGenerators';
 import * as probMore from '../generators/number/probabilityTopicsGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
+import * as ratios from '../generators/number/ratioGenerators';
+import * as metric from '../generators/geometry/metricUnitsGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
 import * as spread from '../generators/statistics/spreadGenerators';
@@ -795,16 +797,42 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
-  // --- Haese 30A-B: variation ---
+  // --- Ratio and proportion: ratio (Haese Assumed Knowledge F, syllabus
+  // E1.10), then variation (Haese 30A-B). Ratio first: it is what
+  // variation builds on, and the order is the cycle order ---
+  'ratio-simplify': {
+    label: 'Simplifying ratios',
+    topic: 'Ratio and proportion',
+    generate: (opts) => ratios.generateRatioSimplify(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'ratio-proportion': {
+    label: 'Recipes and best value',
+    topic: 'Ratio and proportion',
+    generate: (opts) => ratios.generateRatioProportion(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'ratio-share': {
+    label: 'Sharing in a ratio',
+    topic: 'Ratio and proportion',
+    generate: (opts) => ratios.generateRatioShare(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'map-scale': {
+    label: 'Map scales',
+    topic: 'Ratio and proportion',
+    generate: (opts) => ratios.generateMapScale(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'direct-variation': {
     label: 'Direct variation',
-    topic: 'Variation',
+    topic: 'Ratio and proportion',
     generate: (opts) => variation.generateDirectVariation(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'inverse-variation': {
     label: 'Inverse variation',
-    topic: 'Variation',
+    topic: 'Ratio and proportion',
     generate: (opts) => variation.generateInverseVariation(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
@@ -1032,6 +1060,20 @@ export const skills = {
     label: 'Area of a kite',
     topic: 'Area',
     generate: (opts) => area.generateAreaKite(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 9A, 9C, 11B-D: metric units, syllabus E6.1 ---
+  'convert-units': {
+    label: 'Converting units',
+    topic: 'Metric units',
+    generate: (opts) => metric.generateConvertUnits(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'convert-area-volume': {
+    label: 'Area and volume units',
+    topic: 'Metric units',
+    generate: (opts) => metric.generateConvertAreaVolume(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -1687,7 +1729,7 @@ export const STRANDS = [
       'Graphs of functions',
       'Arithmetic and geometric sequences',
       'Quadratic and cubic sequences',
-      'Variation',
+      'Ratio and proportion',
     ],
   },
   {
@@ -1705,7 +1747,7 @@ export const STRANDS = [
       'Further trigonometry',
     ],
   },
-  { name: 'Mensuration', topics: ['Perimeter', 'Area', 'Surface area', 'Volume', 'Compound shapes'] },
+  { name: 'Mensuration', topics: ['Metric units', 'Perimeter', 'Area', 'Surface area', 'Volume', 'Compound shapes'] },
   // Sets sits here rather than in Number: Venn diagrams lead into
   // probability from a diagram, and the scheme teaches them together.
   { name: 'Statistics and probability', topics: ['Sets', 'Representing data', 'Averages', 'Spread', 'Scatter graphs', 'Probability'] },
