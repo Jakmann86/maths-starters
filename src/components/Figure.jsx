@@ -1581,7 +1581,9 @@ export default function Figure({ fig, color, shown }) {
       const n = unitVec(Math.sin(rad(start)), Math.cos(rad(start)));
       nodes.push(figLabel('rv', mid[0] + n[0] * 22, mid[1] + n[1] * 22 + 6, fig.r, 'start', col('r')));
     }
-    return svgWrap(nodes, x1 - x0, y1 - y0, 'sec', fig.big, shown);
+    // hug: beside a questionMath (a given arc or area), the figure keeps to
+    // its own width and leaves the line room.
+    return svgWrap(nodes, x1 - x0, y1 - y0, 'sec', fig.big, shown, false, 1, Boolean(fig.hug));
   }
 
   if (fig.type === 'circle-semicircle') {
