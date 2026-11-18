@@ -1531,6 +1531,59 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(nodes, 176, 176, 'ci', fig.big, shown);
   }
 
+  if (fig.type === 'sector') {
+    // A sector drawn to its true angle (within 25-160 deg, so an obtuse one
+    // never looks acute), standing symmetric about the vertical. `angle` is
+    // the drawn size in degrees, `angleLabel` what the centre says ('72^\circ'
+    // or 'θ'), `r` the radius label. `unknown` ('arc', 'area', 'r', 'angle')
+    // takes the slot colour; 'area' also tints the sector. `major` draws the
+    // whole circle and tints the major sector instead: the angle marked is
+    // still the minor one, so the question is what is left of 360.
+    // A whole circle drawn smaller, so its labels stay the size of a
+    // sector's in the same slot.
+    const R = fig.major ? 66 : 84;
+    const th = Math.max(25, Math.min(160, Number(fig.angle) || 60));
+    const rad = (d) => (d * Math.PI) / 180;
+    const start = 90 - th / 2, end = 90 + th / 2;
+    const at = (d) => [R * Math.cos(rad(d)), -R * Math.sin(rad(d))];
+    const A = at(start), B = at(end);
+    // The extent: the whole circle for a major sector, otherwise the centre,
+    // the two ends and the top of the arc (which always passes 90 deg).
+    const pts = fig.major ? [[-R, -R], [R, R]] : [[0, 0], A, B, [0, -R]];
+    const PAD = fig.major ? 46 : 34;
+    const x0 = Math.min(...pts.map((p) => p[0])) - PAD, x1 = Math.max(...pts.map((p) => p[0])) + PAD;
+    const y0 = Math.min(...pts.map((p) => p[1])) - PAD, y1 = Math.max(...pts.map((p) => p[1])) + PAD;
+    const sh = ([x, y]) => [x - x0, y - y0];
+    const [O, Ps, Pe] = [sh([0, 0]), sh(A), sh(B)];
+    const col = (k) => (fig.unknown === k ? color : 'var(--ink)');
+    const f2 = (v) => v.toFixed(2);
+    const nodes = [];
+    if (fig.major) {
+      // The major sector: from B round the long way to A.
+      nodes.push(<path key="maj" d={`M ${f2(O[0])} ${f2(O[1])} L ${f2(Pe[0])} ${f2(Pe[1])} A ${R} ${R} 0 1 0 ${f2(Ps[0])} ${f2(Ps[1])} Z`} fill={color} fillOpacity={0.18} stroke="none" />);
+      nodes.push(<circle key="c" cx={f2(O[0])} cy={f2(O[1])} r={R} fill="none" stroke="var(--ink)" strokeWidth={3} />);
+    } else {
+      // Counter-clockwise on the page from A to B: sweep 0, the short way.
+      nodes.push(<path key="sec" d={`M ${f2(O[0])} ${f2(O[1])} L ${f2(Ps[0])} ${f2(Ps[1])} A ${R} ${R} 0 0 0 ${f2(Pe[0])} ${f2(Pe[1])} Z`} fill={fig.unknown === 'area' ? color : 'none'} fillOpacity={fig.unknown === 'area' ? 0.18 : 0} stroke="var(--ink)" strokeWidth={3} />);
+      if (fig.unknown === 'arc') nodes.push(<path key="arc" d={`M ${f2(Ps[0])} ${f2(Ps[1])} A ${R} ${R} 0 0 0 ${f2(Pe[0])} ${f2(Pe[1])}`} fill="none" stroke={color} strokeWidth={5} />);
+    }
+    nodes.push(figLine('ra', O[0], O[1], Ps[0], Ps[1]), figLine('rb', O[0], O[1], Pe[0], Pe[1]));
+    nodes.push(<circle key="o" cx={f2(O[0])} cy={f2(O[1])} r={4} fill="var(--ink)" />);
+    if (fig.angleLabel) nodes.push(...angleMarker(O, Ps, Pe, fig.angleLabel, 'sa', col('angle'), {}, 24));
+    if (fig.r && fig.major) {
+      // Just outside the circle, off the end of the right-hand radius: inside
+      // it there is only the tint to sit on.
+      const u = unitVec(Ps[0] - O[0], Ps[1] - O[1]);
+      nodes.push(figLabel('rv', Ps[0] + u[0] * 12, Ps[1] + u[1] * 12 + 2, fig.r, 'start', col('r')));
+    } else if (fig.r) {
+      // Beside the right-hand radius, outside it, halfway along.
+      const mid = [(O[0] + Ps[0]) / 2, (O[1] + Ps[1]) / 2];
+      const n = unitVec(Math.sin(rad(start)), Math.cos(rad(start)));
+      nodes.push(figLabel('rv', mid[0] + n[0] * 22, mid[1] + n[1] * 22 + 6, fig.r, 'start', col('r')));
+    }
+    return svgWrap(nodes, x1 - x0, y1 - y0, 'sec', fig.big, shown);
+  }
+
   if (fig.type === 'circle-semicircle') {
     // AB is a diameter through the centre, C is elsewhere on the circle, so
     // angle ACB is a right angle and the two remaining angles sum to 90. That
