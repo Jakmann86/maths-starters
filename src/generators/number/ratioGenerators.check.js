@@ -30,10 +30,11 @@ export const UNITS = {
   p: ['money', 1],
 };
 
-/** A TeX arithmetic expression's value: numbers, + - × ÷, brackets, \frac. */
+/** A TeX arithmetic expression's value: numbers, + - × ÷, powers, brackets, \frac. */
 export function evaluate(tex) {
   let s = String(tex).trim();
   for (let i = 0; i < 4; i += 1) s = s.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '(($1)/($2))');
+  s = s.replace(/\^\{(\d+)\}/g, '**$1').replace(/\^(\d)/g, '**$1');
   s = s.replace(/\\times/g, '*').replace(/\\div/g, '/').replace(/\s+/g, '');
   must(/^[\d.+\-*/()]+$/.test(s), `not arithmetic: ${tex}`);
   // eslint-disable-next-line no-new-func

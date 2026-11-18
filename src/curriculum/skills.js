@@ -60,6 +60,9 @@ import * as probMore from '../generators/number/probabilityTopicsGenerators';
 import * as variation from '../generators/algebra/variationGenerators';
 import * as ratios from '../generators/number/ratioGenerators';
 import * as metric from '../generators/geometry/metricUnitsGenerators';
+import * as factors from '../generators/number/factorGenerators';
+import * as rates from '../generators/number/ratesGenerators';
+import * as pctGrowth from '../generators/number/percentGrowthGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
 import * as spread from '../generators/statistics/spreadGenerators';
@@ -1162,6 +1165,12 @@ export const skills = {
     generate: (opts) => pct.generatePercentageOfAmount(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'percentage-of-another': {
+    label: 'One quantity as a percentage of another',
+    topic: 'Percentages',
+    generate: (opts) => pctGrowth.generatePercentageOfAnother(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
   'reverse-percentages': {
     label: 'Reverse percentages',
     topic: 'Percentages',
@@ -1239,6 +1248,34 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Factors and multiples: Haese Assumed Knowledge B-C, syllabus E1.1 ---
+  'prime-factors': {
+    label: 'Prime factors',
+    topic: 'Factors and multiples',
+    generate: (opts) => factors.generatePrimeFactors(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'hcf-lcm': {
+    label: 'HCF and LCM',
+    topic: 'Factors and multiples',
+    generate: (opts) => factors.generateHcfLcm(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Money and rates: syllabus E1.11 and E1.15, Rayner 2 ---
+  'exchange-rates': {
+    label: 'Exchange rates',
+    topic: 'Money and rates',
+    generate: (opts) => rates.generateExchangeRates(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'rates': {
+    label: 'Rates: pay, flow and fuel',
+    topic: 'Money and rates',
+    generate: (opts) => rates.generateRates(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 6B: index laws ---
   'index-laws-multiply-divide': {
     label: 'Multiplying and dividing powers',
@@ -1310,6 +1347,12 @@ export const skills = {
     label: 'Compound interest',
     topic: 'Profit and interest',
     generate: (opts) => money.generateCompoundInterest(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  'growth-decay': {
+    label: 'Growth and decay',
+    topic: 'Profit and interest',
+    generate: (opts) => pctGrowth.generateGrowthDecay(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'speed-distance-time': {
@@ -1703,6 +1746,8 @@ export const STRANDS = [
     name: 'Number',
     topics: [
       'Order of operations',
+      'Factors and multiples',
+      'Money and rates',
       'Rational numbers',
       'Surds',
       'Indices',
