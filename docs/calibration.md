@@ -832,6 +832,31 @@ litres). Stretch: a rectangle's area in cm² with one side in metres (9C.1
 question 3), or a tank's capacity in litres with one edge in metres
 (Example 12). Hectares are left out: the syllabus does not use them.
 
+## Arcs and sectors — Haese 9D, Rayner 4.3
+
+IGCSE 0607 E6.3b, on the `sector` figure, drawn to its true angle.
+**Arc length** sits in Perimeter and **Area of a sector** in Area, each
+after its circle skill. Every band mixes exact answers in π with 3 s.f.,
+and the angle and radius always make a whole multiple of π.
+
+Foundation, both skills: the angle a factor of 360, the Core syllabus's
+limit (Haese Example 7b, Rayner Example 5). Core: for an arc, the perimeter
+of the sector, arc plus both radii (Haese 9D question 8c). For an area, the
+shaded major sector, with the minor angle marked, so 360 − θ comes first.
+Stretch: the arc or the area given exactly, find the angle or the radius
+(Haese Example 9, Rayner 4.3 question 4). The pools are small by nature:
+372 and 492 questions for arcs, 234 and 498 for areas.
+
+## Perpendicular lines and bisectors — Haese 14F and Review sets 14A–B
+
+IGCSE 0607 E4.6, last in Straight-line graphs. Foundation: perpendicular to
+y = mx + c through a point, in gradient-intercept form (Review set 14A
+question 9b). Core: perpendicular to ax + by = d through a point, in
+general form (question 11), by bx − ay = d with d from the point. Stretch:
+the perpendicular bisector of AB in general form. It runs through the
+midpoint at right angles to AB, as 14F's lines of symmetry do. The
+parallel line through a point was already Stretch of Parallel lines.
+
 ## Logarithms — Haese 31A–E
 
 Year 10, IGCSE 0607 (syllabus 3.10). Rayner has no logarithms chapter. Base
