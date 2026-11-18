@@ -41,8 +41,9 @@ export const skills = {
 - `topic` groups skills. Skills sharing a topic must be interchangeable within
   a lesson, and their order in the file is the order ↻ cycles through.
 - `difficulties` lists only the bands the generator genuinely varies across.
-- `STRANDS` sets the topic panel's display order (Number, Algebra, Geometry,
-  Mensuration, Statistics and probability, Problem solving), deliberately
+- `STRANDS` sets the topic panel's display order (Number, Algebra, Graphs and
+  functions, Geometry, Mensuration, Statistics and probability, Problem
+  solving), deliberately
   separate from file order. Within a strand, topics follow the textbook: by
   their home chapter in `haese-igcse.json` (the one holding most of their
   skills), then the first section that uses one, with assumed-knowledge

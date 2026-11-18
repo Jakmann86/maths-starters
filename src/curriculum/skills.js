@@ -1723,15 +1723,14 @@ export const STRANDS = [
       'Formulae',
       'Simultaneous equations',
       'Algebraic fractions',
-      'Functions',
       'Quadratic equations',
-      'Quadratic graphs',
-      'Graphs of functions',
       'Arithmetic and geometric sequences',
       'Quadratic and cubic sequences',
       'Ratio and proportion',
     ],
   },
+  // Split from Algebra so neither group is too long to scan in the panel.
+  { name: 'Graphs and functions', topics: ['Functions', 'Quadratic graphs', 'Graphs of functions'] },
   {
     name: 'Geometry',
     topics: [

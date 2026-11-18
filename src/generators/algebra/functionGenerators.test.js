@@ -101,7 +101,7 @@ describe('Functions', () => {
       expect(getSkill(id).topic).toBe('Functions');
       BANDS.forEach((band) => check(generateForSkill(id, band), band));
     });
-    expect(strandOf('Functions')).toBe('Algebra');
-    expect(topicGroups().find((g) => g.name === 'Algebra').topics).toContain('Functions');
+    expect(strandOf('Functions')).toBe('Graphs and functions');
+    expect(topicGroups().find((g) => g.name === 'Graphs and functions').topics).toContain('Functions');
   });
 });
