@@ -48,6 +48,6 @@ describe('Quadratic graphs', () => {
 
   it('is an Algebra topic in Haese order', () => {
     expect(skillsInTopic('Quadratic graphs')).toEqual(Object.keys(KINDS));
-    expect(strandOf('Quadratic graphs')).toBe('Algebra');
+    expect(strandOf('Quadratic graphs')).toBe('Graphs and functions');
   });
 });
