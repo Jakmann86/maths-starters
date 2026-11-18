@@ -15,7 +15,7 @@ const CHECKS = { 'prime-factors': checkPrimeFactors, 'hcf-lcm': checkHcfLcm };
 const check = (q, band) => CHECKS[q.metadata?.topic]?.(q, band) ?? (() => { throw new Error('topic'); })();
 
 const KINDS = {
-  'prime-factors': { foundation: ['product'], core: ['index form'], stretch: ['cube', 'square'] },
+  'prime-factors': { foundation: ['product'], core: ['index form'], stretch: ['no', 'yes'] },
   'hcf-lcm': { foundation: ['HCF', 'LCM'], core: ['both'], stretch: ['HCF problem', 'LCM problem'] },
 };
 
@@ -26,7 +26,7 @@ const KINDS = {
 // factors or multiples keeps Foundation HCF and LCM to two numbers up to
 // 48: 291 pairs.
 const FLOOR = {
-  'prime-factors': { foundation: 66, core: 220, stretch: 860 },
+  'prime-factors': { foundation: 66, core: 220, stretch: 3300 },
   'hcf-lcm': { foundation: 280, core: 2700, stretch: 1120 },
 };
 
@@ -47,7 +47,16 @@ describe('factors and multiples', () => {
 
   it('rejects every broken copy', () => {
     const ops = {
-      ...generic('answer nudged', 'question line nudged', 'a working number nudged', 'metadata changed'),
+      ...generic('answer nudged', 'a working number nudged', 'metadata changed'),
+      // Nudging N's first number is an equivalent change in Stretch: a
+      // higher power never undoes a yes, and a power d does not use changes
+      // nothing. Stretch has its own operator below, which always flips the
+      // answer.
+      'question line nudged': (q) => {
+        if (q.questionMath?.startsWith('N = ')) return false;
+        const [, nudge] = Object.entries(generic('question line nudged'))[0];
+        return nudge(q);
+      },
       'a prime swapped in the answer': (q) => {
         if (!/\\times/.test(q.answer)) return false;
         q.answer = q.answer.replace(/^(\d+)/, (d) => (d === '2' ? '3' : '2'));
@@ -62,9 +71,23 @@ describe('factors and multiples', () => {
         if (!m) return false;
         q.answer = `\\text{HCF} = ${m[2]}, \\ \\text{LCM} = ${m[1]}`;
       },
-      'square and cube swapped': (q) => {
-        if (!/square|cube/.test(q.instruction)) return false;
-        q.instruction = q.instruction.includes('square') ? q.instruction.replace('square', 'cube') : q.instruction.replace('cube', 'square');
+      'yes and no swapped': (q) => {
+        if (!/^\\text\{(Yes|No): \}/.test(q.answer)) return false;
+        q.answer = q.answer.startsWith('\\text{Yes') ? q.answer.replace('Yes', 'No') : q.answer.replace('No', 'Yes');
+      },
+      // Lower the power of a prime d needs in full, or raise the one it was
+      // short of: either way the answer must change.
+      'the deciding power in N moved': (q) => {
+        if (!q.questionMath?.startsWith('N = ')) return false;
+        const [nLine, ask] = q.questionMath.split('\n');
+        const d = Number(/\d+/.exec(ask)[0]);
+        const terms = nLine.slice(4).split(' \\times ').map((t) => t.split('^').map(Number)).map(([p, e]) => [p, e ?? 1]);
+        const need = (p) => { let e = 0, x = d; while (x % p === 0) { x /= p; e += 1; } return e; };
+        const i = terms.findIndex(([p, e]) => (q.answer.startsWith('\\text{Yes') ? need(p) === e : need(p) === e + 1));
+        if (i < 0) return false;
+        terms[i][1] += q.answer.startsWith('\\text{Yes') ? -1 : 1;
+        const shown = terms.filter(([, e]) => e > 0).map(([p, e]) => (e > 1 ? `${p}^${e}` : String(p))).join(' \\times ');
+        q.questionMath = [`N = ${shown}`, ask].join('\n');
       },
       'moved to another band': bandMove({ foundation: 'core', core: 'stretch', stretch: 'foundation' }),
     };

@@ -738,9 +738,11 @@ topics at the front.
 
 **Prime factors.** Foundation: a number up to 200 as a product of primes,
 by the division ladder of Haese's examples (24 = 2 × 2 × 2 × 3). Core: up
-to 2000, in index form, with a repeated prime. Stretch: a number given in
-index form, the smallest whole number to multiply it by to make a square or
-a cube. The numbers are their own pools: Foundation has 69 and Core 228.
+to 2000, in index form, with a repeated prime. Stretch: N given in index
+form, is d a factor of N? Yes when each of d's prime powers is in N (63 =
+3² × 7 divides 2³ × 3² × 7); no for one power too many, or a prime N does
+not have, and the answer gives the reason. The numbers are their own pools:
+Foundation has 69 and Core 228.
 
 **HCF and LCM.** Foundation: one of the two, for numbers up to 48, by
 listing factors or multiples (Example 11). Core: both, from the two
