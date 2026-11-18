@@ -36,7 +36,7 @@ const NL = '\n';
 
 
 /** A signed fraction in lowest terms, as LaTeX. Whole numbers stay whole. */
-function frac(num, den) {
+export function frac(num, den) {
   if (den < 0) { num = -num; den = -den; }
   const g = gcd(num, den) || 1;
   const n = num / g;
@@ -52,29 +52,29 @@ const signed = (c) => (c === 0 ? '' : ` ${c < 0 ? '-' : '+'} ${Math.abs(c)}`);
 const coef = (v) => (v === 1 ? '' : (v === -1 ? '-' : String(v)));
 
 /** A fractional gradient in front of x: 1 and -1 lose the digit. */
-const mx = (mNum, mDen) => {
+export const mx = (mNum, mDen) => {
   const m = frac(mNum, mDen);
   return m === '1' ? '' : (m === '-1' ? '-' : m);
 };
 
 /** y = mx + c, with m as a fraction and the 1s and 0s tidied away. */
-function lineEquation(mNum, mDen, c) {
+export function lineEquation(mNum, mDen, c) {
   if (mNum === 0) return `y = ${c}`;
   return `y = ${mx(mNum, mDen)}x${signed(c)}`;
 }
 
 /** ax + by = d, with the 1s tidied away. */
-function generalForm(a, b, d) {
+export function generalForm(a, b, d) {
   const by = b === 1 ? '+ y' : (b === -1 ? '- y' : (b < 0 ? `- ${-b}y` : `+ ${b}y`));
   return `${coef(a)}x ${by} = ${d}`;
 }
 
 // A plain comma, not `,\\ `: `instruction` is plain text, where the
 // backslash would simply print.
-const point = (x, y) => `(${x}, ${y})`;
+export const point = (x, y) => `(${x}, ${y})`;
 
 /** A value as it should appear inside a sum: -4 becomes (-4), not "+ -4". */
-const br = (v) => (v < 0 ? `(${v})` : String(v));
+export const br = (v) => (v < 0 ? `(${v})` : String(v));
 
 const TRIPLES = pythagoreanTriples(70);
 

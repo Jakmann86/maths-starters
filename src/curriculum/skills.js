@@ -63,6 +63,8 @@ import * as metric from '../generators/geometry/metricUnitsGenerators';
 import * as factors from '../generators/number/factorGenerators';
 import * as rates from '../generators/number/ratesGenerators';
 import * as pctGrowth from '../generators/number/percentGrowthGenerators';
+import * as sectors from '../generators/geometry/sectorGenerators';
+import * as perpLine from '../generators/geometry/perpendicularLineGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
 import * as spread from '../generators/statistics/spreadGenerators';
@@ -663,6 +665,13 @@ export const skills = {
     generate: (opts) => coord.generatePointOnLine(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'perpendicular-line': {
+    label: 'Perpendicular lines and bisectors',
+    topic: 'Straight-line graphs',
+    generate: (opts) => perpLine.generatePerpendicularLine(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
 
   // --- Haese 26B: arithmetic sequences ---
   'sequences-arithmetic-nth-term': {
@@ -1098,12 +1107,26 @@ export const skills = {
     generate: (opts) => perim.generateCircumferenceCircle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'arc-length': {
+    label: 'Arc length',
+    topic: 'Perimeter',
+    generate: (opts) => sectors.generateArcLength(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   'area-circle': {
     label: 'Area of a circle',
     topic: 'Area',
     generate: (opts) => perim.generateAreaCircle(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
+  'sector-area': {
+    label: 'Area of a sector',
+    topic: 'Area',
+    generate: (opts) => sectors.generateSectorArea(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
 
   // --- Haese 27A-B: circle theorems, plus tangent theorems not in that backlog ---
   'angle-in-semicircle': {

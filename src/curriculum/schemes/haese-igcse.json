@@ -69,7 +69,7 @@
     { "id": "9A", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Length", "page": 192, "skills": ["convert-units"], "status": "ready" },
     { "id": "9B", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Perimeter", "page": 194, "skills": ["perimeter-rectangle", "perimeter-compound"], "status": "ready" },
     { "id": "9C", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Area", "page": 196, "skills": ["area-rectangle", "area-triangle", "area-parallelogram", "area-trapezium", "area-kite", "area-compound", "convert-area-volume"], "status": "ready" },
-    { "id": "9D", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Circles and sectors", "page": 201, "skills": ["circumference-circle", "area-circle"], "status": "ready" },
+    { "id": "9D", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Circles and sectors", "page": 201, "skills": ["circumference-circle", "area-circle", "arc-length", "sector-area"], "status": "ready" },
 
     { "id": "10A", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Percentage", "page": 209, "skills": ["percentage-of-amount", "percentage-of-another"], "status": "ready" },
     { "id": "10B", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Profit and loss", "page": 211, "skills": ["profit-loss"], "status": "ready" },
@@ -106,7 +106,7 @@
     { "id": "14C", "ch": 14, "unit": "Straight lines", "lesson": "Equations of lines (gradient-intercept form)", "page": 301, "skills": ["equation-of-a-line"], "status": "ready" },
     { "id": "14D", "ch": 14, "unit": "Straight lines", "lesson": "Equations of lines (general form)", "page": 304, "skills": ["line-general-form", "point-on-line"], "status": "ready" },
     { "id": "14E", "ch": 14, "unit": "Straight lines", "lesson": "Graphing lines from equations", "page": 307, "skills": [], "status": "todo" },
-    { "id": "14F", "ch": 14, "unit": "Straight lines", "lesson": "Lines of symmetry", "page": 308, "skills": [], "status": "todo" },
+    { "id": "14F", "ch": 14, "unit": "Straight lines", "lesson": "Lines of symmetry", "page": 308, "skills": ["perpendicular-line"], "status": "ready" },
 
     { "id": "15A", "ch": 15, "unit": "Trigonometry", "lesson": "Labelling sides of a right angled triangle", "page": 314, "skills": [], "status": "todo" },
     { "id": "15B", "ch": 15, "unit": "Trigonometry", "lesson": "The trigonometric ratios", "page": 316, "skills": ["sohcahtoa-find-side", "sohcahtoa-find-angle"], "status": "ready" },
