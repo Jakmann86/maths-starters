@@ -4,8 +4,8 @@
 // E1.1:
 //
 //   prime-factors  a number as a product of primes, then in index form,
-//                  then the smallest multiplier that makes it a square or
-//                  a cube
+//                  then whether a number is a factor of one given by its
+//                  prime factors
 //   hcf-lcm        the HCF or LCM of two numbers by listing, then both from
 //                  prime factorisations, then a problem that needs one
 //
@@ -47,8 +47,9 @@ const build = (exps) => Object.entries(exps).reduce((v, [p, e]) => v * Number(p)
 //
 //   foundation  up to 200, as a product of primes
 //   core        up to 2000, in index form, with a repeated prime
-//   stretch     given in index form: the smallest whole number to multiply
-//               by for a square, or for a cube
+//   stretch     N given in index form: is d a factor of N? Yes when each
+//               of d's prime powers is in N; no for a power too many, or a
+//               prime N does not have
 
 export const generatePrimeFactors = (options = {}) => {
   const { difficulty = 'core' } = options;
@@ -83,28 +84,36 @@ export const generatePrimeFactors = (options = {}) => {
       };
     }
 
-    // stretch: a square or a cube, from the index form.
-    const power = _.random(0, 1) ? 2 : 3;
-    const primes = _.sampleSize(PRIMES.slice(0, 4), _.random(2, 3)).sort((a, b) => a - b);
-    const exps = Object.fromEntries(primes.map((p) => [p, _.random(1, 5)]));
+    // stretch: is d a factor of N? Read from N's prime factorisation,
+    // never by dividing it out.
+    const primes = _.sampleSize([2, 3, 5, 7], _.random(2, 3)).sort((a, b) => a - b);
+    const exps = Object.fromEntries(primes.map((p) => [p, _.random(1, 4)]));
+    const dExps = Object.fromEntries(primes.map((p) => [p, _.random(0, exps[p])]));
+    const yes = _.random(0, 1) === 1;
+    let reason = '';
+    if (!yes) {
+      // One reason only: a power one too many, or a prime N does not have.
+      const missing = [2, 3, 5, 7, 11].filter((p) => !primes.includes(p));
+      if (_.random(0, 1) === 1) {
+        const q = _.sample(missing.slice(0, 2));
+        dExps[q] = 1;
+        reason = `\\text{, but } N \\text{ has no } ${q}`;
+      } else {
+        const p = _.sample(primes);
+        dExps[p] = exps[p] + 1;
+        reason = `\\text{, but } N \\text{ has only } ${exps[p] > 1 ? `${p}^${exps[p]}` : p}`;
+      }
+    }
+    const d = build(dExps);
     const n = build(exps);
-    // What each prime needs to reach a multiple of the power.
-    const need = Object.fromEntries(primes.map((p) => [p, (power - (exps[p] % power)) % power]));
-    const k = build(need);
-    if (k === 1 || n > 1e6) continue;
-    const after = Object.fromEntries(primes.map((p) => [p, exps[p] + need[p]]));
-    const show = (e) => times(primes.map((p) => (e[p] > 1 ? `${p}^${e[p]}` : String(p))));
-    const word = power === 2 ? 'square' : 'cube';
-    const kf = times(primes.flatMap((p) => Array(need[p]).fill(p)));
+    // A divisor worth testing: two different primes at least, from 12 to 300.
+    if (d < 12 || d > 300 || d === n || Object.values(dExps).filter((e) => e > 0).length < 2) continue;
+    const answer = yes ? `\\text{Yes: } ${d} = ${indexForm(d)}` : `\\text{No: } ${d} = ${indexForm(d)}${reason}`;
     return {
-      instruction: `Find the smallest whole number to multiply by to make a ${word} number`,
-      questionMath: `${show(exps)}`,
-      answer: String(k),
-      workingOut: [
-        `\\text{every power a multiple of } ${power}`,
-        `${show(exps)} \\times ${kf.includes('\\times') ? `(${kf})` : kf} = ${show(after)}`,
-        `${kf} = ${k}`,
-      ].join(NL),
+      instruction: 'Use the prime factors to decide',
+      questionMath: [`N = ${times(primes.map((p) => (exps[p] > 1 ? `${p}^${exps[p]}` : String(p))))}`, `\\text{Is } ${d} \\text{ a factor of } N?`].join(NL),
+      answer,
+      workingOut: [`${d} = ${indexForm(d)}`, answer].join(NL),
       metadata,
     };
   }

@@ -75,17 +75,33 @@ export function checkPrimeFactors(q, band) {
     return { kind: 'index form' };
   }
 
-  const power = { 'Find the smallest whole number to multiply by to make a square number': 2, 'Find the smallest whole number to multiply by to make a cube number': 3 }[q.instruction];
-  must(power, 'instruction');
-  const terms = readIndexForm(q.questionMath);
-  const k = terms.reduce((v, [p, e]) => v * p ** ((power - (e % power)) % power), 1);
-  must(k > 1 && q.answer === String(k), `answer ${q.answer}, expected ${k}`);
-  must(w.length === 3 && w[0] === `\\text{every power a multiple of } ${power}`, 'the rule first');
-  const [lhs, rhs] = w[1].split(' = ');
-  must(lhs.startsWith(`${q.questionMath} \\times `), 'the number times what it needs');
-  must(evaluate(lhs) === evaluate(rhs) && readIndexForm(rhs).every(([, e]) => e % power === 0), `a perfect power: ${w[1]}`);
-  must(w[2].endsWith(` = ${k}`) && evaluate(w[2].split(' = ')[0]) === k, 'the multiplier worked out');
-  return { kind: power === 2 ? 'square' : 'cube' };
+  must(q.instruction === 'Use the prime factors to decide', 'instruction');
+  const [nLine, ask] = lines(q.questionMath);
+  must(nLine.startsWith('N = '), `N given: ${nLine}`);
+  const nTerms = readIndexForm(nLine.slice(4));
+  const m = /^\\text\{Is \} (\d+) \\text\{ a factor of \} N\?$/.exec(ask ?? '');
+  must(m, `the question: ${ask}`);
+  const d = Number(m[1]);
+  const N = valueOf(nTerms);
+  const has = Object.fromEntries(nTerms);
+  // d's own factorisation, found here.
+  const dTerms = [];
+  let left = d;
+  for (let p = 2; left > 1; p += 1) { let e = 0; while (left % p === 0) { left /= p; e += 1; } if (e) dTerms.push([p, e]); }
+  must(dTerms.length >= 2 && d >= 12 && d <= 300 && d !== N, 'a divisor worth testing');
+  const form = dTerms.map(([p, e]) => (e > 1 ? `${p}^${e}` : String(p))).join(' \\times ');
+  const short = dTerms.filter(([p, e]) => (has[p] ?? 0) < e);
+  must(short.length <= 1, 'one reason at most');
+  must((N % d === 0) === (short.length === 0), 'divides exactly when every prime power is there');
+  let expect = `\\text{Yes: } ${d} = ${form}`;
+  if (short.length) {
+    const [p] = short[0];
+    const why = has[p] ? `\\text{, but } N \\text{ has only } ${has[p] > 1 ? `${p}^${has[p]}` : p}` : `\\text{, but } N \\text{ has no } ${p}`;
+    expect = `\\text{No: } ${d} = ${form}${why}`;
+  }
+  must(q.answer === expect, `answer ${q.answer}, expected ${expect}`);
+  must(w.length === 2 && w[0] === `${d} = ${form}` && w[1] === q.answer, 'working');
+  return { kind: short.length ? 'no' : 'yes' };
 }
 
 /* -------------------------------------------------------------- hcf-lcm */
