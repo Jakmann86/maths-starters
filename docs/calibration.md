@@ -731,6 +731,55 @@ speed, stops included, or two travellers, the second leaving later and
 passing the first at a grid point: where, or when (questions 2 and 3).
 Walks and bike rides are timed in minutes, drives in hours.
 
+## Ratio and proportion — Haese Assumed Knowledge (Number) F, 30A–B
+
+IGCSE 0607 E1.10. Ratio has no chapter of its own in Haese; it is in the
+assumed knowledge (F.1–F.5). Its four skills open the topic Ratio and
+proportion, which used to be Variation, ahead of direct and inverse
+variation (30A–B), so ↻ runs from ratio into variation.
+
+**Simplifying ratios** — F.1–F.2. Foundation: whole numbers with a common
+factor, two or three parts. Core: two quantities in different units, put in
+the same unit first (Example 19: 200 ml to 1 litre); hours are whole or a
+half. Stretch: decimals, multiplied by 10 first, or two fractions,
+multiplied by the lowest common denominator first.
+
+**Recipes and best value** — F.3–F.4 and the syllabus's recipes and best
+value. Foundation: a recipe scaled up or down by a whole number. Core: the
+unitary method (Example 24), a recipe or a price through one. Stretch:
+which of two packs is better value, per 100 g or ml. The two prices are
+within a quarter of each other, so it takes the working to tell, and the
+bigger pack wins as often as the smaller.
+
+**Sharing in a ratio** — F.5 (Example 27). Foundation: share a total in two
+or three parts. Core: one share given, find the other or the total (Example
+23, the walkers and guides). Stretch: the difference between two shares
+given, find a share or the total.
+
+**Map scales** — F.4 question 6. Foundation: a map distance to a real one.
+Core: a real distance to the map. Stretch: the scale as 1 : n from the two.
+At 1 : 25000 and larger, real distances are in metres; smaller scales, in
+kilometres. Map distances are whole or half centimetres, so the pools are
+small: 348 each way, and 168 for the scale.
+
+## Metric units — Haese 9A, 9C, 11B–D
+
+IGCSE 0607 E6.1. A topic of its own, first in Mensuration.
+
+**Converting units** — 9A, 11C, 11D. Foundation: one step, × or ÷ by 10,
+100 or 1000, in length, mass or capacity. Core: two steps through the unit
+between: m to mm, km to cm, tonnes to g. Stretch: a problem with a
+conversion first, the number of pieces from a plank, glasses from a jug or
+bags from a sack (11C.1 question 3). Never exactly one unit, which reads as
+a definition rather than a question.
+
+**Area and volume units** — 9C.1, 11B.1, 11C.2. Foundation: area units, the
+length factor squared (1 m² = 100 × 100 cm²). Core: volume units, the length
+factor cubed, or volume to capacity (1 litre = 1000 cm³, 1 m³ = 1000
+litres). Stretch: a rectangle's area in cm² with one side in metres (9C.1
+question 3), or a tank's capacity in litres with one edge in metres
+(Example 12). Hectares are left out: the syllabus does not use them.
+
 ## Logarithms — Haese 31A–E
 
 Year 10, IGCSE 0607 (syllabus 3.10). Rayner has no logarithms chapter. Base

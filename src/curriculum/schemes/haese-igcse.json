@@ -66,9 +66,9 @@
     { "id": "8D", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Circle problems", "page": 181, "skills": ["chord-perpendicular-bisector", "tangent-length"], "status": "ready" },
     { "id": "8E", "ch": 8, "unit": "The theorem of Pythagoras", "lesson": "Three-dimensional problems", "page": 185, "skills": ["pythagoras-3d"], "status": "ready" },
 
-    { "id": "9A", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Length", "page": 192, "skills": [], "status": "todo" },
+    { "id": "9A", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Length", "page": 192, "skills": ["convert-units"], "status": "ready" },
     { "id": "9B", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Perimeter", "page": 194, "skills": ["perimeter-rectangle", "perimeter-compound"], "status": "ready" },
-    { "id": "9C", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Area", "page": 196, "skills": ["area-rectangle", "area-triangle", "area-parallelogram", "area-trapezium", "area-kite", "area-compound"], "status": "ready" },
+    { "id": "9C", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Area", "page": 196, "skills": ["area-rectangle", "area-triangle", "area-parallelogram", "area-trapezium", "area-kite", "area-compound", "convert-area-volume"], "status": "ready" },
     { "id": "9D", "ch": 9, "unit": "Mensuration: length and area", "lesson": "Circles and sectors", "page": 201, "skills": ["circumference-circle", "area-circle"], "status": "ready" },
 
     { "id": "10A", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Percentage", "page": 209, "skills": ["percentage-of-amount"], "status": "ready" },
@@ -81,8 +81,8 @@
     { "id": "10H", "ch": 10, "unit": "Topics in arithmetic", "lesson": "Travel graphs", "page": 226, "skills": ["travel-graphs"], "status": "ready" },
 
     { "id": "11A", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Surface area", "page": 231, "skills": ["surface-area-cuboid", "surface-area-cylinder", "surface-area-cone", "surface-area-sphere", "surface-area-prism", "surface-area-pyramid"], "status": "ready" },
-    { "id": "11B", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Volume", "page": 239, "skills": ["volume-cuboid", "volume-cylinder", "volume-cone", "volume-sphere", "volume-prism", "volume-pyramid"], "status": "ready" },
-    { "id": "11C", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Capacity", "page": 245, "skills": [], "status": "todo" },
+    { "id": "11B", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Volume", "page": 239, "skills": ["volume-cuboid", "volume-cylinder", "volume-cone", "volume-sphere", "volume-prism", "volume-pyramid", "convert-area-volume"], "status": "ready" },
+    { "id": "11C", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Capacity", "page": 245, "skills": ["convert-units", "convert-area-volume"], "status": "ready" },
     { "id": "11D", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Mass", "page": 248, "skills": [], "status": "todo" },
     { "id": "11E", "ch": 11, "unit": "Mensuration: solids and containers", "lesson": "Compound solids", "page": 249, "skills": ["compound-volume", "compound-surface-area"], "status": "ready" },
 
