@@ -52,7 +52,8 @@ describe('Profit and interest', () => {
 
   it('is its own Number topic, in teaching order', () => {
     Object.keys(KINDS).forEach((id) => expect(getSkill(id).topic).toBe('Profit and interest'));
-    expect(skillsInTopic('Profit and interest')).toEqual(Object.keys(KINDS));
+    // Growth and decay (percentGrowthGenerators) follows compound interest.
+    expect(skillsInTopic('Profit and interest')).toEqual([...Object.keys(KINDS), 'growth-decay']);
     expect(strandOf('Profit and interest')).toBe('Number');
   });
 });

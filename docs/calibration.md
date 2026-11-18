@@ -731,6 +731,56 @@ speed, stops included, or two travellers, the second leaving later and
 passing the first at a grid point: where, or when (questions 2 and 3).
 Walks and bike rides are timed in minutes, drives in hours.
 
+## Factors and multiples — Haese Assumed Knowledge (Number) B–C
+
+IGCSE 0607 E1.1. A topic of its own in Number, among the assumed-knowledge
+topics at the front.
+
+**Prime factors.** Foundation: a number up to 200 as a product of primes,
+by the division ladder of Haese's examples (24 = 2 × 2 × 2 × 3). Core: up
+to 2000, in index form, with a repeated prime. Stretch: a number given in
+index form, the smallest whole number to multiply it by to make a square or
+a cube. The numbers are their own pools: Foundation has 69 and Core 228.
+
+**HCF and LCM.** Foundation: one of the two, for numbers up to 48, by
+listing factors or multiples (Example 11). Core: both, from the two
+numbers' prime factorisations (Example 9's method). Stretch: a problem
+needing one, buses or lights together again (Exercise C question 8, the
+bells), or the longest equal pieces two ribbons cut into.
+
+## Money and rates — Rayner 2 (foreign exchange)
+
+IGCSE 0607 E1.11 and E1.15. Haese has no section for either, so this is
+an assumed-knowledge topic, at the front of Number.
+
+**Exchange rates** — Rayner Exercise 2.18. Foundation: pounds into euros,
+US dollars or yen. Core: back into pounds. Stretch: one price in London
+and one abroad, where it is cheaper and by how much in pounds (questions
+3–4). KaTeX has no euro sign, so a foreign answer is a number with its
+currency as the unit (610.20 euros), as any other unit is shown.
+
+**Rates: pay, flow and fuel.** Foundation: pay for so many hours, or water
+in so many minutes. Core: the time to fill a tank, or the fuel for a
+journey at litres per 100 km. Stretch: a week's pay with overtime at time
+and a half, or the cost of the fuel for a journey.
+
+## One quantity as a percentage of another, and growth and decay
+
+**One quantity as a percentage of another** — Haese 10A, syllabus E1.12b,
+in Percentages after the percentage of an amount. Foundation: k out of n,
+a whole-number percentage. Core: two quantities in different units, the
+same unit first. Stretch: the rest of a group, or marks from two tests out
+of their combined total. Every answer is exact to one decimal place.
+
+**Growth and decay** — Haese 10F and 28E, syllabus E1.16, in Profit and
+interest after compound interest, which already covers money and
+depreciation. Here the things that grow and shrink are populations:
+people, ants, fish, trees, birds. Foundation: the number after n years.
+Core: the starting number, from the number now (the multiplier
+undone). Stretch: the first whole year it passes a level, found year by
+year (Haese 28E's "how long will it take", without logarithms). Counts
+round to the nearest whole one and never fall close to a half.
+
 ## Ratio and proportion — Haese Assumed Knowledge (Number) F, 30A–B
 
 IGCSE 0607 E1.10. Ratio has no chapter of its own in Haese; it is in the
