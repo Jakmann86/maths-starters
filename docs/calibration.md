@@ -832,6 +832,38 @@ litres). Stretch: a rectangle's area in cm² with one side in metres (9C.1
 question 3), or a tank's capacity in litres with one edge in metres
 (Example 12). Hectares are left out: the syllabus does not use them.
 
+## Equations with x in the denominator — Haese 3B
+
+IGCSE 0607 E2.5c ("linear algebraic denominators"). In Equations, after
+the two fraction skills, whose denominators are numbers or x alone.
+Foundation: a number over a linear expression, a/(px + q) = c. Core: x
+above and below, (px + q)/(rx + s) = c, the syllabus's own example shape.
+Stretch: two fractions, a/(x + b) = c/(x + d), cross-multiplied. Each is
+built from a whole-number solution with no denominator zero there, and
+the working clears the fractions in its first line.
+
+## Next terms and term-to-term rules — Haese 26A
+
+IGCSE 0607 E2.7a. First in Arithmetic and geometric sequences, before any
+nth term: four terms shown, write the next two and the rule. Foundation:
+add or subtract. Core: multiply or divide, the multiplier sometimes
+negative, so the signs alternate. Stretch: a rule of another kind, either
+the difference going up or down by the same amount each time, each term
+being the two before added, or multiply then add. A sequence is only used
+when no other kind of rule fits its four terms with different next terms.
+Core is a small pool by nature: four whole terms of a geometric sequence
+that stay readable, 197 in all.
+
+## Set symbols — Haese 2A, Rayner 12.1
+
+IGCSE 0607 E1.2b. First in Sets: two statements, each true or false, with
+the reason in the working. Foundation: ∈ and ∉, for a set listed or in
+words (Exercise 2A question 1d). Core: ⊆ between listed sets, with
+∅ ⊆ A among them (question 1c). Stretch: a set in set-builder notation,
+empty or not, and whether one set of multiples is a subset of another
+(question 6c; Review set 2A question 2d). About half of all statements
+are false.
+
 ## Arcs and sectors — Haese 9D, Rayner 4.3
 
 IGCSE 0607 E6.3b, on the `sector` figure, drawn to its true angle.
