@@ -68,6 +68,7 @@ import * as perpLine from '../generators/geometry/perpendicularLineGenerators';
 import * as algDen from '../generators/algebra/algebraicDenominatorGenerators';
 import * as seqRules from '../generators/algebra/sequenceRuleGenerators';
 import * as setSymbols from '../generators/number/setSymbolGenerators';
+import * as ineqRegions from '../generators/algebra/inequalityRegionGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
 import * as spread from '../generators/statistics/spreadGenerators';
@@ -332,6 +333,13 @@ export const skills = {
     label: 'Solving linear inequalities',
     topic: 'Inequalities',
     generate: (opts) => inequalities.generateSolveLinearInequalities(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // --- Inequality regions: Haese 32B-C, syllabus E2.6d ---
+  'inequality-regions': {
+    label: 'Inequality regions',
+    topic: 'Inequalities',
+    generate: (opts) => ineqRegions.generateInequalityRegions(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 

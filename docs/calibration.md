@@ -889,6 +889,24 @@ the perpendicular bisector of AB in general form. It runs through the
 midpoint at right angles to AB, as 14F's lines of symmetry do. The
 parallel line through a point was already Stretch of Parallel lines.
 
+## Inequality regions — Haese 32B–C, Rayner Exercise 8.4
+
+IGCSE 0607 E2.6d, last in Inequalities. Rayner shades the unwanted side of
+each line and leaves the region clear, broken lines for strict
+inequalities, and so does the figure: R is the clear part, labelled. Rayner
+writes each line's equation on it; here the lines are bare, so reading
+x = 3 or y = −2x + 9 off the grid is part of the task, as the user asked.
+The grid is the first quadrant, 0 to 8, so R never straddles an axis.
+
+Foundation: one vertical and one horizontal line, R in a corner (Rayner
+questions 1–2). Core: a third line sloping at ±1 or ±2, closing R into a
+triangle (questions 4–5), all three inequalities to write. Stretch: the
+same kind of triangle, list the points with integer coordinates in R
+(Haese 32C), two to eight of them, with at least one point on a dashed
+edge, kept out. Sloping boundaries are written y ≤ mx + c; Rayner's
+x + y ≤ 7 form is the teacher's to accept. Foundation is a whole pool of
+400: two lines at 2 to 6, each solid or dashed, R on either side.
+
 ## Logarithms — Haese 31A–E
 
 Year 10, IGCSE 0607 (syllabus 3.10). Rayner has no logarithms chapter. Base

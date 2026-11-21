@@ -47,6 +47,7 @@ describe('interval notation', () => {
   it('sits in Inequalities, after which numbers fit and before solving', () => {
     expect(skillsInTopic('Inequalities')).toEqual([
       'inequality-list-values', 'interval-list-elements', 'interval-write', 'solve-linear-inequalities',
+      'inequality-regions',
     ]);
   });
 
