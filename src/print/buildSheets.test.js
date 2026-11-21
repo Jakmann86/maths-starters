@@ -8,7 +8,7 @@
 // Run: npx vitest run src/print/buildSheets.test.js
 
 import { describe, expect, it, vi } from 'vitest';
-import { buildSheets, PER_PAGE, PRESETS } from './buildSheets';
+import { buildSheets, layFull, isTall, PER_PAGE, PRESETS } from './buildSheets';
 
 const BOXES = [
   { skillId: 'index-laws-multiply-divide', band: 'foundation' },
@@ -172,6 +172,36 @@ describe('buildSheets', () => {
       const boxes = WITH_VIEWS.map((b, i) => (i === 1 ? { ...b, view: { ...b.view, failed: true } } : b));
       const [page] = buildSheets(boxes, { layout: 'half', perBox: 1, versions: 1, fromBoard: true }, gen);
       expect(page.halves[0].questions[1].view.instr).toMatch(/^volume-cuboid core/);
+    });
+  });
+
+  describe('tall cells for grids and graphs on a full page', () => {
+    const lay = (pattern) => layFull([...pattern].map((ch, i) => ({ id: i, tall: ch === 'T' })))
+      .map((p) => `${p.questions.map((q) => (q.tall ? 'T' : 's')).join('')}/${p.rows}`).join(' ');
+
+    it('marks grid, graph and bearings figures tall, and nothing else', () => {
+      expect(isTall({ fig: { type: 'coordinate-grid' } })).toBe(true);
+      expect(isTall({ fig: { type: 'bearings' } })).toBe(true);
+      expect(isTall({ fig: { type: 'cuboid' } })).toBe(false);
+      expect(isTall({ q: 'x + 1' })).toBe(false);
+    });
+
+    it('places them as the browser grid will: two rows of one column each', () => {
+      expect(lay('ssssssss')).toBe('ssssssss/4');
+      expect(lay('TTTT')).toBe('TTTT/4');
+      expect(lay('sTss')).toBe('sTss/3');
+      expect(lay('TTTTT')).toBe('TTTT/4 T/2');
+      expect(lay('sssTTT')).toBe('sssTT/4 T/2');
+    });
+
+    it('numbers run on across pages of mixed cells', () => {
+      const boxes = [{ skillId: 'inequality-regions', band: 'core' }, { skillId: 'like-terms', band: 'core' }];
+      const pages = buildSheets(boxes, { layout: 'full', perBox: 3, versions: 1 });
+      const firsts = pages.map((p) => p.sheet.first);
+      const counts = pages.map((p) => p.sheet.questions.length);
+      expect(counts.reduce((a, b) => a + b, 0)).toBe(6);
+      firsts.forEach((f, i) => expect(f).toBe(counts.slice(0, i).reduce((a, b) => a + b, 0)));
+      expect(pages.every((p) => p.sheet.parts === pages.length)).toBe(true);
     });
   });
 });

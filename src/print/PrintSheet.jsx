@@ -127,7 +127,7 @@ export function PrintPage({ page, layout, header }) {
 
 function Sheet({ sheet, header, half }) {
   const { letter, questions, first = 0, part, parts } = sheet;
-  const rows = half ? 2 : Math.max(2, Math.ceil(questions.length / 2));
+  const rows = half ? 2 : sheet.rows ?? Math.max(2, Math.ceil(questions.length / 2));
   return (
     <div className={`print-sheet${half ? ' print-sheet--half' : ''}`} style={{ '--rows': rows }}>
       <div className="print-sheet-head">
@@ -204,7 +204,7 @@ export function PrintQuestion({ n, item, answers }) {
   const { instr, q, qProse, parts, a, fig } = item.view;
   const { cell, body } = useFitToCell();
   return (
-    <div className="pq" ref={cell} data-skill={item.skillId} data-band={item.band}>
+    <div className={`pq${item.tall ? ' pq--tall' : ''}`} ref={cell} data-skill={item.skillId} data-band={item.band}>
       <div className="pq-num">{n}</div>
       <div className="pq-body" ref={body}>
         {instr && <div className="pq-instr">{instr}</div>}

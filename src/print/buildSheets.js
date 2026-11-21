@@ -14,14 +14,66 @@
 // Two layouts:
 //   half  two sheets on one A4, top and bottom, to be cut apart. Four
 //         questions, one per box, in a 2 x 2 grid.
-//   full  one sheet per A4 page, two columns, up to PER_PAGE questions on a
-//         page; more run on to the next page.
+//   full  one sheet per A4 page, two columns, up to PER_PAGE cells on a
+//         page, a question with a grid or graph taking two (TALL_FIGURES);
+//         more run on to the next page.
 
 import { generateForSkill } from '../curriculum/skills.js';
 import { safeGenerate } from '../lib/safeGenerate.js';
 import { questionView } from '../lib/questionView.js';
 
 export const PER_PAGE = 8;
+// A full page is two columns of ROWS rows.
+export const ROWS = PER_PAGE / 2;
+
+// Figures that are read off, and so want room on paper: grids, graphs and
+// bearings. On a full page each takes a tall cell, two rows high, so the
+// grid can be big enough to count squares and read points from. A half
+// page (an exit ticket) keeps its four equal cells.
+export const TALL_FIGURES = new Set([
+  'coordinate-grid', 'transform-grid', 'vector-grid', 'scatter', 'travel-graph', 'bearings',
+]);
+export const isTall = (view) => Boolean(view?.fig && TALL_FIGURES.has(view.fig.type));
+
+/**
+ * Lays questions on full pages the way the browser's grid will place them:
+ * two columns, row by row, a tall question taking two rows of its column,
+ * and nothing placed behind one already placed (CSS grid's default, sparse
+ * auto-placement). A question that will not fit starts a new page. Returns
+ * [{ questions, rows }], rows being how many the page uses (at least two).
+ */
+export function layFull(questions) {
+  const pages = [];
+  let grid = [], cursor = 0, page = [];
+  const free = (r, c) => !grid[r]?.[c];
+  const take = (r, c) => { (grid[r] ||= [])[c] = true; };
+  const flush = () => {
+    if (page.length) pages.push({ questions: page, rows: Math.max(2, grid.length) });
+    grid = []; cursor = 0; page = [];
+  };
+  questions.forEach((q) => {
+    const h = q.tall ? 2 : 1;
+    for (;;) {
+      let at = -1;
+      for (let p = cursor; p < ROWS * 2; p += 1) {
+        const r = Math.floor(p / 2), c = p % 2;
+        if (r + h > ROWS) break;
+        if (free(r, c) && (h === 1 || free(r + 1, c))) { at = p; break; }
+      }
+      if (at >= 0) {
+        const r = Math.floor(at / 2), c = at % 2;
+        take(r, c);
+        if (h === 2) take(r + 1, c);
+        cursor = at + 1;
+        page.push(q);
+        break;
+      }
+      flush();
+    }
+  });
+  flush();
+  return pages;
+}
 export const MAX_VERSIONS = 5;
 export const LETTERS = ['A', 'B', 'C', 'D', 'E'];
 
@@ -96,21 +148,16 @@ export function buildSheets(boxes, options, gen = generateForSkill) {
     return pages;
   }
 
-  // Full: each version gets its own run of pages, PER_PAGE questions each.
+  // Full: each version gets its own run of pages, up to PER_PAGE cells
+  // each, a tall question taking two.
   const pages = [];
   sheets.forEach((sheet) => {
-    const parts = Math.ceil(sheet.questions.length / PER_PAGE);
-    for (let p = 0; p < parts; p += 1) {
-      pages.push({
-        sheet: {
-          ...sheet,
-          questions: sheet.questions.slice(p * PER_PAGE, (p + 1) * PER_PAGE),
-          first: p * PER_PAGE,
-          part: p + 1,
-          parts,
-        },
-      });
-    }
+    const laid = layFull(sheet.questions.map((q) => ({ ...q, tall: isTall(q.view) })));
+    let first = 0;
+    laid.forEach(({ questions, rows }, p) => {
+      pages.push({ sheet: { ...sheet, questions, rows, first, part: p + 1, parts: laid.length } });
+      first += questions.length;
+    });
   });
   return pages;
 }

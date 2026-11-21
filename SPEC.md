@@ -260,6 +260,14 @@ again. Nothing is chosen afresh.
 On paper each question is a fixed cell. A question too big for its cell is
 shrunk, text and figure together, in 5% steps to no less than 65%.
 
+On a full page (practice, homework) a question whose figure is read off —
+a coordinate grid, transformation or vector grid, scatter graph, travel
+graph or bearings (`TALL_FIGURES` in `buildSheets.js`) — takes a tall cell,
+two rows of its column, with the figure across the top at about twice the
+usual height. Pages are filled by the same placement the browser's grid
+uses, so a page holds up to eight cells, a tall question counting two. An
+exit ticket keeps its four equal cells.
+
 ## 8. Persistence
 
 Only the topic pool persists (§2.3). The board itself is not cached: a
