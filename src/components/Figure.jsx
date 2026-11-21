@@ -2467,6 +2467,92 @@ export default function Figure({ fig, color, shown }) {
     return svgWrap(<g transform={`translate(${-x0} ${-y0})`}>{elements}</g>, w.toFixed(1), h.toFixed(1), 'pch', fig.big, shown);
   }
 
+  // Bearings: points with north lines, drawn to their true directions so a
+  // bearing over 180 degrees looks it. `points` maps a name to [x, y] in
+  // figure units with y up (the generator's bearings, at lengths of about
+  // 90-130); `north` lists the points with a north line; `segments` joins
+  // points. `angles` marks angles at a point, each either
+  //   { at, from, to, label }   the angle under 180 degrees between two
+  //                             rays, each 'N' (the north line) or a point
+  //   { at, bearing, label }    a bearing: clockwise from the north line,
+  //                             reflex if it is over 180, as Haese marks one
+  // `unknown: true` puts that angle in the slot colour.
+  if (fig.type === 'bearings') {
+    const P = Object.fromEntries(Object.entries(fig.points || {}).map(([k, [x, y]]) => [k, [x, -y]]));
+    if (Object.keys(P).length < 2) return null;
+    const NL_LEN = 64;
+    const FS = 20;
+    const tip = (k) => [P[k][0], P[k][1] - NL_LEN];
+    const north = fig.north || [];
+    const segs = fig.segments || [];
+    const angles = fig.angles || [];
+    const ray = (at, r) => (r === 'N' ? tip(at) : P[r]);
+    const elements = [];
+    // Every label's centre, so the frame can take them all in.
+    const spots = [];
+    north.forEach((k) => {
+      const [x, y] = P[k];
+      elements.push(<line key={`n${k}`} x1={x} y1={y} x2={x} y2={y - NL_LEN + 4} stroke="var(--ink)" strokeWidth={2.5} />);
+      elements.push(arrowHead(`na${k}`, x, y - NL_LEN, 0, -1, 'var(--ink)', 12));
+      elements.push(figLabel(`nl${k}`, x, y - NL_LEN - 8, 'N', 'middle', 'var(--ink)', FS - 2));
+      spots.push([x, y - NL_LEN - 14]);
+    });
+    segs.forEach(([a, b], i) => {
+      elements.push(<line key={`s${i}`} x1={P[a][0]} y1={P[a][1]} x2={P[b][0]} y2={P[b][1]} stroke="var(--ink)" strokeWidth={2.5} strokeLinecap="round" />);
+    });
+    // Directions in SVG degrees (0 along +x, clockwise, so north is -90).
+    const dirTo = (from, to) => (Math.atan2(to[1] - from[1], to[0] - from[0]) * 180) / Math.PI;
+    const wedges = {}; // point -> [[start, sweep], ...], clockwise
+    angles.forEach((an, i) => {
+      const col = an.unknown ? color : 'var(--ink)';
+      const v = P[an.at];
+      let nodes;
+      if (an.bearing !== undefined) {
+        nodes = pointAngleMarker(v[0], v[1], -90, -90 + an.bearing, an.bearing, an.label, `ba${i}`, col);
+        (wedges[an.at] ||= []).push([-90, an.bearing]);
+      } else {
+        nodes = angleMarker(v, ray(an.at, an.from), ray(an.at, an.to), an.label, `ba${i}`, col, { fit: true, fontSize: FS, pad: 7 }, 26);
+        const [d1, d2] = [dirTo(v, ray(an.at, an.from)), dirTo(v, ray(an.at, an.to))];
+        const cw = ((d2 - d1) % 360 + 360) % 360;
+        (wedges[an.at] ||= []).push(cw <= 180 ? [d1, cw] : [d2, 360 - cw]);
+      }
+      elements.push(...nodes);
+      const lbl = nodes[nodes.length - 1];
+      spots.push([Number(lbl.props.x), Number(lbl.props.y) - FS * 0.35]);
+    });
+    // Each point's name goes in the widest gap between the lines leaving
+    // it, kept out of any angle marked there.
+    const gapOf = (a, b) => { const d = Math.abs((((a - b) % 360) + 540) % 360 - 180); return d; };
+    Object.entries(P).forEach(([k, [x, y]]) => {
+      const rays = segs.filter((sg) => sg.includes(k)).map((sg) => dirTo([x, y], P[sg[0] === k ? sg[1] : sg[0]]));
+      if (north.includes(k)) rays.push(-90);
+      let best = 90, score = -Infinity;
+      for (let c = 0; c < 360; c += 15) {
+        let sc = rays.length ? Math.min(...rays.map((r) => gapOf(c, r))) : 180;
+        (wedges[k] || []).forEach(([st, sw]) => { if ((((c - st) % 360) + 360) % 360 < sw) sc -= 200; });
+        // A small pull downwards and outwards, where a name usually sits.
+        sc += Math.sin((c * Math.PI) / 180) * 3;
+        if (sc > score) { score = sc; best = c; }
+      }
+      const d = [Math.cos((best * Math.PI) / 180), Math.sin((best * Math.PI) / 180)];
+      const [lx, ly] = [x + d[0] * 22, y + d[1] * 22];
+      elements.push(<circle key={`p${k}`} cx={x} cy={y} r={3.5} fill="var(--ink)" />);
+      elements.push(figLabel(`pl${k}`, lx, ly + FS * 0.35, k, 'middle', 'var(--ink)', FS));
+      spots.push([lx, ly]);
+    });
+    // The frame: every point and label with room round it, then widened to
+    // at least 6:5 so a line close to north-south does not make a tall,
+    // narrow drawing that shrinks to fit the row. Hugged, so any text beside
+    // it keeps its width.
+    const xy = [...Object.values(P), ...north.map(tip), ...spots];
+    const M = 26;
+    let x0 = Math.min(...xy.map((p) => p[0])) - M, x1 = Math.max(...xy.map((p) => p[0])) + M;
+    const y0 = Math.min(...xy.map((p) => p[1])) - M, y1 = Math.max(...xy.map((p) => p[1])) + M;
+    const wide = 1.2 * (y1 - y0);
+    if (x1 - x0 < wide) { const pad = (wide - (x1 - x0)) / 2; x0 -= pad; x1 += pad; }
+    return svgWrap(<g transform={`translate(${-x0} ${-y0})`}>{elements}</g>, (x1 - x0).toFixed(1), (y1 - y0).toFixed(1), 'brg', fig.big, shown, false, 1, true);
+  }
+
   // Regular polygons round a point (polygon-interior-angles Stretch): the
   // wedges at the shared vertex, in order anticlockwise from `start`:
   //   { n }                      a regular polygon, drawn whole

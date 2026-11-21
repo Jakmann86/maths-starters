@@ -112,7 +112,7 @@
     { "id": "15B", "ch": 15, "unit": "Trigonometry", "lesson": "The trigonometric ratios", "page": 316, "skills": ["sohcahtoa-find-side", "sohcahtoa-find-angle"], "status": "ready" },
     { "id": "15C", "ch": 15, "unit": "Trigonometry", "lesson": "Problem solving", "page": 322, "skills": [], "status": "todo" },
     { "id": "15D", "ch": 15, "unit": "Trigonometry", "lesson": "The first quadrant of the unit circle", "page": 327, "skills": [], "status": "todo" },
-    { "id": "15E", "ch": 15, "unit": "Trigonometry", "lesson": "True bearings", "page": 330, "skills": [], "status": "todo" },
+    { "id": "15E", "ch": 15, "unit": "Trigonometry", "lesson": "True bearings", "page": 330, "skills": ["bearings"], "status": "ready" },
     { "id": "15F", "ch": 15, "unit": "Trigonometry", "lesson": "3-dimensional problem solving", "page": 331, "skills": [], "status": "todo" },
 
     { "id": "16A", "ch": 16, "unit": "Algebraic fractions", "lesson": "Simplifying algebraic fractions", "page": 339, "skills": ["simplify-algebraic-fractions", "simplify-fractions-factorising"], "status": "ready" },
