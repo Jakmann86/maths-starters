@@ -16,7 +16,6 @@ import _ from 'lodash';
 import { gcd, lcm } from '../shared';
 
 const NL = '\n';
-const PRIMES = [2, 3, 5, 7, 11, 13];
 
 /** Prime factors of n, smallest first, with repeats. */
 export function primeFactors(n) {

@@ -221,8 +221,8 @@
     { "id": "31E", "ch": 31, "unit": "Logarithms", "lesson": "Exponential and logarithmic equations", "page": 634, "skills": ["log-solve-exponential", "log-equations"], "status": "ready" },
 
     { "id": "32A", "ch": 32, "unit": "Inequalities", "lesson": "Solving one variable inequalities with technology", "page": 639, "skills": [], "status": "skip" },
-    { "id": "32B", "ch": 32, "unit": "Inequalities", "lesson": "Linear inequality regions", "page": 641, "skills": [], "status": "todo" },
-    { "id": "32C", "ch": 32, "unit": "Inequalities", "lesson": "Integer points in regions", "page": 644, "skills": [], "status": "todo" },
+    { "id": "32B", "ch": 32, "unit": "Inequalities", "lesson": "Linear inequality regions", "page": 641, "skills": ["inequality-regions"], "status": "ready" },
+    { "id": "32C", "ch": 32, "unit": "Inequalities", "lesson": "Integer points in regions", "page": 644, "skills": ["inequality-regions"], "status": "ready" },
     { "id": "32D", "ch": 32, "unit": "Inequalities", "lesson": "Problem solving (extension)", "page": 645, "skills": [], "status": "skip" },
 
     { "id": "PZ", "ch": null, "unit": "Puzzles", "lesson": "Retrieval puzzles", "page": null, "skills": ["symbol-puzzle", "magic-square", "arithmagon", "number-wall"], "status": "ready" }
