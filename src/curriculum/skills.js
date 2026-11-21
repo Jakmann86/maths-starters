@@ -71,6 +71,8 @@ import * as setSymbols from '../generators/number/setSymbolGenerators';
 import * as ineqRegions from '../generators/algebra/inequalityRegionGenerators';
 import * as variationModel from '../generators/algebra/variationModelGenerators';
 import * as likeTerms from '../generators/algebra/likeTermsGenerators';
+import * as bearings from '../generators/geometry/bearingGenerators';
+import * as timeGen from '../generators/number/timeGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
 import * as spread from '../generators/statistics/spreadGenerators';
@@ -631,6 +633,15 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+  // --- Haese 15E: true bearings, syllabus E5.2b, solved with angle facts.
+  // Last in Parallel lines and polygons: the north lines are parallel. ---
+  'bearings': {
+    label: 'Three-figure bearings',
+    topic: 'Parallel lines and polygons',
+    generate: (opts) => bearings.generateBearings(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 12, 14: coordinate geometry ---
   'distance-between-points': {
     label: 'Distance between two points',
@@ -1170,7 +1181,6 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
-
   // --- Haese 27A-B: circle theorems, plus tangent theorems not in that backlog ---
   'angle-in-semicircle': {
     label: 'The angle in a semi-circle',
@@ -1419,6 +1429,13 @@ export const skills = {
     label: 'Growth and decay',
     topic: 'Profit and interest',
     generate: (opts) => pctGrowth.generateGrowthDecay(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // --- Time: syllabus E1.14, Haese assumed knowledge ---
+  'time': {
+    label: 'Time',
+    topic: 'Speed, distance and time',
+    generate: (opts) => timeGen.generateTime(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
   'speed-distance-time': {

@@ -934,6 +934,39 @@ six terms, some written back to front (yx² is x²y), and one kind cancels
 to nothing. The working brackets each kind first; the answer runs in
 descending powers, positive term first on a tie.
 
+## Bearings — Haese 15E, Rayner 7
+
+IGCSE 0607 E5.2b, last in Parallel lines and polygons.
+Solved with angle facts, not trigonometry, as the user asked: the north
+lines at two points are parallel, so the angles at the two ends of a line
+are co-interior, and a bearing and its back bearing differ by 180°
+(Haese 15E's note). The figure is drawn to the true directions, like the
+other angle figures where acute against obtuse matters.
+
+Foundation: one north line and the angle from it, clockwise or
+anticlockwise; write the bearing in three figures (072°, Haese's rule).
+Core: north lines at both ends. Either the angle at A is marked and the
+back bearing is asked for (Exercise 15E question 2), or the angle at B is
+marked and the bearing of B from A comes through co-interior angles.
+Core keeps A and B side by side, so the north lines stay apart. Stretch:
+triangle ABC as in question 3, A to B to C, with the bearings marked
+clockwise from each north line (a reflex arc for one over 180°, as Haese
+draws it) and no text beside the figure. Two bearings marked, find angle
+ABC; or a bearing and angle ABC marked, find the bearing of C from B.
+Every bearing sits at least 20° off the north-south line, and the
+generator rejects any triangle whose lines crowd a north line or run
+through an angle's label.
+
+## Time — Haese assumed knowledge
+
+IGCSE 0607 E1.14, first in Speed, distance and time. Foundation: 12-hour
+to 24-hour clock or back, a quarter of them in the midnight or noon hour
+(00:15 is 12:15 am, 12:40 is 12:40 pm). Core: the time taken between two
+clock times, bridged through the hours, or a finishing time from a start
+and a duration. Stretch: a journey across time zones, past midnight at
+least once, with the answer's day (the day before, the same day, the next
+day). Times are written 16{:}35 so KaTeX sets the colon as punctuation.
+
 ## Logarithms — Haese 31A–E
 
 Year 10, IGCSE 0607 (syllabus 3.10). Rayner has no logarithms chapter. Base

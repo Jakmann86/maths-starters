@@ -47,7 +47,8 @@ describe('Speed, distance and time', () => {
 
   it('is its own Number topic, after Profit and interest', () => {
     Object.keys(KINDS).forEach((id) => expect(getSkill(id).topic).toBe('Speed, distance and time'));
-    expect(skillsInTopic('Speed, distance and time')).toEqual(Object.keys(KINDS));
+    // Time opens the topic: reading clock times comes before speed.
+    expect(skillsInTopic('Speed, distance and time')).toEqual(['time', ...Object.keys(KINDS)]);
     expect(strandOf('Speed, distance and time')).toBe('Number');
   });
 });
