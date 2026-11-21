@@ -4065,7 +4065,9 @@ export default function Figure({ fig, color, shown }) {
       nodes.push(<circle key={`vc${i}`} cx={p[0]} cy={p[1]} r={27} fill="var(--ground)" stroke="var(--ink)" strokeWidth={3} />);
       nodes.push(figLabel(`vl${i}`, p[0], p[1] + 7, label, 'middle', color));
     });
-    return svgWrap(nodes, 220, 205, 'ag', fig.big, shown);
+    // The puzzle is the whole question, so it is drawn large, like a magic
+    // square.
+    return svgWrap(nodes, 220, 205, 'ag', true, shown);
   }
 
   if (fig.type === 'number-wall') {

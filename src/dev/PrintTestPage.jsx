@@ -9,6 +9,7 @@ import { preloadKatex } from '../lib/katexLoader.js';
 // /print-test.html under `npm run dev`. The query string picks what to draw:
 //
 //   ?band=core&layout=half&answers=1&only=volume-cuboid,tree-diagrams
+//   ?band=core&layout=full&mix=bearings,like-terms,quadratic-graphs,time
 //
 // Each skill fills a page on its own (all four boxes the same skill), so the
 // tallest version of a skill is the one being measured.
@@ -23,6 +24,18 @@ export default function PrintTestPage() {
   const only = p.get('only')?.split(',');
   const ids = skillIds.filter((id) => (!only || only.includes(id)) && getSkill(id).difficulties.length);
   const header = { title: 'Print test', date: true, answers };
+  // ?mix=a,b,c,d instead puts those four skills in the four boxes, to see a
+  // page as a teacher's mixed board prints it.
+  const mix = p.get('mix')?.split(',');
+  if (mix) {
+    const boxes = mix.slice(0, 4).map((id) => ({ skillId: id, band }));
+    const pages = buildSheets(boxes, { layout, perBox: Number(p.get('per') || 2), versions: 1 });
+    return (
+      <div className="print-pages">
+        {pages.map((page, i) => <PrintPage key={i} page={page} layout={layout} header={{ ...header, title: 'Mixed' }} />)}
+      </div>
+    );
+  }
   return (
     <div className="print-pages">
       {ids.map((id) => {

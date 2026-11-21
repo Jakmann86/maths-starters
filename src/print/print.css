@@ -281,6 +281,19 @@
   margin: 0 !important;
 }
 
+/* A question with a grid, graph or bearings on a full page: two rows high,
+   the figure on top across the cell and the question under it, so the
+   figure can be about twice the height of any other. */
+.pq--tall {
+  grid-row: span 2;
+  --fig-h: 78mm;
+}
+
+.pq--tall .pq-row {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .pq-space {
   flex: 1 1 auto;
   min-height: 2mm;
