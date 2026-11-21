@@ -2752,6 +2752,34 @@ export default function Figure({ fig, color, shown }) {
     for (let y = y0; y <= y1; y += 1) {
       nodes.push(figLine(`gy${y}`, X(x0), Y(y), X(x1), Y(y), { strokeWidth: 1, strokeOpacity: 0.16 }));
     }
+    // Inequality regions: `shade` tints the UNWANTED side of each line, the
+    // Cambridge convention, so the region asked about is the part left clear.
+    // Each is { m, c, side: 'above' | 'below' } or { x, side: 'left' |
+    // 'right' }: the window clipped to that half-plane, in ink at low
+    // opacity, under the lines and axes. Where two overlap the tint doubles,
+    // as two pencil shadings would. `regionLabel` [x, y] writes R inside the
+    // clear part.
+    (fig.shade || []).forEach((sh, si) => {
+      // Inside the unwanted half-plane: positive.
+      const out = sh.x !== undefined
+        ? ([x]) => (sh.side === 'left' ? sh.x - x : x - sh.x)
+        : ([x, y]) => (sh.side === 'above' ? y - (sh.m * x + sh.c) : sh.m * x + sh.c - y);
+      // One pass of Sutherland-Hodgman: the window, clipped to the half-plane.
+      const box = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+      const poly = [];
+      box.forEach((p, i) => {
+        const q = box[(i + 1) % box.length];
+        const [fp, fq] = [out(p), out(q)];
+        if (fp >= 0) poly.push(p);
+        if ((fp >= 0) !== (fq >= 0)) {
+          const t = fp / (fp - fq);
+          poly.push([p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])]);
+        }
+      });
+      if (poly.length >= 3) {
+        nodes.push(<polygon key={`sh${si}`} points={poly.map(([x, y]) => `${X(x).toFixed(1)},${Y(y).toFixed(1)}`).join(' ')} fill="var(--ink)" fillOpacity={0.16} stroke="none" />);
+      }
+    });
     nodes.push(figLine('ax', X(x0), Y(0), X(x1), Y(0), { strokeWidth: 2.5 }));
     nodes.push(figLine('ay', X(0), Y(y0), X(0), Y(y1), { strokeWidth: 2.5 }));
 
@@ -2904,6 +2932,11 @@ export default function Figure({ fig, color, shown }) {
       nodes.push(figLabel(`pl${i}`, X(p.x) + ux * 11, Y(p.y) - uy * 11 + 6, p.label,
         ux >= 0 ? 'start' : 'end', 'var(--ink)', NUM * 1.15));
     });
+
+    if (fig.regionLabel) {
+      const [rx, ry] = fig.regionLabel;
+      nodes.push(figLabel('rl', X(rx), Y(ry) + 8, 'R', 'middle', 'var(--ink)', NUM * 1.5));
+    }
 
     // noShrink, like magic-square: the grid is what has to be read after the
     // reveal, not decoration around an answer.
