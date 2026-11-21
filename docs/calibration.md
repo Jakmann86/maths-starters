@@ -923,6 +923,17 @@ between two models to working one out unaided, with the same method all
 the way, which suits Mixed. k is whole throughout: an inverse model's k is
 a multiple of every x^n in its table.
 
+## Collecting like terms — Haese assumed knowledge, Rayner 3
+
+IGCSE 0607 E2.2a, first in Expanding brackets, since every expansion ends
+with it. Foundation: four terms of two kinds, a letter and numbers or two
+letters, with one subtraction and a positive answer. Core: one letter, its
+square and a number, five terms; x² and x are not alike, and at least one
+total comes out negative. Stretch: two letters multiplied (x²y, xy², xy),
+six terms, some written back to front (yx² is x²y), and one kind cancels
+to nothing. The working brackets each kind first; the answer runs in
+descending powers, positive term first on a tie.
+
 ## Logarithms — Haese 31A–E
 
 Year 10, IGCSE 0607 (syllabus 3.10). Rayner has no logarithms chapter. Base

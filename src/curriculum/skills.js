@@ -70,6 +70,7 @@ import * as seqRules from '../generators/algebra/sequenceRuleGenerators';
 import * as setSymbols from '../generators/number/setSymbolGenerators';
 import * as ineqRegions from '../generators/algebra/inequalityRegionGenerators';
 import * as variationModel from '../generators/algebra/variationModelGenerators';
+import * as likeTerms from '../generators/algebra/likeTermsGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
 import * as spread from '../generators/statistics/spreadGenerators';
@@ -78,6 +79,14 @@ import * as boxPlots from '../generators/statistics/boxPlotGenerators';
 export const BANDS = ['foundation', 'core', 'stretch'];
 
 export const skills = {
+  // --- Collecting like terms: syllabus E2.2a, Haese assumed knowledge ---
+  'like-terms': {
+    label: 'Collecting like terms',
+    topic: 'Expanding brackets',
+    generate: (opts) => likeTerms.generateLikeTerms(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
   // --- Haese 1A: the distributive law -----------------------------------------------------------
   'expand-single-brackets': {
     label: 'Expanding single brackets',
