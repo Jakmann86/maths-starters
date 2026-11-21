@@ -907,6 +907,22 @@ edge, kept out. Sloping boundaries are written y ≤ mx + c; Rayner's
 x + y ≤ 7 form is the teacher's to accept. Foundation is a whole pool of
 400: two lines at 2 to 6, each solid or dashed, R on either side.
 
+## Variation from a table — Haese 30C, Rayner 8 (variation)
+
+IGCSE 0607 E2.8b, last in Ratio and proportion. The table is headed down
+the side, as Rayner sets its variation tables, and the data fit the model
+exactly. Students find the formula, y = kx^n or y = k / x^n. Every table
+has a column where x doubles (or, for a root, multiplies by four), so the
+working reads the power off how y changes there, then finds k from the
+first column.
+
+Foundation: y ∝ x or y ∝ 1/x, both offered under the table. Core:
+y ∝ x², x³ or √x, all three offered. Stretch: nothing offered, and the
+inverse square and inverse root join in. The bands go from choosing
+between two models to working one out unaided, with the same method all
+the way, which suits Mixed. k is whole throughout: an inverse model's k is
+a multiple of every x^n in its table.
+
 ## Logarithms — Haese 31A–E
 
 Year 10, IGCSE 0607 (syllabus 3.10). Rayner has no logarithms chapter. Base

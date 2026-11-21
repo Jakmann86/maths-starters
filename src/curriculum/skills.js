@@ -69,6 +69,7 @@ import * as algDen from '../generators/algebra/algebraicDenominatorGenerators';
 import * as seqRules from '../generators/algebra/sequenceRuleGenerators';
 import * as setSymbols from '../generators/number/setSymbolGenerators';
 import * as ineqRegions from '../generators/algebra/inequalityRegionGenerators';
+import * as variationModel from '../generators/algebra/variationModelGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
 import * as spread from '../generators/statistics/spreadGenerators';
@@ -872,6 +873,13 @@ export const skills = {
     label: 'Inverse variation',
     topic: 'Ratio and proportion',
     generate: (opts) => variation.generateInverseVariation(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // --- Best variation model from a table: Haese 30C, syllabus E2.8b ---
+  'variation-model': {
+    label: 'Variation from a table',
+    topic: 'Ratio and proportion',
+    generate: (opts) => variationModel.generateVariationModel(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 

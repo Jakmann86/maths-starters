@@ -5,9 +5,10 @@
 //   direct-variation    y = kx^n     (n = 1, 2, 3 or 1/2)
 //   inverse-variation   y = k / x^n  (n = 1, 2 or 1/2)
 //
-// 30C (variation modelling) and 30D (power modelling) are not here. 30D is a
-// skip rather than a todo: it is power regression on a graphics calculator
-// against messy real data, and there is no version of it that fits a starter.
+// 30C (variation modelling) is in variationModelGenerators.js. 30D (power
+// modelling) is a skip rather than a todo: it is power regression on a
+// graphics calculator against messy real data, and there is no version of it
+// that fits a starter.
 //
 // Question shape. These are worded questions, but students at the back of the
 // room need every number and the relationship itself, so all of that goes in
@@ -31,7 +32,7 @@ const NL = '\n';
 
 // Dependent and independent letters, in pairs that read like the textbook's.
 // Deliberately never 'k', which is the proportionality constant throughout.
-const PAIRS = [
+export const PAIRS = [
   ['y', 'x'], ['T', 'l'], ['M', 't'], ['P', 'a'],
   ['D', 'r'], ['V', 'h'], ['C', 'n'], ['W', 'd'],
 ];

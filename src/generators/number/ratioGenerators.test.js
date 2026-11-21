@@ -52,7 +52,7 @@ describe('ratio', () => {
   }));
 
   it('opens Ratio and proportion, before variation', () => {
-    expect(skillsInTopic('Ratio and proportion')).toEqual([...Object.keys(CHECKS), 'direct-variation', 'inverse-variation']);
+    expect(skillsInTopic('Ratio and proportion')).toEqual([...Object.keys(CHECKS), 'direct-variation', 'inverse-variation', 'variation-model']);
     expect(strandOf('Ratio and proportion')).toBe('Algebra');
   });
 

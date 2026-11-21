@@ -211,7 +211,7 @@
 
     { "id": "30A", "ch": 30, "unit": "Variation and power modelling", "lesson": "Direct variation", "page": 606, "skills": ["direct-variation"], "status": "ready" },
     { "id": "30B", "ch": 30, "unit": "Variation and power modelling", "lesson": "Inverse variation", "page": 612, "skills": ["inverse-variation"], "status": "ready" },
-    { "id": "30C", "ch": 30, "unit": "Variation and power modelling", "lesson": "Variation modelling", "page": 615, "skills": [], "status": "skip" },
+    { "id": "30C", "ch": 30, "unit": "Variation and power modelling", "lesson": "Variation modelling", "page": 615, "skills": ["variation-model"], "status": "ready" },
     { "id": "30D", "ch": 30, "unit": "Variation and power modelling", "lesson": "Power modelling", "page": 619, "skills": [], "status": "skip" },
 
     { "id": "31A", "ch": 31, "unit": "Logarithms", "lesson": "Logarithms in base a", "page": 625, "skills": ["log-index-form", "evaluate-logs"], "status": "ready" },
