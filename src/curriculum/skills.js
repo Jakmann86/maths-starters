@@ -65,6 +65,9 @@ import * as rates from '../generators/number/ratesGenerators';
 import * as pctGrowth from '../generators/number/percentGrowthGenerators';
 import * as sectors from '../generators/geometry/sectorGenerators';
 import * as perpLine from '../generators/geometry/perpendicularLineGenerators';
+import * as algDen from '../generators/algebra/algebraicDenominatorGenerators';
+import * as seqRules from '../generators/algebra/sequenceRuleGenerators';
+import * as setSymbols from '../generators/number/setSymbolGenerators';
 import * as coord from '../generators/geometry/coordinateGeometryGenerators';
 import * as scatter from '../generators/statistics/scatterGenerators';
 import * as spread from '../generators/statistics/spreadGenerators';
@@ -253,6 +256,13 @@ export const skills = {
     label: 'Solving equations with fractional coefficients',
     topic: 'Equations',
     generate: (opts) => equations.generateSolveFractionalCoefficients(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+  // --- Haese 3B: x in the denominator, syllabus E2.5c ---
+  'algebraic-denominators': {
+    label: 'Solving equations with x in the denominator',
+    topic: 'Equations',
+    generate: (opts) => algDen.generateAlgebraicDenominators(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
@@ -672,6 +682,14 @@ export const skills = {
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
+
+  // --- Haese 26A: next terms and term-to-term rules, syllabus E2.7a ---
+  'sequence-rules': {
+    label: 'Sequences: next terms and term-to-term rules',
+    topic: 'Arithmetic and geometric sequences',
+    generate: (opts) => seqRules.generateSequenceRules(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
 
   // --- Haese 26B: arithmetic sequences ---
   'sequences-arithmetic-nth-term': {
@@ -1492,6 +1510,14 @@ export const skills = {
     label: 'Rationalising the denominator',
     topic: 'Surds',
     generate: (opts) => ch6.generateRationaliseDenominator(opts),
+    difficulties: ['foundation', 'core', 'stretch'],
+  },
+
+  // --- Haese 2A, Rayner 12.1: set symbols, syllabus E1.2b ---
+  'set-symbols': {
+    label: 'Set symbols: ∈, ∉, ⊆ and ∅',
+    topic: 'Sets',
+    generate: (opts) => setSymbols.generateSetSymbols(opts),
     difficulties: ['foundation', 'core', 'stretch'],
   },
 
