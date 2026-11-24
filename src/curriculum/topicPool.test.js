@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { drawBoxTopics, togglePool, pickSwapTopic, migratePool } from './topicPool.js';
-import { topics } from './skills.js';
+import { drawBoxTopics, togglePool, pickSwapTopic, migratePool, packStrands, columnCount, setPoolTopics } from './topicPool.js';
+import { topics, topicGroups } from './skills.js';
 
 describe('drawBoxTopics', () => {
   it('returns 4 distinct topics when the pool has at least 4', () => {
@@ -112,5 +112,40 @@ describe('migratePool', () => {
     const old = ['Statistics', 'Angles', 'Pythagoras', 'Trigonometry', 'Sequences',
       'Formulae and simultaneous equations', 'Circles', 'Problem solving'];
     migratePool(old).forEach((t) => expect(all).toContain(t));
+  });
+});
+
+describe('setPoolTopics', () => {
+  it('adds a whole strand without duplicates, and takes it away again', () => {
+    const on = setPoolTopics(['Surds', 'Volume'], ['Surds', 'Indices'], true);
+    expect(on).toEqual(['Surds', 'Volume', 'Indices']);
+    expect(setPoolTopics(on, ['Surds', 'Indices'], false)).toEqual(['Volume']);
+  });
+});
+
+describe('packStrands', () => {
+  const groups = topicGroups();
+  [5, 4, 3, 1].forEach((n) => {
+    it(`lays every strand out once, unsplit, in ${n} column${n === 1 ? '' : 's'}`, () => {
+      const cols = packStrands(groups, n);
+      expect(cols.length).toBe(Math.min(n, groups.length));
+      expect(cols.flat().map((g) => g.name).sort()).toEqual(groups.map((g) => g.name).sort());
+      expect(cols.flat().flatMap((g) => g.topics).sort()).toEqual(topics().sort());
+    });
+  });
+
+  it('keeps the columns close in height on a board', () => {
+    const heights = packStrands(groups, 5).map((c) => c.reduce((h, g) => h + g.topics.length + 1.5, 0));
+    // No column more than half as tall again as the shortest that holds two
+    // strands, so the sheet reads as a block rather than one long column.
+    expect(Math.max(...heights)).toBeLessThanOrEqual(1.6 * Math.min(...heights.filter((h) => h > 6)));
+  });
+
+  it('uses five columns on a board or laptop and fewer below', () => {
+    expect(columnCount(1920)).toBe(5);
+    expect(columnCount(1366)).toBe(5);
+    expect(columnCount(1024)).toBe(4);
+    expect(columnCount(800)).toBe(3);
+    expect(columnCount(400)).toBe(1);
   });
 });

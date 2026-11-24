@@ -89,3 +89,28 @@ export const pickSwapTopic = (pool, allTopics, currentTopic, otherTopics) => {
   const fresh = notCurrent.filter((t) => !otherTopics.includes(t));
   return _.sample(fresh.length > 0 ? fresh : notCurrent);
 };
+
+/** Topic panel columns for a window width: five on a board or laptop, fewer below. */
+export const columnCount = (w) => (w >= 1280 ? 5 : w >= 1000 ? 4 : w >= 700 ? 3 : 1);
+
+/**
+ * Lays the panel's strands into `n` columns. Each strand, in panel order,
+ * goes to the first empty column, then to the shortest; a heading counts as
+ * one and a half topics. A strand is never split across columns. Returns
+ * the columns that hold anything, each a list of strands.
+ */
+export function packStrands(groups, n) {
+  const cols = Array.from({ length: n }, () => ({ groups: [], height: 0 }));
+  groups.forEach((g) => {
+    const empty = cols.find((c) => c.groups.length === 0);
+    const col = empty ?? cols.reduce((a, b) => (b.height < a.height ? b : a));
+    col.groups.push(g);
+    col.height += g.topics.length + 1.5;
+  });
+  return cols.filter((c) => c.groups.length).map((c) => c.groups);
+}
+
+/** Sets every topic in `names` on (added) or off (removed). Does not mutate `pool`. */
+export const setPoolTopics = (pool, names, on) => (on
+  ? [...pool, ...names.filter((t) => !pool.includes(t))]
+  : pool.filter((t) => !names.includes(t)));

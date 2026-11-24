@@ -5,7 +5,7 @@ import ErrorBoundary from './ErrorBoundary.jsx';
 import TopicPanel from './TopicPanel.jsx';
 import PrintSheet from '../print/PrintSheet.jsx';
 import { skillsInTopic, nextSkillInTopic, topics } from '../curriculum/skills.js';
-import { loadPool, savePool, togglePool, drawBoxTopics, pickSwapTopic } from '../curriculum/topicPool.js';
+import { loadPool, savePool, togglePool, setPoolTopics, drawBoxTopics, pickSwapTopic } from '../curriculum/topicPool.js';
 import { preloadKatex } from '../lib/katexLoader.js';
 import { boxView } from '../lib/safeGenerate.js';
 import './Board.css';
@@ -114,6 +114,7 @@ export default function Board() {
     setState((s) => ({ ...s, pool: next }));
   };
   const toggleTopic = (topicName) => changePool(togglePool(pool, topicName));
+  const setTopics = (names, on) => changePool(setPoolTopics(pool, names, on));
   const selectAllTopics = () => changePool(topics());
   const selectNoneTopics = () => changePool([]);
 
@@ -234,6 +235,7 @@ export default function Board() {
         open={panelOpen}
         selected={pool}
         onToggle={toggleTopic}
+        onSetMany={setTopics}
         onSelectAll={selectAllTopics}
         onSelectNone={selectNoneTopics}
         onClose={closePool}

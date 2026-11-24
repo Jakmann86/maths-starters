@@ -218,11 +218,16 @@ fullscreen. See §5 for the actions.
 
 ### 7.2 Topic panel
 
-A right-hand sheet opened from the header's topics segment. Topics grouped by
-strand (§2.1), each a toggle row with a 20px square tick box; All / Clear /
-Done in its header. Each tap saves the pool (§2.3) and the panel stays open,
-so several topics can be toggled in one visit. Done draws a fresh four if the
-selection changed.
+A full-screen sheet opened from the header's topics segment, with every
+topic on it at once: the strands (§2.1) laid out as columns (five on a board
+or laptop, `packStrands` in `topicPool.js`), so a topic is found by looking,
+not scrolling. Each topic is a toggle tile with a square tick box, filled in
+ink when chosen; its + lists the topic's skills in cycle order without
+changing the selection. A strand's heading has all / none for the whole
+strand. All / Clear / Done sit in the sheet's header. Each tap saves the
+pool (§2.3) and the sheet stays open, so several topics can be toggled in
+one visit. With nothing chosen a note says the board draws from every
+topic. Done draws a fresh four if the selection changed.
 
 ### 7.3 Dev pages
 
